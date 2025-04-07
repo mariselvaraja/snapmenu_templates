@@ -165,7 +165,7 @@ const App = () => {
         if (domainParts.length > 2) {
             return domainParts.slice(0, -2).join('.');
         }
-        return "paradisebiruani"; // No subdomain present, use tonyspizza as default
+        return "tonyspizza"; // No subdomain present, use tonyspizza as default
     }
 
     useEffect(() => {
