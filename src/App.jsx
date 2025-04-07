@@ -162,9 +162,9 @@ const App = () => {
         const domainParts = hostname.split('.');
 
         // Assuming the last two parts are the domain and TLD
-        if (domainParts.length > 2) {
-            return domainParts.slice(0, -2).join('.');
-        }
+        // if (domainParts.length > 2) {
+        //     return domainParts.slice(0, -2).join('.');
+        // }
         return "tonyspizza"; // No subdomain present, use tonyspizza as default
     }
 
