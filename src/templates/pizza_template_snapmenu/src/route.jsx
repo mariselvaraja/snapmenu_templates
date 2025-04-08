@@ -19,6 +19,7 @@ import ProductDetails from './pages/ProductDetails';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import CartDrawer from './components/CartDrawer';
+import TableReservation from '../../../shared/components/reservation/tableReservation';
 
 // Layout component for Pizza template
 export function PizzaLayout() {
@@ -45,6 +46,7 @@ export function PizzaLayout() {
               <Route path="/reservation" element={<Reservation />} />
               <Route path="/cart" element={<Cart />} />
               <Route path="/checkout" element={<Checkout />} />
+              <Route path="/reserveTable" element={<TableReservation />} />
             </Routes>
           </main>
           <Footer />

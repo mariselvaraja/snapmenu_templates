@@ -1,6 +1,9 @@
 import { Routes, Route, Navigate, BrowserRouter as Router } from 'react-router-dom';
 import React from 'react';
 
+// Import shared components
+import TableReservation from './shared/components/reservation/tableReservation';
+
 // Import template layouts
 import { EatflowLayout } from './templates/eatflow_template_snapmenu/src/route';
 
@@ -23,8 +26,11 @@ function RouterComponent() {
   return (
     <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <Routes>
-      {/* Root route - redirect to eatflow template */}
-      <Route path="/" element={<Navigate to="/eatflow" replace />} />
+      {/* Root route - show TableReservation component */}
+      <Route path="/" element={<TableReservation />} />
+      
+      {/* Reserve Table route */}
+      {/* <Route path="/reserveTable" element={<TableReservation />} /> */}
 
       {/* EatFlow Template Routes */}
       <Route path="/eatflow/*" element={
