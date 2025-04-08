@@ -194,7 +194,7 @@ export default function TableReservation() {
   };
 
   return (
-    <div className={`relative flex flex-col md:flex-row gap-8 p-6 mx-auto transition-opacity duration-700 ease-in-out ${isLoaded ? 'opacity-100' : 'opacity-0'}`}>
+    <div className={`relative flex flex-col md:flex-row gap-8 p-6 mx-auto max-w-7xl transition-opacity duration-700 ease-in-out ${isLoaded ? 'opacity-100' : 'opacity-0'}`}>
       {/* Table selection area */}
       <div className="w-full">
         <div className="flex flex-col md:flex-row md:items-start md:justify-between mb-6 border-b border-gray-200 pb-4">
