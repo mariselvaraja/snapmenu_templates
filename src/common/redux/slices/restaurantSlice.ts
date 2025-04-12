@@ -31,7 +31,7 @@ export const restaurantSlice = createSlice({
       state.error = action.payload;
     },
     // Actions for fetching restaurant by domain
-    fetchRestaurantByDomainRequest: (state, action: PayloadAction<string>) => {
+    fetchRestaurantByDomainRequest: (state, action: PayloadAction<{ domain: string, restaurantId?: string }>) => {
       state.loading = true;
       state.error = null;
     },

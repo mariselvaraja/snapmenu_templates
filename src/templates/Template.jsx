@@ -73,7 +73,9 @@ const TemplateContent = () => {
     isLoading
   };
 
-   const template_id = "pizza_template";
+   // Get template_id from restaurant data or use default
+   const template_id = restaurantState?.info?.template_id;
+   console.log("restaurantState", restaurantState)
   // Check if restaurant API returned an error or empty data
   const restaurantApiError = restaurantState.error || !restaurantState.info;
   
@@ -109,7 +111,7 @@ const TemplateContent = () => {
   // Determine which template to render based on the template name
   const renderTemplate = () => {
     switch (template_id) {
-      case 'pizza_template':
+      case 'pizza':
         return <PizzaApp />;
       case 'casual_dining_template':
         return <CasualDiningApp />;

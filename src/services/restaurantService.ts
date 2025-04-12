@@ -61,6 +61,7 @@ export const restaurantService = {
       const headers = {
         restaurantid: "2256b9a6-5d53-4b77-b6a0-539043489ad3"
       };
+      console.log("3")
       const response = await api.get<Restaurant>(endpoints.restaurant.getInfo, { headers });
       return response.data;
     } catch (error) {
@@ -71,6 +72,7 @@ export const restaurantService = {
 
   /**
    * Fetches restaurant information by domain
+   * @deprecated Use getRestaurantInfo instead
    */
   getRestaurantByDomain: async (domain: string): Promise<Restaurant> => {
     console.log(`Fetching restaurant info for domain ${domain} from API`);
@@ -80,7 +82,9 @@ export const restaurantService = {
       const headers = {
         restaurantid: "2256b9a6-5d53-4b77-b6a0-539043489ad3"
       };
-      const response = await api.get<Restaurant>(endpoints.restaurant.getByDomain(domain), { headers });
+      // Use getInfo instead of getByDomain
+      console.log("4")
+      const response = await api.get<Restaurant>(endpoints.restaurant.getInfo, { headers });
       return response.data;
     } catch (error) {
       console.error(`Error fetching restaurant info for domain ${domain}:`, error);

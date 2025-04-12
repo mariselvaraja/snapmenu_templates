@@ -32,6 +32,7 @@ export const restaurantService = {
       const headers = {
         restaurantid: "2256b9a6-5d53-4b77-b6a0-539043489ad3"
       };
+      console.log("5")
       const response = await api.get<any>(endpoints.restaurant.getInfo, { headers });
       console.log('Restaurant API response:', response);
       
@@ -65,13 +66,14 @@ export const restaurantService = {
   /**
    * Get restaurant information by specific domain
    * @param domain - The domain to fetch restaurant information for
+   * @deprecated Use getRestaurantInfo instead
    */
   getRestaurantByDomain: async (domain: string): Promise<Restaurant> => {
     try {
       // Use the request function directly to bypass the api.get method that adds headers from the store
       // This ensures we use our specific restaurant ID for this endpoint
-      const url = endpoints.restaurant.getByDomain(domain);
-      
+      const url = endpoints.restaurant.getInfo;
+      console.log("6")
       // Create request options with our specific restaurant ID header
       const requestOptions = {
         method: 'GET',

@@ -137,8 +137,19 @@ export const api = {
     const state = getStoreState();
     const restaurantId = state?.restaurant?.info?.restaurant_id;
     
-    let headers : any = {restaurantId: restaurantId}
-    return request<T>(url, { ...options, headers, method: 'GET' });
+    // Merge headers from options with default headers
+    const mergedHeaders = {
+      ...((options.headers as Record<string, string>) || {}),
+      // Only add restaurantid if it's not already provided in options
+      ...(!(options.headers && (options.headers as Record<string, string>).restaurantid) && 
+          { restaurantid: restaurantId })
+    };
+    
+    return request<T>(url, { 
+      ...options, 
+      headers: mergedHeaders, 
+      method: 'GET' 
+    });
   },
 
   /**
@@ -149,16 +160,20 @@ export const api = {
     const state = getStoreState();
     const restaurantId = state?.restaurant?.info?.restaurant_id;
     
-    let headers = {};
+    // Merge headers from options with default headers
+    const mergedHeaders = {
+      ...((options.headers as Record<string, string>) || {}),
+    };
     
-    // Add restaurant header for placeOrder endpoint
-    if (url.includes('/placeOrder')) {
-      headers = {restaurantId: restaurantId};
+    // Add restaurant header for placeOrder endpoint if not already provided
+    if (url.includes('/placeOrder') && 
+        !(options.headers && (options.headers as Record<string, string>).restaurantid)) {
+      mergedHeaders.restaurantid = restaurantId;
     }
     
     return request<T>(url, {
       ...options,
-      headers,
+      headers: mergedHeaders,
       method: 'POST',
       body: JSON.stringify(body),
     });

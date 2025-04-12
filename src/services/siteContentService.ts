@@ -20,10 +20,19 @@ export const siteContentService = {
       const response = await api.get<any>(endpoints.siteContent.getAll);
       
       // Store the raw API response
-      const rawApiResponse = response.data;
+      let rawApiResponse = response.data;
+      
+      // Check if response.data is a string (JSON string)
+      if (typeof response.data === 'string') {
+        try {
+          rawApiResponse = JSON.parse(response.data);
+        } catch (e) {
+          console.error('Error parsing site content data JSON string:', e);
+        }
+      }
       
       // Transform the API response to the expected format
-      const data = response.data || {};
+      const data = rawApiResponse || {};
       
       const transformedData: SiteContent = {
         about: {
@@ -58,17 +67,6 @@ export const siteContentService = {
   /**
    * Fetches a specific section of the site content
    */
-  getSiteContentSection: async (section: string): Promise<any> => {
-    console.log(`Fetching site content section ${section} from API`);
-    
-    try {
-      const response = await api.get<any>(endpoints.siteContent.getSection(section));
-      return response.data;
-    } catch (error) {
-      console.error(`Error fetching site content section ${section}:`, error);
-      throw error;
-    }
-  },
 };
 
 export default siteContentService;

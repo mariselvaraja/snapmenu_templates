@@ -14,9 +14,13 @@ export default function App() {
  
     // Assuming the last two parts are the domain and TLD
     // if (domainParts.length > 2) {
-    //     return store.dispatch(fetchRestaurantByDomainRequest((domainParts.slice(0, -2).join('.'))));
+    //     const domain = domainParts.slice(0, -2).join('.');
+    //     return store.dispatch(fetchRestaurantByDomainRequest({ domain, restaurantId: "2256b9a6-5d53-4b77-b6a0-539043489ad3" }));
     // }
-    return store.dispatch(fetchRestaurantByDomainRequest("tonyspizza"))
+    return store.dispatch(fetchRestaurantByDomainRequest({ 
+      domain: "tonyspizza", 
+      restaurantId: "2256b9a6-5d53-4b77-b6a0-539043489ad3" 
+    }))
   }
  
   useEffect(() => {

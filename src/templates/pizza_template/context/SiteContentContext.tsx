@@ -477,9 +477,9 @@ export function SiteContentProvider({ children }: SiteContentProviderProps) {
       </div>
     );
   }
-  
+
   // Show maintenance message if site content is empty
-  if (!loading && rawApiResponse && (!rawApiResponse.data || 
+  if (!loading && !rawApiResponse.data && (!rawApiResponse.data || 
       (typeof rawApiResponse.data === 'object' && Object.keys(rawApiResponse.data).length === 0) ||
       (typeof rawApiResponse.data === 'string' && rawApiResponse.data.trim() === ''))) {
     return (

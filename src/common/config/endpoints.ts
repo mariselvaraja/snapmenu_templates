@@ -15,17 +15,6 @@ const SITE_CONTENT_API_PATH = import.meta.env.VITE_SITE_CONTENT_VIEW_API_PATH ||
 const PLACE_ORDER_API_PATH = import.meta.env.VITE_PLACE_ORDER_API_PATH || import.meta.env.VITE_CART_API_PATH;
 const RESTAURANT_DETAILS_API_PATH = import.meta.env.VITE_RESTAURANT_DETAILS_API_PATH;
 
-// Log environment configuration
-console.log('Environment:', ENV);
-console.log('API Configuration:', {
-  baseUrl: API_BASE_URL,
-  menuPath: MENU_API_PATH,
-  siteContentPath: SITE_CONTENT_API_PATH,
-  placeOrderPath: PLACE_ORDER_API_PATH,
-  restaurantDetailsPath: RESTAURANT_DETAILS_API_PATH
-});
-
-
 // Function to get domain from URL
 const getDomainFromUrl = () => {
   // In browser environment
@@ -35,13 +24,13 @@ const getDomainFromUrl = () => {
     const domainParts = hostname.split('.');
     // For localhost or IP addresses, return a default domain
     if (hostname === 'localhost' || /^\d+\.\d+\.\d+\.\d+$/.test(hostname)) {
-      return 'tonyspizzas'; // Default domain for development
+      return 'tonyspizza'; // Default domain for development
     }
     // Return the subdomain or main domain name
     return domainParts.length > 2 ? domainParts[0] : domainParts[0];
   }
   // Fallback for SSR or when window is not available
-  return 'tonyspizzas';
+  return 'tonyspizza';
 };
 
 // Endpoint configuration object
@@ -54,7 +43,6 @@ export const endpoints = {
   // Site content endpoints
   siteContent: {
     getAll: `${API_BASE_URL}${SITE_CONTENT_API_PATH}`,
-    getSection: (section: string) => `${API_BASE_URL}${SITE_CONTENT_API_PATH}/${section}`,
   },
   
   // Cart endpoints
@@ -65,7 +53,6 @@ export const endpoints = {
   // Restaurant endpoints
   restaurant: {
     getInfo: `${API_BASE_URL}${RESTAURANT_DETAILS_API_PATH}?domain=${getDomainFromUrl()}`,
-    getByDomain: (domain: string) => `${API_BASE_URL}${RESTAURANT_DETAILS_API_PATH}?domain=${domain}`,
   },
 };
 
