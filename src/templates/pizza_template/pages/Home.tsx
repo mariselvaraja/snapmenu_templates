@@ -144,8 +144,8 @@ export default function Home() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {(menuItems.length >= 3 ? 
-                menuItems.slice(0, 3) : 
+              {(menuItems && menuItems.length >= 3 ? 
+                menuItems.filter(item => item.available !== false).slice(0, 3) : 
                 [
                   {
                     id: 1,
@@ -257,10 +257,10 @@ export default function Home() {
               transition={{ duration: 0.5 }}
               className="bg-white rounded-lg overflow-hidden shadow-lg"
             >
-              {menuItems.length > 0 ? (
+              {menuItems && menuItems.length > 0 ? (
                 <div className="h-full flex flex-col">
                   <div className="relative h-64">
-                    {menuItems[0].image ? (
+                    {menuItems[0] && menuItems[0].image ? (
                       <img
                         src={menuItems[0].image}
                         alt={menuItems[0].name}
@@ -268,24 +268,24 @@ export default function Home() {
                       />
                     ) : (
                       <div className="w-full h-full bg-red-100 flex items-center justify-center text-4xl font-bold text-red-500">
-                        {menuItems[0].name.charAt(0)}
+                        {menuItems[0] && menuItems[0].name ? menuItems[0].name.charAt(0) : 'M'}
                       </div>
                     )}
                     <div className="absolute top-4 right-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
-                      ${menuItems[0].price}
+                      ${menuItems[0] && menuItems[0].price ? menuItems[0].price : 0}
                     </div>
                   </div>
                   <div className="p-6 flex-grow">
-                    <h3 className="text-2xl font-semibold mb-2">{menuItems[0].name}</h3>
-                    <p className="text-gray-600 mb-4">{menuItems[0].description}</p>
+                    <h3 className="text-2xl font-semibold mb-2">{menuItems[0] && menuItems[0].name ? menuItems[0].name : 'Menu Item'}</h3>
+                    <p className="text-gray-600 mb-4">{menuItems[0] && menuItems[0].description ? menuItems[0].description : 'Description unavailable'}</p>
                     <button
                       className="w-full inline-flex items-center justify-center bg-red-500 text-white px-4 py-3 rounded-lg hover:bg-red-600 transition-colors"
                       onClick={() => {
                         const cartItem: CartItem = {
-                          id: menuItems[0].id,
-                          name: menuItems[0].name,
-                          price: menuItems[0].price,
-                          image: menuItems[0].image,
+                          id: menuItems[0] && menuItems[0].id ? menuItems[0].id : 0,
+                          name: menuItems[0] && menuItems[0].name ? menuItems[0].name : 'Menu Item',
+                          price: menuItems[0] && menuItems[0].price ? menuItems[0].price : 0,
+                          image: menuItems[0] && menuItems[0].image ? menuItems[0].image : '',
                           quantity: 1,
                         };
                         dispatch(addItem(cartItem));

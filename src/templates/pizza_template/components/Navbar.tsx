@@ -25,15 +25,15 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-20">
           <div className="flex items-center">
             <Link to="/" className="flex items-center space-x-2">
-              {brand.logo.icon === "Utensils" && <UtensilsIcon className="h-8 w-8 text-red-500" />}
-              {brand.logo.icon === "Pizza" && <PizzaIcon className="h-8 w-8 text-red-500" />}
-              <span className="text-2xl font-bold">{brand.logo.text}</span>
+              {brand?.logo?.icon === "Utensils" && <UtensilsIcon className="h-8 w-8 text-red-500" />}
+              {brand?.logo?.icon === "Pizza" && <PizzaIcon className="h-8 w-8 text-red-500" />}
+              <span className="text-2xl font-bold">{brand?.logo?.text || 'Restaurant'}</span>
             </Link>
           </div>
 
           <div className="hidden md:block">
             <div className="ml-10 flex items-center space-x-8">
-              {navigation.links.filter(link => link.isEnabled).map((link, index) => (
+              {navigation?.links?.filter(link => link.isEnabled).map((link, index) => (
                 <Link
                   key={index}
                   to={link.path}
@@ -87,7 +87,7 @@ export default function Navbar() {
       {isOpen && (
         <div className="md:hidden">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-            {navigation.links.filter(link => link.isEnabled).map((link, index) => (
+            {navigation?.links?.filter(link => link.isEnabled).map((link, index) => (
               <Link
                 key={index}
                 to={link.path}

@@ -38,7 +38,7 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
           <div>
-            <h3 className="text-xl font-bold mb-4">{brand.name}</h3>
+            <h3 className="text-xl font-bold mb-4">{brand?.name || 'Restaurant'}</h3>
             {footer?.newsletter && (
           <div className="mb-8">
             <h4 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">{footer.newsletter.title}</h4>
@@ -61,7 +61,7 @@ export default function Footer() {
           <div>
             <h4 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Quick Links</h4>
             <ul className="space-y-2">
-              {navigation.links.filter(link => link.isEnabled).map((link, index) => (
+              {navigation?.links?.filter(link => link.isEnabled).map((link, index) => (
                 <li key={index}>
                   <Link to={link.path} className="text-gray-300 hover:text-white">{link.label}</Link>
                 </li>
@@ -72,9 +72,9 @@ export default function Footer() {
             <div>
               <h4 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">{footer.servicesSection.title}</h4>
               <ul className="space-y-2">
-                {footer.servicesSection.links.map((link: any, index: number) => (
+                {footer.servicesSection.links?.map((link: any, index: number) => (
                   <li key={index}>
-                    <a href={link.href} className="text-gray-300 hover:text-primary-500">{link.label}</a>
+                    <a href={link.href || link.url || '#'} className="text-gray-300 hover:text-primary-500">{link.label}</a>
                   </li>
                 ))}
               </ul>
@@ -108,18 +108,18 @@ export default function Footer() {
           <div className="flex space-x-4">
             {footer?.social?.links?.map((socialLink: any, index: number) => {
               let IconComponent: React.FC<any> | null = null;
-              if (socialLink.platform === 'Facebook') {
+              if (socialLink?.platform === 'Facebook' || socialLink?.icon === 'Facebook') {
                 IconComponent = Facebook;
-              } else if (socialLink.platform === 'Instagram') {
+              } else if (socialLink?.platform === 'Instagram' || socialLink?.icon === 'Instagram') {
                 IconComponent = Instagram;
-              } else if (socialLink.platform === 'Twitter') {
+              } else if (socialLink?.platform === 'Twitter' || socialLink?.icon === 'Twitter') {
                 IconComponent = Twitter;
               } else {
                 return null;
               }
               return (
-                <a key={index} href={socialLink.href} className="text-gray-400 hover:text-white">
-                  <IconComponent className="h-5 w-5" aria-label={socialLink.ariaLabel} />
+                <a key={index} href={socialLink?.href || socialLink?.url || '#'} className="text-gray-400 hover:text-white">
+                  <IconComponent className="h-5 w-5" aria-label={socialLink?.ariaLabel || socialLink?.platform || socialLink?.icon} />
                 </a>
               );
             })}
