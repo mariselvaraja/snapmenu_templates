@@ -12,10 +12,14 @@ export default function ProductDetail() {
     // Get menu data from Redux store
     const { items, loading, error } = useAppSelector(state => state.menu);
     
-    // Fetch menu data when component mounts
+    // Fetch menu data when component mounts if not already loaded or loading
     useEffect(() => {
-        dispatch(fetchMenuRequest());
-    }, [dispatch]);
+        // Only fetch if items are empty and not already loading
+        if (items.length === 0 && !loading) {
+            console.log('ProductDetail page: Fetching menu data');
+            dispatch(fetchMenuRequest());
+        }
+    }, [dispatch, items.length, loading]);
     
     // Find the product in the menu data
     const product = items.find(item => item.id.toString() === productId);
@@ -150,6 +154,26 @@ export default function ProductDetail() {
                 >
                     <ArrowLeft className="h-4 w-4 mr-2" />
                     Try Again
+                </button>
+            </div>
+        );
+    }
+    
+    // Show maintenance message if menu data is empty but no error
+    if (!loading && !error && items.length === 0) {
+        return (
+            <div className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <div className="text-yellow-500 text-5xl mb-4">🛠️</div>
+                <h1 className="text-3xl font-bold mb-4">Site Under Maintenance</h1>
+                <p className="text-xl text-gray-600 mb-6">
+                    We're currently updating our menu. Please check back soon!
+                </p>
+                <button 
+                    onClick={() => dispatch(fetchMenuRequest())}
+                    className="mt-4 inline-flex items-center bg-yellow-500 text-white px-4 py-2 rounded-full hover:bg-yellow-600 transition-colors"
+                >
+                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    Refresh
                 </button>
             </div>
         );

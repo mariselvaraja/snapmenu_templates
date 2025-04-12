@@ -13,12 +13,19 @@ export function useSearchInitializer() {
   const menuItems = useAppSelector((state) => state.menu.items);
   const dispatch = useAppDispatch();
 
+  // Get menu loading state
+  const menuLoading = useAppSelector((state) => state.menu.loading);
+  
   // Fetch menu data if not already loaded
   useEffect(() => {
-    if ((!menuItems || menuItems.length === 0) && searchState === SearchState.UNINITIALIZED) {
+    // Check if menu data is not loaded, search is uninitialized, and menu is not already loading
+    if ((!menuItems || menuItems.length === 0) && 
+        searchState === SearchState.UNINITIALIZED && 
+        !menuLoading) {
+      console.log('SearchInitializer: Fetching menu data');
       dispatch({ type: 'menu/fetchMenuRequest' });
     }
-  }, [dispatch, menuItems, searchState]);
+  }, [dispatch, menuItems, searchState, menuLoading]);
 
   // Initialize search service when menu data is loaded
   useEffect(() => {

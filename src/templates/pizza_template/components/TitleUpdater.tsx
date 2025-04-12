@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
-import { useSiteContent } from '../../../common/context/SiteContentContext';
+import { useSiteContent } from '../context/SiteContentContext';
 import { useLocation, useParams } from 'react-router-dom';
-import { useAppSelector } from '../../../common/redux';
+import { useAppSelector } from '../shared/redux';
 
 /**
  * Component that updates the document title based on the current page and restaurant name

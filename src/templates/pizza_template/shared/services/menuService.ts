@@ -129,17 +129,32 @@ export const menuService = {
    * Fetches all menu items and categories
    */
   getMenu: async (): Promise<MenuResponse> => {
-    // Make API call to get menu data
-    const response = await api.get<any[]>(endpoints.menu.getAll);
-    
-    // Process the menu data to match our expected format
-    const items = transformMenuItems(response.data);
-    const categories = extractCategories(response.data);
-    
-    return {
-      items,
-      categories
-    };
+    try {
+      // Make API call to get menu data
+      const response = await api.get<any[]>(endpoints.menu.getAll);
+      
+      // Check if response data is valid
+      if (!response.data) {
+        console.warn('Menu API returned empty data');
+        return { items: [], categories: [] };
+      }
+      
+      // Ensure data is an array
+      const menuData = Array.isArray(response.data) ? response.data : [];
+      
+      // Process the menu data to match our expected format
+      const items = transformMenuItems(menuData);
+      const categories = extractCategories(menuData);
+      
+      return {
+        items,
+        categories
+      };
+    } catch (error) {
+      console.error('Error in getMenu:', error);
+      // Return empty data on error
+      return { items: [], categories: [] };
+    }
   },
 };
 

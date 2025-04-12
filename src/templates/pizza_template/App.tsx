@@ -5,7 +5,7 @@ import Footer from './components/Footer';
 import CartDrawer from './components/CartDrawer';
 import TitleUpdater from './components/TitleUpdater';
 import { PizzaTemplateRoutes } from '@/routes';
-import { SiteContentProvider } from '../../common/context/SiteContentContext';
+import { SiteContentProvider } from './context/SiteContentContext';
 import { SearchInitializer, RestaurantInitializer } from './shared';
 
 function App() {
