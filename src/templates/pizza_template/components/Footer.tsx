@@ -6,8 +6,10 @@ export default function Footer() {
   const { rawApiResponse } = useAppSelector(state => state.siteContent);
   
   // Get site content from Redux state
-  const siteContent = JSON.parse(rawApiResponse?.data);
-  const { navigationBar } = siteContent;
+  const siteContent = rawApiResponse?.data ? 
+    (typeof rawApiResponse.data === 'string' ? JSON.parse(rawApiResponse.data) : rawApiResponse.data) : 
+    {};
+  const navigationBar = siteContent?.navigationBar || { brand: { name: 'Restaurant' }, navigation: { links: [] } };
   const { brand, navigation } = navigationBar;
   const footer = siteContent?.footer || {
     newsletter: {

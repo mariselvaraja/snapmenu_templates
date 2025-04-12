@@ -13,8 +13,10 @@ export default function Home() {
   const { rawApiResponse } = useAppSelector(state => state.siteContent);
   
   // Get site content from Redux state
-  const siteContent = JSON.parse(rawApiResponse?.data) ;
-  const navigationBar = siteContent?.navigationBar ;
+  const siteContent = rawApiResponse?.data ? 
+    (typeof rawApiResponse.data === 'string' ? JSON.parse(rawApiResponse.data) : rawApiResponse.data) : 
+    {};
+  const navigationBar = siteContent?.navigationBar || {};
   const heroData = navigationBar?.hero || {
     banners: [
       {

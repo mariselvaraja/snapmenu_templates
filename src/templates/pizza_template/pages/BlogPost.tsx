@@ -8,7 +8,9 @@ export default function BlogPost() {
   const { rawApiResponse } = useAppSelector(state => state.siteContent);
   
   // Get site content from Redux state
-  const siteContent = JSON.parse(rawApiResponse?.data);
+  const siteContent = rawApiResponse?.data ? 
+    (typeof rawApiResponse.data === 'string' ? JSON.parse(rawApiResponse.data) : rawApiResponse.data) : 
+    {};
   const blog = siteContent?.blog || {
     header: {
       title: "Our Blog",

@@ -9,11 +9,13 @@ export default function TitleUpdater() {
   const { rawApiResponse } = useAppSelector(state => state.siteContent);
   
   // Get site content from Redux state
-  const siteContent = JSON.parse(rawApiResponse?.data);
-  const { navigationBar, blog } = siteContent;
+  const siteContent = rawApiResponse?.data ? 
+    (typeof rawApiResponse.data === 'string' ? JSON.parse(rawApiResponse.data) : rawApiResponse.data) : 
+    { navigationBar: { brand: { name: 'Loading' } }, blog: { posts: [] } };
+  const { navigationBar = { brand: { name: 'Loading' } }, blog = { posts: [] } } = siteContent;
   const location = useLocation();
   const params = useParams();
-  const restaurantName = navigationBar.brand.name;
+  const restaurantName = navigationBar?.brand?.name || 'Loading';
   
   // Get menu items from Redux store for product detail pages
   const menuItems = useAppSelector(state => state.menu.items);

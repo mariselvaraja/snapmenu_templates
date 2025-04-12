@@ -13,8 +13,10 @@ export default function Navbar() {
   const { rawApiResponse } = useAppSelector(state => state.siteContent);
   
   // Get site content from Redux state
-  const siteContent = JSON.parse(rawApiResponse?.data);
-  const { navigationBar } = siteContent;
+  const siteContent = rawApiResponse?.data ? 
+    (typeof rawApiResponse.data === 'string' ? JSON.parse(rawApiResponse.data) : rawApiResponse.data) : 
+    { navigationBar: { brand: { logo: {} }, navigation: { links: [] } } };
+  const navigationBar = siteContent?.navigationBar || { brand: { logo: {} }, navigation: { links: [] } };
   const { brand, navigation } = navigationBar;
   const cartItems = useAppSelector((state) => state.cart.items);
   const isSearchModalOpen = useAppSelector((state) => state.search.isModalOpen);
