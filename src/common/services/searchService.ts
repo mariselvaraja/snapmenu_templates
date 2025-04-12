@@ -1,3 +1,3 @@
-// Re-export searchService and types from pizza_template
-export { default } from '../../templates/pizza_template/shared/services/searchService';
-export * from '../../templates/pizza_template/shared/services/searchService';
+// Re-export searchService and types from services
+export { default } from '../../services/searchService';
+export * from '../../services/searchService';

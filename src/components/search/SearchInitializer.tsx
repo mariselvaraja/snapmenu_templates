@@ -1,5 +1,5 @@
 import React from 'react';
-import { useSearchInitializer } from '../../../../../hooks';
+import { useSearchInitializer } from '../../hooks';
 
 /**
  * Component that initializes the search service

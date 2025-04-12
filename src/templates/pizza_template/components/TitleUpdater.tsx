@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
-import { useAppSelector } from '../shared/redux';
+import { useAppSelector } from '../../../common/redux/hooks';
 
 /**
  * Component that updates the document title based on the current page and restaurant name

@@ -1,6 +1,6 @@
 import { createContext, useContext, ReactNode, useState, useEffect } from 'react';
-import { useAppDispatch, useAppSelector } from '../shared/redux';
-import { fetchSiteContentRequest, SiteContent } from '../shared/redux/slices/siteContentSlice';
+import { useAppDispatch, useAppSelector } from '../../../redux';
+import { fetchSiteContentRequest, SiteContent } from '../../../redux/slices/siteContentSlice';
 
 // Define types for the UI site content structure
 export interface UISiteContent {
@@ -284,7 +284,7 @@ export function SiteContentProvider({ children }: SiteContentProviderProps) {
               title: "Our Blog",
               description: "Culinary insights, recipes, and stories from our kitchen"
             },
-            posts: content.blog.map(post => ({
+            posts: content.blog.map((post: any) => ({
               id: post.id.toString(),
               title: post.title,
               subtitle: post.excerpt,
@@ -315,7 +315,7 @@ export function SiteContentProvider({ children }: SiteContentProviderProps) {
               title: "Our Gallery",
               subtitle: "Explore our restaurant and cuisine through our gallery"
             },
-            images: content.gallery.map(item => ({
+            images: content.gallery.map((item: any) => ({
               image: item.image,
               title: item.title,
               description: item.description
@@ -339,7 +339,7 @@ export function SiteContentProvider({ children }: SiteContentProviderProps) {
               title: "Upcoming Events",
               subtitle: "Join us for special culinary experiences and celebrations"
             },
-            items: content.events.map(event => ({
+            items: content.events.map((event: any) => ({
               image: event.image,
               title: event.title,
               description: event.description,

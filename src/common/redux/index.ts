@@ -11,8 +11,11 @@ export type { RootState } from './configureStore';
 export * from './slices/cartSlice';
 export * from './slices/menuSlice';
 export * from './slices/siteContentSlice';
+export * from './slices/searchSlice';
+export * from './slices/restaurantSlice';
 
 // Re-export sagas
 export * from './sagas/cartSaga';
 export * from './sagas/menuSaga';
 export * from './sagas/siteContentSaga';
+export * from './sagas/restaurantSaga';

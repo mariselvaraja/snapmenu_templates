@@ -73,7 +73,7 @@ const TemplateContent = () => {
     isLoading
   };
 
-   const template_id = "casual_dining_template";
+   const template_id = "pizza_template";
   // Check if restaurant API returned an error or empty data
   const restaurantApiError = restaurantState.error || !restaurantState.info;
   

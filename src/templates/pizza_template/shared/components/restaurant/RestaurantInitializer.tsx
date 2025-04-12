@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchRestaurantInfoRequest } from '../../redux/slices/restaurantSlice';
-import { RootState } from '../../redux/rootReducer';
+import { fetchRestaurantInfoRequest } from '../../../../../redux/slices/restaurantSlice';
+import { RootState } from '../../../../../redux/rootReducer';
 
 /**
  * Component that initializes restaurant data on app load

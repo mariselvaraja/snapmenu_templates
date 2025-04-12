@@ -1,10 +1,10 @@
-// Re-export services from pizza_template
-export * from '../../templates/pizza_template/shared/services';
+// Export services from common/services
+export { default as api } from './api';
+export { default as restaurantService } from './restaurantService';
+export { default as cartService } from './cartService';
+export { default as searchService } from './searchService';
+export { default as storeAccess } from './storeAccess';
 
-// Re-export specific services
-export { default as restaurantService } from '../../templates/pizza_template/shared/services/restaurantService';
-export { default as menuService } from '../../templates/pizza_template/shared/services/menuService';
-export { default as cartService } from '../../templates/pizza_template/shared/services/cartService';
-export { default as siteContentService } from '../../templates/pizza_template/shared/services/siteContentService';
-export { default as searchService } from '../../templates/pizza_template/shared/services/searchService';
-export { reservationService } from '../../templates/pizza_template/shared/services/reservationService';
+// Re-export services from src/services for any missing services
+export { default as menuService } from '../../services/menuService';
+export { default as siteContentService } from '../../services/siteContentService';

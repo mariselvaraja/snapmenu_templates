@@ -1,6 +1,6 @@
 import { Facebook, Instagram, Twitter } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useAppSelector } from '../../../common/redux';
+import { useAppSelector } from '../../../redux';
 
 export default function Footer() {
   const { rawApiResponse } = useAppSelector(state => state.siteContent);

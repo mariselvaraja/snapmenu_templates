@@ -1,15 +1,16 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Trash2, ShoppingBag } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useAppSelector, useAppDispatch, toggleDrawer, removeItem, updateItemQuantity } from '../../../common/redux';
+import { useAppSelector, useAppDispatch } from '../../../redux';
+import { toggleDrawer, removeItem, updateItemQuantity } from '../../../redux/slices/cartSlice';
 
 export default function CartDrawer() {
   const { items, drawerOpen } = useAppSelector((state) => state.cart);
   const dispatch = useAppDispatch();
 
   // Calculate cart totals
-  const subtotal = items.reduce((total, item) => total + (item.price * item.quantity), 0);
-  const itemCount = items.reduce((total, item) => total + item.quantity, 0);
+  const subtotal = items.reduce((total: number, item: { price: number, quantity: number }) => total + (item.price * item.quantity), 0);
+  const itemCount = items.reduce((total: number, item: { quantity: number }) => total + item.quantity, 0);
 
   const closeDrawer = () => {
     dispatch(toggleDrawer(false));
@@ -66,7 +67,7 @@ export default function CartDrawer() {
             <div className="flex-grow overflow-y-auto">
               {items.length > 0 ? (
                 <ul className="divide-y">
-                  {items.map((item) => (
+                  {items.map((item: { id: number, name: string, price: number, quantity: number, image: string }) => (
                     <li key={item.id} className="p-4 flex">
                       {item.image ? (
                         <img

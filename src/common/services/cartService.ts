@@ -1,3 +1,3 @@
-// Re-export cartService and types from pizza_template
-export { default } from '../../templates/pizza_template/shared/services/cartService';
-export * from '../../templates/pizza_template/shared/services/cartService';
+// Re-export cartService and types from services
+export { default } from '../../services/cartService';
+export * from '../../services/cartService';

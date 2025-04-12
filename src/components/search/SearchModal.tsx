@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Search, X, Loader } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useAppSelector, useAppDispatch } from '../../../../../redux/hooks';
-import { setSearchQuery, setSearchResults, setSearchState } from '../../../../../redux/slices/searchSlice';
-import { searchService, SearchState } from '../../../../../services';
+import { useAppSelector, useAppDispatch } from '../../redux/hooks';
+import { setSearchQuery, setSearchResults, setSearchState } from '../../redux/slices/searchSlice';
+import { searchService, SearchState as SearchServiceState } from '../../services/searchService';
 
 // Format price to display with currency symbol
 const formatPrice = (price: number): string => {
@@ -34,21 +34,21 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
 
   // Listen for search service state changes
   useEffect(() => {
-    const handleStateChange = (state: SearchState, error: string | null, progress: number) => {
+    const handleStateChange = (state: SearchServiceState, error: string | null, progress: number) => {
       dispatch(setSearchState({ state, error, progress }));
       setSearchProgress(progress);
     };
 
-    searchService.addStateListener(handleStateChange);
+    searchService.addStateListener?.(handleStateChange);
     
     // Add a timeout to automatically transition to ready state if stuck in loading
     let timeoutId: NodeJS.Timeout | null = null;
     
-    if (searchState === SearchState.LOADING || searchState === SearchState.UNINITIALIZED) {
+    if (searchState === SearchServiceState.LOADING || searchState === SearchServiceState.UNINITIALIZED) {
       timeoutId = setTimeout(() => {
         console.log('Search initialization timeout - forcing ready state');
         dispatch(setSearchState({ 
-          state: SearchState.READY, 
+          state: SearchServiceState.READY, 
           error: null, 
           progress: 100 
         }));
@@ -56,7 +56,7 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
     }
     
     return () => {
-      searchService.removeStateListener(handleStateChange);
+      searchService.removeStateListener?.(handleStateChange);
       if (timeoutId) clearTimeout(timeoutId);
     };
   }, [dispatch, searchState]);
@@ -84,7 +84,7 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
     }
 
     const timeoutId = setTimeout(async () => {
-      if (searchState !== SearchState.READY) {
+      if (searchState !== SearchServiceState.READY) {
         return;
       }
 
@@ -116,7 +116,7 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
   // Get flattened list of all items for keyboard navigation
   const allItems = React.useMemo(() => {
     if (!results.grouped) return [];
-    return Object.values(results.grouped as Record<string, any[]>)
+    return Object.values(results.grouped)
       .flat()
       .sort((a: any, b: any) => b.similarity - a.similarity);
   }, [results.grouped]);
@@ -205,7 +205,7 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
   const quickLinks = React.useMemo(() => {
     // First try to use menu categories from Redux
     if (menuCategories && menuCategories.length > 0) {
-      return menuCategories.map((category:any) => ({
+      return menuCategories.map((category: any) => ({
         text: category.name,
         query: category.name.toLowerCase()
       }));
@@ -213,8 +213,8 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
     
     // If no categories in Redux, extract unique categories from menu items
     if (menuItems && menuItems.length > 0) {
-      const uniqueCategories = [...new Set(menuItems.map((item: any) => item.category))] as string[];
-      return uniqueCategories.map((category: string) => ({
+      const uniqueCategories = [...new Set(menuItems.map((item: any) => item.category))];
+      return uniqueCategories.map((category: any) => ({
         text: category.charAt(0).toUpperCase() + category.slice(1),
         query: category.toLowerCase()
       }));
@@ -241,7 +241,7 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
   const renderHighlightedText = (text: string, searchQuery: string) => {
     if (!text || !searchQuery) return text || '';
     const parts = text.split(new RegExp(`(${searchQuery})`, 'gi'));
-    return parts.map((part, i) => 
+    return parts.map((part: string, i: number) => 
       part.toLowerCase() === searchQuery.toLowerCase() ? 
         <span key={i} className="bg-gray-700 text-white">{part}</span> : part
     );
@@ -250,7 +250,7 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
   // Render loading state
   const renderLoadingState = () => {
     let message = 'Initializing search...';
-    if (searchState === SearchState.LOADING) {
+    if (searchState === SearchServiceState.LOADING) {
       message = 'Loading search index...';
     }
 
@@ -272,9 +272,9 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
       );
     }
 
-    const categories = Object.entries(results.grouped as Record<string, any[]>)
-      .filter(([_, items]) => items && items.length > 0)
-      .sort(([a], [b]) => a.localeCompare(b));
+    const categories = Object.entries(results.grouped)
+      .filter(([_, items]: [string, unknown]) => Array.isArray(items) && items.length > 0)
+      .sort(([a]: [string, unknown], [b]: [string, unknown]) => a.localeCompare(b));
 
     if (categories.length === 0) {
       return (
@@ -284,7 +284,9 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
       );
     }
 
-    return categories.map(([category, items]: [string, any[]]) => {
+    return categories.map(([category, items]: [string, unknown]) => {
+      // Type guard to ensure items is an array
+      if (!Array.isArray(items)) return null;
       // Only render category if it has items
       if (!items || items.length === 0) {
         return null;
@@ -376,16 +378,16 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
               onChange={handleInputChange}
               placeholder="Search menu..."
               className="w-full p-4 pl-12 text-lg bg-gray-800 text-white placeholder-gray-400 focus:outline-none rounded-t-xl"
-              disabled={searchState !== SearchState.READY}
+              disabled={searchState !== SearchServiceState.READY}
             />
           </div>
 
           {/* Quick links */}
-          {!query && searchState === SearchState.READY && (
+          {!query && searchState === SearchServiceState.READY && (
             <div className="p-4 border-b border-gray-700">
               <div className="text-sm font-medium text-gray-400 mb-2">Quick Links</div>
               <div className="flex flex-wrap gap-2">
-                {quickLinks.map((link: any) => (
+                {quickLinks.map((link: { text: string, query: string }) => (
                   <button
                     key={link.query}
                     onClick={() => handleQuickLinkClick(link)}
@@ -400,7 +402,7 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
 
           {/* Results */}
           <div className="max-h-[calc(100vh-300px)] overflow-y-auto">
-            {searchState !== SearchState.READY ? (
+            {searchState !== SearchServiceState.READY ? (
               renderLoadingState()
             ) : error ? (
               <div className="p-4 text-center text-red-400">

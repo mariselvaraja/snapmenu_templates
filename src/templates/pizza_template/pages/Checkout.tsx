@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAppSelector, useAppDispatch, clearCart } from '../../../common/redux';
-import { cartService } from '../shared/services';
+import { cartService } from '../../../services';
 
 interface FormData {
   name: string;

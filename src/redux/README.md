@@ -5,7 +5,7 @@ This directory contains the Redux and Redux Saga setup for the application.
 ## Directory Structure
 
 ```
-src/shared/
+src/
 ├── config/
 │   └── endpoints.ts         # API endpoint configuration
 ├── redux/
@@ -70,7 +70,7 @@ The services directory contains API services for interacting with the backend. E
 ### Using Redux State
 
 ```tsx
-import { useAppSelector } from '../shared/redux';
+import { useAppSelector } from '../redux';
 
 const MyComponent = () => {
   const cartItems = useAppSelector((state) => state.cart.items);
@@ -88,7 +88,7 @@ const MyComponent = () => {
 ### Dispatching Actions
 
 ```tsx
-import { useAppDispatch, addItem } from '../shared/redux';
+import { useAppDispatch, addItem } from '../redux';
 
 const MyComponent = () => {
   const dispatch = useAppDispatch();
@@ -127,4 +127,3 @@ npm run build:test
 
 # Production
 npm run build
-```

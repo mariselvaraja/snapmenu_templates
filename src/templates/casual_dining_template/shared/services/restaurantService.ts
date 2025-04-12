@@ -28,7 +28,11 @@ export const restaurantService = {
    */
   getRestaurantInfo: async (): Promise<Restaurant> => {
     try {
-      const response = await api.get<any>(endpoints.restaurant.getInfo);
+      // Add the specific restaurantid header
+      const headers = {
+        restaurantid: "2256b9a6-5d53-4b77-b6a0-539043489ad3"
+      };
+      const response = await api.get<any>(endpoints.restaurant.getInfo, { headers });
       console.log('Restaurant API response:', response);
       
       // Check if response data is valid
@@ -74,7 +78,7 @@ export const restaurantService = {
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
-          'restaurantId': '2256b9a6-5d53-4b77-b6a0-539043489ad3'
+          'restaurantid': '2256b9a6-5d53-4b77-b6a0-539043489ad3'
         }
       };
       

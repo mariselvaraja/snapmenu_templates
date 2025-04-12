@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { Restaurant } from '../../../templates/pizza_template/shared/services/restaurantService';
+import { Restaurant } from '../../services/restaurantService';
 
 interface RestaurantState {
   info: Restaurant | null;

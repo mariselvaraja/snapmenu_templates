@@ -6,7 +6,7 @@ import CartDrawer from './components/CartDrawer';
 import TitleUpdater from './components/TitleUpdater';
 import PizzaTemplateRoutes from '../../routes/pizza_template_routes';
 import { SiteContentProvider } from './context/SiteContentContext';
-import { SearchInitializer } from './shared';
+import { SearchInitializer } from '../../components';
 
 function App() {
   return (

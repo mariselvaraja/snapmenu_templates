@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, X, ShoppingCart, Search, Utensils, Pizza } from 'lucide-react';
-import { useAppSelector, useAppDispatch, toggleDrawer } from '../shared/redux';
-import { openSearchModal, closeSearchModal } from '../shared/redux/slices/searchSlice';
-import { SearchModal } from '../shared/components/search';
+import { useAppSelector, useAppDispatch } from '../../../redux';
+import { toggleDrawer } from '../../../redux/slices/cartSlice';
+import { openSearchModal, closeSearchModal } from '../../../redux/slices/searchSlice';
+import { SearchModal } from '../../../components/search';
 
 const UtensilsIcon = Utensils;
 const PizzaIcon = Pizza;
@@ -21,7 +22,7 @@ export default function Navbar() {
   const cartItems = useAppSelector((state) => state.cart.items);
   const isSearchModalOpen = useAppSelector((state) => state.search.isModalOpen);
   const dispatch = useAppDispatch();
-  const cartItemCount = cartItems.reduce((total, item) => total + item.quantity, 0);
+  const cartItemCount = cartItems.reduce((total: number, item: { quantity: number }) => total + item.quantity, 0);
 
   return (
     <nav className="bg-black text-white fixed w-full z-50">

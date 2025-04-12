@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
-import { useAppSelector, useAppDispatch } from '../redux/hooks';
-import { searchService, SearchState } from '../services';
+import { useAppSelector, useAppDispatch } from '../common/redux/hooks';
+import { searchService, SearchState as SearchServiceState } from '../services/searchService';
 
 /**
  * Custom hook to initialize the search service with menu data
@@ -9,12 +9,12 @@ import { searchService, SearchState } from '../services';
  */
 export function useSearchInitializer() {
   // Get search state from Redux store
-  const searchState = useAppSelector((state) => state.search.searchState);
-  const menuItems = useAppSelector((state) => state.menu.items);
+  const searchState = useAppSelector((state: any) => state.search.searchState);
+  const menuItems = useAppSelector((state: any) => state.menu.items);
   const dispatch = useAppDispatch();
 
   // Get menu loading state
-  const menuLoading = useAppSelector((state) => state.menu.loading);
+  const menuLoading = useAppSelector((state: any) => state.menu.loading);
   
   // We no longer need to fetch menu data here as it's handled by the site content saga
   // This prevents multiple calls to fetch menu data
@@ -23,7 +23,7 @@ export function useSearchInitializer() {
   // Initialize search service when menu data is loaded
   useEffect(() => {
     // Only initialize if search is not already initialized and we have menu items
-    if (searchState === SearchState.UNINITIALIZED && menuItems && menuItems.length > 0) {
+    if (searchState === SearchServiceState.UNINITIALIZED && menuItems && menuItems.length > 0) {
       console.log('Initializing search service with menu data from API');
       
       // Process menu data from the Redux store
@@ -41,7 +41,7 @@ export function useSearchInitializer() {
       const processedItems: ProcessedItem[] = [];
       
       // Process each menu item
-      menuItems.forEach(item => {
+      menuItems.forEach((item: any) => {
         if (item.id && item.name && item.category) {
           // Create a more comprehensive set of tags for better search matching
           const tags = [];
@@ -100,7 +100,7 @@ export function useSearchInitializer() {
           console.error('Failed to initialize search service:', error);
         });
     }
-  }, [searchState]);
+  }, [searchState, menuItems]);
 
   return null;
 }

@@ -1,5 +1,5 @@
 import { configureAppStore } from './redux';
-import { setStoreInstance } from '../templates/pizza_template/shared/services/storeAccess';
+import { setStoreInstance } from '../services/storeAccess';
 
 // Create the Redux store
 export const store = configureAppStore();

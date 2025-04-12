@@ -3,6 +3,10 @@
  * This file exports all services for easy importing
  */
 
+// Re-export services from common/services
+export * from '../common/services';
+
+// Export services from this directory
 export { default as api } from './api';
 export * from './api';
 
