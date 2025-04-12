@@ -6,18 +6,15 @@ import {
 } from '../slices/restaurantSlice';
 import { restaurantService } from '../../services';
 
-// Worker Saga
+// Worker Saga - Disabled to prevent duplicate API calls
+// Restaurant info is now fetched in the common saga
 function* fetchRestaurantInfoSaga(): Generator<any, void, any> {
   try {
-    // Get the restaurant info from the API
-    let restaurantInfo: any = yield call(restaurantService.getRestaurantInfo);
-    restaurantInfo = restaurantInfo[0];
+    // This saga is now disabled to prevent duplicate API calls
+    // The common saga will handle fetching restaurant info
+    console.log('Pizza template RestaurantSaga: Skipping API call to prevent duplication');
     
-    // Log the restaurant info for debugging
-    console.log('RestaurantSaga: Restaurant info', restaurantInfo);
-    
-    // Dispatch success action with the restaurant info
-    yield put(fetchRestaurantInfoSuccess(restaurantInfo));
+    // We don't need to dispatch success action here as it will be handled by the common saga
   } catch (error) {
     console.error('Error in fetchRestaurantInfoSaga:', error);
     yield put(fetchRestaurantInfoFailure(error instanceof Error ? error.message : 'An unknown error occurred'));

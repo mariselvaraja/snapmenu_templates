@@ -12,14 +12,14 @@ export default function ProductDetail() {
     // Get menu data from Redux store
     const { items, loading, error } = useAppSelector(state => state.menu);
     
-    // Fetch menu data when component mounts if not already loaded or loading
-    useEffect(() => {
-        // Only fetch if items are empty and not already loading
-        if (items.length === 0 && !loading) {
-            console.log('ProductDetail page: Fetching menu data');
-            dispatch(fetchMenuRequest());
-        }
-    }, [dispatch, items.length, loading]);
+    // Menu data is now fetched directly in App.jsx
+    // useEffect(() => {
+    //     // Only fetch if items are empty and not already loading
+    //     if (items.length === 0 && !loading) {
+    //         console.log('ProductDetail page: Fetching menu data');
+    //         dispatch(fetchMenuRequest());
+    //     }
+    // }, [dispatch, items.length, loading]);
     
     // Find the product in the menu data
     const product = items.find(item => item.id.toString() === productId);
@@ -149,11 +149,11 @@ export default function ProductDetail() {
                 <h1 className="text-3xl font-bold mb-4">Error Loading Product</h1>
                 <p className="text-xl text-red-500">{error}</p>
                 <button 
-                    onClick={() => dispatch(fetchMenuRequest())}
+                    onClick={() => window.location.reload()}
                     className="mt-4 inline-flex items-center bg-red-500 text-white px-4 py-2 rounded-full hover:bg-red-600 transition-colors"
                 >
                     <ArrowLeft className="h-4 w-4 mr-2" />
-                    Try Again
+                    Reload Page
                 </button>
             </div>
         );
@@ -169,11 +169,11 @@ export default function ProductDetail() {
                     We're currently updating our menu. Please check back soon!
                 </p>
                 <button 
-                    onClick={() => dispatch(fetchMenuRequest())}
+                    onClick={() => window.location.reload()}
                     className="mt-4 inline-flex items-center bg-yellow-500 text-white px-4 py-2 rounded-full hover:bg-yellow-600 transition-colors"
                 >
                     <ArrowLeft className="h-4 w-4 mr-2" />
-                    Refresh
+                    Reload Page
                 </button>
             </div>
         );

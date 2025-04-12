@@ -11,8 +11,8 @@ const RestaurantInitializer: React.FC = () => {
   const dispatch = useDispatch();
   const { info, loading, error } = useSelector((state: RootState) => state.restaurant);
 
+  // Fetch restaurant info when component mounts
   useEffect(() => {
-    // Fetch restaurant info when component mounts
     dispatch(fetchRestaurantInfoRequest());
   }, [dispatch]);
 

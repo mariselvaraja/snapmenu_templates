@@ -65,6 +65,7 @@ export const endpoints = {
   // Restaurant endpoints
   restaurant: {
     getInfo: `${API_BASE_URL}${RESTAURANT_DETAILS_API_PATH}?domain=${getDomainFromUrl()}`,
+    getByDomain: (domain: string) => `${API_BASE_URL}${RESTAURANT_DETAILS_API_PATH}?domain=${domain}`,
   },
 };
 

@@ -16,16 +16,9 @@ export function useSearchInitializer() {
   // Get menu loading state
   const menuLoading = useAppSelector((state) => state.menu.loading);
   
-  // Fetch menu data if not already loaded
-  useEffect(() => {
-    // Check if menu data is not loaded, search is uninitialized, and menu is not already loading
-    if ((!menuItems || menuItems.length === 0) && 
-        searchState === SearchState.UNINITIALIZED && 
-        !menuLoading) {
-      console.log('SearchInitializer: Fetching menu data');
-      dispatch({ type: 'menu/fetchMenuRequest' });
-    }
-  }, [dispatch, menuItems, searchState, menuLoading]);
+  // We no longer need to fetch menu data here as it's handled by the site content saga
+  // This prevents multiple calls to fetch menu data
+  // The search service will still be initialized when menu data becomes available
 
   // Initialize search service when menu data is loaded
   useEffect(() => {

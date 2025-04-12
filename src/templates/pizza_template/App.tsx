@@ -6,7 +6,7 @@ import CartDrawer from './components/CartDrawer';
 import TitleUpdater from './components/TitleUpdater';
 import { PizzaTemplateRoutes } from '@/routes';
 import { SiteContentProvider } from './context/SiteContentContext';
-import { SearchInitializer, RestaurantInitializer } from './shared';
+import { SearchInitializer } from './shared';
 
 function App() {
   return (
@@ -14,7 +14,6 @@ function App() {
       <Router>
         <div className="min-h-screen flex flex-col">
           <SearchInitializer />
-          <RestaurantInitializer />
           <TitleUpdater />
           <Navbar />
           <CartDrawer />

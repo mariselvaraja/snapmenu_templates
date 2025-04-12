@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Search, X, Loader } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '../../redux/hooks';
-import { closeSearchModal, setSearchQuery, setSearchResults, setSearchState } from '../../redux/slices/searchSlice';
+import { setSearchQuery, setSearchResults, setSearchState } from '../../redux/slices/searchSlice';
 import { searchService, SearchState } from '../../services';
 
 // Format price to display with currency symbol
@@ -192,14 +192,14 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
   const menuItems = useAppSelector((state) => state.menu.items);
   const menuCategories = useAppSelector((state) => state.menu.categories);
 
-  // Dispatch action to fetch menu data if not already loaded
-  useEffect(() => {
-    // If menu items are empty, dispatch action to fetch menu data
-    if ((!menuItems || menuItems.length === 0) && 
-        (!menuCategories || menuCategories.length === 0)) {
-      dispatch({ type: 'menu/fetchMenuRequest' });
-    }
-  }, [dispatch, menuItems, menuCategories]);
+  // Menu data is now fetched directly in App.jsx
+  // useEffect(() => {
+  //   // If menu items are empty, dispatch action to fetch menu data
+  //   if ((!menuItems || menuItems.length === 0) && 
+  //       (!menuCategories || menuCategories.length === 0)) {
+  //     dispatch({ type: 'menu/fetchMenuRequest' });
+  //   }
+  // }, [dispatch, menuItems, menuCategories]);
   
   // Generate quick links from menu categories
   const quickLinks = React.useMemo(() => {

@@ -24,7 +24,7 @@ export interface Restaurant {
  */
 export const restaurantService = {
   /**
-   * Get restaurant information
+   * Get restaurant information based on the current domain
    */
   getRestaurantInfo: async (): Promise<Restaurant> => {
     try {
@@ -52,6 +52,74 @@ export const restaurantService = {
       return response.data;
     } catch (error) {
       console.error('Error fetching restaurant info:', error);
+      // Return default restaurant data on error
+      return {
+        restaurant_id: 'default',
+        working_hours: {
+          monday: '9:00 AM - 10:00 PM',
+          tuesday: '9:00 AM - 10:00 PM',
+          wednesday: '9:00 AM - 10:00 PM',
+          thursday: '9:00 AM - 10:00 PM',
+          friday: '9:00 AM - 11:00 PM',
+          saturday: '9:00 AM - 11:00 PM',
+          sunday: '9:00 AM - 10:00 PM',
+        }
+      };
+    }
+  },
+  
+  /**
+   * Get restaurant information by specific domain
+   * @param domain - The domain to fetch restaurant information for
+   */
+  getRestaurantByDomain: async (domain: string): Promise<Restaurant> => {
+    try {
+      // Use the request function directly to bypass the api.get method that adds headers from the store
+      // This ensures we use our specific restaurant ID for this endpoint
+      const url = endpoints.restaurant.getByDomain(domain);
+      
+      // Create request options with our specific restaurant ID header
+      const requestOptions = {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'restaurantId': '2256b9a6-5d53-4b77-b6a0-539043489ad3'
+        }
+      };
+      
+      // Make the request directly using fetch
+      const fetchResponse = await fetch(url, requestOptions);
+      
+      if (!fetchResponse.ok) {
+        throw new Error(`HTTP error! status: ${fetchResponse.status}`);
+      }
+      
+      const data = await fetchResponse.json();
+      const response = { data, status: fetchResponse.status };
+      console.log(`Restaurant API response for domain ${domain}:`, response);
+      
+      // Check if response data is valid
+      if (!response.data) {
+        console.warn('Restaurant API returned empty data for domain:', domain);
+        return {
+          restaurant_id: 'default',
+          working_hours: {
+            monday: '9:00 AM - 10:00 PM',
+            tuesday: '9:00 AM - 10:00 PM',
+            wednesday: '9:00 AM - 10:00 PM',
+            thursday: '9:00 AM - 10:00 PM',
+            friday: '9:00 AM - 11:00 PM',
+            saturday: '9:00 AM - 11:00 PM',
+            sunday: '9:00 AM - 10:00 PM',
+          }
+        };
+      }
+      
+      // Return the restaurant data
+      return response.data;
+    } catch (error) {
+      console.error(`Error fetching restaurant info for domain ${domain}:`, error);
       // Return default restaurant data on error
       return {
         restaurant_id: 'default',

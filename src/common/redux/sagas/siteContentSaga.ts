@@ -32,6 +32,9 @@ function* fetchSiteContentSaga(): Generator<any, void, any> {
       transformedData,
       rawApiResponse: response
     }));
+    
+    // Removed: After successfully fetching site content, fetch menu data
+    // yield put({ type: 'menu/fetchMenuRequest' });
   } catch (error) {
     console.error('Error in fetchSiteContentSaga:', error);
     yield put(fetchSiteContentFailure(error instanceof Error ? error.message : 'An unknown error occurred'));

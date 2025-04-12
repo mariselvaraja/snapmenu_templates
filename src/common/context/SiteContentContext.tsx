@@ -256,10 +256,10 @@ export function SiteContentProvider({ children }: SiteContentProviderProps) {
   const { content, rawApiResponse, loading, error } = useAppSelector(state => state.siteContent);
   const [siteContent, setSiteContent] = useState<UISiteContent | undefined>(undefined);
 
-  // Fetch site content data when the component mounts
-  useEffect(() => {
-    dispatch(fetchSiteContentRequest());
-  }, [dispatch]);
+  // Site content data is now fetched directly in App.jsx
+  // useEffect(() => {
+  //   dispatch(fetchSiteContentRequest());
+  // }, [dispatch]);
 
   // Transform API data to UI format when content changes
   useEffect(() => {
@@ -468,10 +468,10 @@ export function SiteContentProvider({ children }: SiteContentProviderProps) {
           <h2 className="text-xl font-bold text-red-600 mb-2">Error Loading Content</h2>
           <p className="text-gray-700 mb-4">{error}</p>
           <button 
-            onClick={() => dispatch(fetchSiteContentRequest())}
+            onClick={() => window.location.reload()}
             className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
           >
-            Try Again
+            Reload Page
           </button>
         </div>
       </div>

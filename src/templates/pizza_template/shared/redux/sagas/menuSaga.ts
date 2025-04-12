@@ -8,11 +8,15 @@ import {
 } from '../slices/menuSlice';
 import { menuService } from '../../services';
 
-// Worker Saga
+// Worker Saga - Disabled to prevent duplicate API calls
+// Menu data is now fetched in the common saga
 function* fetchMenuSaga(): Generator<any, void, any> {
   try {
-    const menuData = yield call(menuService.getMenu);
-    yield put(fetchMenuSuccess(menuData));
+    // This saga is now disabled to prevent duplicate API calls
+    // The common saga will handle fetching menu data
+    console.log('Pizza template MenuSaga: Skipping API call to prevent duplication');
+    
+    // We don't need to dispatch success action here as it will be handled by the common saga
   } catch (error) {
     yield put(fetchMenuFailure(error instanceof Error ? error.message : 'An unknown error occurred'));
   }

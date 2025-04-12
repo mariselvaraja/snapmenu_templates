@@ -16,12 +16,13 @@ export default function Order() {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
   
-  useEffect(() => {
-    // Fetch menu items if not already loaded
-    if (menuItems.length === 0 && !loading) {
-      dispatch(fetchMenuRequest());
-    }
-  }, [dispatch, menuItems.length, loading]);
+  // Menu data is now fetched directly in App.jsx
+  // useEffect(() => {
+  //   // Fetch menu items if not already loaded
+  //   if (menuItems.length === 0 && !loading) {
+  //     dispatch(fetchMenuRequest());
+  //   }
+  // }, [dispatch, menuItems.length, loading]);
 
   return (
     <div className="py-20">

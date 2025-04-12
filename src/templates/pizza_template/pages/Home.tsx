@@ -14,10 +14,10 @@ export default function Home() {
   const heroData = siteContent?.navigationBar?.hero;
   const currentBanner = heroData?.banners[0]; // Assuming you want to use the first banner for now
   
-  // Fetch menu data when component mounts
-  useEffect(() => {
-    dispatch(fetchMenuRequest());
-  }, [dispatch]);
+  // Menu data is now fetched directly in App.jsx
+  // useEffect(() => {
+  //   dispatch(fetchMenuRequest());
+  // }, [dispatch]);
 
   return (
     <div>

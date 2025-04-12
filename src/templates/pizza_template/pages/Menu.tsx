@@ -47,14 +47,14 @@ export default function Menu() {
             name: tag.charAt(0).toUpperCase() + tag.slice(1)
         }));
     
-    // Fetch menu data when component mounts if not already loaded or loading
-    useEffect(() => {
-        // Only fetch if items are empty and not already loading
-        if (items.length === 0 && !loading) {
-            console.log('Menu page: Fetching menu data');
-            dispatch(fetchMenuRequest());
-        }
-    }, [dispatch, items.length, loading]);
+    // Menu data is now fetched directly in App.jsx
+    // useEffect(() => {
+    //     // Only fetch if items are empty and not already loading
+    //     if (items.length === 0 && !loading) {
+    //         console.log('Menu page: Fetching menu data');
+    //         dispatch(fetchMenuRequest());
+    //     }
+    // }, [dispatch, items.length, loading]);
 
     const handleAddToCart = (menuItem: MenuItem) => {
         const cartItem: CartItem = {
@@ -129,10 +129,10 @@ export default function Menu() {
                     <h1 className="text-4xl font-bold mb-4">Error Loading Menu</h1>
                     <p className="text-xl text-red-500">{error}</p>
                     <button 
-                        onClick={() => dispatch(fetchMenuRequest())}
+                        onClick={() => window.location.reload()}
                         className="mt-4 inline-flex items-center bg-red-500 text-white px-4 py-2 rounded-full hover:bg-red-600 transition-colors"
                     >
-                        Try Again
+                        Reload Page
                     </button>
                 </div>
             </div>
@@ -150,10 +150,10 @@ export default function Menu() {
                         We're currently updating our menu. Please check back soon!
                     </p>
                     <button 
-                        onClick={() => dispatch(fetchMenuRequest())}
+                        onClick={() => window.location.reload()}
                         className="mt-4 inline-flex items-center bg-yellow-500 text-white px-4 py-2 rounded-full hover:bg-yellow-600 transition-colors"
                     >
-                        Refresh
+                        Reload Page
                     </button>
                 </div>
             </div>

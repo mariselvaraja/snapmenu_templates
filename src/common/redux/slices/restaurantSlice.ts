@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { Restaurant } from '../../services/restaurantService';
+import { Restaurant } from '../../../templates/pizza_template/shared/services/restaurantService';
 
 interface RestaurantState {
   info: Restaurant | null;
@@ -30,6 +30,19 @@ export const restaurantSlice = createSlice({
       state.loading = false;
       state.error = action.payload;
     },
+    // Actions for fetching restaurant by domain
+    fetchRestaurantByDomainRequest: (state, action: PayloadAction<string>) => {
+      state.loading = true;
+      state.error = null;
+    },
+    fetchRestaurantByDomainSuccess: (state, action: PayloadAction<Restaurant>) => {
+      state.info = action.payload;
+      state.loading = false;
+    },
+    fetchRestaurantByDomainFailure: (state, action: PayloadAction<string>) => {
+      state.loading = false;
+      state.error = action.payload;
+    },
   },
 });
 
@@ -37,6 +50,9 @@ export const {
   fetchRestaurantInfoRequest,
   fetchRestaurantInfoSuccess,
   fetchRestaurantInfoFailure,
+  fetchRestaurantByDomainRequest,
+  fetchRestaurantByDomainSuccess,
+  fetchRestaurantByDomainFailure,
 } = restaurantSlice.actions;
 
 export default restaurantSlice.reducer;
