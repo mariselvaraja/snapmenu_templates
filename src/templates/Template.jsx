@@ -1,6 +1,7 @@
 import React, { useState, useEffect, createContext, useContext } from 'react';
-import { Provider } from 'react-redux';
+import { Provider, useSelector } from 'react-redux';
 import PizzaApp from './pizza_template/App';
+import TemplateNotFound from './TemplateNotFound';
 
 // Create a context for template-specific settings
 export const TemplateContext = createContext(null);
@@ -15,12 +16,11 @@ export const useTemplate = () => {
 };
 
 /**
- * Template component that provides template-specific functionality
- * and integrates with the Redux store and application components
+ * TemplateContent component that checks API responses before rendering
+ * This is wrapped by the Template component which provides the Redux store
  */
-const Template = ({ store }) => {
+const TemplateContent = () => {
   const [theme, setTheme] = useState('light');
-  const [isLoading, setIsLoading] = useState(true);
   const [templateConfig, setTemplateConfig] = useState({
     name: 'Pizza Template',
     version: '1.0.0',
@@ -31,24 +31,24 @@ const Template = ({ store }) => {
     }
   });
 
-  // Simulate loading template configuration
-  useEffect(() => {
-    const loadTemplateConfig = async () => {
-      try {
-        // In a real application, this could fetch from an API
-        // For now, we'll just simulate a delay
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        // Set loading to false when done
-        setIsLoading(false);
-      } catch (error) {
-        console.error('Failed to load template configuration:', error);
-        setIsLoading(false);
-      }
-    };
+  // Get loading and error states from Redux store
+  const restaurantState = useSelector(state => state.restaurant);
+  const menuState = useSelector(state => state.menu);
+  const siteContentState = useSelector(state => state.siteContent);
 
-    loadTemplateConfig();
-  }, []);
+  // Check if any of the required API calls are still loading
+  const isLoading = restaurantState.loading || menuState.loading || siteContentState.loading;
+
+  // Check if any of the required API calls have errors
+  const hasErrors = restaurantState.error || menuState.error || siteContentState.error;
+
+  // Check if all required data is loaded
+  const allDataLoaded = 
+    !isLoading && 
+    !hasErrors && 
+    restaurantState.info && 
+    menuState.items.length > 0 && 
+    siteContentState.content;
 
   // Toggle theme function
   const toggleTheme = () => {
@@ -72,6 +72,10 @@ const Template = ({ store }) => {
     isLoading
   };
 
+   const template_id = "pizza_template";
+  // Check if restaurant API returned an error or empty data
+  const restaurantApiError = restaurantState.error || !restaurantState.info;
+  
   // If still loading, show a loading indicator with spinner
   if (isLoading) {
     return (
@@ -80,20 +84,53 @@ const Template = ({ store }) => {
           <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" role="status">
             <span className="!absolute !-m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]">Loading...</span>
           </div>
-          <p className="mt-2 text-gray-700 font-medium">Loading template...</p>
+          <p className="mt-2 text-gray-700 font-medium">Loading your website...</p>
         </div>
       </div>
     );
   }
+  
+  // If restaurant API returned an error or empty data, show TemplateNotFound
+  if (restaurantApiError) {
+    console.error('Restaurant API error or empty data:', restaurantState.error || 'No restaurant data');
+    return <TemplateNotFound />;
+  }
+  
+  // If other required data is not loaded, show TemplateNotFound
+  if (!allDataLoaded) {
+    console.error('Required data not loaded:', {
+      menuLoaded: menuState.items.length > 0,
+      siteContentLoaded: !!siteContentState.content
+    });
+    return <TemplateNotFound />;
+  }
+
+  // Determine which template to render based on the template name
+  const renderTemplate = () => {
+    switch (template_id) {
+      case 'pizza_template':
+        return <PizzaApp />;
+      default:
+        return <TemplateNotFound />;
+    }
+  };
 
   return (
     <TemplateContext.Provider value={templateContextValue}>
-      <div className={`template-wrapper theme-${theme}`}>
-        <Provider store={store}>
-          <PizzaApp />
-        </Provider>
-      </div>
+      {renderTemplate()}
     </TemplateContext.Provider>
+  );
+};
+
+/**
+ * Template component that provides template-specific functionality
+ * and integrates with the Redux store and application components
+ */
+const Template = ({ store }) => {
+  return (
+    <Provider store={store}>
+      <TemplateContent />
+    </Provider>
   );
 };
 

@@ -35,13 +35,13 @@ const getDomainFromUrl = () => {
     const domainParts = hostname.split('.');
     // For localhost or IP addresses, return a default domain
     if (hostname === 'localhost' || /^\d+\.\d+\.\d+\.\d+$/.test(hostname)) {
-      return 'tonyspizza'; // Default domain for development
+      return 'tonyspizzas'; // Default domain for development
     }
     // Return the subdomain or main domain name
     return domainParts.length > 2 ? domainParts[0] : domainParts[0];
   }
   // Fallback for SSR or when window is not available
-  return 'tonyspizza';
+  return 'tonyspizzas';
 };
 
 // Endpoint configuration object

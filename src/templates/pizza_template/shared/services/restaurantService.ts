@@ -32,20 +32,10 @@ export const restaurantService = {
       console.log('Restaurant API response:', response);
       
       // Check if response data is valid
-      if (!response.data) {
-        console.warn('Restaurant API returned empty data');
-        return {
-          restaurant_id: 'default',
-          working_hours: {
-            monday: '9:00 AM - 10:00 PM',
-            tuesday: '9:00 AM - 10:00 PM',
-            wednesday: '9:00 AM - 10:00 PM',
-            thursday: '9:00 AM - 10:00 PM',
-            friday: '9:00 AM - 11:00 PM',
-            saturday: '9:00 AM - 11:00 PM',
-            sunday: '9:00 AM - 10:00 PM',
-          }
-        };
+      if (!response.data || (Array.isArray(response.data) && response.data.length === 0)) {
+        const errorMsg = 'Restaurant API returned empty data';
+        console.warn(errorMsg);
+        throw new Error(errorMsg);
       }
       
       // Return the restaurant data
@@ -100,20 +90,10 @@ export const restaurantService = {
       console.log(`Restaurant API response for domain ${domain}:`, response);
       
       // Check if response data is valid
-      if (!response.data) {
-        console.warn('Restaurant API returned empty data for domain:', domain);
-        return {
-          restaurant_id: 'default',
-          working_hours: {
-            monday: '9:00 AM - 10:00 PM',
-            tuesday: '9:00 AM - 10:00 PM',
-            wednesday: '9:00 AM - 10:00 PM',
-            thursday: '9:00 AM - 10:00 PM',
-            friday: '9:00 AM - 11:00 PM',
-            saturday: '9:00 AM - 11:00 PM',
-            sunday: '9:00 AM - 10:00 PM',
-          }
-        };
+      if (!response.data || (Array.isArray(response.data) && response.data.length === 0)) {
+        const errorMsg = `Restaurant API returned empty data for domain: ${domain}`;
+        console.warn(errorMsg);
+        throw new Error(errorMsg);
       }
       
       // Return the restaurant data
