@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { Calendar, User, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useSiteContent } from '../context/SiteContentContext';
+import { useAppSelector } from '../../../common/redux';
 
 // Define interface for blog post with additional properties
 interface BlogPost {
@@ -15,7 +15,10 @@ interface BlogPost {
 }
 
 export default function Blog() {
-  const siteContent = useSiteContent();
+  const { rawApiResponse } = useAppSelector(state => state.siteContent);
+  
+  // Get site content from Redux state
+  const siteContent = JSON.parse(rawApiResponse?.data);
   
   // Log the site content to debug
   console.log('Blog component: siteContent', siteContent);
@@ -73,7 +76,7 @@ export default function Blog() {
   console.log('Blog component: Using blog data', blog);
   
   // Transform blog data from siteContent to match the format expected by the component
-  const blogPosts: BlogPost[] = blog.posts.map(post => ({
+  const blogPosts: BlogPost[] = blog.posts.map((post: any) => ({
     id: post.id,
     title: post.title,
     excerpt: post.subtitle,

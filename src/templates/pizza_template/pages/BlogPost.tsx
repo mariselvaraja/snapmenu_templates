@@ -1,11 +1,14 @@
 import { motion } from 'framer-motion';
 import { Calendar, User, ArrowLeft } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
-import { useSiteContent } from '../context/SiteContentContext';
+import { useAppSelector } from '../../../common/redux';
 
 export default function BlogPost() {
   const { id } = useParams<{ id: string }>();
-  const siteContent = useSiteContent();
+  const { rawApiResponse } = useAppSelector(state => state.siteContent);
+  
+  // Get site content from Redux state
+  const siteContent = JSON.parse(rawApiResponse?.data);
   const blog = siteContent?.blog || {
     header: {
       title: "Our Blog",
@@ -52,7 +55,7 @@ export default function BlogPost() {
   };
   
   // Find the blog post with the matching ID
-  const post = blog.posts.find(post => post.id === id);
+  const post = blog.posts.find((post: any) => post.id === id);
   
   // If post not found, show error message
   if (!post) {
@@ -180,9 +183,9 @@ export default function BlogPost() {
           <h2 className="text-2xl font-bold mb-8">You Might Also Like</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {blog.posts
-              .filter(relatedPost => relatedPost.id !== post.id)
+              .filter((relatedPost: any) => relatedPost.id !== post.id)
               .slice(0, 2)
-              .map((relatedPost) => (
+              .map((relatedPost: any) => (
                 <Link
                   key={relatedPost.id}
                   to={`/blog/${relatedPost.id}`}

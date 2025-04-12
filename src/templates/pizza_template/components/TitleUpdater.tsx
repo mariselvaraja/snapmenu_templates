@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-import { useSiteContent } from '../context/SiteContentContext';
 import { useLocation, useParams } from 'react-router-dom';
 import { useAppSelector } from '../shared/redux';
 
@@ -7,7 +6,11 @@ import { useAppSelector } from '../shared/redux';
  * Component that updates the document title based on the current page and restaurant name
  */
 export default function TitleUpdater() {
-  const { navigationBar, blog } = useSiteContent();
+  const { rawApiResponse } = useAppSelector(state => state.siteContent);
+  
+  // Get site content from Redux state
+  const siteContent = JSON.parse(rawApiResponse?.data);
+  const { navigationBar, blog } = siteContent;
   const location = useLocation();
   const params = useParams();
   const restaurantName = navigationBar.brand.name;
@@ -20,7 +23,7 @@ export default function TitleUpdater() {
     
     // Check if we're on a blog post page
     if (location.pathname.startsWith('/blog/') && params.id && blog?.posts) {
-      const blogPost = blog.posts.find(post => post.id === params.id);
+      const blogPost = blog.posts.find((post: any) => post.id === params.id);
       if (blogPost) {
         title = `${blogPost.title} | ${restaurantName}`;
       } else {

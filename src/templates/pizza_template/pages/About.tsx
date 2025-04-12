@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { UtensilsCrossed, Heart, Users } from 'lucide-react';
-import { useSiteContent } from '../context/SiteContentContext';
+import { useAppSelector } from '../../../common/redux';
 
 // Define interface for story value item
 interface StoryValue {
@@ -10,7 +10,10 @@ interface StoryValue {
 }
 
 export default function About() {
-  const siteContent = useSiteContent();
+  const { rawApiResponse } = useAppSelector(state => state.siteContent);
+  
+  // Get site content from Redux state
+  const siteContent = JSON.parse(rawApiResponse?.data);
   const story = siteContent?.story || {
     hero: {
       title: "Our Story",

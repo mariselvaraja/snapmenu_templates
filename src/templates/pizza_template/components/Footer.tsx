@@ -1,9 +1,12 @@
 import { Facebook, Instagram, Twitter } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useSiteContent } from '../context/SiteContentContext';
+import { useAppSelector } from '../../../common/redux';
 
 export default function Footer() {
-  const siteContent = useSiteContent();
+  const { rawApiResponse } = useAppSelector(state => state.siteContent);
+  
+  // Get site content from Redux state
+  const siteContent = JSON.parse(rawApiResponse?.data);
   const { navigationBar } = siteContent;
   const { brand, navigation } = navigationBar;
   const footer = siteContent?.footer || {
@@ -61,7 +64,7 @@ export default function Footer() {
           <div>
             <h4 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Quick Links</h4>
             <ul className="space-y-2">
-              {navigation?.links?.filter(link => link.isEnabled).map((link, index) => (
+              {navigation?.links?.filter((link: any) => link.isEnabled).map((link: any, index: number) => (
                 <li key={index}>
                   <Link to={link.path} className="text-gray-300 hover:text-white">{link.label}</Link>
                 </li>

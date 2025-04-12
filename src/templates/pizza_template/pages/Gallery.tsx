@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { X, Play } from 'lucide-react';
-import { useSiteContent } from '../context/SiteContentContext';
+import { useAppSelector } from '../../../common/redux';
 
 type MediaItem = {
   id: number;
@@ -15,7 +15,10 @@ type MediaItem = {
 };
 
 export default function Gallery() {
-  const siteContent = useSiteContent();
+  const { rawApiResponse } = useAppSelector(state => state.siteContent);
+  
+  // Get site content from Redux state
+  const siteContent = JSON.parse(rawApiResponse?.data);
   const gallery = siteContent?.gallery || {
     section: {
       title: "Our Gallery",
@@ -45,7 +48,7 @@ export default function Gallery() {
   // Transform gallery data from siteContent to match the component's expected format
   useEffect(() => {
     if (gallery && gallery.images) {
-      const transformedItems = gallery.images.map((item, index) => ({
+      const transformedItems = gallery.images.map((item: any, index: number) => ({
         id: index + 1,
         title: item.title,
         category: item.description.includes("ambiance") ? "Ambiance" : 

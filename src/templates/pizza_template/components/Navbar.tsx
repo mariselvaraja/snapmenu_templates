@@ -1,8 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Menu, X, ShoppingCart, Search } from 'lucide-react';
-import { useSiteContent } from '../context/SiteContentContext';
-import { Utensils, Pizza } from 'lucide-react';
+import { Menu, X, ShoppingCart, Search, Utensils, Pizza } from 'lucide-react';
 import { useAppSelector, useAppDispatch, toggleDrawer } from '../shared/redux';
 import { openSearchModal, closeSearchModal } from '../shared/redux/slices/searchSlice';
 import { SearchModal } from '../shared/components/search';
@@ -12,7 +10,11 @@ const PizzaIcon = Pizza;
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-  const { navigationBar } = useSiteContent();
+  const { rawApiResponse } = useAppSelector(state => state.siteContent);
+  
+  // Get site content from Redux state
+  const siteContent = JSON.parse(rawApiResponse?.data);
+  const { navigationBar } = siteContent;
   const { brand, navigation } = navigationBar;
   const cartItems = useAppSelector((state) => state.cart.items);
   const isSearchModalOpen = useAppSelector((state) => state.search.isModalOpen);
@@ -33,7 +35,7 @@ export default function Navbar() {
 
           <div className="hidden md:block">
             <div className="ml-10 flex items-center space-x-8">
-              {navigation?.links?.filter(link => link.isEnabled).map((link, index) => (
+              {navigation?.links?.filter((link: any) => link.isEnabled).map((link: any, index: number) => (
                 <Link
                   key={index}
                   to={link.path}
@@ -87,7 +89,7 @@ export default function Navbar() {
       {isOpen && (
         <div className="md:hidden">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-            {navigation?.links?.filter(link => link.isEnabled).map((link, index) => (
+            {navigation?.links?.filter((link: any) => link.isEnabled).map((link: any, index: number) => (
               <Link
                 key={index}
                 to={link.path}

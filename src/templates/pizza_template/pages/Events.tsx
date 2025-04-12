@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { Calendar, Users, Clock, MapPin } from 'lucide-react';
-import { useSiteContent } from '../context/SiteContentContext';
+import { useAppSelector } from '../../../common/redux';
 
 // Define interface for event item with additional properties
 interface EventItem {
@@ -16,7 +16,10 @@ interface EventItem {
 }
 
 export default function Events() {
-  const siteContent = useSiteContent();
+  const { rawApiResponse } = useAppSelector(state => state.siteContent);
+  
+  // Get site content from Redux state
+  const siteContent = JSON.parse(rawApiResponse?.data);
   const events = siteContent?.events || {
     section: {
       title: "Upcoming Events",
@@ -51,7 +54,7 @@ export default function Events() {
   };
   
   // Transform events data from siteContent to include additional properties
-  const eventItems: EventItem[] = events.items.map((item, index) => ({
+  const eventItems: EventItem[] = events.items.map((item: any, index: number) => ({
     id: index + 1,
     title: item.title,
     date: item.date,

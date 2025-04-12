@@ -1,10 +1,13 @@
 import { motion } from 'framer-motion';
 import { useState } from 'react';
-import { useSiteContent } from '../../../common/context/SiteContentContext';
+import { useAppSelector } from '../../../common/redux';
 import { TableReservation, BookingData } from '../shared/components/reservation';
 
 export default function Reservation() {
-  const siteContent = useSiteContent();
+  const { rawApiResponse } = useAppSelector(state => state.siteContent);
+  
+  // Get site content from Redux state
+  const siteContent = JSON.parse(rawApiResponse?.data);
   const reservation = siteContent?.reservation || {
     header: {
       title: "Reserve a Table",

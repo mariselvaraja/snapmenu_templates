@@ -1,54 +1,106 @@
 import { motion } from 'framer-motion';
 import { ArrowRight, ShoppingCart, Truck, Clock, Award, Pizza, Play, UtensilsCrossed, Heart, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useState, useContext, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 
-import { SiteContentContext } from '../../../common/context/SiteContentContext';
-import { useAppDispatch, useAppSelector, fetchMenuRequest, addItem, CartItem } from '../../../common/redux';
+import { useAppDispatch, useAppSelector, addItem, CartItem } from '../../../common/redux';
 
 export default function Home() {
   const [videoOpen, setVideoOpen] = useState(false);
-  const siteContent = useContext(SiteContentContext);
+  const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
   const dispatch = useAppDispatch();
   const { items: menuItems, loading: menuLoading } = useAppSelector(state => state.menu);
-  const heroData = siteContent?.navigationBar?.hero;
-  const currentBanner = heroData?.banners[0]; // Assuming you want to use the first banner for now
+  const { rawApiResponse } = useAppSelector(state => state.siteContent);
   
-  // Menu data is now fetched directly in App.jsx
-  // useEffect(() => {
-  //   dispatch(fetchMenuRequest());
-  // }, [dispatch]);
+  // Get site content from Redux state
+  const siteContent = JSON.parse(rawApiResponse?.data) ;
+  const navigationBar = siteContent?.navigationBar ;
+  const heroData = navigationBar?.hero || {
+    banners: [
+      {
+        image: "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&q=80",
+        title: "Delicious Pizza",
+        subtitle: "Made with fresh ingredients"
+      },
+      {
+        image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&q=80",
+        title: "Handcrafted Perfection",
+        subtitle: "Every pizza tells a story"
+      },
+      {
+        image: "https://images.unsplash.com/photo-1593560708920-61dd98c46a4e?auto=format&fit=crop&q=80",
+        title: "Fresh From The Oven",
+        subtitle: "Taste the difference quality makes"
+      }
+    ]
+  };
+  
+  // Auto-rotate carousel
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentBannerIndex((prevIndex) => 
+        (prevIndex + 1) % heroData.banners.length
+      );
+    }, 5000); // Change slide every 5 seconds
+    
+    return () => clearInterval(interval);
+  }, [heroData.banners.length]);
+  
+  const goToNextSlide = () => {
+    setCurrentBannerIndex((prevIndex) => 
+      (prevIndex + 1) % heroData.banners.length
+    );
+  };
+  
+  const goToPrevSlide = () => {
+    setCurrentBannerIndex((prevIndex) => 
+      (prevIndex - 1 + heroData.banners.length) % heroData.banners.length
+    );
+  };
+  
+  const currentBanner = heroData?.banners[currentBannerIndex];
 
   return (
     <div>
-      {/* Hero Section */}
-      <section className="relative h-screen flex items-center">
-        {currentBanner && (
-          <div
-            className="absolute inset-0 z-0"
-            style={{
-              backgroundImage: `url('${currentBanner.image}')`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-            }}
-          >
-            <div className="absolute inset-0 bg-black bg-opacity-60"></div>
-          </div>
-        )}
+      {/* Hero Section with Carousel */}
+      <section className="relative h-screen flex items-center overflow-hidden">
+        <div className="absolute inset-0 z-0">
+          {heroData.banners.map((banner: { image: string }, index: number) => (
+            <motion.div
+              key={index}
+              className="absolute inset-0"
+              initial={{ opacity: 0 }}
+              animate={{ 
+                opacity: index === currentBannerIndex ? 1 : 0,
+                zIndex: index === currentBannerIndex ? 1 : 0
+              }}
+              transition={{ duration: 0.8 }}
+              style={{
+                backgroundImage: `url('${banner.image}')`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+              }}
+            >
+              <div className="absolute inset-0 bg-black bg-opacity-60"></div>
+            </motion.div>
+          ))}
+        </div>
 
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-white">
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-white w-full">
           <motion.div
+            key={currentBannerIndex}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
+            className="text-center md:text-left"
           >
             <h1 className="text-5xl md:text-7xl font-bold mb-6">
               {currentBanner?.title || 'Default Title'}
             </h1>
-            <p className="text-xl md:text-2xl mb-8 max-w-2xl">
+            <p className="text-xl md:text-2xl mb-8 max-w-2xl mx-auto md:mx-0">
               {currentBanner?.subtitle || 'Default Subtitle'}
             </p>
-            <div className="flex gap-4">
+            <div className="flex gap-4 justify-center md:justify-start">
               <Link
                 to="/order"
                 className="inline-flex items-center bg-red-500 text-white px-8 py-3 rounded-full text-lg font-semibold hover:bg-red-600 transition-colors"
@@ -63,6 +115,22 @@ export default function Home() {
               </button>
             </div>
           </motion.div>
+          
+          {/* Carousel Navigation */}
+          <div className="absolute bottom-10 left-0 right-0 flex justify-center gap-4 z-20">
+            {heroData.banners.map((_: any, index: number) => (
+              <button
+                key={index}
+                onClick={() => setCurrentBannerIndex(index)}
+                className={`w-3 h-3 rounded-full transition-colors ${
+                  index === currentBannerIndex ? 'bg-red-500' : 'bg-white bg-opacity-50 hover:bg-opacity-75'
+                }`}
+                aria-label={`Go to slide ${index + 1}`}
+              />
+            ))}
+          </div>
+          
+          {/* Carousel arrows removed as requested */}
         </div>
       </section>
       {/* Video Modal */}
