@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Trash2, ShoppingBag } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useAppSelector, useAppDispatch, toggleDrawer, removeItem, updateItemQuantity } from '../shared/redux';
+import { useAppSelector, useAppDispatch, toggleDrawer, removeItem, updateItemQuantity } from '../../../common/redux';
 
 export default function CartDrawer() {
   const { items, drawerOpen } = useAppSelector((state) => state.cart);

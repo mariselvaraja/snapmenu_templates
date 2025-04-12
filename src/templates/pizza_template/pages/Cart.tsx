@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { Trash2, ArrowLeft } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAppSelector, useAppDispatch, removeItem, updateItemQuantity } from '../shared/redux';
+import { useAppSelector, useAppDispatch, removeItem, updateItemQuantity } from '../../../common/redux';
 
 export default function Cart() {
   const cartItems = useAppSelector((state) => state.cart.items);

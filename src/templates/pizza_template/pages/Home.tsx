@@ -3,8 +3,8 @@ import { ArrowRight, ShoppingCart, Truck, Clock, Award, Pizza, Play, UtensilsCro
 import { Link } from 'react-router-dom';
 import { useState, useContext, useEffect } from 'react';
 
-import { SiteContentContext } from '../context/SiteContentContext';
-import { useAppDispatch, useAppSelector, fetchMenuRequest, addItem, CartItem } from '../shared/redux';
+import { SiteContentContext } from '../../../common/context/SiteContentContext';
+import { useAppDispatch, useAppSelector, fetchMenuRequest, addItem, CartItem } from '../../../common/redux';
 
 export default function Home() {
   const [videoOpen, setVideoOpen] = useState(false);

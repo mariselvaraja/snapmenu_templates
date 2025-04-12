@@ -2,10 +2,10 @@ import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { Clock, Truck, Trash2 } from 'lucide-react';
 import { useSelector } from 'react-redux';
-import { RootState, AppDispatch } from '../store';
+import { RootState, AppDispatch } from '../../../common/store';
 import { useDispatch } from 'react-redux';
-import { fetchMenuRequest } from '../shared/redux/slices/menuSlice';
-import { addItem, updateItemQuantity, removeItem } from '../shared/redux/slices/cartSlice';
+import { fetchMenuRequest } from '../../../common/redux/slices/menuSlice';
+import { addItem, updateItemQuantity, removeItem } from '../../../common/redux/slices/cartSlice';
 import { useNavigate } from 'react-router-dom';
 
 export default function Order() {

@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, X, ShoppingCart, Search } from 'lucide-react';
-import { useSiteContent } from '../context/SiteContentContext';
+import { useSiteContent } from '../../../common/context/SiteContentContext';
 import { Utensils, Pizza } from 'lucide-react';
-import { useAppSelector, useAppDispatch, toggleDrawer } from '../shared/redux';
-import { openSearchModal, closeSearchModal } from '../shared/redux/slices/searchSlice';
+import { useAppSelector, useAppDispatch, toggleDrawer } from '../../../common/redux';
+import { openSearchModal, closeSearchModal } from '../../../common/redux/slices/searchSlice';
 import { SearchModal } from '../shared/components/search';
 
 const UtensilsIcon = Utensils;

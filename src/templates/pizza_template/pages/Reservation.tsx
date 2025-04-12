@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { useState } from 'react';
-import { useSiteContent } from '../context/SiteContentContext';
+import { useSiteContent } from '../../../common/context/SiteContentContext';
 import { TableReservation, BookingData } from '../shared/components/reservation';
 
 export default function Reservation() {
@@ -60,7 +60,7 @@ export default function Reservation() {
 
   const handleBookingComplete = (bookingData: BookingData): void => {
     // Handle booking logic here
-    alert(`Table ${bookingData.tableId} booked for ${bookingData.date} at ${bookingData.time}`);
+    alert(`Table booked for ${bookingData.name}, party of ${bookingData.partySize} on ${bookingData.date} at ${bookingData.time}`);
     // In a real application, you would send this data to your backend
   };
 
