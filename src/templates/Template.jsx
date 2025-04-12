@@ -1,6 +1,7 @@
 import React, { useState, useEffect, createContext, useContext } from 'react';
 import { Provider, useSelector } from 'react-redux';
 import PizzaApp from './pizza_template/App';
+import CasualDiningApp from './casual_dining_template/App';
 import TemplateNotFound from './TemplateNotFound';
 
 // Create a context for template-specific settings
@@ -72,7 +73,7 @@ const TemplateContent = () => {
     isLoading
   };
 
-   const template_id = "pizza_template";
+   const template_id = "casual_dining_template";
   // Check if restaurant API returned an error or empty data
   const restaurantApiError = restaurantState.error || !restaurantState.info;
   
@@ -110,6 +111,8 @@ const TemplateContent = () => {
     switch (template_id) {
       case 'pizza_template':
         return <PizzaApp />;
+      case 'casual_dining_template':
+        return <CasualDiningApp />;
       default:
         return <TemplateNotFound />;
     }

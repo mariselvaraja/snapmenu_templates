@@ -1,10 +1,10 @@
 import React from 'react';
-import { BrowserRouter as Router } from 'react-router-dom';
+import { BrowserRouter as Router, Routes } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import CartDrawer from './components/CartDrawer';
 import TitleUpdater from './components/TitleUpdater';
-import { PizzaTemplateRoutes } from '@/routes';
+import PizzaTemplateRoutes from '../../routes/pizza_template_routes';
 import { SiteContentProvider } from './context/SiteContentContext';
 import { SearchInitializer } from './shared';
 
@@ -18,7 +18,9 @@ function App() {
           <Navbar />
           <CartDrawer />
           <main className="flex-grow pt-20">
-            <PizzaTemplateRoutes />
+            <Routes>
+              {PizzaTemplateRoutes}
+            </Routes>
           </main>
           <Footer />
         </div>

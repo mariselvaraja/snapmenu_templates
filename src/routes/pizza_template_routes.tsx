@@ -1,6 +1,6 @@
 import React from 'react';
-import { Route, Routes } from 'react-router-dom';
-import { commonRoutePaths, createCommonRoutes } from './common_routes';
+import { Route } from 'react-router-dom';
+import { commonRoutePaths } from './common_routes';
 
 // Import components from pizza_template
 import Home from '../templates/pizza_template/pages/Home';
@@ -18,34 +18,25 @@ import Cart from '../templates/pizza_template/pages/Cart';
 import ProductDetail from '../templates/pizza_template/pages/ProductDetail';
 import Checkout from '../templates/pizza_template/pages/Checkout';
 
-const PizzaTemplateRoutes = () => {
-  // You can define a NotFound component if needed
-  // const NotFound = () => <div>Page not found</div>;
-
-  // Get common routes (like 404 page)
-  // const commonRoutes = createCommonRoutes({ notFound: NotFound });
-
-  return (
-    <Routes>
-      <Route path={commonRoutePaths.home} element={<Home />} />
-      <Route path={commonRoutePaths.menu} element={<Menu />} />
-      <Route path={commonRoutePaths.locations} element={<Locations />} />
-      <Route path={commonRoutePaths.about} element={<About />} />
-      <Route path={commonRoutePaths.contact} element={<Contact />} />
-      <Route path={commonRoutePaths.order} element={<Order />} />
-      <Route path={commonRoutePaths.events} element={<Events />} />
-      <Route path={commonRoutePaths.gallery} element={<Gallery />} />
-      <Route path={commonRoutePaths.blog} element={<Blog />} />
-      <Route path={commonRoutePaths.blogPost} element={<BlogPost />} />
-      <Route path={commonRoutePaths.reservation} element={<Reservation />} />
-      <Route path={commonRoutePaths.cart} element={<Cart />} />
-      <Route path={commonRoutePaths.productDetail} element={<ProductDetail />} />
-      <Route path={commonRoutePaths.checkout} element={<Checkout />} />
-      
-      {/* Uncomment to add common routes like 404 page */}
-      {/* {commonRoutes} */}
-    </Routes>
-  );
-};
+/**
+ * Define routes for the pizza template
+ * These routes are used in the pizza_template/App.tsx file
+ */
+const PizzaTemplateRoutes = [
+  <Route key="home" path={commonRoutePaths.home} element={<Home />} />,
+  <Route key="menu" path={commonRoutePaths.menu} element={<Menu />} />,
+  <Route key="locations" path={commonRoutePaths.locations} element={<Locations />} />,
+  <Route key="about" path={commonRoutePaths.about} element={<About />} />,
+  <Route key="contact" path={commonRoutePaths.contact} element={<Contact />} />,
+  <Route key="order" path={commonRoutePaths.order} element={<Order />} />,
+  <Route key="events" path={commonRoutePaths.events} element={<Events />} />,
+  <Route key="gallery" path={commonRoutePaths.gallery} element={<Gallery />} />,
+  <Route key="blog" path={commonRoutePaths.blog} element={<Blog />} />,
+  <Route key="blog-post" path={commonRoutePaths.blogPost} element={<BlogPost />} />,
+  <Route key="reservation" path={commonRoutePaths.reservation} element={<Reservation />} />,
+  <Route key="cart" path={commonRoutePaths.cart} element={<Cart />} />,
+  <Route key="product-detail" path={commonRoutePaths.productDetail} element={<ProductDetail />} />,
+  <Route key="checkout" path={commonRoutePaths.checkout} element={<Checkout />} />
+];
 
 export default PizzaTemplateRoutes;
