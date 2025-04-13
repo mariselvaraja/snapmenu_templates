@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ShoppingCart, ArrowLeft, Info, Tag, Box, Utensils, AlertTriangle, Heart } from 'lucide-react';
+import { ShoppingCart, ArrowLeft, Info, Tag, Box, Utensils, AlertTriangle, Heart, Minus, Plus } from 'lucide-react';
 import { useAppDispatch, useAppSelector, addItem, CartItem, fetchMenuRequest, MenuItem } from '../../../common/redux';
 import { useState, useEffect } from 'react';
 import { TbCategory2 } from 'react-icons/tb';
@@ -341,29 +341,35 @@ export default function ProductDetail() {
                                 </div>
                                 <p className="text-gray-700 mb-6">{product.description}</p>
                                 
-                                <div className="flex items-center mb-6">
-                                    <div className="flex items-center space-x-2 mr-4">
+                                <div className="flex items-center justify-between mb-6">
+                                    <div className="text-2xl font-bold text-red-500">${product.price}</div>
+                                    
+                                    {/* Add button or quantity controls */}
+                                    {!cartItem || cartItem.quantity <= 0 ? (
                                         <button
-                                            className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded"
-                                            onClick={handleDecrement}
+                                            className="inline-flex items-center bg-red-500 text-white px-5 py-2 rounded-full hover:bg-red-600 transition-colors text-base font-medium"
+                                            onClick={() => handleAddToCart(product)}
                                         >
-                                            -
+                                            <ShoppingCart className="h-5 w-5 mr-2" />
+                                            Add to Cart
                                         </button>
-                                        <span className="text-lg">{quantity}</span>
-                                        <button
-                                            className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded"
-                                            onClick={handleIncrement}
-                                        >
-                                            +
-                                        </button>
-                                    </div>
-                                    <button
-                                        className="flex-grow inline-flex items-center justify-center bg-red-500 text-white px-6 py-3 rounded-full hover:bg-red-600 transition-colors"
-                                        onClick={() => handleAddToCart(product)}
-                                    >
-                                        <ShoppingCart className="h-5 w-5 mr-2" />
-                                        Add to Cart
-                                    </button>
+                                    ) : (
+                                        <div className="inline-flex items-center bg-gray-100 rounded-full px-2 py-1">
+                                            <button
+                                                className="w-8 h-8 flex items-center justify-center bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-full transition-colors"
+                                                onClick={handleDecrement}
+                                            >
+                                                <Minus className="w-3 h-3" />
+                                            </button>
+                                            <span className="mx-3 text-base font-semibold">{quantity}</span>
+                                            <button
+                                                className="w-8 h-8 flex items-center justify-center bg-red-500 hover:bg-red-600 text-white rounded-full transition-colors"
+                                                onClick={handleIncrement}
+                                            >
+                                                <Plus className="w-3 h-3" />
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                             <div className="md:w-1/2 mt-4 md:mt-0">

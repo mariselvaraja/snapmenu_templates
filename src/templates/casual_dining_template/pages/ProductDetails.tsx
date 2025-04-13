@@ -1,7 +1,7 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { CartContext, CartContextType, useCart } from '../context/CartContext';
-import { ArrowRight, ArrowLeft, ShoppingCart, Info, Tag, Box, Utensils, AlertTriangle, Heart } from 'lucide-react';
+import { ArrowRight, ArrowLeft, ShoppingCart, Info, Tag, Box, Utensils, AlertTriangle, Heart, Minus, Plus } from 'lucide-react';
 import { useAppSelector } from '../../../redux/hooks';
 import { motion } from 'framer-motion';
 import { TbCategory2 } from 'react-icons/tb';
@@ -320,7 +320,6 @@ function ProductDetails() {
             <div className="flex flex-col md:flex-row justify-between items-start mb-8">
               <div className="md:pr-8 md:w-1/2">
                 <h1 className="text-3xl font-bold mb-2">{product.name}</h1>
-                <div className="text-2xl font-bold text-yellow-400 mb-4">${typeof product.price === 'number' ? product.price.toFixed(2) : product.price}</div>
                 <div className="flex flex-wrap gap-2 mb-4">
                   {product.dietary?.isVegetarian && (
                     <div className="bg-green-500 text-white px-3 py-1 rounded-full text-sm">
@@ -340,29 +339,47 @@ function ProductDetails() {
                 </div>
                 <p className="text-gray-300 mb-6">{product.description}</p>
                 
-                <div className="flex items-center mb-6">
-                  <div className="flex items-center space-x-2 mr-4">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="text-2xl font-bold text-yellow-400">${typeof product.price === 'number' ? product.price.toFixed(2) : product.price}</div>
+                  
+                  {/* Add button or quantity controls */}
+                  {!cartItem || Number(cartItem.quantity) === 0 ? (
                     <button
-                      className="bg-zinc-900 hover:bg-zinc-800 text-white font-bold py-2 px-4 rounded"
-                      onClick={handleDecrement}
+                      className="inline-flex items-center bg-yellow-400 text-black px-5 py-2 rounded-full hover:bg-yellow-300 transition-colors text-base font-medium"
+                      onClick={handleAddToCart}
                     >
-                      -
+                      <ShoppingCart className="h-5 w-5 mr-2" />
+                      Add to Cart
                     </button>
-                    <span className="text-lg">{quantity}</span>
-                    <button
-                      className="bg-zinc-900 hover:bg-zinc-800 text-white font-bold py-2 px-4 rounded"
-                      onClick={handleIncrement}
-                    >
-                      +
-                    </button>
-                  </div>
-                  <button
-                    className="flex-grow inline-flex items-center justify-center bg-yellow-400 text-black px-6 py-3 rounded-full hover:bg-yellow-300 transition-colors"
-                    onClick={handleAddToCart}
-                  >
-                    <ShoppingCart className="h-5 w-5 mr-2" />
-                    Add to Order
-                  </button>
+                  ) : (
+                    <div className="inline-flex items-center bg-zinc-900 rounded-full px-2 py-1">
+                      <button
+                        className="w-8 h-8 flex items-center justify-center bg-zinc-800 hover:bg-zinc-700 text-white rounded-full transition-colors"
+                        onClick={() => {
+                          if (quantity > 1) {
+                            updateQuantity(product.id, quantity - 1);
+                            setQuantity(quantity - 1);
+                          } else {
+                            // Remove from cart if quantity becomes 0
+                            updateQuantity(product.id, 0);
+                            setQuantity(0);
+                          }
+                        }}
+                      >
+                        <Minus className="w-3 h-3" />
+                      </button>
+                      <span className="mx-3 text-base font-semibold">{cartItem.quantity}</span>
+                      <button
+                        className="w-8 h-8 flex items-center justify-center bg-yellow-400 hover:bg-yellow-300 text-black rounded-full transition-colors"
+                        onClick={() => {
+                          updateQuantity(product.id, quantity + 1);
+                          setQuantity(quantity + 1);
+                        }}
+                      >
+                        <Plus className="w-3 h-3" />
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
               <div className="md:w-1/2 mt-4 md:mt-0">

@@ -1,8 +1,8 @@
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
-import { ShoppingCart } from 'lucide-react';
+import { ShoppingCart, Plus, Minus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useAppDispatch, useAppSelector, addItem, CartItem, fetchMenuRequest, MenuItem } from '../../../common/redux';
+import { useAppDispatch, useAppSelector, addItem, CartItem, fetchMenuRequest, MenuItem, removeItem, updateItemQuantity } from '../../../common/redux';
 
 // Define types for category and subcategory
 interface CategoryType {
@@ -23,8 +23,9 @@ export default function Menu() {
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
     
-    // Get menu data from Redux store
+    // Get menu data and cart items from Redux store
     const { items, categories: menuCategories, loading, error } = useAppSelector(state => state.menu);
+    const { items: cartItems } = useAppSelector(state => state.cart);
     
     // Create categories and subcategories from menu items
     const categories: CategoryType[] = [
@@ -145,7 +146,7 @@ export default function Menu() {
             <div className="py-20">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
                     <div className="text-yellow-500 text-5xl mb-4">🛠️</div>
-                    <h1 className="text-3xl font-bold mb-4">Site Under Maintenance</h1>
+                    <h1 className="text-3xl font-bold mb-4">    </h1>
                     <p className="text-xl text-gray-600 mb-6">
                         We're currently updating our menu. Please check back soon!
                     </p>
@@ -300,13 +301,54 @@ export default function Menu() {
                                     <div className="flex items-center">
                                         {/* Removed rating stars as menu.json does not have rating */}
                                     </div>
-                                    <button
-                                        className="inline-flex items-center bg-red-500 text-white px-4 py-2 rounded-full hover:bg-red-600 transition-colors"
-                                        onClick={() => handleAddToCart(item)}
-                                    >
-                                        <ShoppingCart className="h-4 w-4 mr-2" />
-                                        Add to Cart
-                                    </button>
+                                    
+                                    {/* Add button or quantity controls */}
+                                    {!cartItems.find(cartItem => cartItem.id === item.id && cartItem.quantity > 0) ? (
+                                        <button
+                                            className="inline-flex items-center bg-red-500 text-white px-5 py-2 rounded-full hover:bg-red-600 transition-colors text-base font-medium"
+                                            onClick={() => handleAddToCart(item)}
+                                        >
+                                            <ShoppingCart className="h-5 w-5 mr-2" />
+                                            Add to Cart
+                                        </button>
+                                    ) : (
+                                        <div className="inline-flex items-center bg-gray-100 rounded-full px-2 py-1">
+                                            <button
+                                                className="w-8 h-8 flex items-center justify-center bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-full transition-colors"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    const cartItem = cartItems.find(cartItem => cartItem.id === item.id);
+                                                    if (cartItem) {
+                                                        const newQuantity = cartItem.quantity - 1;
+                                                        if (newQuantity > 0) {
+                                                            dispatch(updateItemQuantity({ id: item.id, quantity: newQuantity }));
+                                                        } else {
+                                                            dispatch(removeItem(item.id));
+                                                        }
+                                                    }
+                                                }}
+                                            >
+                                                <Minus className="w-3 h-3" />
+                                            </button>
+                                            <span className="mx-3 text-base font-semibold">
+                                                {cartItems.find(cartItem => cartItem.id === item.id)?.quantity || 0}
+                                            </span>
+                                            <button
+                                                className="w-8 h-8 flex items-center justify-center bg-red-500 hover:bg-red-600 text-white rounded-full transition-colors"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    const cartItem = cartItems.find(cartItem => cartItem.id === item.id);
+                                                    if (cartItem) {
+                                                        dispatch(updateItemQuantity({ id: item.id, quantity: cartItem.quantity + 1 }));
+                                                    } else {
+                                                        handleAddToCart(item);
+                                                    }
+                                                }}
+                                            >
+                                                <Plus className="w-3 h-3" />
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </motion.div>

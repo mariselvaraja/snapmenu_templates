@@ -11,19 +11,19 @@ import { CartProvider } from './context/CartContext';
 export default function App() {
   
   return (
-    <CartProvider>
-      <>
-        <SearchInitializer />
-        <CartDrawer /> {/* Render CartDrawer outside Routes */}
-        <Router>
+    <Router>
+      <CartProvider>
+        <>
+          <SearchInitializer />
+          <CartDrawer /> {/* Render CartDrawer outside Routes */}
           <TitleUpdater />
           <Navigation /> {/* Navigation component moved to App level */}
           <Routes>
             {CasualDiningTemplateRoutes}
           </Routes>
           <Footer/>
-        </Router>
-      </>
-    </CartProvider>
+        </>
+      </CartProvider>
+    </Router>
   );
 }

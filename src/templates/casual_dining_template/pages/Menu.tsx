@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowRight, ChevronDown, ShoppingCart } from 'lucide-react';
+import { ArrowRight, ChevronDown, ShoppingCart, Plus, Minus } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '../../../redux/hooks';
 import { motion } from 'framer-motion';
 import { addItem } from '../../../redux/slices/cartSlice';
+import { useCart } from '../context/CartContext';
 
 interface MenuItem {
   id: string | number;
@@ -63,6 +64,7 @@ export function Menu() {
   
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const { addToCart, toggleCart, cart, updateQuantity, removeFromCart } = useCart();
   
   // Get menu items from Redux
   const { items: menuItems, loading, error } = useAppSelector(state => state.menu);
@@ -121,14 +123,22 @@ export function Menu() {
   };
   
   const handleAddToCart = (menuItem: MenuItem) => {
-    const cartItem: CartItem = {
-      id: typeof menuItem.id === 'string' ? parseInt(menuItem.id) : menuItem.id as number,
-      name: menuItem.name,
-      price: typeof menuItem.price === 'string' ? parseFloat(menuItem.price) : menuItem.price as number,
-      image: menuItem.image,
-      quantity: 1
-    };
-    dispatch(addItem(cartItem));
+    try {
+      // Format item for CartContext
+      addToCart({
+        id: menuItem.id.toString(),
+        name: menuItem.name,
+        price: typeof menuItem.price === 'string' ? menuItem.price : menuItem.price.toString(),
+        imageUrl: menuItem.image
+      });
+      
+      // Open the cart drawer to show the added item
+      toggleCart();
+      
+      console.log(`${menuItem.name} added to cart!`);
+    } catch (error) {
+      console.error("Error adding item to cart:", error);
+    }
   };
   
   // Handle loading and error states
@@ -356,7 +366,6 @@ export function Menu() {
                   >
                     {item.name}
                   </h3>
-                  <span className="text-lg font-bold text-yellow-400">${typeof item.price === 'string' ? item.price : item.price.toFixed(2)}</span>
                 </div>
                 <p 
                   className="text-gray-400 mb-4 line-clamp-2 cursor-pointer hover:text-gray-300 transition"
@@ -364,17 +373,59 @@ export function Menu() {
                 >
                   {item.description}
                 </p>
-                <div className="flex items-center justify-end">
-                  <button
-                    className="inline-flex items-center bg-yellow-400 text-black px-4 py-2 rounded-full hover:bg-yellow-300 transition"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleAddToCart(item);
-                    }}
-                  >
-                    <ShoppingCart className="h-4 w-4 mr-2" />
-                    Add to Cart
-                  </button>
+                <div className="flex items-center justify-between">
+                  <span className="text-lg font-bold text-yellow-400">${typeof item.price === 'string' ? item.price : item.price.toFixed(2)}</span>
+                  
+                  {/* Add button or quantity controls */}
+                  {!cart.find(cartItem => cartItem.id === item.id.toString() && Number(cartItem.quantity) > 0) ? (
+                    <button
+                      className="inline-flex items-center bg-yellow-400 text-black px-5 py-2 rounded-full hover:bg-yellow-300 transition text-base font-medium"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleAddToCart(item);
+                      }}
+                    >
+                      <ShoppingCart className="h-5 w-5 mr-2" />
+                      Add to Cart
+                    </button>
+                  ) : (
+                    <div className="inline-flex items-center bg-zinc-900 rounded-full px-2 py-1">
+                      <button
+                        className="w-8 h-8 flex items-center justify-center bg-zinc-800 hover:bg-zinc-700 text-white rounded-full transition-colors"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const cartItem = cart.find(cartItem => cartItem.id === item.id.toString());
+                          if (cartItem) {
+                            const newQuantity = Number(cartItem.quantity) - 1;
+                            if (newQuantity > 0) {
+                              updateQuantity(item.id.toString(), newQuantity);
+                            } else {
+                              removeFromCart(item.id.toString());
+                            }
+                          }
+                        }}
+                      >
+                        <Minus className="w-3 h-3" />
+                      </button>
+                      <span className="mx-3 text-base font-semibold">
+                        {cart.find(cartItem => cartItem.id === item.id.toString())?.quantity || 0}
+                      </span>
+                      <button
+                        className="w-8 h-8 flex items-center justify-center bg-yellow-400 hover:bg-yellow-300 text-black rounded-full transition-colors"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const cartItem = cart.find(cartItem => cartItem.id === item.id.toString());
+                          if (cartItem) {
+                            updateQuantity(item.id.toString(), Number(cartItem.quantity) + 1);
+                          } else {
+                            handleAddToCart(item);
+                          }
+                        }}
+                      >
+                        <Plus className="w-3 h-3" />
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             </motion.div>
