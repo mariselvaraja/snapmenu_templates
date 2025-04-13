@@ -3,6 +3,7 @@ import { Provider, useSelector } from 'react-redux';
 import PizzaApp from './pizza_template/App';
 import CasualDiningApp from './casual_dining_template/App';
 import EatflowApp from './eatflow_template/App';
+import CulinaryJourneyApp from './culinary_journey_template/App';
 import TemplateNotFound from './TemplateNotFound';
 
 // Create a context for template-specific settings
@@ -107,9 +108,10 @@ const TemplateContent = () => {
     return <TemplateNotFound />;
   }
 
-  const template_id = "eatflow"
-  //  restaurantState?.info?.template_id;
-   console.log("restaurantState", restaurantState)
+  // For testing purposes, you can change this value to "culinary_journey" to see the culinary journey template
+  const template_id = "culinary_journey"; // Options: "pizza", "casual_dining", "eatflow", "culinary_journey"
+  // In production, this would come from the API: restaurantState?.info?.template_id
+  console.log("restaurantState", restaurantState)
   // Check if restaurant API returned an error or empty data
 
   // Determine which template to render based on the template name
@@ -121,6 +123,8 @@ const TemplateContent = () => {
         return <CasualDiningApp />;
       case 'eatflow':
         return <EatflowApp />;
+      case 'culinary_journey':
+        return <CulinaryJourneyApp />;
       default:
         return <TemplateNotFound />;
     }

@@ -1,60 +1,15 @@
 import React from 'react';
 import { ShoppingCart } from 'lucide-react';
 import { useCart } from '../../../context';
-import { useRootMenu } from '../../../../../../context/RootMenuContext';
 import { useInView } from '../../../hooks/useInView';
 import { OptimizedImage } from '../../common/OptimizedImage';
 
 export function FoodCarousel() {
   const { dispatch } = useCart();
-  const { menu: rootMenu } = useRootMenu();
   const { ref, inView } = useInView({ threshold: 0.1 });
 
-  // Get the first 3 items from the root menu
-  const getSignatureDishes = () => {
-    if (!rootMenu) return [];
-    
-    // Handle different possible structures of rootMenu
-    let allDishes = [];
-    
-    // Case 1: rootMenu is an object with category keys and arrays of dishes as values
-    if (typeof rootMenu === 'object' && !Array.isArray(rootMenu)) {
-      // Check if rootMenu has a 'menu' property (nested structure)
-      if (rootMenu.menu && typeof rootMenu.menu === 'object') {
-        // Flatten all categories from rootMenu.menu
-        Object.values(rootMenu.menu).forEach(categoryDishes => {
-          if (Array.isArray(categoryDishes)) {
-            allDishes = [...allDishes, ...categoryDishes];
-          }
-        });
-      } else {
-        // Flatten all categories directly from rootMenu
-        Object.values(rootMenu).forEach(categoryDishes => {
-          if (Array.isArray(categoryDishes)) {
-            allDishes = [...allDishes, ...categoryDishes];
-          }
-        });
-      }
-    }
-    // Case 2: rootMenu is directly an array of dishes
-    else if (Array.isArray(rootMenu)) {
-      allDishes = rootMenu;
-    }
-    
-    // Filter out any invalid dishes (must have at least name and image)
-    const validDishes = allDishes.filter(dish => 
-      dish && typeof dish === 'object' && dish.name && dish.image
-    );
-    
-    // Return the first 3 valid dishes or all if less than 3
-    return validDishes.slice(0, 3);
-  };
-
-  // Get signature dishes with fallback
-  const signatureDishes = getSignatureDishes();
-  
-  // Fallback dishes in case no valid dishes are found
-  const fallbackDishes = [
+  // Using fallback data directly instead of useRootMenu
+  const displayDishes = [
     {
       id: "dish1",
       name: "Truffle Risotto",
@@ -77,12 +32,6 @@ export function FoodCarousel() {
       image: "https://images.unsplash.com/photo-1546964124-0cce460f38ef?auto=format&fit=crop&q=80"
     }
   ];
-  
-  // Use fallback dishes if no valid dishes were found
-  const displayDishes = signatureDishes.length > 0 ? signatureDishes : fallbackDishes;
-  
-  console.log("Root Menu Structure:", rootMenu);
-  console.log("Signature Dishes:", signatureDishes);
 
   const handleAddToCart = (dish) => {
     // Determine the category based on the dish properties or use a default

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Menu, Utensils, Settings, Search, LogIn, LogOut } from 'lucide-react';
 import { useAuth } from '../../../context';
-import { useRootSiteContent } from '../../../../../../context/RootSiteContentContext';
 import { Link, useNavigate } from 'react-router-dom';
 import { MobileMenu } from '../MobileMenu';
 import { CartSummary } from '../../cart/CartSummary';
@@ -10,7 +9,6 @@ import SearchModal from '../../common/SearchModal';
 export function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const { siteContent: rootSiteContent } = useRootSiteContent();
   const navigate = useNavigate();
   const auth = useAuth();
 
@@ -40,8 +38,8 @@ export function Navbar() {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
   
-  // Default site content with required properties
-  const defaultSiteContent = {
+  // Using fallback data directly instead of useRootSiteContent
+  const siteContent = {
     brand: {
       name: "Culinary Journey",
       logo: {
@@ -50,19 +48,20 @@ export function Navbar() {
       }
     },
     navigation: {
-      links: []
+      links: [
+        { label: "Home", path: "/", isEnabled: true },
+        { label: "Menu", path: "/menu", isEnabled: true },
+        { label: "Our Story", path: "/our-story", isEnabled: true },
+        { label: "Reservations", path: "/reservation", isEnabled: true },
+        { label: "Events", path: "/events", isEnabled: true },
+        { label: "Blog", path: "/blog", isEnabled: true },
+        { label: "Contact", path: "/contact", isEnabled: true }
+      ]
     }
   };
-
-  // Transform the site content structure if needed
-  const siteContent = rootSiteContent ? {
-    // Use navigationBar properties if available, otherwise use top-level properties or defaults
-    brand: rootSiteContent.navigationBar?.brand || rootSiteContent.brand || defaultSiteContent.brand,
-    navigation: rootSiteContent.navigationBar?.navigation || rootSiteContent.navigation || defaultSiteContent.navigation,
-  } : defaultSiteContent;
   
-  // Use siteContent from root context
-  const links = siteContent.navigation?.links || [];
+  // Use links from siteContent
+  const links = siteContent.navigation.links;
 
   const getIcon = (iconName) => {
     switch (iconName) {
@@ -86,7 +85,7 @@ export function Navbar() {
 
   const isAuthenticated = !!auth.session;
 
-  // Use brand from transformed siteContent
+  // Use brand directly from siteContent
   const brand = siteContent.brand;
 
   return (

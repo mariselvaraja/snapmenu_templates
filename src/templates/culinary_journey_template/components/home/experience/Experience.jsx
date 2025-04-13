@@ -3,7 +3,6 @@ import { Wine, UtensilsCrossed, Clock } from 'lucide-react';
 import { ExperienceCard } from './ExperienceCard';
 import { ExperienceImage } from './ExperienceImage';
 import { useInView } from '../../../hooks/useInView';
-import { useRootSiteContent } from '../../../../../../context/RootSiteContentContext';
 
 const iconComponents = {
   Wine: Wine,
@@ -13,26 +12,34 @@ const iconComponents = {
 
 export function Experience() {
   const { ref, inView } = useInView({ threshold: 0.1 });
-  const { siteContent: rootSiteContent } = useRootSiteContent();
   
-  // Default site content with required properties
-  const defaultSiteContent = {
-    experience: {
-      section: {
-        title: "Our Experience",
-        subtitle: "Discover what makes our restaurant special"
+  // Using fallback data directly instead of useRootSiteContent
+  const experienceData = {
+    section: {
+      title: "Our Experience",
+      subtitle: "Discover what makes our restaurant special"
+    },
+    cards: [
+      {
+        icon: "UtensilsCrossed",
+        title: "Culinary Excellence",
+        description: "Our chefs blend traditional techniques with innovative approaches to create dishes that delight the senses and nourish the soul.",
+        image: "https://images.unsplash.com/photo-1600565193348-f74bd3c7ccdf?auto=format&fit=crop&q=80"
       },
-      cards: []
-    }
+      {
+        icon: "Wine",
+        title: "Curated Wine Selection",
+        description: "Our sommelier has carefully selected wines from around the world to perfectly complement our menu and enhance your dining experience.",
+        image: "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?auto=format&fit=crop&q=80"
+      },
+      {
+        icon: "Clock",
+        title: "Timeless Atmosphere",
+        description: "Step into a space where time slows down, allowing you to savor each moment and create lasting memories with loved ones.",
+        image: "https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&q=80"
+      }
+    ]
   };
-
-  // Transform the site content structure if needed
-  const siteContent = rootSiteContent ? {
-    // Use navigationBar properties if available, otherwise use top-level properties or defaults
-    experience: rootSiteContent.navigationBar?.experience || rootSiteContent.experience || defaultSiteContent.experience,
-  } : defaultSiteContent;
-  
-  const experienceData = siteContent.experience;
   
   const { section, cards } = experienceData;
 

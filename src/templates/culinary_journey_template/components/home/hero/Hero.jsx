@@ -1,31 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import { HeroBanner } from './HeroBanner';
-import { useRootSiteContent } from '../../../../../../context/RootSiteContentContext';
 
 export function Hero() {
-  const { siteContent: rootSiteContent } = useRootSiteContent();
-  
-  // Default site content with required properties
-  const defaultSiteContent = {
-    hero: {
-      banners: [
-        {
-          image: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&q=80",
-          title: "A Culinary Journey",
-          subtitle: "Experience the art of fine dining in the heart of the city"
-        }
-      ],
-      autoPlayInterval: 5000
-    }
+  // Using fallback data directly instead of useRootSiteContent
+  const heroData = {
+    banners: [
+      {
+        image: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&q=80",
+        title: "A Culinary Journey",
+        subtitle: "Experience the art of fine dining in the heart of the city"
+      },
+      {
+        image: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&q=80",
+        title: "Crafted with Passion",
+        subtitle: "Every dish tells a story of tradition and innovation"
+      },
+      {
+        image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&q=80",
+        title: "Memorable Experiences",
+        subtitle: "Creating moments that last a lifetime"
+      }
+    ],
+    autoPlayInterval: 5000
   };
-
-  // Transform the site content structure if needed
-  const siteContent = rootSiteContent ? {
-    // Use navigationBar properties if available, otherwise use top-level properties or defaults
-    hero: rootSiteContent.navigationBar?.hero || rootSiteContent.hero || defaultSiteContent.hero,
-  } : defaultSiteContent;
-  
-  const heroData = siteContent.hero;
   const banners = heroData?.banners || [];
   const autoPlayInterval = heroData?.autoPlayInterval || 5000;
   const [currentBanner, setCurrentBanner] = useState(0);

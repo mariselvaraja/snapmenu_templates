@@ -1,19 +1,18 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { useRootSiteContent } from '../../../../../context/RootSiteContentContext';
 
 export const ContactPage = () => {
   const { t } = useTranslation();
-  const { siteContent } = useRootSiteContent();
-  const contact = siteContent?.contact || {
+  // Using fallback data directly instead of useRootSiteContent
+  const contact = {
     header: { title: "Contact Us", subtitle: "Get in touch with us" },
     infoCards: {
-      phone: { title: "Phone", numbers: [], hours: "" },
-      email: { title: "Email", addresses: [], support: "" },
-      address: { title: "Address", street: "", city: "", state: "", zip: "" },
-      hours: { title: "Hours", weekday: "", weekend: "", note: "" }
+      phone: { title: "Phone", numbers: ["+1 (555) 123-4567", "+1 (555) 987-6543"], hours: "Available 9 AM - 5 PM" },
+      email: { title: "Email", addresses: ["info@culinaryjourney.com", "support@culinaryjourney.com"], support: "24/7 Support" },
+      address: { title: "Address", street: "123 Gourmet Street", city: "Foodville", state: "CA", zip: "90210" },
+      hours: { title: "Hours", weekday: "Monday - Friday: 11 AM - 10 PM", weekend: "Saturday - Sunday: 10 AM - 11 PM", note: "Closed on major holidays" }
     },
-    form: { title: "Send us a message", description: "" }
+    form: { title: "Send us a message", description: "We'd love to hear from you! Fill out the form below and we'll get back to you as soon as possible." }
   };
 
   return (

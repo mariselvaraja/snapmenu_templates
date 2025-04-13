@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import PizzaTemplateRoutes from './routes/pizza_template_routes';
 import CasualDiningTemplateRoutes from './routes/casual_dining_template_routes';
+import CulinaryJourneyTemplateRoutes from './routes/culinary_journey_template_routes';
 import TemplateNotFound from './templates/TemplateNotFound';
 
 /**
@@ -22,6 +23,12 @@ const AppRouter = ({ templateId }) => {
         return (
           <Routes>
             {CasualDiningTemplateRoutes}
+          </Routes>
+        );
+      case 'culinary_journey_template':
+        return (
+          <Routes>
+            {CulinaryJourneyTemplateRoutes}
           </Routes>
         );
       default:

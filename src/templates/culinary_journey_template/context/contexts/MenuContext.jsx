@@ -1,6 +1,92 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { useRootMenu } from '../../../../../context/RootMenuContext';
 import searchService from '../../services/searchService';
+
+// Define fallback menu data
+const defaultMenu = {
+  appetizers: [
+    {
+      id: "bruschetta",
+      name: "Bruschetta",
+      description: "Grilled bread rubbed with garlic and topped with diced tomatoes, fresh basil, and olive oil",
+      price: 9.99,
+      image: "https://images.unsplash.com/photo-1572695157366-5e585ab2b69f?auto=format&fit=crop&q=80",
+      dietary: { isVegetarian: true, isVegan: false, isGlutenFree: false },
+      ingredients: ["bread", "garlic", "tomatoes", "basil", "olive oil"],
+      allergens: ["gluten"],
+      category: "appetizers"
+    },
+    {
+      id: "calamari",
+      name: "Crispy Calamari",
+      description: "Tender calamari lightly fried and served with lemon aioli",
+      price: 12.99,
+      image: "https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?auto=format&fit=crop&q=80",
+      dietary: { isVegetarian: false, isVegan: false, isGlutenFree: false },
+      ingredients: ["calamari", "flour", "lemon", "garlic", "mayonnaise"],
+      allergens: ["gluten", "seafood", "eggs"],
+      category: "appetizers"
+    }
+  ],
+  mains: [
+    {
+      id: "salmon",
+      name: "Grilled Salmon",
+      description: "Fresh Atlantic salmon with lemon butter sauce, served with seasonal vegetables",
+      price: 24.99,
+      image: "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&q=80",
+      dietary: { isVegetarian: false, isVegan: false, isGlutenFree: true },
+      ingredients: ["salmon", "butter", "lemon", "seasonal vegetables"],
+      allergens: ["fish", "dairy"],
+      category: "mains"
+    },
+    {
+      id: "steak",
+      name: "Filet Mignon",
+      description: "8oz prime beef tenderloin, cooked to perfection with truffle mashed potatoes",
+      price: 34.99,
+      image: "https://images.unsplash.com/photo-1600891964092-4316c288032e?auto=format&fit=crop&q=80",
+      dietary: { isVegetarian: false, isVegan: false, isGlutenFree: true },
+      ingredients: ["beef tenderloin", "potatoes", "truffle oil", "butter", "herbs"],
+      allergens: ["dairy"],
+      category: "mains"
+    },
+    {
+      id: "risotto",
+      name: "Truffle Risotto",
+      description: "Creamy Arborio rice with wild mushrooms and truffle oil",
+      price: 24.99,
+      image: "https://images.unsplash.com/photo-1476124369491-e7addf5db371?auto=format&fit=crop&q=80",
+      dietary: { isVegetarian: true, isVegan: false, isGlutenFree: true },
+      ingredients: ["arborio rice", "mushrooms", "truffle oil", "parmesan", "butter"],
+      allergens: ["dairy"],
+      category: "mains"
+    }
+  ],
+  desserts: [
+    {
+      id: "tiramisu",
+      name: "Tiramisu",
+      description: "Classic Italian dessert with layers of coffee-soaked ladyfingers and mascarpone cream",
+      price: 8.99,
+      image: "https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?auto=format&fit=crop&q=80",
+      dietary: { isVegetarian: true, isVegan: false, isGlutenFree: false },
+      ingredients: ["ladyfingers", "mascarpone", "coffee", "cocoa", "eggs"],
+      allergens: ["gluten", "dairy", "eggs"],
+      category: "desserts"
+    },
+    {
+      id: "cheesecake",
+      name: "New York Cheesecake",
+      description: "Rich and creamy cheesecake with a graham cracker crust and berry compote",
+      price: 9.99,
+      image: "https://images.unsplash.com/photo-1533134242443-d4fd215305ad?auto=format&fit=crop&q=80",
+      dietary: { isVegetarian: true, isVegan: false, isGlutenFree: false },
+      ingredients: ["cream cheese", "sugar", "eggs", "graham crackers", "berries"],
+      allergens: ["gluten", "dairy", "eggs"],
+      category: "desserts"
+    }
+  ]
+};
 
 
 // Create a context for backward compatibility
@@ -8,11 +94,12 @@ export const MenuContext = createContext();
 
 const VERSION_HISTORY_KEY = 'menu_version_history';
 
-// This hook directly uses RootMenuContext and processes the data
+// This hook provides menu data and related functionality
 export function useMenu() {
-  // Get data directly from RootMenuContext
-  const rootMenuContext = useRootMenu();
-  const { menu: rootMenu, loading, error } = rootMenuContext;
+  // Use fallback data directly instead of fetching from RootMenuContext
+  const rootMenu = defaultMenu;
+  const loading = false;
+  const error = null;
   
   // Process menu data to handle different structures and extract categories
   const getProcessedMenu = () => {
