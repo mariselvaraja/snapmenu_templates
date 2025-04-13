@@ -110,7 +110,7 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
   // Handle item select
   const handleItemSelect = (result: any) => {
     handleClose();
-    navigate(`/product/${result.item.id}`);
+    navigate(`/menu/${result.item.id}`);
   };
 
   // Get flattened list of all items for keyboard navigation

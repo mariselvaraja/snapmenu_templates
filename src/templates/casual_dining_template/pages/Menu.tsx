@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowRight, ChevronDown } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { useAppSelector } from '../../../redux/hooks';
+import { ArrowRight, ChevronDown, ShoppingCart } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAppSelector, useAppDispatch } from '../../../redux/hooks';
+import { motion } from 'framer-motion';
+import { addItem } from '../../../redux/slices/cartSlice';
 
 interface MenuItem {
   id: string | number;
@@ -30,30 +32,78 @@ interface MenuItem {
   allergens?: string[];
   ingredients?: string[];
   pairings?: string[];
+  tags?: string[];
+}
+
+interface CartItem {
+  id: number;
+  name: string;
+  price: number;
+  image: string;
+  quantity: number;
+}
+
+// Define types for category and subcategory
+interface CategoryType {
+  id: string;
+  name: string;
+  type: string;
+}
+
+interface SubCategoryType {
+  id: string;
+  name: string;
 }
 
 export function Menu() {
   const [activeCategory, setActiveCategory] = useState("All");
+  const [selectedSubCategory, setSelectedSubCategory] = useState("all");
+  const [sortBy, setSortBy] = useState("featured");
   const [isNavSticky, setIsNavSticky] = useState(false);
   
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+  
   // Get menu items from Redux
-  const menuItems = useAppSelector(state => state.menu.items);
+  const { items: menuItems, loading, error } = useAppSelector(state => state.menu);
   
-  // Group menu items by category
-  const menuByCategory: Record<string, MenuItem[]> = {};
+  // Create categories array
+  const categories: CategoryType[] = [
+    { id: 'all', name: 'All', type: 'All' },
+    ...Array.from(new Set(menuItems.map(item => item.category)))
+      .map(category => ({
+        id: category,
+        name: category.charAt(0).toUpperCase() + category.slice(1),
+        type: category
+      }))
+  ];
   
-  menuItems.forEach((item: MenuItem) => {
-    if (!menuByCategory[item.category]) {
-      menuByCategory[item.category] = [];
-    }
-    menuByCategory[item.category].push(item);
+  // Extract subcategories if available
+  const subCategories: SubCategoryType[] = menuItems
+    .filter(item => item.category === activeCategory.toLowerCase() && item.tags && item.tags.length > 0)
+    .flatMap(item => item.tags || [])
+    .filter((tag, index, self) => self.indexOf(tag) === index)
+    .map(tag => ({
+      id: tag,
+      name: tag.charAt(0).toUpperCase() + tag.slice(1)
+    }));
+
+  // Filter items based on selected category and subcategory
+  const filteredItems = menuItems.filter(item => {
+    if (activeCategory !== "All" && item.category.toLowerCase() !== activeCategory.toLowerCase()) return false;
+    if (selectedSubCategory !== "all" && (!item.tags || !item.tags.includes(selectedSubCategory))) return false;
+    return true;
   });
-  
-  const categories = Object.entries(menuByCategory);
-  
-  const filteredCategories = activeCategory === "All"
-    ? categories
-    : categories.filter(([categoryName]) => categoryName === activeCategory);
+
+  // Sort items based on selected sort option
+  const sortedItems = [...filteredItems].sort((a, b) => {
+    const priceA = typeof a.price === 'string' ? parseFloat(a.price) : a.price;
+    const priceB = typeof b.price === 'string' ? parseFloat(b.price) : b.price;
+    
+    if (sortBy === "price-asc") return priceA - priceB;
+    if (sortBy === "price-desc") return priceB - priceA;
+    return 0;
+  });
 
   useEffect(() => {
     const handleScroll = () => {
@@ -69,6 +119,83 @@ export function Menu() {
     const menuSection = document.getElementById('menu-section');
     menuSection?.scrollIntoView({ behavior: 'smooth' });
   };
+  
+  const handleAddToCart = (menuItem: MenuItem) => {
+    const cartItem: CartItem = {
+      id: typeof menuItem.id === 'string' ? parseInt(menuItem.id) : menuItem.id as number,
+      name: menuItem.name,
+      price: typeof menuItem.price === 'string' ? parseFloat(menuItem.price) : menuItem.price as number,
+      image: menuItem.image,
+      quantity: 1
+    };
+    dispatch(addItem(cartItem));
+  };
+  
+  // Handle loading and error states
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black text-white py-20">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-16">
+            <h1 className="text-4xl font-bold mb-4">Our Menu</h1>
+            <p className="text-xl text-gray-400">
+              Explore our selection of dishes
+            </p>
+          </div>
+
+          {/* Skeleton for category buttons */}
+          <div className="flex flex-col space-y-4 mb-12">
+            <div className="flex flex-wrap gap-4 justify-center">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="h-10 w-24 bg-zinc-800 rounded-full animate-pulse"></div>
+              ))}
+            </div>
+          </div>
+
+          {/* Skeleton for menu items grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div key={i} className="bg-zinc-900 rounded-lg overflow-hidden shadow-lg">
+                {/* Skeleton for image */}
+                <div className="w-full h-64 bg-zinc-800 animate-pulse"></div>
+                <div className="p-6">
+                  {/* Skeleton for title and price */}
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="h-6 w-32 bg-zinc-800 rounded animate-pulse"></div>
+                    <div className="h-6 w-16 bg-zinc-800 rounded animate-pulse"></div>
+                  </div>
+                  {/* Skeleton for description */}
+                  <div className="h-4 w-full bg-zinc-800 rounded mb-2 animate-pulse"></div>
+                  <div className="h-4 w-3/4 bg-zinc-800 rounded mb-4 animate-pulse"></div>
+                  {/* Skeleton for button */}
+                  <div className="flex items-center justify-end">
+                    <div className="h-10 w-32 bg-zinc-800 rounded-full animate-pulse"></div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
+  if (error) {
+    return (
+      <div className="min-h-screen bg-black text-white py-20">
+        <div className="max-w-7xl mx-auto px-6 text-center">
+          <h1 className="text-4xl font-bold mb-4">Error Loading Menu</h1>
+          <p className="text-xl text-yellow-400">{error}</p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="mt-4 inline-flex items-center bg-yellow-400 text-black px-4 py-2 rounded-full hover:bg-yellow-300 transition-colors"
+          >
+            Reload Page
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -83,18 +210,23 @@ export function Menu() {
           <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black"></div>
         </div>
         
-        <div className="relative h-full flex flex-col items-center justify-center px-6 text-center">
-          <h1 className="text-6xl md:text-8xl font-bold mb-6 animate-fade-in">Our Menu</h1>
-          <p className="text-xl md:text-2xl text-gray-200 max-w-2xl mx-auto mb-12 animate-fade-in-delay-1">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="relative h-full flex flex-col items-center justify-center px-6 text-center"
+        >
+          <h1 className="text-6xl md:text-8xl font-bold mb-6">Our Menu</h1>
+          <p className="text-xl md:text-2xl text-gray-200 max-w-2xl mx-auto mb-12">
             Authentic Mexican street food made with fresh ingredients and traditional recipes
           </p>
           <button 
             onClick={scrollToMenu}
-            className="animate-fade-in-delay-2 mt-8 p-4 rounded-full bg-yellow-400/20 hover:bg-yellow-400/30 transition group"
+            className="mt-8 p-4 rounded-full bg-yellow-400/20 hover:bg-yellow-400/30 transition group"
           >
             <ChevronDown className="w-8 h-8 text-yellow-400 animate-bounce" />
           </button>
-        </div>
+        </motion.div>
       </div>
 
       {/* Sticky Category Navigation */}
@@ -102,78 +234,150 @@ export function Menu() {
         isNavSticky ? 'bg-black/90 backdrop-blur-lg shadow-xl' : ''
       }`}>
         <div className="max-w-7xl mx-auto px-6 py-6">
-          <div className="flex flex-wrap justify-center gap-4">
-            <button
-              onClick={() => setActiveCategory("All")}
-              className={`px-6 py-3 rounded-full text-lg font-semibold transition-all duration-300 ${
-                activeCategory === "All"
-                  ? "bg-yellow-400 text-black"
-                  : "bg-zinc-900/50 backdrop-blur-sm hover:bg-zinc-800/50"
-              }`}
-            >
-              All
-            </button>
-            {categories.map(([categoryName], index) => (
-              <button
-                key={index}
-                onClick={() => setActiveCategory(categoryName)}
-                className={`px-6 py-3 rounded-full text-lg font-semibold transition-all duration-300 ${
-                  activeCategory === categoryName
-                    ? "bg-yellow-400 text-black"
-                    : "bg-zinc-900/50 backdrop-blur-sm hover:bg-zinc-800/50"
-                }`}
+          <div className="flex flex-col space-y-4">
+            {/* Main Categories */}
+            <div className="flex flex-wrap justify-center gap-4">
+              {categories.map((category) => (
+                <button
+                  key={category.id}
+                  onClick={() => {
+                    setActiveCategory(category.type);
+                    setSelectedSubCategory("all");
+                  }}
+                  className={`px-6 py-3 rounded-full text-lg font-semibold transition-all duration-300 ${
+                    activeCategory === category.type
+                      ? "bg-yellow-400 text-black"
+                      : "bg-zinc-900/50 backdrop-blur-sm hover:bg-zinc-800/50"
+                  }`}
+                >
+                  {category.name}
+                </button>
+              ))}
+            </div>
+            
+            {/* Sub Categories (if available) */}
+            {subCategories.length > 0 && (
+              <div className="flex flex-wrap justify-center gap-4">
+                <button
+                  onClick={() => setSelectedSubCategory("all")}
+                  className={`px-6 py-2 rounded-full text-sm font-semibold transition-all duration-300 ${
+                    selectedSubCategory === "all"
+                      ? "bg-yellow-400 text-black"
+                      : "bg-zinc-900/50 backdrop-blur-sm hover:bg-zinc-800/50"
+                  }`}
+                >
+                  All {activeCategory}
+                </button>
+                {subCategories.map((subCategory) => (
+                  <button
+                    key={subCategory.id}
+                    onClick={() => setSelectedSubCategory(subCategory.id)}
+                    className={`px-6 py-2 rounded-full text-sm font-semibold transition-all duration-300 ${
+                      selectedSubCategory === subCategory.id
+                        ? "bg-yellow-400 text-black"
+                        : "bg-zinc-900/50 backdrop-blur-sm hover:bg-zinc-800/50"
+                    }`}
+                  >
+                    {subCategory.name}
+                  </button>
+                ))}
+              </div>
+            )}
+            
+            {/* Sort Options */}
+            <div className="flex justify-end">
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="px-4 py-2 bg-zinc-900 border border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400 text-white"
               >
-                {categoryName}
-              </button>
-            ))}
+                <option value="featured">Featured</option>
+                <option value="price-asc">Price: Low to High</option>
+                <option value="price-desc">Price: High to Low</option>
+              </select>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Menu Section */}
+      {/* Menu Section - Grid Layout */}
       <div id="menu-section" className="max-w-7xl mx-auto px-6 py-20">
-        <div className="space-y-32">
-          {filteredCategories.map(([categoryName, categoryData], index) => (
-            <div key={index} className="relative scroll-mt-32">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                {/* Image Side */}
-                <div className="relative aspect-[4/3] lg:aspect-square">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {sortedItems.map((item: MenuItem, index: number) => (
+            <motion.div
+              key={item.id}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+              className="bg-zinc-900/50 backdrop-blur-sm rounded-xl overflow-hidden shadow-lg"
+            >
+              <div 
+                className="relative cursor-pointer" 
+                onClick={() => navigate(`/menu/${item.id}`)}
+              >
+                {item.image ? (
                   <img
-                    src={categoryData[0].image}
-                    alt={categoryName}
-                    className="w-full h-full object-cover rounded-3xl"
+                    src={item.image}
+                    alt={item.name}
+                    className="w-full h-64 object-cover"
                   />
-                  <div className="absolute inset-0 rounded-3xl bg-gradient-to-t from-black/50 to-transparent"></div>
-                  <div className="absolute bottom-8 left-8 right-8">
-                    <h2 className="text-4xl md:text-5xl font-bold mb-4">{categoryName}</h2>
+                ) : (
+                  <div className="w-full h-64 bg-zinc-800 flex items-center justify-center">
+                    <span className="text-6xl font-bold text-yellow-400">
+                      {item.name && item.name.length > 0 
+                        ? item.name.charAt(0).toUpperCase() 
+                        : 'M'}
+                    </span>
                   </div>
-                </div>
-
-                {/* Menu Items Side */}
-                <div className="bg-zinc-900/50 backdrop-blur-sm rounded-3xl p-8 lg:p-12">
-                  <div className="space-y-8">
-                    {categoryData.map((item: MenuItem, itemIndex: number) => (
-                        <Link
-                          key={itemIndex}
-                          to={`/menu/${item.id}`}
-                          className="group hover:bg-zinc-800/50 p-4 rounded-xl transition-all duration-300 block"
-                        >
-                          <div className="flex justify-between items-center mb-2">
-                            <h3 className="text-2xl font-bold group-hover:text-yellow-400 transition">
-                              {item.name}
-                            </h3>
-                            <div className="flex items-center">
-                              <span className="text-yellow-400 text-xl font-semibold">{item.price}</span>
-                              <ArrowRight className="w-5 h-5 ml-2 opacity-0 group-hover:opacity-100 transition transform group-hover:translate-x-1" />
-                            </div>
-                          </div>
-                          <p className="text-gray-400 text-lg">{item.description}</p>
-                        </Link>
-                    ))}
-                  </div>
+                )}
+                <div className="absolute top-4 left-4 flex gap-2">
+                  {item.dietary?.isVegetarian && (
+                    <div className="bg-green-500 text-white px-3 py-1 rounded-full text-sm">
+                      Vegetarian
+                    </div>
+                  )}
+                  {item.dietary?.isVegan && (
+                    <div className="bg-green-500 text-white px-3 py-1 rounded-full text-sm">
+                      Vegan
+                    </div>
+                  )}
+                  {item.dietary?.isGlutenFree && (
+                    <div className="bg-blue-500 text-white px-3 py-1 rounded-full text-sm">
+                      GF
+                    </div>
+                  )}
                 </div>
               </div>
-            </div>
+              <div className="p-6">
+                <div className="flex justify-between items-center mb-2">
+                  <h3 
+                    className="text-xl font-bold cursor-pointer hover:text-yellow-400 transition"
+                    onClick={() => navigate(`/menu/${item.id}`)}
+                  >
+                    {item.name}
+                  </h3>
+                  <span className="text-lg font-bold text-yellow-400">${typeof item.price === 'string' ? item.price : item.price.toFixed(2)}</span>
+                </div>
+                <p 
+                  className="text-gray-400 mb-4 line-clamp-2 cursor-pointer hover:text-gray-300 transition"
+                  onClick={() => navigate(`/menu/${item.id}`)}
+                >
+                  {item.description}
+                </p>
+                <div className="flex items-center justify-end">
+                  <button
+                    className="inline-flex items-center bg-yellow-400 text-black px-4 py-2 rounded-full hover:bg-yellow-300 transition"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleAddToCart(item);
+                    }}
+                  >
+                    <ShoppingCart className="h-4 w-4 mr-2" />
+                    Add to Cart
+                  </button>
+                </div>
+              </div>
+            </motion.div>
           ))}
         </div>
       </div>
@@ -188,7 +392,12 @@ export function Menu() {
           />
           <div className="absolute inset-0 bg-black/70 backdrop-blur-sm"></div>
         </div>
-        <div className="relative max-w-7xl mx-auto text-center px-6">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="relative max-w-7xl mx-auto text-center px-6"
+        >
           <h2 className="text-4xl md:text-5xl font-bold mb-6">Ready to Order?</h2>
           <p className="text-xl text-gray-200 mb-8 max-w-2xl mx-auto">
             Visit one of our locations or order online for pickup. Experience the authentic taste of Mexico today.
@@ -196,7 +405,7 @@ export function Menu() {
           <button className="bg-yellow-400 text-black px-8 py-4 rounded-full text-lg font-semibold hover:bg-yellow-300 transition">
             Order Now
           </button>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

@@ -1,8 +1,9 @@
 import React, { useContext, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { CartContext, CartContextType, useCart } from '../context/CartContext';
-import { ArrowRight } from 'lucide-react';
-import { useAppSelector } from '../../../common/redux';
+import { ArrowRight, ArrowLeft, ShoppingCart, Info, Tag, Box, Utensils, AlertTriangle, Heart } from 'lucide-react';
+import { useAppSelector } from '../../../redux/hooks';
+import { motion } from 'framer-motion';
 
 // Define our own interface to avoid conflicts with imported types
 interface ProductItem {
@@ -11,23 +12,51 @@ interface ProductItem {
   price: string | number;
   image: string;
   description: string;
-  isVegetarian?: boolean;
-  nutritionalInfo?: {
-    calories?: string | number;
+  category?: string;
+  subCategory?: string;
+  supplier?: string;
+  brand?: string;
+  unit?: string;
+  external_id?: string;
+  bar_code?: string;
+  appearance?: string;
+  serving?: string;
+  flavors?: string;
+  variations?: string;
+  comment?: string;
+  calories?: string | number;
+  nutrients?: {
     protein?: string;
     carbs?: string;
+    fat?: string;
+    sat?: string;
+    unsat?: string;
+    trans?: string;
+    sugar?: string;
+    fiber?: string;
+    [key: string]: string | undefined;
+  };
+  dietary?: {
+    isVegetarian?: boolean;
+    isVegan?: boolean;
+    isGlutenFree?: boolean;
   };
   allergens?: string[];
+  ingredients?: string[];
+  pairings?: string[];
+  best_combo?: string;
+  tags?: string[];
 }
 
 function ProductDetails() {
   const { itemId } = useParams();
+  const navigate = useNavigate();
   const { addToCart } = useContext(CartContext) as CartContextType;
   const [quantity, setQuantity] = useState(1);
   const { toggleCart } = useCart();
   
   const { rawApiResponse } = useAppSelector(state => state.siteContent);
-  const { items: menuItems } = useAppSelector(state => state.menu);
+  const { items: menuItems, loading, error } = useAppSelector(state => state.menu);
   
   // Get site content from Redux state
   const siteContent = rawApiResponse ? 
@@ -40,18 +69,6 @@ function ProductDetails() {
   // Cast to our ProductItem interface to access our custom properties
   const product = menuItem as unknown as ProductItem;
 
-  if (!product) {
-    return <div className="min-h-screen bg-black text-white py-20 flex items-center justify-center">
-      <div className="text-center">
-        <h2 className="text-3xl font-semibold mb-4">Product Not Found</h2>
-        <p className="mb-6">The product you're looking for doesn't exist or has been removed.</p>
-        <Link to="/menu" className="bg-yellow-400 text-black px-6 py-3 rounded-full font-semibold hover:bg-yellow-300 transition">
-          Return to Menu
-        </Link>
-      </div>
-    </div>;
-  }
-
   const handleIncrement = () => {
     setQuantity(quantity + 1);
   };
@@ -62,101 +79,427 @@ function ProductDetails() {
     }
   };
 
+  const handleAddToCart = () => {
+    if (product) {
+      addToCart({
+        id: product.id,
+        name: product.name,
+        price: typeof product.price === 'number' ? product.price.toFixed(2) : product.price.toString(),
+        imageUrl: product.image,
+      });
+      toggleCart();
+    }
+  };
+  
+  // Handle loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black text-white py-20">
+        <div className="max-w-7xl mx-auto px-6">
+          {/* Back button skeleton */}
+          <div className="h-10 w-32 bg-zinc-800 rounded-full animate-pulse mb-8"></div>
+
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            {/* You May Also Like skeleton on LHS */}
+            <div className="md:col-span-1">
+              <div className="h-6 w-48 bg-zinc-800 rounded animate-pulse mb-4"></div>
+              <div className="space-y-4">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <div key={i} className="bg-zinc-900 rounded-lg overflow-hidden shadow-sm">
+                    <div className="flex items-center p-2">
+                      <div className="w-16 h-16 bg-zinc-800 rounded-md mr-3 animate-pulse"></div>
+                      <div>
+                        <div className="h-4 w-20 bg-zinc-800 rounded animate-pulse mb-2"></div>
+                        <div className="h-3 w-12 bg-zinc-800 rounded animate-pulse"></div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Product Details skeleton on RHS */}
+            <div className="md:col-span-3">
+              {/* Product Header with Image on Right */}
+              <div className="flex flex-col md:flex-row justify-between items-start mb-8">
+                <div className="md:pr-8 md:w-1/2">
+                  <div className="h-8 w-48 bg-zinc-800 rounded animate-pulse mb-2"></div>
+                  <div className="h-6 w-24 bg-zinc-800 rounded animate-pulse mb-4"></div>
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    <div className="h-6 w-20 bg-zinc-800 rounded-full animate-pulse"></div>
+                    <div className="h-6 w-16 bg-zinc-800 rounded-full animate-pulse"></div>
+                  </div>
+                  <div className="h-4 w-full bg-zinc-800 rounded animate-pulse mb-2"></div>
+                  <div className="h-4 w-full bg-zinc-800 rounded animate-pulse mb-2"></div>
+                  <div className="h-4 w-3/4 bg-zinc-800 rounded animate-pulse mb-6"></div>
+                  
+                  {/* Add to cart button skeleton */}
+                  <div className="w-full h-12 bg-zinc-800 rounded-full animate-pulse mb-6"></div>
+                </div>
+                <div className="md:w-1/2 mt-4 md:mt-0">
+                  <div className="w-full h-64 bg-zinc-800 rounded-lg animate-pulse"></div>
+                </div>
+              </div>
+
+              {/* Product Details section skeleton */}
+              <div className="mb-8">
+                <div className="flex items-center mb-4">
+                  <div className="h-6 w-6 bg-zinc-800 rounded-full animate-pulse mr-2"></div>
+                  <div className="h-6 w-32 bg-zinc-800 rounded animate-pulse"></div>
+                </div>
+                <div className="space-y-4">
+                  {[1, 2, 3, 4].map((i) => (
+                    <div key={i} className="border-b border-zinc-800 pb-3">
+                      <div className="flex items-center mb-1">
+                        <div className="h-4 w-4 bg-zinc-800 rounded-full animate-pulse mr-2"></div>
+                        <div className="h-4 w-24 bg-zinc-800 rounded animate-pulse"></div>
+                      </div>
+                      <div className="h-4 w-32 bg-zinc-800 rounded animate-pulse ml-6"></div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
+  // Handle error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-black text-white py-20">
+        <div className="max-w-7xl mx-auto px-6 text-center">
+          <h1 className="text-3xl font-bold mb-4">Error Loading Product</h1>
+          <p className="text-xl text-yellow-400">{error}</p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="mt-4 inline-flex items-center bg-yellow-400 text-black px-4 py-2 rounded-full hover:bg-yellow-300 transition-colors"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Reload Page
+          </button>
+        </div>
+      </div>
+    );
+  }
+  
+  // Handle product not found
+  if (!product) {
+    return (
+      <div className="min-h-screen bg-black text-white py-20 flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-3xl font-semibold mb-4">Product Not Found</h2>
+          <p className="mb-6">The product you're looking for doesn't exist or has been removed.</p>
+          <Link to="/menu" className="bg-yellow-400 text-black px-6 py-3 rounded-full font-semibold hover:bg-yellow-300 transition">
+            Return to Menu
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <>
     <div className="min-h-screen bg-black text-white py-20">
-      <div className="container mx-auto mt-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div className="relative">
-            <div className='w-full'>
-            <img src={product.image} alt={product.name} className="rounded-lg shadow-md" />
-            </div>
-            {product.isVegetarian && (
-              <div className="absolute top-2 right-2">
-                <span className="bg-green-500 text-white text-sm font-semibold px-2.5 py-0.5 rounded">
-                  Vegetarian
-                </span>
-              </div>
-            )}
-          </div>
-          <div>
-            <h2 className="text-3xl font-semibold">{product.name}</h2>
-            <p className="text-yellow-400 text-xl">${typeof product.price === 'number' ? product.price.toFixed(2) : product.price}</p>
-            <p className="mt-4">{product.description}</p>
+      <div className="max-w-7xl mx-auto px-6">
+        <button 
+          onClick={() => navigate('/menu')}
+          className="inline-flex items-center mb-8 bg-zinc-900 text-white px-4 py-2 rounded-full hover:bg-zinc-800 transition-colors"
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Menu
+        </button>
 
-            <div className="flex items-center mt-4 space-x-4">
-              <div className="flex items-center space-x-2">
-                <button
-                  className="bg-zinc-900 hover:bg-zinc-700 text-white font-bold py-2 px-4 rounded"
-                  onClick={handleDecrement}
-                >
-                  -
-                </button>
-                <span className="text-lg">{quantity}</span>
-                <button
-                  className="bg-zinc-900 hover:bg-zinc-700 text-white font-bold py-2 px-4 rounded"
-                  onClick={handleIncrement}
-                >
-                  +
-                </button>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          {/* You May Also Like section on LHS */}
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5 }}
+            className="md:col-span-1"
+          >
+            <h2 className="text-xl font-semibold mb-4 flex items-center">
+              <Heart className="h-5 w-5 mr-2 text-yellow-400" />
+              You May Also Like
+            </h2>
+            <div className="space-y-4">
+              {menuItems
+                .filter((item: any) => item.id.toString() !== itemId)
+                .slice(0, 5)
+                .map((item: any) => (
+                  <div 
+                    key={item.id} 
+                    className="bg-zinc-900 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+                    onClick={() => navigate(`/menu/${item.id}`)}
+                  >
+                    <div className="flex items-center p-2">
+                      {item.image ? (
+                        <img 
+                          src={item.image} 
+                          alt={item.name} 
+                          className="w-16 h-16 object-cover rounded-md mr-3"
+                        />
+                      ) : (
+                        <div className="w-16 h-16 bg-zinc-800 flex items-center justify-center rounded-md mr-3">
+                          <span className="text-xl font-bold text-yellow-400">
+                            {item.name && item.name.length > 0 
+                              ? item.name.charAt(0).toUpperCase() 
+                              : 'M'}
+                          </span>
+                        </div>
+                      )}
+                      <div>
+                        <h3 className="font-medium text-sm">{item.name}</h3>
+                        <p className="text-yellow-400 text-xs">${typeof item.price === 'number' ? item.price.toFixed(2) : item.price}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          </motion.div>
+
+          {/* Product Details on RHS */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5 }}
+            className="md:col-span-3"
+          >
+            {/* Product Header with Image on Right */}
+            <div className="flex flex-col md:flex-row justify-between items-start mb-8">
+              <div className="md:pr-8 md:w-1/2">
+                <h1 className="text-3xl font-bold mb-2">{product.name}</h1>
+                <div className="text-2xl font-bold text-yellow-400 mb-4">${typeof product.price === 'number' ? product.price.toFixed(2) : product.price}</div>
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {product.dietary?.isVegetarian && (
+                    <div className="bg-green-500 text-white px-3 py-1 rounded-full text-sm">
+                      Vegetarian
+                    </div>
+                  )}
+                  {product.dietary?.isVegan && (
+                    <div className="bg-green-500 text-white px-3 py-1 rounded-full text-sm">
+                      Vegan
+                    </div>
+                  )}
+                  {product.dietary?.isGlutenFree && (
+                    <div className="bg-blue-500 text-white px-3 py-1 rounded-full text-sm">
+                      GF
+                    </div>
+                  )}
+                </div>
+                <p className="text-gray-300 mb-6">{product.description}</p>
+                
+                <div className="flex items-center mb-6">
+                  <div className="flex items-center space-x-2 mr-4">
+                    <button
+                      className="bg-zinc-900 hover:bg-zinc-800 text-white font-bold py-2 px-4 rounded"
+                      onClick={handleDecrement}
+                    >
+                      -
+                    </button>
+                    <span className="text-lg">{quantity}</span>
+                    <button
+                      className="bg-zinc-900 hover:bg-zinc-800 text-white font-bold py-2 px-4 rounded"
+                      onClick={handleIncrement}
+                    >
+                      +
+                    </button>
+                  </div>
+                  <button
+                    className="flex-grow inline-flex items-center justify-center bg-yellow-400 text-black px-6 py-3 rounded-full hover:bg-yellow-300 transition-colors"
+                    onClick={handleAddToCart}
+                  >
+                    <ShoppingCart className="h-5 w-5 mr-2" />
+                    Add to Order
+                  </button>
+                </div>
               </div>
-              <button
-                className="bg-yellow-400 text-black px-8 py-4 rounded-full text-lg font-semibold hover:bg-yellow-300 transition flex items-center justify-center"
-                onClick={() => {
-                  addToCart({
-                    id: product.id,
-                    name: product.name,
-                    price: typeof product.price === 'number' ? product.price.toFixed(2) : product.price,
-                    imageUrl: product.image,
-                  });
-                  toggleCart();
-                }}
-              >
-                Add to Order
-                <ArrowRight className="ml-2 w-5 h-5" />
-              </button>
+              <div className="md:w-1/2 mt-4 md:mt-0">
+                <div className="relative rounded-lg overflow-hidden shadow-lg">
+                  {product.image ? (
+                    <img 
+                      src={product.image} 
+                      alt={product.name} 
+                      className="w-full h-64 object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-64 bg-zinc-800 flex items-center justify-center">
+                      <span className="text-6xl font-bold text-yellow-400">
+                        {product.name && product.name.length > 0 
+                          ? product.name.charAt(0).toUpperCase() 
+                          : 'M'}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
 
-            {product.nutritionalInfo && (
-              <div className="mt-6">
-                <h3 className="text-xl font-semibold">Nutritional Information</h3>
-                <div className="grid grid-cols-3 gap-4 mt-2">
-                  <div className="bg-zinc-900 p-4 rounded">
-                    <p className="font-semibold">Calories</p>
-                    <p>{product.nutritionalInfo.calories?.toString() || 'N/A'}</p>
-                  </div>
-                  <div className="bg-zinc-900 p-4 rounded">
-                    <p className="font-semibold">Protein</p>
-                    <p>{product.nutritionalInfo.protein || 'N/A'}</p>
-                  </div>
-                  <div className="bg-zinc-900 p-4 rounded">
-                    <p className="font-semibold">Carbs</p>
-                    <p>{product.nutritionalInfo.carbs || 'N/A'}</p>
-                  </div>
+            {/* Product Details section */}
+            {(product.category || product.subCategory || product.supplier || product.brand || 
+              product.unit || product.external_id || product.bar_code || product.appearance || 
+              product.serving || product.flavors || product.variations || product.comment) && (
+              <div className="mb-8">
+                <h2 className="text-xl font-semibold mb-4 flex items-center">
+                  <Info className="h-5 w-5 mr-2 text-yellow-400" />
+                  Product Details
+                </h2>
+                <div className="space-y-4">
+                  {product.category && (
+                    <div className="border-b border-zinc-800 pb-3">
+                      <div className="flex items-center mb-1">
+                        <Tag className="h-4 w-4 mr-2 text-gray-400" />
+                        <span className="font-medium text-gray-300">Category</span>
+                      </div>
+                      <div className="text-white pl-6">{product.category}</div>
+                    </div>
+                  )}
+                  {product.subCategory && (
+                    <div className="border-b border-zinc-800 pb-3">
+                      <div className="flex items-center mb-1">
+                        <Tag className="h-4 w-4 mr-2 text-gray-400" />
+                        <span className="font-medium text-gray-300">Subcategory</span>
+                      </div>
+                      <div className="text-white pl-6">{product.subCategory}</div>
+                    </div>
+                  )}
+                  {product.supplier && (
+                    <div className="border-b border-zinc-800 pb-3">
+                      <div className="flex items-center mb-1">
+                        <Box className="h-4 w-4 mr-2 text-gray-400" />
+                        <span className="font-medium text-gray-300">Supplier</span>
+                      </div>
+                      <div className="text-white pl-6">{product.supplier}</div>
+                    </div>
+                  )}
+                  {product.brand && (
+                    <div className="border-b border-zinc-800 pb-3">
+                      <div className="flex items-center mb-1">
+                        <Box className="h-4 w-4 mr-2 text-gray-400" />
+                        <span className="font-medium text-gray-300">Brand</span>
+                      </div>
+                      <div className="text-white pl-6">{product.brand}</div>
+                    </div>
+                  )}
+                  {product.unit && (
+                    <div className="border-b border-zinc-800 pb-3">
+                      <div className="flex items-center mb-1">
+                        <Box className="h-4 w-4 mr-2 text-gray-400" />
+                        <span className="font-medium text-gray-300">Unit</span>
+                      </div>
+                      <div className="text-white pl-6">{product.unit}</div>
+                    </div>
+                  )}
+                  {product.serving && (
+                    <div className="border-b border-zinc-800 pb-3">
+                      <div className="flex items-center mb-1">
+                        <Utensils className="h-4 w-4 mr-2 text-gray-400" />
+                        <span className="font-medium text-gray-300">Serving</span>
+                      </div>
+                      <div className="text-white pl-6">{product.serving}</div>
+                    </div>
+                  )}
+                  {product.flavors && (
+                    <div className="border-b border-zinc-800 pb-3">
+                      <div className="flex items-center mb-1">
+                        <Utensils className="h-4 w-4 mr-2 text-gray-400" />
+                        <span className="font-medium text-gray-300">Flavors</span>
+                      </div>
+                      <div className="text-white pl-6">{product.flavors}</div>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
 
+            {/* Nutritional information section */}
+            {(product.calories || (product.nutrients && Object.keys(product.nutrients).length > 0)) && (
+              <div className="mb-8">
+                <h2 className="text-xl font-semibold mb-4 flex items-center">
+                  <Utensils className="h-5 w-5 mr-2 text-yellow-400" />
+                  Nutritional Information
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-2">
+                  {product.calories && (
+                    <div className="bg-zinc-900 p-4 rounded">
+                      <p className="font-semibold">Calories</p>
+                      <p>{product.calories.toString()}</p>
+                    </div>
+                  )}
+                  {product.nutrients && Object.entries(product.nutrients).map(([key, value]) => (
+                    value && (
+                      <div key={key} className="bg-zinc-900 p-4 rounded">
+                        <p className="font-semibold">{key.charAt(0).toUpperCase() + key.slice(1)}</p>
+                        <p>{value}</p>
+                      </div>
+                    )
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Ingredients section */}
+            {product.ingredients && product.ingredients.length > 0 && (
+              <div className="mb-8">
+                <h2 className="text-xl font-semibold mb-4 flex items-center">
+                  <Box className="h-5 w-5 mr-2 text-yellow-400" />
+                  Ingredients
+                </h2>
+                <div className="flex flex-wrap gap-2 pl-6">
+                  {product.ingredients.map((ingredient, index) => (
+                    <span 
+                      key={index} 
+                      className="bg-zinc-800 text-white px-3 py-1 rounded-full text-sm"
+                    >
+                      {ingredient}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Allergens section */}
             {product.allergens && product.allergens.length > 0 && (
-              <div className="mt-6">
-                <h3 className="text-xl font-semibold">Allergens</h3>
-                <div className="flex flex-wrap gap-2 mt-2">
+              <div className="mb-8">
+                <h2 className="text-xl font-semibold mb-4 flex items-center">
+                  <AlertTriangle className="h-5 w-5 mr-2 text-yellow-400" />
+                  Allergens
+                </h2>
+                <div className="flex flex-wrap gap-2 pl-6">
                   {product.allergens.map((allergen, index) => (
-                    <span key={index} className="bg-zinc-900 p-2 rounded text-sm">
+                    <span 
+                      key={index} 
+                      className="bg-red-900/50 text-white px-3 py-1 rounded-full text-sm"
+                    >
                       {allergen}
                     </span>
                   ))}
                 </div>
               </div>
             )}
-          </div>
+
+            {/* Pairings section */}
+            {product.pairings && product.pairings.length > 0 && (
+              <div className="mb-8">
+                <h2 className="text-xl font-semibold mb-4 flex items-center">
+                  <Heart className="h-5 w-5 mr-2 text-yellow-400" />
+                  Perfect Pairings
+                </h2>
+                <ul className="space-y-3 pl-6">
+                  {product.pairings.map((pairing, index) => (
+                    <li key={index} className="flex items-center">
+                      <span className="w-2 h-2 bg-yellow-400 rounded-full mr-2"></span>
+                      <span className="text-gray-300">{pairing}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </motion.div>
         </div>
       </div>
-    
     </div>
-    
-    </>
   );
 }
 
