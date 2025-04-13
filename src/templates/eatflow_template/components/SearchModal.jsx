@@ -192,11 +192,25 @@ const SearchModal = ({ isOpen, onClose }) => {
     
     // If no categories in Redux, extract unique categories from menu items
     if (menuItems && menuItems.length > 0) {
-      const uniqueCategories = [...new Set(menuItems.map((item) => item.category))];
-      return uniqueCategories.map((category) => ({
-        text: category.charAt(0).toUpperCase() + category.slice(1),
-        query: category.toLowerCase()
-      }));
+      // Use a Set to get unique categories
+      const uniqueCategories = new Set();
+      
+      // Add all categories to the set
+      menuItems.forEach(item => {
+        if (item.category) {
+          uniqueCategories.add(item.category);
+        }
+      });
+      
+      // Convert set to array and sort alphabetically
+      return Array.from(uniqueCategories)
+        .sort()
+        .map((category) => ({
+          text: typeof category === 'string' ? 
+            category.charAt(0).toUpperCase() + category.slice(1).toLowerCase() : 
+            'Other',
+          query: typeof category === 'string' ? category.toLowerCase() : 'other'
+        }));
     }
     
     // Default fallback if API data isn't loaded yet
@@ -210,13 +224,27 @@ const SearchModal = ({ isOpen, onClose }) => {
 
   // Handle quick link click
   const handleQuickLinkClick = (quickLink) => {
+    console.log('Quick link clicked:', quickLink);
+    
     // Set the search query to the category name
     dispatch(setSearchQuery(quickLink.query));
     
     // Perform search immediately for the category
     if (searchState === SearchState.READY) {
       setIsSearching(true);
+      
+      // Use the exact category name for better matching
       searchService.search(quickLink.query)
+        .then(searchResults => {
+          console.log('Category search results:', searchResults);
+          
+          // If no results found, try a more general search
+          if (!searchResults.results || searchResults.results.length === 0) {
+            return searchService.search(quickLink.text);
+          }
+          
+          return searchResults;
+        })
         .then(searchResults => {
           dispatch(setSearchResults(searchResults));
           setIsSearching(false);
@@ -348,7 +376,7 @@ const SearchModal = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[9999] overflow-y-auto bg-black/80 backdrop-blur-sm">
+    <div className="fixed inset-0 z-30 overflow-y-auto bg-black/80 backdrop-blur-sm">
       <div className="min-h-screen px-4 text-center">
         <div
           ref={searchRef}

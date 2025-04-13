@@ -348,7 +348,7 @@ export function Menu() {
       </div>
 
       {/* Sticky Navigation with Categories */}
-      <div className={`sticky top-0 z-50 transition-all duration-300 ${
+      <div className={`sticky top-0 z-20 transition-all duration-300 ${
         isNavSticky ? 'bg-white shadow-lg' : 'bg-gray-50'
       }`}>
         <div className="container mx-auto px-6 py-4">
@@ -421,7 +421,7 @@ export function Menu() {
       
       {/* Subcategory and Dietary Filters */}
       {(activeCategory !== 'all' && categories.find(cat => cat.id === activeCategory)?.subcategories?.length > 0) || true ? (
-        <div className="bg-white border-t border-gray-200 py-3">
+        <div className="bg-white border-t border-gray-200 py-3 z-20">
           <div className="container mx-auto px-6">
             <div className="flex flex-wrap gap-3 items-center">
               {/* Subcategory Filters - Only show if a specific category is selected */}
