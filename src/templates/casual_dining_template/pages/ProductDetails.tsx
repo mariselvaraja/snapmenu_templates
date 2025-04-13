@@ -4,6 +4,7 @@ import { CartContext, CartContextType, useCart } from '../context/CartContext';
 import { ArrowRight, ArrowLeft, ShoppingCart, Info, Tag, Box, Utensils, AlertTriangle, Heart } from 'lucide-react';
 import { useAppSelector } from '../../../redux/hooks';
 import { motion } from 'framer-motion';
+import { TbCategory2 } from 'react-icons/tb';
 
 // Define our own interface to avoid conflicts with imported types
 interface ProductItem {
@@ -224,10 +225,37 @@ function ProductDetails() {
               You May Also Like
             </h2>
             <div className="space-y-4">
-              {menuItems
-                .filter((item: any) => item.id.toString() !== itemId)
-                .slice(0, 5)
-                .map((item: any) => (
+              {(() => {
+                // Extract best combo SKU IDs from the product
+                let recommendedSkuIds: string[] = [];
+                
+                if (product.best_combo && typeof product.best_combo === 'string') {
+                  try {
+                    const bestCombo = JSON.parse(product.best_combo);
+                    if (bestCombo.best_combo_ids) {
+                      recommendedSkuIds = bestCombo.best_combo_ids
+                        .split(',')
+                        .map((id: string) => id.trim());
+                    }
+                  } catch (e) {
+                    // If parsing fails, use empty array
+                    recommendedSkuIds = [];
+                  }
+                }
+                
+                // Find items matching the recommended SKU IDs
+                let recommendedItems = menuItems.filter((item: any) => 
+                  item.sku_id && recommendedSkuIds.includes(item.sku_id)
+                );
+                
+                // If no recommended items found, show random items
+                if (recommendedItems.length === 0) {
+                  recommendedItems = menuItems
+                    .filter((item: any) => item.id.toString() !== itemId)
+                    .slice(0, 5);
+                }
+                
+                return recommendedItems.map((item: any) => (
                   <div 
                     key={item.id} 
                     className="bg-zinc-900 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer"
@@ -255,7 +283,8 @@ function ProductDetails() {
                       </div>
                     </div>
                   </div>
-                ))}
+                ));
+              })()}
             </div>
           </motion.div>
 
@@ -358,7 +387,7 @@ function ProductDetails() {
                   {product.subCategory && (
                     <div className="border-b border-zinc-800 pb-3">
                       <div className="flex items-center mb-1">
-                        <Tag className="h-4 w-4 mr-2 text-gray-400" />
+                        <TbCategory2 className="h-4 w-4 mr-2 text-gray-400" />
                         <span className="font-medium text-gray-300">Subcategory</span>
                       </div>
                       <div className="text-white pl-6">{product.subCategory}</div>
@@ -403,7 +432,7 @@ function ProductDetails() {
                   {product.flavors && (
                     <div className="border-b border-zinc-800 pb-3">
                       <div className="flex items-center mb-1">
-                        <Utensils className="h-4 w-4 mr-2 text-gray-400" />
+                        <Heart className="h-4 w-4 mr-2 text-gray-400" />
                         <span className="font-medium text-gray-300">Flavors</span>
                       </div>
                       <div className="text-white pl-6">{product.flavors}</div>

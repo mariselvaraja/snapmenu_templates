@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { ShoppingCart, ArrowLeft, Info, Tag, Box, Utensils, AlertTriangle, Heart } from 'lucide-react';
 import { useAppDispatch, useAppSelector, addItem, CartItem, fetchMenuRequest, MenuItem } from '../../../common/redux';
 import { useEffect } from 'react';
+import { TbCategory2 } from 'react-icons/tb';
 
 export default function ProductDetail() {
     const { productId } = useParams<{ productId: string }>();
@@ -313,13 +314,34 @@ export default function ProductDetail() {
                                 </div>
                                 <p className="text-gray-700 mb-6">{product.description}</p>
                                 
-                                <button
-                                    className="w-full inline-flex items-center justify-center bg-red-500 text-white px-6 py-3 rounded-full hover:bg-red-600 transition-colors mb-6"
-                                    onClick={() => handleAddToCart(product)}
-                                >
-                                    <ShoppingCart className="h-5 w-5 mr-2" />
-                                    Add to Cart
-                                </button>
+                                <div className="flex items-center mb-6">
+                                    <div className="flex items-center space-x-2 mr-4">
+                                        <button
+                                            className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded"
+                                            onClick={() => {
+                                                // If we had state for quantity, we would decrement it here
+                                            }}
+                                        >
+                                            -
+                                        </button>
+                                        <span className="text-lg">1</span>
+                                        <button
+                                            className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded"
+                                            onClick={() => {
+                                                // If we had state for quantity, we would increment it here
+                                            }}
+                                        >
+                                            +
+                                        </button>
+                                    </div>
+                                    <button
+                                        className="flex-grow inline-flex items-center justify-center bg-red-500 text-white px-6 py-3 rounded-full hover:bg-red-600 transition-colors"
+                                        onClick={() => handleAddToCart(product)}
+                                    >
+                                        <ShoppingCart className="h-5 w-5 mr-2" />
+                                        Add to Cart
+                                    </button>
+                                </div>
                             </div>
                             <div className="md:w-1/2 mt-4 md:mt-0">
                                 <div className="relative rounded-lg overflow-hidden shadow-lg">
@@ -361,7 +383,7 @@ export default function ProductDetail() {
                                 {product.subCategory && (
                                     <div className="border-b border-gray-100 pb-3">
                                         <div className="flex items-center mb-1">
-                                            <Tag className="h-4 w-4 mr-2 text-gray-500" />
+                                            <TbCategory2 className="h-4 w-4 mr-2 text-gray-500" />
                                             <span className="font-medium text-gray-700">Subcategory</span>
                                         </div>
                                         <div className="text-gray-900 pl-6">{product.subCategory}</div>
@@ -433,7 +455,7 @@ export default function ProductDetail() {
                                 {product.flavors && (
                                     <div className="border-b border-gray-100 pb-3">
                                         <div className="flex items-center mb-1">
-                                            <Utensils className="h-4 w-4 mr-2 text-gray-500" />
+                                            <Heart className="h-4 w-4 mr-2 text-gray-500" />
                                             <span className="font-medium text-gray-700">Flavors</span>
                                         </div>
                                         <div className="text-gray-900 pl-6">{product.flavors}</div>

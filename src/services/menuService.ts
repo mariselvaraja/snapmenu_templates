@@ -72,24 +72,121 @@ export const menuService = {
       
       // Helper function to process a menu item
       function processMenuItem(item: any, items: MenuItem[], categories: MenuCategory[], categoryMap: { [key: string]: boolean }) {
-        // Add to items array
+        // Parse price from string (e.g., "$4.99") to number
+        let price = 0;
+        if (item.price) {
+          if (typeof item.price === 'number') {
+            price = item.price;
+          } else if (typeof item.price === 'string') {
+            // Remove dollar sign and convert to number
+            price = parseFloat(item.price.replace(/[^\d.-]/g, '')) || 0;
+          }
+        }
+        
+        // Process dietary information
+        const dietary = {
+          isVegetarian: item.dietary?.isVegetarian || false,
+          isVegan: item.dietary?.isVegan || (item.is_vegan === 'yes'),
+          isGlutenFree: item.dietary?.isGlutenFree || false
+        };
+        
+        // Process nutrients information
+        const nutrients = item.nutrients || {};
+        
+        // Process ingredients (could be an array or a string)
+        let ingredients = item.ingredients || [];
+        if (typeof ingredients === 'string') {
+          ingredients = ingredients.split(',').map((i: string) => i.trim());
+        }
+        
+        // Process allergens (could be an array or a string)
+        let allergens = item.allergens || [];
+        if (typeof allergens === 'string') {
+          allergens = allergens.split(',').map((a: string) => a.trim());
+        }
+        
+        // Process tags (could be an array or a string)
+        let tags = item.tags || [];
+        if (typeof tags === 'string') {
+          tags = tags.split(',').map((t: string) => t.trim());
+        }
+        
+        // Add to items array with all available fields
         items.push({
-          id: item.id || Math.random().toString(36).substr(2, 9),
+          id: item.id || item.pk_id || Math.random().toString(36).substr(2, 9),
+          pk_id: item.pk_id,
+          restaurant_id: item.restaurant_id,
+          sku_id: item.sku_id,
           name: item.name || 'Unnamed Item',
-          description: item.description || '',
-          price: parseFloat(item.price) || 0,
+          description: item.description || item.product_description || '',
+          price: price,
           image: item.image || '',
-          category: item.category || 'Uncategorized',
-          available: item.available !== false,
-          // Add other fields as needed
+          category: item.category || item.level1_category || 'Uncategorized',
+          subCategory: item.subCategory || item.level2_category,
+          supplier: item.supplier,
+          brand: item.brand,
+          modifiers: item.modifiers,
+          unit: item.unit,
+          taxable: item.taxable,
+          external_id: item.external_id,
+          bar_code: item.bar_code,
+          comment: item.comment,
+          cost: item.cost,
+          quantity: item.quantity,
+          min_quantity: item.min_quantity,
+          max_quantity: item.max_quantity,
+          countable: item.countable,
+          use_weighing_scale: item.use_weighing_scale,
+          item_type: item.item_type,
+          duration: item.duration,
+          discounts: item.discounts,
+          resources: item.resources,
+          service_providers: item.service_providers,
+          printer_type: item.printer_type,
+          deposit: item.deposit,
+          visibility: item.visibility,
+          favorite: item.favorite,
+          sort_index: item.sort_index,
+          out_of_stock: item.out_of_stock,
+          is_enabled: item.is_enabled,
+          product_description: item.product_description,
+          level1_category: item.level1_category,
+          level2_category: item.level2_category,
+          appearance: item.appearance,
+          serving: item.serving,
+          flavors: item.flavors,
+          variations: item.variations,
+          allergy_info: item.allergy_info,
+          best_combo: item.best_combo,
+          is_deleted: item.is_deleted,
+          available: item.is_enabled !== 'false' && item.available !== false,
+          calories: item.calories ? Number(item.calories) : undefined,
+          nutrients: nutrients,
+          dietary: dietary,
+          allergens: allergens,
+          ingredients: ingredients,
+          pairings: item.pairings || [],
+          tags: tags,
         });
         
         // Add category if not already added
-        if (item.category && !categoryMap[item.category]) {
-          categoryMap[item.category] = true;
+        const categoryName = item.category || item.level1_category || 'Uncategorized';
+        if (categoryName && !categoryMap[categoryName]) {
+          categoryMap[categoryName] = true;
           categories.push({
-            id: item.category.toLowerCase().replace(/\s+/g, '-'),
-            name: item.category,
+            id: categoryName.toLowerCase().replace(/\s+/g, '-'),
+            name: categoryName,
+            description: '',
+          });
+        }
+        
+        // Add subcategory if available
+        const subCategoryName = item.subCategory || item.level2_category;
+        if (subCategoryName && !categoryMap[subCategoryName]) {
+          categoryMap[subCategoryName] = true;
+          categories.push({
+            id: subCategoryName.toLowerCase().replace(/\s+/g, '-'),
+            name: subCategoryName,
             description: '',
           });
         }
