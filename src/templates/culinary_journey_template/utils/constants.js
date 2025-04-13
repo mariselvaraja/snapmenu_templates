@@ -1,0 +1,15 @@
+export const INITIAL_CART_STATE = {
+  items: [],
+  total: 0,
+  isDrawerOpen: false
+};
+
+export const CART_ACTIONS = {
+  ADD_ITEM: 'ADD_ITEM',
+  REMOVE_ITEM: 'REMOVE_ITEM',
+  UPDATE_QUANTITY: 'UPDATE_QUANTITY',
+  CLEAR_CART: 'CLEAR_CART',
+  OPEN_DRAWER: 'OPEN_DRAWER',
+  CLOSE_DRAWER: 'CLOSE_DRAWER',
+  TOGGLE_DRAWER: 'TOGGLE_DRAWER'
+};
