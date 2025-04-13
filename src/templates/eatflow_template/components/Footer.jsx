@@ -1,55 +1,18 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Utensils, Instagram, Facebook, Twitter } from 'lucide-react';
-
-// Static footer data
-const staticFooterData = {
-  brand: {
-    name: "EatFlow"
-  },
-  footer: {
-    newsletter: {
-      title: "Subscribe to Our Newsletter",
-      description: "Stay updated with our latest recipes, nutrition tips, and special offers."
-    },
-    linkGroups: [
-      {
-        title: "Quick Links",
-        links: [
-          { label: "Home", href: "/" },
-          { label: "Menu", href: "/menu" },
-          { label: "About Us", href: "/about" },
-          { label: "Blog", href: "/blog" },
-          { label: "Contact", href: "/contact" }
-        ]
-      },
-      {
-        title: "Information",
-        links: [
-          { label: "Reservations", href: "/reservation" },
-          { label: "Delivery", href: "/delivery" },
-          { label: "FAQ", href: "/faq" },
-          { label: "Privacy Policy", href: "/privacy" },
-          { label: "Terms of Service", href: "/terms" }
-        ]
-      }
-    ],
-    social: {
-      links: [
-        { icon: "Instagram", href: "https://instagram.com", ariaLabel: "Follow us on Instagram" },
-        { icon: "Facebook", href: "https://facebook.com", ariaLabel: "Follow us on Facebook" },
-        { icon: "Twitter", href: "https://twitter.com", ariaLabel: "Follow us on Twitter" }
-      ]
-    },
-    copyright: {
-      text: "© 2025 EatFlow. All rights reserved."
-    }
-  }
-};
+import { useAppSelector } from '../../../redux';
 
 export function Footer() {
-  // Use static footer data
-  const { brand, footer } = staticFooterData;
+  const { rawApiResponse } = useAppSelector(state => state.siteContent);
+  
+  // Get site content from Redux state
+  const siteContent = rawApiResponse ? 
+    (typeof rawApiResponse === 'string' ? JSON.parse(rawApiResponse) : rawApiResponse) : 
+    {};
+  const navigationBar = siteContent?.navigationBar;
+  const brand = navigationBar?.brand;
+  const footer = navigationBar?.footer;
 
   // Function to render the appropriate social icon
   const renderSocialIcon = (iconName) => {

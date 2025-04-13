@@ -1,252 +1,269 @@
 import React from 'react';
+import { motion } from 'framer-motion';
+import { Calendar, User, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { BookOpen, ArrowRight, Calendar, User, Clock, Play } from 'lucide-react';
+import { useAppSelector } from '../../../redux';
 
-// Static blog posts data
-const staticBlogPosts = [
-  {
-    "title": "The Benefits of Plant-Based Eating",
-    "subtitle": "Discover how incorporating more plants into your diet can improve your health and the planet",
-    "chef": "Chef Maria Rodriguez",
-    "date": "April 10, 2025",
-    "readTime": "5 min read",
-    "image": "https://images.unsplash.com/photo-1512621776951-a57141f2eefd"
-  },
-  {
-    "title": "Seasonal Eating: Why It Matters",
-    "subtitle": "Learn the benefits of eating foods that are naturally harvested at their peak",
-    "chef": "Chef James Chen",
-    "date": "April 5, 2025",
-    "readTime": "4 min read",
-    "image": "https://images.unsplash.com/photo-1464226184884-fa280b87c399"
-  },
-  {
-    "title": "The Art of Mindful Eating",
-    "subtitle": "Transform your relationship with food by practicing mindfulness at mealtime",
-    "chef": "Chef Sarah Johnson",
-    "date": "March 28, 2025",
-    "readTime": "6 min read",
-    "image": "https://images.unsplash.com/photo-1493770348161-369560ae357d"
-  }
-];
-
-const recentPosts = [
-  {
-    title: "Seasonal Cooking: Spring Edition",
-    excerpt: "Make the most of spring produce with these fresh and delicious recipes that celebrate the season.",
-    image: "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&q=80",
-    author: "Emma Williams",
-    date: "March 10, 2024",
-    readTime: "6 min read",
-    category: "Recipes"
-  },
-  {
-    title: "Sustainable Food Practices",
-    excerpt: "Explore how making sustainable food choices can benefit both your health and the planet.",
-    image: "https://images.unsplash.com/photo-1466637574441-749b8f19452f?auto=format&fit=crop&q=80",
-    author: "David Miller",
-    date: "March 8, 2024",
-    readTime: "7 min read",
-    category: "Sustainability"
-  },
-  {
-    title: "Meal Prep Tips for Busy Professionals",
-    excerpt: "Save time and eat healthy with these effective meal preparation strategies.",
-    image: "https://images.unsplash.com/photo-1543339318-b43dc53e19b3?auto=format&fit=crop&q=80",
-    author: "Lisa Thompson",
-    date: "March 5, 2024",
-    readTime: "5 min read",
-    category: "Lifestyle"
-  }
-];
-
-const categories = [
-  "All Categories",
-  "Nutrition",
-  "Recipes",
-  "Wellness",
-  "Lifestyle",
-  "Sustainability"
-];
+/**
+ * Blog post structure:
+ * @typedef {Object} BlogPost
+ * @property {string|number} id - Unique identifier
+ * @property {string} title - Post title
+ * @property {string} excerpt - Short description
+ * @property {string} author - Post author
+ * @property {string} date - Publication date
+ * @property {string} category - Post category
+ * @property {string} image - Image URL
+ */
 
 export function Blog() {
-  // Use static blog posts data
-  const blogPosts = staticBlogPosts;
-
+  const { rawApiResponse } = useAppSelector(state => state.siteContent);
+  
+  // Get site content from Redux state
+  const siteContent = rawApiResponse ? 
+    (typeof rawApiResponse === 'string' ? JSON.parse(rawApiResponse) : rawApiResponse) : 
+    {};
+  
+  // Default blog data in case API data is not available
+  const defaultBlog = {
+    header: {
+      title: "Our Blog",
+      description: "Culinary insights, recipes, and stories from our kitchen"
+    },
+    posts: [
+      {
+        id: "1",
+        title: "The Benefits of Plant-Based Eating",
+        subtitle: "Discover how incorporating more plants into your diet can improve your health and the planet",
+        content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, nisl vel ultricies lacinia, nisl nisl aliquam nisl, eu aliquam nisl nisl eu nisl.",
+        image: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&q=80",
+        videoThumbnail: "",
+        videoUrl: "",
+        chef: "Chef Maria Rodriguez",
+        date: "2025-04-10",
+        readTime: "5 min"
+      },
+      {
+        id: "2",
+        title: "Seasonal Eating: Why It Matters",
+        subtitle: "Learn the benefits of eating foods that are naturally harvested at their peak",
+        content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, nisl vel ultricies lacinia, nisl nisl aliquam nisl, eu aliquam nisl nisl eu nisl.",
+        image: "https://images.unsplash.com/photo-1464226184884-fa280b87c399?auto=format&fit=crop&q=80",
+        videoThumbnail: "",
+        videoUrl: "",
+        chef: "Chef James Chen",
+        date: "2025-04-05",
+        readTime: "4 min"
+      },
+      {
+        id: "3",
+        title: "The Art of Mindful Eating",
+        subtitle: "Transform your relationship with food by practicing mindfulness at mealtime",
+        content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, nisl vel ultricies lacinia, nisl nisl aliquam nisl, eu aliquam nisl nisl eu nisl.",
+        image: "https://images.unsplash.com/photo-1493770348161-369560ae357d?auto=format&fit=crop&q=80",
+        videoThumbnail: "",
+        videoUrl: "",
+        chef: "Chef Sarah Johnson",
+        date: "2025-03-28",
+        readTime: "6 min"
+      }
+    ]
+  };
+  
+  // Use API data if available, otherwise use default data
+  const blog = siteContent?.blog || defaultBlog;
+  
+  // Transform blog data from siteContent to match the format expected by the component
+  const blogPosts = blog.posts.map((post) => ({
+    id: post.id || Math.random().toString(36).substr(2, 9),
+    title: post.title,
+    excerpt: post.subtitle,
+    author: post.chef,
+    date: post.date,
+    category: post.readTime.includes("min") ? "Culinary Techniques" : "Chef Stories",
+    image: post.image
+  }));
+  
+  // Use the first post as the featured post if available
+  const featuredPost = blogPosts.length > 0 ? blogPosts[0] : null;
+  
   return (
-    <div className="min-h-screen bg-white">
-      {/* Hero Section */}
-      <div className="relative h-[70vh]">
-        <div className="absolute inset-0">
-          <img 
-            src={blogPosts[0].image}
-            alt="Blog background"
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-black bg-opacity-60"></div>
-        </div>
-        
-        <div className="relative z-10 container mx-auto px-6 h-[calc(70vh-120px)] flex items-center justify-center text-center">
-          <div>
-            <div className="flex justify-center mb-6">
-              <BookOpen className="w-16 h-16 text-green-400" />
-            </div>
-            <h1 className="text-7xl font-bold text-white mb-8">
-              Our Blog
-            </h1>
-            <p className="text-2xl text-gray-200 max-w-3xl mx-auto leading-relaxed">
-              Insights, recipes, and wellness tips for a healthier lifestyle
-            </p>
-          </div>
-        </div>
-      </div>
+    <div className="py-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="text-center mb-16"
+        >
+          <h1 className="text-4xl font-bold mb-4">{blog.header.title}</h1>
+          <p className="text-xl text-gray-600">
+            {blog.header.description}
+          </p>
+        </motion.div>
 
-      {/* Categories */}
-      <div className="sticky top-0 z-20 bg-white shadow-md">
-        <div className="container mx-auto px-6">
-          <div className="flex overflow-x-auto space-x-8 py-6">
-            {categories.map((category, index) => (
-              <button
-                key={index}
-                className={`text-xl font-semibold whitespace-nowrap px-4 py-2 rounded-full transition-colors ${
-                  index === 0 ? 'bg-green-500 text-white' : 'text-gray-600 hover:text-green-500'
-                }`}
-              >
-                {category}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Featured Posts */}
-      <section className="py-24">
-        <div className="container mx-auto px-6">
-          <h2 className="text-4xl font-bold mb-16 text-center">Featured Posts</h2>
-          <div className="grid md:grid-cols-2 gap-12">
-            {blogPosts.map((post, index) => (
-              <div key={index} className="group">
-                <div className="relative h-96 mb-6 overflow-hidden rounded-2xl">
-                  <img 
-                    src={post.image}
-                    alt={post.title}
-                    className="w-full h-full object-cover transform group-hover:scale-110 transition duration-500"
+        {/* Featured Post */}
+        {featuredPost && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.8 }}
+            className="mb-16"
+          >
+            <div className="relative h-[500px] rounded-xl overflow-hidden">
+              {featuredPost.image ? (
+                <div className="w-full h-full">
+                  <img
+                    src={featuredPost.image}
+                    alt={featuredPost.title}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      const target = e.target;
+                      if (target instanceof HTMLImageElement) {
+                        target.style.display = 'none';
+                        const parent = target.parentElement;
+                        if (parent) {
+                          parent.classList.add('bg-green-100', 'flex', 'items-center', 'justify-center');
+                          const fallbackEl = document.createElement('span');
+                          fallbackEl.className = 'text-8xl font-bold text-green-500';
+                          fallbackEl.textContent = featuredPost.title && featuredPost.title.length > 0 
+                            ? featuredPost.title.charAt(0).toUpperCase() 
+                            : 'B';
+                          parent.appendChild(fallbackEl);
+                        }
+                      }
+                    }}
                   />
-                  <div className="absolute inset-0 bg-black bg-opacity-20 group-hover:bg-opacity-30 transition duration-500"></div>
-                  {post.videoUrl && (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="bg-white bg-opacity-80 rounded-full p-4 cursor-pointer hover:bg-opacity-90 transition">
-                        <Play className="w-8 h-8 text-green-600" />
-                      </div>
+                </div>
+              ) : (
+                <div className="w-full h-full bg-green-100 flex items-center justify-center">
+                  <span className="text-8xl font-bold text-green-500">
+                    {featuredPost.title && featuredPost.title.length > 0 
+                      ? featuredPost.title.charAt(0).toUpperCase() 
+                      : 'B'}
+                  </span>
+                </div>
+              )}
+              <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent">
+                <div className="absolute bottom-0 left-0 right-0 p-8">
+                  <span className="text-green-500 bg-white px-4 py-1 rounded-full text-sm font-semibold">
+                    Featured
+                  </span>
+                  <h2 className="text-3xl font-bold text-white mt-4">
+                    {featuredPost.title}
+                  </h2>
+                  <p className="text-gray-200 mt-2 mb-4">
+                    {featuredPost.excerpt}
+                  </p>
+                  <div className="flex items-center text-white gap-4">
+                    <div className="flex items-center">
+                      <User className="h-4 w-4 mr-2" />
+                      <span>{featuredPost.author}</span>
                     </div>
-                  )}
-                </div>
-                <div className="flex items-center space-x-4 mb-4 text-sm text-gray-600">
-                  <div className="flex items-center">
-                    <Calendar className="w-4 h-4 mr-2" />
-                    {post.date}
-                  </div>
-                  <div className="flex items-center">
-                    <User className="w-4 h-4 mr-2" />
-                    {post.chef}
-                  </div>
-                  <div className="flex items-center">
-                    <Clock className="w-4 h-4 mr-2" />
-                    {post.readTime}
+                    <div className="flex items-center">
+                      <Calendar className="h-4 w-4 mr-2" />
+                      <span>{new Date(featuredPost.date).toLocaleDateString()}</span>
+                    </div>
                   </div>
                 </div>
-                <h3 className="text-2xl font-bold mb-4 group-hover:text-green-600 transition">{post.title}</h3>
-                <p className="text-gray-600 mb-6">{post.subtitle}</p>
-                <Link
-                  to={`/blog/${index}`}
-                  className="inline-flex items-center text-green-600 font-semibold hover:text-green-700 transition"
-                >
-                  <span>Read More</span>
-                  <ArrowRight className="w-5 h-5 ml-2" />
-                </Link>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
+            </div>
+          </motion.div>
+        )}
 
-      {/* Recent Posts */}
-      <section className="py-24 bg-gray-50">
-        <div className="container mx-auto px-6">
-          <h2 className="text-4xl font-bold mb-16 text-center">Recent Posts</h2>
-          <div className="grid md:grid-cols-3 gap-12">
-            {recentPosts.map((post, index) => (
-              <div key={index} className="bg-white rounded-2xl overflow-hidden shadow-lg group">
-                <div className="relative h-64 overflow-hidden">
+        {/* Blog Posts Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {blogPosts.map((post, index) => (
+            <motion.article
+              key={post.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: index * 0.2 }}
+              className="bg-white rounded-lg overflow-hidden shadow-lg"
+            >
+              {post.image ? (
+                <div className="w-full h-48">
                   <img
                     src={post.image}
                     alt={post.title}
-                    className="w-full h-full object-cover transform group-hover:scale-110 transition duration-500"
+                    className="w-full h-48 object-cover"
+                    onError={(e) => {
+                      const target = e.target;
+                      if (target instanceof HTMLImageElement) {
+                        target.style.display = 'none';
+                        const parent = target.parentElement;
+                        if (parent) {
+                          parent.classList.add('bg-green-100', 'flex', 'items-center', 'justify-center');
+                          const fallbackEl = document.createElement('span');
+                          fallbackEl.className = 'text-4xl font-bold text-green-500';
+                          fallbackEl.textContent = post.title && post.title.length > 0 
+                            ? post.title.charAt(0).toUpperCase() 
+                            : 'B';
+                          parent.appendChild(fallbackEl);
+                        }
+                      }
+                    }}
                   />
-                  <div className="absolute inset-0 bg-black bg-opacity-20 group-hover:bg-opacity-30 transition duration-500"></div>
-                  <div className="absolute top-6 left-6">
-                    <span className="bg-green-500 text-white px-4 py-2 rounded-full text-sm font-medium">
-                      {post.category}
-                    </span>
+                </div>
+              ) : (
+                <div className="w-full h-48 bg-green-100 flex items-center justify-center">
+                  <span className="text-4xl font-bold text-green-500">
+                    {post.title && post.title.length > 0 
+                      ? post.title.charAt(0).toUpperCase() 
+                      : 'B'}
+                  </span>
+                </div>
+              )}
+              <div className="p-6">
+                <div className="flex items-center gap-4 text-sm text-gray-600 mb-4">
+                  <div className="flex items-center">
+                    <User className="h-4 w-4 mr-2" />
+                    <span>{post.author}</span>
+                  </div>
+                  <div className="flex items-center">
+                    <Calendar className="h-4 w-4 mr-2" />
+                    <span>{new Date(post.date).toLocaleDateString()}</span>
                   </div>
                 </div>
-                <div className="p-6">
-                  <div className="flex items-center space-x-4 mb-4 text-sm text-gray-600">
-                    <div className="flex items-center">
-                      <Calendar className="w-4 h-4 mr-2" />
-                      {post.date}
-                    </div>
-                    <div className="flex items-center">
-                      <Clock className="w-4 h-4 mr-2" />
-                      {post.readTime}
-                    </div>
-                  </div>
-                  <h3 className="text-xl font-bold mb-4 group-hover:text-green-600 transition">{post.title}</h3>
-                  <p className="text-gray-600 mb-6">{post.excerpt}</p>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <User className="w-4 h-4 mr-2 text-gray-600" />
-                      <span className="text-gray-600 text-sm">{post.author}</span>
-                    </div>
-                    <Link
-                      to={`/blog/${index}`}
-                      className="inline-flex items-center text-green-600 font-semibold hover:text-green-700 transition"
-                    >
-                      <span>Read More</span>
-                      <ArrowRight className="w-5 h-5 ml-2" />
-                    </Link>
-                  </div>
-                </div>
+                <h3 className="text-xl font-semibold mb-2">{post.title}</h3>
+                <p className="text-gray-600 mb-4">{post.excerpt}</p>
+                <Link
+                  to={`/blog/${post.id}`}
+                  className="inline-flex items-center text-green-500 hover:text-green-600 transition-colors"
+                >
+                  Read More <ArrowRight className="h-4 w-4 ml-2" />
+                </Link>
               </div>
-            ))}
-          </div>
+            </motion.article>
+          ))}
         </div>
-      </section>
 
-      {/* Newsletter Section */}
-      <section className="py-24">
-        <div className="container mx-auto px-6">
-          <div className="bg-green-50 rounded-3xl p-12 text-center">
-            <h2 className="text-4xl font-bold mb-6">Subscribe to Our Newsletter</h2>
-            <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-              Stay updated with our latest recipes, nutrition tips, and wellness insights delivered straight to your inbox.
-            </p>
-            <form className="max-w-2xl mx-auto">
-              <div className="flex gap-4">
-                <input
-                  type="email"
-                  placeholder="Enter your email"
-                  className="flex-1 px-6 py-4 rounded-full border focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                />
-                <button className="bg-green-500 text-white px-8 py-4 rounded-full hover:bg-green-600 transition text-lg font-medium">
-                  Subscribe
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </section>
-
+        {/* Newsletter Section */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8 }}
+          className="mt-20 bg-green-500 rounded-xl p-12 text-white text-center"
+        >
+          <h2 className="text-3xl font-bold mb-4">Subscribe to Our Newsletter</h2>
+          <p className="text-lg mb-8">
+            Get the latest news, recipes, and special offers delivered to your inbox
+          </p>
+          <form className="max-w-md mx-auto flex gap-4">
+            <input
+              type="email"
+              placeholder="Enter your email"
+              className="flex-1 px-6 py-3 rounded-full text-gray-900 focus:outline-none"
+            />
+            <button
+              type="submit"
+              className="bg-white text-green-500 px-8 py-3 rounded-full font-semibold hover:bg-gray-100 transition-colors"
+            >
+              Subscribe
+            </button>
+          </form>
+        </motion.div>
+      </div>
     </div>
   );
 }

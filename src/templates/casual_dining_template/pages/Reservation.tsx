@@ -1,21 +1,10 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { useAppSelector } from '../../../redux';
-import { TableReservation } from '../components/TableReservation';
+import { useAppSelector } from '../../../common/redux';
+import { Navigation } from '../components/Navigation';
+import Reservation from '../components/Reservation';
 
-/**
- * Booking data structure
- * @typedef {Object} BookingData
- * @property {string} name - Customer name
- * @property {string} email - Customer email
- * @property {string} phone - Customer phone
- * @property {string} date - Reservation date
- * @property {string} time - Reservation time
- * @property {number} partySize - Number of guests
- * @property {string} specialRequests - Any special requests
- */
-
-export function Reservation() {
+export function ReservationPage() {
   const { rawApiResponse } = useAppSelector(state => state.siteContent);
   
   // Get site content from Redux state
@@ -81,33 +70,22 @@ export function Reservation() {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [selectedTime, setSelectedTime] = useState('18:00');
 
-  const handleBookingComplete = (bookingData) => {
+  const handleBookingComplete = (bookingData: any) => {
     // Handle booking logic here
     alert(`Table booked for ${bookingData.name}, party of ${bookingData.partySize} on ${bookingData.date} at ${bookingData.time}`);
     // In a real application, you would send this data to your backend
   };
 
-  const handleDateChange = (e) => {
-    setSelectedDate(e.target.value);
-  };
-
-  const handleTimeChange = (e) => {
-    setSelectedTime(e.target.value);
-  };
-
   return (
-    <div className="">
-      <div className="max-w-full mx-auto px-4">
-        {/* Table Reservation Component */}
-        <TableReservation 
-          onBookingComplete={handleBookingComplete}
-          initialDate={selectedDate}
-          initialTime={selectedTime}
-          reservationContent={reservation}
-        />
-
-        {/* Additional content can be added here if needed */}
+    <div className="min-h-screen bg-black text-white">
+      <Navigation />
+      
+      <div className="max-w-full mx-auto">
+        {/* Use the existing Reservation component */}
+        <Reservation />
       </div>
     </div>
   );
 }
+
+export default ReservationPage;

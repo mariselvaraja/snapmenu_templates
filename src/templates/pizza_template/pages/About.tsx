@@ -16,30 +16,7 @@ export default function About() {
   const siteContent = rawApiResponse?.data ? 
     (typeof rawApiResponse.data === 'string' ? JSON.parse(rawApiResponse.data) : rawApiResponse.data) : 
     {};
-  const story = siteContent?.story || {
-    hero: {
-      title: "Our Story",
-      description: "Discover the passion and tradition behind our culinary journey.",
-      image: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&q=80"
-    },
-    values: [
-      {
-        icon: "UtensilsCrossed",
-        title: "Culinary Excellence",
-        description: "We are committed to creating exceptional dishes using the finest ingredients."
-      },
-      {
-        icon: "Heart",
-        title: "Passion for Service",
-        description: "Every guest is treated with warmth, care, and attention to detail."
-      },
-      {
-        icon: "Users",
-        title: "Community Focus",
-        description: "We believe in building relationships and being an active part of our community."
-      }
-    ]
-  };
+  const story = siteContent?.story;
   return (
     <div className="py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
