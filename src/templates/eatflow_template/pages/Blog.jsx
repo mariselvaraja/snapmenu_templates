@@ -1,7 +1,5 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Navigation } from '../components/Navigation';
-import { Footer } from '../components/Footer';
 import { BookOpen, ArrowRight, Calendar, User, Clock, Play } from 'lucide-react';
 
 // Static blog posts data
@@ -88,8 +86,6 @@ export function Blog() {
           <div className="absolute inset-0 bg-black bg-opacity-60"></div>
         </div>
         
-        <Navigation />
-
         <div className="relative z-10 container mx-auto px-6 h-[calc(70vh-120px)] flex items-center justify-center text-center">
           <div>
             <div className="flex justify-center mb-6">
@@ -251,7 +247,6 @@ export function Blog() {
         </div>
       </section>
 
-      <Footer />
     </div>
   );
 }

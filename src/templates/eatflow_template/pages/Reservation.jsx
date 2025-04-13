@@ -1,6 +1,4 @@
 import React, { useState } from 'react';
-import { Navigation } from '../components/Navigation';
-import { Footer } from '../components/Footer';
 import { Calendar, Clock, Users, UtensilsCrossed, MapPin, Phone } from 'lucide-react';
 import axios from 'axios';
 
@@ -224,8 +222,6 @@ export function Reservation() {
           <div className="absolute inset-0 bg-black bg-opacity-60"></div>
         </div>
         
-        <Navigation />
-
         <div className="relative z-10 container mx-auto px-6 h-[calc(50vh-120px)] flex items-center justify-center text-center">
           <div>
             <div className="flex justify-center mb-6">
@@ -456,7 +452,6 @@ export function Reservation() {
         </div>
       </section>
 
-      <Footer />
     </div>
   );
 }

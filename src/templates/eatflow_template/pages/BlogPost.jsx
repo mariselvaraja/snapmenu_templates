@@ -1,6 +1,4 @@
 import { useParams } from 'react-router-dom';
-import { Navigation } from '../components/Navigation';
-import { Footer } from '../components/Footer';
 import { Link } from 'react-router-dom';
 
 // Static blog post data
@@ -45,7 +43,6 @@ export function BlogPost() {
           <h1 className="text-3xl font-semibold text-gray-800 mb-4">Blog Post Not Found</h1>
           <p className="text-gray-600">The requested blog post was not found.</p>
         </div>
-        <Footer />
       </div>
     );
   }
@@ -55,7 +52,6 @@ export function BlogPost() {
 
       {/* Hero Section */}
       <div className="relative h-[70vh]">
-      <Navigation />
         <div className="absolute inset-0">
           <img
             src={post.image}
@@ -112,7 +108,6 @@ export function BlogPost() {
           </Link>
         </div>
       </div>
-      <Footer />
     </div>
   );
 }

@@ -1,17 +1,25 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Navigation } from '../components/Navigation';
-import { Footer } from '../components/Footer';
-import { UtensilsCrossed, Search, ChevronDown, ChevronUp, AlertCircle, Leaf, Wheat, X } from 'lucide-react';
+import { UtensilsCrossed, Search, ChevronDown, ChevronUp, AlertCircle, Leaf, Wheat, X, ExternalLink } from 'lucide-react';
 import { useCart } from '../context/CartContext';
+import { useNavigate } from 'react-router-dom';
 
 const MenuItem = ({ item }) => {
   const [showDetails, setShowDetails] = useState(false);
   const { addToCart } = useCart();
+  const navigate = useNavigate();
+  
+  const handleViewDetails = () => {
+    navigate(`/product/${item.id}`);
+  };
 
   return (
     <div className="flex flex-col bg-white rounded-2xl overflow-hidden shadow-lg group">
       <div className="flex">
-        <div className="w-1/2 relative overflow-hidden" style={{ width: '200px', height: '200px' }}>
+        <div 
+          className="w-1/2 relative overflow-hidden cursor-pointer" 
+          style={{ width: '200px', height: '200px' }}
+          onClick={handleViewDetails}
+        >
           <img 
             src={item.image} 
             alt={item.name}
@@ -22,7 +30,12 @@ const MenuItem = ({ item }) => {
         <div className="w-1/2 p-6 flex flex-col justify-between">
           <div>
             <div className="flex justify-between items-start">
-              <h3 className="text-2xl font-semibold mb-2">{item.name}</h3>
+              <h3 
+            className="text-2xl font-semibold mb-2 cursor-pointer hover:text-green-600 transition"
+            onClick={handleViewDetails}
+          >
+            {item.name}
+          </h3>
               <div className="flex space-x-1">
                 {item.dietary?.isVegetarian && <Leaf className="w-5 h-5 text-green-600" title="Vegetarian" />}
                 {item.dietary?.isVegan && <Leaf className="w-5 h-5 text-green-800" title="Vegan" />}
@@ -38,13 +51,22 @@ const MenuItem = ({ item }) => {
           <div className="flex items-center justify-between mt-4">
             <span className="text-xl font-bold text-green-600">${item.price}</span>
             <div className="flex space-x-2">
-              <button 
-                onClick={() => setShowDetails(!showDetails)}
-                className="text-gray-600 hover:text-green-600 transition flex items-center"
-              >
-                {showDetails ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
-                <span className="ml-1">{showDetails ? 'Less' : 'More'}</span>
-              </button>
+              <div className="flex space-x-2">
+                <button 
+                  onClick={() => setShowDetails(!showDetails)}
+                  className="text-gray-600 hover:text-green-600 transition flex items-center"
+                >
+                  {showDetails ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+                  <span className="ml-1">{showDetails ? 'Less' : 'More'}</span>
+                </button>
+                <button 
+                  onClick={handleViewDetails}
+                  className="text-gray-600 hover:text-green-600 transition flex items-center"
+                >
+                  <ExternalLink className="w-5 h-5" />
+                  <span className="ml-1">Details</span>
+                </button>
+              </div>
               <button 
                 className="bg-green-500 text-white px-6 py-2 rounded-full hover:bg-green-600 transition text-sm font-medium"
                 onClick={() => addToCart(item)}
@@ -371,6 +393,7 @@ const staticMenuData = {
 export function Menu() {
   // Use static menu data instead of context
   const menu = staticMenuData;
+  const navigate = useNavigate();
   const [activeCategory, setActiveCategory] = useState('all');
   const [activeSubCategory, setActiveSubCategory] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
@@ -489,8 +512,6 @@ export function Menu() {
           <div className="absolute inset-0 bg-black bg-opacity-60"></div>
         </div>
         
-        <Navigation />
-
         <div className="relative z-10 container mx-auto px-6 h-[calc(50vh-120px)] flex items-center justify-center text-center">
           <div>
             <div className="flex justify-center mb-6">
@@ -691,7 +712,6 @@ export function Menu() {
         </div>
       </section>
 
-      <Footer />
     </div>
   );
 }

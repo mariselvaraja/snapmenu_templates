@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Navigation } from '../components/Navigation';
-import { Footer } from '../components/Footer';
 import { useCart } from '../context/CartContext';
 import { ShoppingCart, MessageSquare } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -127,8 +125,6 @@ export function Checkout() {
           />
           <div className="absolute inset-0 bg-black bg-opacity-60"></div>
         </div>
-
-        <Navigation />
 
         <div className="relative z-10 container mx-auto px-6 h-[calc(70vh-120px)] flex items-center justify-center text-center">
           <div>
@@ -316,7 +312,6 @@ export function Checkout() {
           </div>
         </div>
       </div>
-      <Footer />
     </div>
   );
 }

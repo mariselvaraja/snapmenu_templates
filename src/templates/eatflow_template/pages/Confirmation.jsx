@@ -1,8 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { CheckCircle } from 'lucide-react';
-import { Navigation } from '../components/Navigation';
-import { Footer } from '../components/Footer';
 
 export function Confirmation() {
   return (
@@ -10,7 +8,6 @@ export function Confirmation() {
 
       {/* Hero Section */}
       <div className="relative h-[70vh]">
-      <Navigation />
         <div className="absolute inset-0">
           <img
             src="https://images.unsplash.com/photo-1579888944584-95d67062557f?q=80&w=3270&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
@@ -61,7 +58,6 @@ export function Confirmation() {
           <Link to="/" className="text-green-500 mt-2">Return to Home</Link>
         </div>
       </div>
-      <Footer />
     </div>
   );
 }
