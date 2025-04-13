@@ -5,10 +5,8 @@ import { useCart } from '../context/CartContext';
 import { ShoppingCart, MessageSquare } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { useSiteContent } from '../context/SiteContentContext';
 
 export function Checkout() {
-  const { siteContent, loading: siteContentLoading, error: siteContentError } = useSiteContent();
   const { cart, calculateTotal, isCartOpen, toggleCart, clearCart } = useCart();
   const [delivery, setDelivery] = useState(false);
   const [orderPlaced, setOrderPlaced] = useState(false);
@@ -115,13 +113,6 @@ export function Checkout() {
         setPlacingOrder(false);
       }
     }
-  }
-  if (siteContentLoading) {
-    return <div>Loading...</div>;
-  }
-
-  if (siteContentError) {
-    return <div>Error: {siteContentError.message}</div>;
   }
 
   return (

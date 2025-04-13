@@ -2,6 +2,7 @@ import React, { useState, useEffect, createContext, useContext } from 'react';
 import { Provider, useSelector } from 'react-redux';
 import PizzaApp from './pizza_template/App';
 import CasualDiningApp from './casual_dining_template/App';
+import EatflowApp from './eatflow_template/App';
 import TemplateNotFound from './TemplateNotFound';
 
 // Create a context for template-specific settings
@@ -74,10 +75,7 @@ const TemplateContent = () => {
   };
 
    // Get template_id from restaurant data or use default
-   const template_id = "casual_dining_template"
-  //  restaurantState?.info?.template_id;
-   console.log("restaurantState", restaurantState)
-  // Check if restaurant API returned an error or empty data
+
   const restaurantApiError = restaurantState.error || !restaurantState.info;
   
   // If still loading, show a loading indicator with spinner
@@ -109,6 +107,11 @@ const TemplateContent = () => {
     return <TemplateNotFound />;
   }
 
+  const template_id = "eatflow"
+  //  restaurantState?.info?.template_id;
+   console.log("restaurantState", restaurantState)
+  // Check if restaurant API returned an error or empty data
+
   // Determine which template to render based on the template name
   const renderTemplate = () => {
     switch (template_id) {
@@ -116,6 +119,8 @@ const TemplateContent = () => {
         return <PizzaApp />;
       case 'casual_dining_template':
         return <CasualDiningApp />;
+      case 'eatflow':
+        return <EatflowApp />;
       default:
         return <TemplateNotFound />;
     }

@@ -2,8 +2,60 @@ import React, { useState } from 'react';
 import { Navigation } from '../components/Navigation';
 import { Footer } from '../components/Footer';
 import { Calendar, Clock, Users, UtensilsCrossed, MapPin, Phone } from 'lucide-react';
-import { useSiteContent } from '../context/SiteContentContext';
 import axios from 'axios';
+
+// Static reservation data
+const staticReservationData = {
+  reservation: {
+    header: {
+      title: "Make a Reservation",
+      description: "Reserve your table for a delightful dining experience"
+    },
+    form: {
+      labels: {
+        date: "Select Date",
+        time: "Select Time",
+        guests: "Number of Guests",
+        name: "Full Name",
+        email: "Email Address",
+        phone: "Phone Number",
+        specialRequests: "Special Requests"
+      },
+      placeholders: {
+        name: "Enter your full name",
+        email: "Enter your email address",
+        phone: "Enter your phone number",
+        specialRequests: "Any special requests or dietary requirements?"
+      }
+    },
+    info: {
+      hours: {
+        weekdays: {
+          label: "Monday - Friday",
+          time: "11:00 AM - 10:00 PM"
+        },
+        weekends: {
+          label: "Saturday",
+          time: "10:00 AM - 11:00 PM"
+        },
+        sunday: {
+          label: "Sunday",
+          time: "10:00 AM - 9:00 PM"
+        }
+      },
+      location: {
+        street: "123 Healthy Street",
+        city: "New York",
+        state: "NY",
+        zip: "10001"
+      },
+      contact: {
+        phone: "(555) 123-4567"
+      },
+      note: "For parties larger than 10, please call us directly."
+    }
+  }
+};
 
 export function Reservation() {
   const [date, setDate] = useState('');
@@ -26,23 +78,12 @@ export function Reservation() {
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
 
-  const { siteContent, loading, error } = useSiteContent();
+  // Use static content
+  const siteContent = staticReservationData;
 
   const restaurant_id = sessionStorage.getItem("restaurant_id");
 
   const api = "http://localhost:5093"
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (error) {
-    return <div>Error: {error.message}</div>;
-  }
-
-  if (!siteContent) {
-    return <div>Site content not found.</div>;
-  }
 
   const occasions = [
     "Birthday",

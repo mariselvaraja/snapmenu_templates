@@ -2,22 +2,40 @@ import { useParams } from 'react-router-dom';
 import { Navigation } from '../components/Navigation';
 import { Footer } from '../components/Footer';
 import { Link } from 'react-router-dom';
-import { useSiteContent } from '../context/SiteContentContext';
+
+// Static blog post data
+const staticBlogPosts = {
+  "0": {
+    "title": "The Benefits of Plant-Based Eating",
+    "chef": "Chef Maria Rodriguez",
+    "date": "April 10, 2025",
+    "readTime": "5 min read",
+    "image": "https://images.unsplash.com/photo-1512621776951-a57141f2eefd",
+    "content": "Plant-based eating has gained tremendous popularity in recent years, and for good reason. Research consistently shows that diets rich in fruits, vegetables, whole grains, and legumes can reduce the risk of heart disease, type 2 diabetes, and certain cancers. Beyond the health benefits, plant-based diets are also more environmentally sustainable, requiring fewer resources and producing fewer greenhouse gas emissions than diets heavy in animal products. At EatFlow, we believe in the power of plants and incorporate a wide variety of plant-based options in our menu. Whether you're a committed vegan or simply looking to incorporate more plant-based meals into your diet, we have delicious options that don't compromise on flavor or satisfaction. Our chefs are constantly innovating to create plant-based dishes that are not only nutritious but also incredibly tasty and satisfying."
+  },
+  "1": {
+    "title": "Seasonal Eating: Why It Matters",
+    "chef": "Chef James Chen",
+    "date": "April 5, 2025",
+    "readTime": "4 min read",
+    "image": "https://images.unsplash.com/photo-1464226184884-fa280b87c399",
+    "content": "Eating seasonally means consuming foods that are naturally harvested at the time you're eating them. This practice has numerous benefits for your health, the environment, and your taste buds. Seasonal produce is typically harvested at peak ripeness, which means it contains more nutrients and flavor than out-of-season alternatives that may have been picked early and transported long distances. Additionally, seasonal eating supports local farmers and reduces the carbon footprint associated with shipping foods across the globe. At EatFlow, we're committed to incorporating seasonal ingredients into our menu, which is why you'll notice our offerings change throughout the year. This approach not only ensures the highest quality and taste but also connects you to the natural rhythms of food production. Next time you visit, ask about our seasonal specials to experience the best of what's currently growing in our region."
+  },
+  "2": {
+    "title": "The Art of Mindful Eating",
+    "chef": "Chef Sarah Johnson",
+    "date": "March 28, 2025",
+    "readTime": "6 min read",
+    "image": "https://images.unsplash.com/photo-1493770348161-369560ae357d",
+    "content": "In our fast-paced world, meals are often rushed affairs, eaten while distracted by screens or on the go. Mindful eating offers an alternative approach that can transform your relationship with food. This practice involves paying full attention to the experience of eating, noticing colors, smells, flavors, and textures. Research suggests that mindful eating can help improve digestion, reduce overeating, and increase satisfaction with meals. It can also help you recognize your body's hunger and fullness cues, leading to a more balanced approach to nutrition. At EatFlow, we create an environment that encourages mindful eating, with thoughtfully prepared dishes that engage all your senses. We invite you to take a moment to truly appreciate the care that goes into each ingredient and preparation method. By slowing down and savoring each bite, you might discover new flavors and a deeper appreciation for the nourishment food provides."
+  }
+};
 
 export function BlogPost() {
   const { id } = useParams();
-  const { siteContent, loading } = useSiteContent();
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (!siteContent) {
-    return <div>Error: Site content not loaded.</div>;
-  }
-
-  const blogPosts = siteContent.blog?.posts;
-  const post = blogPosts?.[id];
+  
+  // Use static blog post data
+  const post = staticBlogPosts[id];
 
   if (!post) {
     return (

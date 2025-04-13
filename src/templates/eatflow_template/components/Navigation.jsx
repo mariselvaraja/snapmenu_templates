@@ -1,22 +1,63 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Utensils, Settings, ShoppingCart } from 'lucide-react';
-import { useSiteContent } from '../context/SiteContentContext';
 import { useCart } from '../context/CartContext';
 
+// Static navigation data
+const staticNavData = {
+  brand: {
+    logo: {
+      icon: "Utensils",
+      text: "EatFlow"
+    }
+  },
+  navigation: {
+    links: [
+      {
+        label: "Home",
+        path: "/",
+        isEnabled: true,
+        ariaLabel: "Home page"
+      },
+      {
+        label: "Menu",
+        path: "/menu",
+        isEnabled: true,
+        ariaLabel: "Menu page"
+      },
+      {
+        label: "About",
+        path: "/about",
+        isEnabled: true,
+        ariaLabel: "About page"
+      },
+      {
+        label: "Blog",
+        path: "/blog",
+        isEnabled: true,
+        ariaLabel: "Blog page"
+      },
+      {
+        label: "Reservation",
+        path: "/reservation",
+        isEnabled: true,
+        ariaLabel: "Reservation page"
+      },
+      {
+        label: "Contact",
+        path: "/contact",
+        isEnabled: true,
+        ariaLabel: "Contact page"
+      }
+    ]
+  }
+};
+
 export function Navigation() {
-  const { siteContent, loading } = useSiteContent();
   const { toggleCart } = useCart();
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (!siteContent) {
-    return <div>Error: Site content not loaded.</div>;
-  }
-
-  const { brand, navigation } = siteContent;
+  // Use static navigation data
+  const { brand, navigation } = staticNavData;
 
   // Function to render the appropriate icon
   const renderIcon = (iconName) => {

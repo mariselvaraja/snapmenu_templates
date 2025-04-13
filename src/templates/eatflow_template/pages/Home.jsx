@@ -17,7 +17,6 @@ import {
   Wine,
   ArrowUpCircle,
 } from 'lucide-react';
-import { useSiteContent } from '../context/SiteContentContext';
 import { useState, useEffect } from 'react';
 
 // Function to render the appropriate icon
@@ -116,7 +115,7 @@ export function Home() {
       <header className="relative h-screen">
         <div className="absolute inset-0">
           <img
-            src={useSiteContent().siteContent?.hero?.banners?.[0]?.image}
+            src="https://images.unsplash.com/photo-1555939594-58d7cb561ad1"
             alt="Hero background"
             className="w-full h-full object-cover"
           />
@@ -128,10 +127,10 @@ export function Home() {
         <div className="relative z-10 container mx-auto px-6 h-[calc(100vh-120px)] flex items-center">
           <div className="max-w-2xl">
             <h1 className="text-7xl font-bold text-white mb-8">
-              {useSiteContent().siteContent?.brand?.name}
+              EatFlow
             </h1>
             <p className="text-2xl text-gray-200 mb-12 leading-relaxed">
-              {useSiteContent().siteContent?.hero?.banners?.[0]?.subtitle}
+              Healthy, delicious meals delivered to your door
             </p>
             <Link
               to="/menu"
@@ -148,13 +147,29 @@ export function Home() {
       <section className="py-24 bg-gray-50">
         <div className="container mx-auto px-6">
           <div className="text-center mb-16">
-            <h2 className="text-5xl font-bold mb-6">{useSiteContent().siteContent?.experience?.section?.title}</h2>
+            <h2 className="text-5xl font-bold mb-6">Why Choose Us</h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              {useSiteContent().siteContent?.experience?.section?.subtitle}
+              Experience the perfect blend of nutrition, taste, and convenience
             </p>
           </div>
           <div className="grid md:grid-cols-3 gap-12">
-            {useSiteContent().siteContent?.experience?.cards?.map((feature, index) => (
+            {[
+              {
+                icon: "Utensils",
+                title: "Chef-Crafted Meals",
+                description: "Our expert chefs create delicious, nutritionally balanced meals"
+              },
+              {
+                icon: "Heart",
+                title: "Fresh Ingredients",
+                description: "We use only the freshest, highest quality ingredients"
+              },
+              {
+                icon: "Clock",
+                title: "Convenient Delivery",
+                description: "Meals delivered right to your door on your schedule"
+              }
+            ].map((feature, index) => (
               <div key={index} className="text-center">
                 <div className="bg-green-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
                   {renderIcon(feature.icon)}

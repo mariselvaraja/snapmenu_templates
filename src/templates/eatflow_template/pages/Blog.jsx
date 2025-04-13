@@ -3,10 +3,34 @@ import { Link } from 'react-router-dom';
 import { Navigation } from '../components/Navigation';
 import { Footer } from '../components/Footer';
 import { BookOpen, ArrowRight, Calendar, User, Clock, Play } from 'lucide-react';
-import { useSiteContent } from '../context/SiteContentContext';
 
-// Use blog posts from siteContent
-const blogPosts = [];
+// Static blog posts data
+const staticBlogPosts = [
+  {
+    "title": "The Benefits of Plant-Based Eating",
+    "subtitle": "Discover how incorporating more plants into your diet can improve your health and the planet",
+    "chef": "Chef Maria Rodriguez",
+    "date": "April 10, 2025",
+    "readTime": "5 min read",
+    "image": "https://images.unsplash.com/photo-1512621776951-a57141f2eefd"
+  },
+  {
+    "title": "Seasonal Eating: Why It Matters",
+    "subtitle": "Learn the benefits of eating foods that are naturally harvested at their peak",
+    "chef": "Chef James Chen",
+    "date": "April 5, 2025",
+    "readTime": "4 min read",
+    "image": "https://images.unsplash.com/photo-1464226184884-fa280b87c399"
+  },
+  {
+    "title": "The Art of Mindful Eating",
+    "subtitle": "Transform your relationship with food by practicing mindfulness at mealtime",
+    "chef": "Chef Sarah Johnson",
+    "date": "March 28, 2025",
+    "readTime": "6 min read",
+    "image": "https://images.unsplash.com/photo-1493770348161-369560ae357d"
+  }
+];
 
 const recentPosts = [
   {
@@ -48,8 +72,8 @@ const categories = [
 ];
 
 export function Blog() {
-  const { siteContent } = useSiteContent();
-  const blogPosts = siteContent.blog.posts;
+  // Use static blog posts data
+  const blogPosts = staticBlogPosts;
 
   return (
     <div className="min-h-screen bg-white">
@@ -72,10 +96,10 @@ export function Blog() {
               <BookOpen className="w-16 h-16 text-green-400" />
             </div>
             <h1 className="text-7xl font-bold text-white mb-8">
-              {siteContent.blog.header.title}
+              Our Blog
             </h1>
             <p className="text-2xl text-gray-200 max-w-3xl mx-auto leading-relaxed">
-              {siteContent.blog.header.description}
+              Insights, recipes, and wellness tips for a healthier lifestyle
             </p>
           </div>
         </div>

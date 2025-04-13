@@ -2,7 +2,6 @@ import React from 'react';
 import { Navigation } from '../components/Navigation';
 import { Footer } from '../components/Footer';
 import { Leaf, ChefHat, UtensilsCrossed, Award, Users, Clock, Heart } from 'lucide-react';
-import { useSiteContent } from '../context/SiteContentContext';
 
 const stats = [
   {
@@ -43,8 +42,40 @@ const team = [
   }
 ];
 
+// Static content data
+const staticContent = {
+  brand: {
+    name: "EatFlow"
+  },
+  story: {
+    hero: {
+      title: "Our Story",
+      description: "Discover the passion and purpose behind EatFlow",
+      image: "https://images.unsplash.com/photo-1490818387583-1baba5e638af?auto=format&fit=crop&q=80"
+    },
+    values: [
+      {
+        icon: "UtensilsCrossed",
+        title: "Quality Ingredients",
+        description: "We source only the freshest, highest quality ingredients for all our meals."
+      },
+      {
+        icon: "Heart",
+        title: "Health-Focused",
+        description: "Every dish is designed with your health and wellness in mind."
+      },
+      {
+        icon: "Users",
+        title: "Community Impact",
+        description: "We're committed to making a positive impact in our community."
+      }
+    ]
+  }
+};
+
 export function About() {
-  const { siteContent } = useSiteContent();
+  // Use static content
+  const siteContent = staticContent;
 
   return (
     <div className="min-h-screen bg-white">

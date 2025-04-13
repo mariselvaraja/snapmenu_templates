@@ -13,8 +13,6 @@ import { CartDrawer } from './components/CartDrawer';
 import { Checkout } from './pages/Checkout';
 import { Confirmation } from './pages/Confirmation';
 import { BlogPost } from './pages/BlogPost';
-import { SiteContentProvider } from './context/SiteContentContext';
-import { MenuProvider } from './context/MenuContext';
 
 function App() {
   sessionStorage.clear("restaurant_id");
@@ -26,13 +24,9 @@ useEffect(()=>{
 },[restaurant_id])
 
   return (
-    <SiteContentProvider restaurant_id={restaurant_id} isPreview={isPreview}>
-      <MenuProvider restaurant_id={restaurant_id} isPreview={isPreview}>
-        <CartProvider>
-          {/* Use the hook inside the provider */} <CartContent />
-        </CartProvider>
-      </MenuProvider>
-    </SiteContentProvider>
+    <CartProvider>
+      {/* Use the hook inside the provider */} <CartContent />
+    </CartProvider>
   );
 }
 

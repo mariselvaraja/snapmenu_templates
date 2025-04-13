@@ -3,7 +3,6 @@ import { Navigation } from '../components/Navigation';
 import { Footer } from '../components/Footer';
 import { UtensilsCrossed, Search, ChevronDown, ChevronUp, AlertCircle, Leaf, Wheat, X } from 'lucide-react';
 import { useCart } from '../context/CartContext';
-import { useMenu } from '../context/MenuContext';
 
 const MenuItem = ({ item }) => {
   const [showDetails, setShowDetails] = useState(false);
@@ -131,8 +130,247 @@ const MenuItem = ({ item }) => {
   );
 };
 
+// Static menu data
+const staticMenuData = {
+  menu: {
+    starters: [
+      {
+        id: "s1",
+        name: "Avocado Toast",
+        description: "Whole grain toast with smashed avocado, cherry tomatoes, and microgreens",
+        price: "9.99",
+        image: "https://images.unsplash.com/photo-1588137378633-dea1336ce1e2",
+        category: "starters",
+        subCategory: "toast",
+        calories: 320,
+        nutrients: {
+          protein: "8g",
+          carbs: "32g",
+          fat: "18g",
+          sat: "2g",
+          unsat: "16g",
+          trans: "0g",
+          sugar: "3g",
+          fiber: "7g"
+        },
+        dietary: {
+          isVegetarian: true,
+          isVegan: true,
+          isGlutenFree: false
+        },
+        allergens: ["Wheat"],
+        ingredients: ["Whole grain bread", "Avocado", "Cherry tomatoes", "Microgreens", "Lemon juice", "Sea salt", "Black pepper"],
+        pairings: ["Fresh fruit smoothie", "Green tea"]
+      },
+      {
+        id: "s2",
+        name: "Quinoa Salad Bowl",
+        description: "Protein-rich quinoa with mixed vegetables, feta cheese, and lemon vinaigrette",
+        price: "12.99",
+        image: "https://images.unsplash.com/photo-1505253716362-afaea1d3d1af",
+        category: "starters",
+        subCategory: "salad",
+        calories: 380,
+        nutrients: {
+          protein: "12g",
+          carbs: "42g",
+          fat: "16g",
+          sat: "4g",
+          unsat: "12g",
+          trans: "0g",
+          sugar: "5g",
+          fiber: "8g"
+        },
+        dietary: {
+          isVegetarian: true,
+          isVegan: false,
+          isGlutenFree: true
+        },
+        allergens: ["Dairy"],
+        ingredients: ["Quinoa", "Cucumber", "Cherry tomatoes", "Red onion", "Feta cheese", "Olive oil", "Lemon juice", "Fresh herbs"],
+        pairings: ["Grilled chicken", "Sparkling water with lemon"]
+      }
+    ],
+    mains: [
+      {
+        id: "m1",
+        name: "Buddha Bowl",
+        description: "Quinoa, roasted vegetables, avocado, and tahini dressing",
+        price: "15.99",
+        image: "https://images.unsplash.com/photo-1611270629569-8b357cb88da9",
+        category: "mains",
+        subCategory: "bowl",
+        calories: 520,
+        nutrients: {
+          protein: "15g",
+          carbs: "62g",
+          fat: "22g",
+          sat: "3g",
+          unsat: "19g",
+          trans: "0g",
+          sugar: "8g",
+          fiber: "12g"
+        },
+        dietary: {
+          isVegetarian: true,
+          isVegan: true,
+          isGlutenFree: true
+        },
+        allergens: ["Sesame"],
+        ingredients: ["Quinoa", "Sweet potato", "Broccoli", "Chickpeas", "Avocado", "Tahini", "Lemon juice", "Olive oil"],
+        pairings: ["Fresh juice", "Herbal tea"]
+      },
+      {
+        id: "m2",
+        name: "Grilled Salmon",
+        description: "Wild-caught salmon with roasted vegetables and quinoa",
+        price: "24.99",
+        image: "https://images.unsplash.com/photo-1567337710282-00832b415979",
+        category: "mains",
+        subCategory: "fish",
+        calories: 480,
+        nutrients: {
+          protein: "32g",
+          carbs: "38g",
+          fat: "18g",
+          sat: "3g",
+          unsat: "15g",
+          trans: "0g",
+          sugar: "4g",
+          fiber: "6g"
+        },
+        dietary: {
+          isVegetarian: false,
+          isVegan: false,
+          isGlutenFree: true
+        },
+        allergens: ["Fish"],
+        ingredients: ["Wild-caught salmon", "Quinoa", "Asparagus", "Bell peppers", "Olive oil", "Lemon", "Herbs", "Spices"],
+        pairings: ["White wine", "Lemon water"]
+      }
+    ],
+    desserts: [
+      {
+        id: "d1",
+        name: "Acai Bowl",
+        description: "Fresh acai blend topped with granola, banana, and seasonal fruits",
+        price: "12.99",
+        image: "https://images.unsplash.com/photo-1547592180-85f173990554",
+        category: "desserts",
+        subCategory: "bowl",
+        calories: 380,
+        nutrients: {
+          protein: "6g",
+          carbs: "68g",
+          fat: "10g",
+          sat: "2g",
+          unsat: "8g",
+          trans: "0g",
+          sugar: "32g",
+          fiber: "9g"
+        },
+        dietary: {
+          isVegetarian: true,
+          isVegan: true,
+          isGlutenFree: true
+        },
+        allergens: ["Nuts"],
+        ingredients: ["Acai berries", "Banana", "Strawberries", "Blueberries", "Granola", "Coconut flakes", "Honey"],
+        pairings: ["Green tea", "Fresh orange juice"]
+      },
+      {
+        id: "d2",
+        name: "Chia Pudding",
+        description: "Coconut milk chia pudding with fresh berries and honey",
+        price: "8.99",
+        image: "https://images.unsplash.com/photo-1583096114844-06ce5a5f2171",
+        category: "desserts",
+        subCategory: "pudding",
+        calories: 280,
+        nutrients: {
+          protein: "8g",
+          carbs: "32g",
+          fat: "14g",
+          sat: "6g",
+          unsat: "8g",
+          trans: "0g",
+          sugar: "18g",
+          fiber: "12g"
+        },
+        dietary: {
+          isVegetarian: true,
+          isVegan: true,
+          isGlutenFree: true
+        },
+        allergens: [],
+        ingredients: ["Chia seeds", "Coconut milk", "Vanilla extract", "Honey", "Mixed berries"],
+        pairings: ["Herbal tea", "Almond milk latte"]
+      }
+    ],
+    drinks: [
+      {
+        id: "dr1",
+        name: "Green Smoothie",
+        description: "Spinach, banana, mango, and coconut water blend",
+        price: "7.99",
+        image: "https://images.unsplash.com/photo-1610970881699-44a5587cabec",
+        category: "drinks",
+        subCategory: "smoothie",
+        calories: 180,
+        nutrients: {
+          protein: "3g",
+          carbs: "38g",
+          fat: "2g",
+          sat: "0g",
+          unsat: "2g",
+          trans: "0g",
+          sugar: "28g",
+          fiber: "5g"
+        },
+        dietary: {
+          isVegetarian: true,
+          isVegan: true,
+          isGlutenFree: true
+        },
+        allergens: [],
+        ingredients: ["Spinach", "Banana", "Mango", "Coconut water", "Chia seeds"],
+        pairings: ["Avocado toast", "Granola bowl"]
+      },
+      {
+        id: "dr2",
+        name: "Turmeric Latte",
+        description: "Almond milk with turmeric, cinnamon, and honey",
+        price: "5.99",
+        image: "https://images.unsplash.com/photo-1615485290382-441e4d049cb5",
+        category: "drinks",
+        subCategory: "latte",
+        calories: 120,
+        nutrients: {
+          protein: "2g",
+          carbs: "18g",
+          fat: "4g",
+          sat: "0g",
+          unsat: "4g",
+          trans: "0g",
+          sugar: "12g",
+          fiber: "1g"
+        },
+        dietary: {
+          isVegetarian: true,
+          isVegan: false,
+          isGlutenFree: true
+        },
+        allergens: ["Nuts"],
+        ingredients: ["Almond milk", "Turmeric", "Cinnamon", "Ginger", "Honey", "Black pepper"],
+        pairings: ["Chia pudding", "Oatmeal cookie"]
+      }
+    ]
+  }
+};
+
 export function Menu() {
-  const { menu } = useMenu();
+  // Use static menu data instead of context
+  const menu = staticMenuData;
   const [activeCategory, setActiveCategory] = useState('all');
   const [activeSubCategory, setActiveSubCategory] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
