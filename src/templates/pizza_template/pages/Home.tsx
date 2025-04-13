@@ -13,29 +13,11 @@ export default function Home() {
   const { rawApiResponse } = useAppSelector(state => state.siteContent);
   
   // Get site content from Redux state
-  const siteContent = rawApiResponse?.data ? 
-    (typeof rawApiResponse.data === 'string' ? JSON.parse(rawApiResponse.data) : rawApiResponse.data) : 
+  const siteContent = rawApiResponse ? 
+    (typeof rawApiResponse === 'string' ? JSON.parse(rawApiResponse) : rawApiResponse) : 
     {};
-  const navigationBar = siteContent?.navigationBar || {};
-  const heroData = navigationBar?.hero || {
-    banners: [
-      {
-        image: "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&q=80",
-        title: "Delicious Pizza",
-        subtitle: "Made with fresh ingredients"
-      },
-      {
-        image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&q=80",
-        title: "Handcrafted Perfection",
-        subtitle: "Every pizza tells a story"
-      },
-      {
-        image: "https://images.unsplash.com/photo-1593560708920-61dd98c46a4e?auto=format&fit=crop&q=80",
-        title: "Fresh From The Oven",
-        subtitle: "Taste the difference quality makes"
-      }
-    ]
-  };
+  const navigationBar = siteContent?.navigationBar;
+  const heroData = navigationBar?.hero;
   
   // Auto-rotate carousel
   useEffect(() => {

@@ -14,8 +14,8 @@ export default function Navbar() {
   const { rawApiResponse } = useAppSelector(state => state.siteContent);
   
   // Get site content from Redux state
-  const siteContent = rawApiResponse?.data ? 
-    (typeof rawApiResponse.data === 'string' ? JSON.parse(rawApiResponse.data) : rawApiResponse.data) : 
+  const siteContent = rawApiResponse ? 
+    (typeof rawApiResponse === 'string' ? JSON.parse(rawApiResponse) : rawApiResponse) : 
     { navigationBar: { brand: { logo: {} }, navigation: { links: [] } } };
   const navigationBar = siteContent?.navigationBar || { brand: { logo: {} }, navigation: { links: [] } };
   const { brand, navigation } = navigationBar;

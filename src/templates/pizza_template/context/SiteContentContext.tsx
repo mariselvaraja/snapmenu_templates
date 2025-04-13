@@ -479,9 +479,9 @@ export function SiteContentProvider({ children }: SiteContentProviderProps) {
   }
 
   // Show maintenance message if site content is empty
-  if (!loading && !rawApiResponse.data && (!rawApiResponse.data || 
-      (typeof rawApiResponse.data === 'object' && Object.keys(rawApiResponse.data).length === 0) ||
-      (typeof rawApiResponse.data === 'string' && rawApiResponse.data.trim() === ''))) {
+  if (!loading && !rawApiResponse && (!rawApiResponse || 
+      (typeof rawApiResponse === 'object' && Object.keys(rawApiResponse).length === 0) ||
+      (typeof rawApiResponse === 'string' && rawApiResponse.trim() === ''))) {
     return (
       <div className="fixed inset-0 flex items-center justify-center bg-white z-50">
         <div className="text-center p-6 max-w-md">
@@ -498,6 +498,8 @@ export function SiteContentProvider({ children }: SiteContentProviderProps) {
       </div>
     );
   }
+
+
 
   // Provide the context value with proper error handling
   return (
