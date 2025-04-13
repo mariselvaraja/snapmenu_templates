@@ -201,7 +201,7 @@ function ProductDetails() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white py-20">
+    <div className="min-h-screen bg-black text-white py-[120px]">
       <div className="max-w-7xl mx-auto px-6">
         <button 
           onClick={() => navigate('/menu')}

@@ -1,6 +1,5 @@
 import React from 'react';
 import { MapPin, Clock, Phone, Mail, Users } from 'lucide-react';
-import { Footer } from '../components/Footer';
 import { useAppSelector } from '../../../common/redux';
 
 export function Contact() {
@@ -84,7 +83,6 @@ export function Contact() {
         </div>
       </div>
     </div>
-    <Footer/>
     </>
   );
 }
