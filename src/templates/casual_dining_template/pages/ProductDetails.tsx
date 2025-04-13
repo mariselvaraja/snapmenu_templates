@@ -4,7 +4,6 @@ import { MenuContext } from '../context/MenuContext';
 import { CartContext, CartContextType, useCart } from '../context/CartContext';
 import { Link } from 'react-router-dom';
 import { MapPin, Clock, Phone, Star, ChevronRight, Instagram, Facebook, Twitter, ArrowRight } from 'lucide-react';
-import { Navigation } from '../components/Navigation';
 import { useContent } from '../context/ContentContext';
 import CartDrawer from '../components/CartDrawer';
 
@@ -50,7 +49,6 @@ function ProductDetails() {
 
   return (
     <>
-    <Navigation/>
     <div className="min-h-screen bg-black text-white py-20">
       <div className="container mx-auto mt-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">

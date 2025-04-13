@@ -214,7 +214,10 @@ export default function ProductDetail() {
                         transition={{ duration: 0.5 }}
                         className="md:col-span-1"
                     >
-                        <h2 className="text-xl font-semibold mb-4">You May Also Like</h2>
+                        <h2 className="text-xl font-semibold mb-4 flex items-center">
+                            <Heart className="h-5 w-5 mr-2 text-red-500" />
+                            You May Also Like
+                        </h2>
                         <div className="space-y-4">
                             {(() => {
                                 // Extract best combo SKU IDs from the product

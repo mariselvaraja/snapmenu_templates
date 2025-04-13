@@ -1,5 +1,4 @@
 import React, { useContext } from 'react';
-import { Navigation } from '../components/Navigation';
 import { Icon } from '../components/Icon';
 import { ContentContext, ContentContextType } from '../context/ContentContext';
 import { Footer } from '../components/Footer';
@@ -25,8 +24,6 @@ export function Story() {
           />
           <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black"></div>
         </div>
-
-        <Navigation />
 
         <div className="relative h-full flex flex-col items-center justify-center px-6 text-center">
           <h1 className="text-6xl md:text-8xl font-bold mb-6 animate-fade-in">

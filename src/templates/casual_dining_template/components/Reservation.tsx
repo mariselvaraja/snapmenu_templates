@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Navigation } from '../components/Navigation';
 import { Footer } from '../components/Footer';
 import { Calendar, Clock, Users, UtensilsCrossed, MapPin, Phone, ArrowRight } from 'lucide-react';
 import { useContent } from '../context/ContentContext';
@@ -209,7 +208,7 @@ export default function Reservation() {
           <div className="absolute inset-0 bg-gradient-to-b from-black/70 to-black/30"></div>
         </div>
         
-        <Navigation />
+        
 
         <div className="relative z-10 container mx-auto px-6 h-[calc(50vh-120px)] flex items-center justify-center text-center">
           <div>

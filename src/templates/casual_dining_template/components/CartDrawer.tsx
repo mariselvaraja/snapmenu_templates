@@ -1,20 +1,32 @@
-import React, { useContext } from 'react';
-import { CartContext, useCart } from '../context/CartContext';
+import React from 'react';
 import { Trash, X, Minus, Plus } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useAppSelector, useAppDispatch } from '../../../redux/hooks';
+import { toggleDrawer, removeItem, updateItemQuantity } from '../../../redux/slices/cartSlice';
+import { useCart } from '../context/CartContext';
 
 const CartDrawer: React.FC = () => {
-  const { cart, addToCart, removeFromCart, updateQuantity } = useCart();
+  const { cart, removeFromCart, updateQuantity } = useCart();
   const { isCartOpen, toggleCart } = useCart();
+  
+  // Redux integration
+  const dispatch = useAppDispatch();
+  const drawerOpen = useAppSelector((state) => state.cart.drawerOpen);
 
   const calculateTotal = () => {
     return cart.reduce((total, item) => total + parseFloat(item.price) * item.quantity, 0).toFixed(2);
+  };
+  
+  // Handle close drawer
+  const handleCloseDrawer = () => {
+    toggleCart();
+    dispatch(toggleDrawer(false));
   };
 
   return (
     <div
       className={`fixed top-0 right-0 min-h-screen w-96 bg-black text-white shadow-2xl border-l border-zinc-800 z-50 transform transition-transform duration-300 ${
-        isCartOpen ? 'translate-x-0' : 'translate-x-full'
+        isCartOpen || drawerOpen ? 'translate-x-0' : 'translate-x-full'
       }`}
     >
       <div className="flex flex-col h-full">
@@ -22,7 +34,7 @@ const CartDrawer: React.FC = () => {
         <div className="p-4 border-b border-zinc-800 flex justify-between items-center">
           <h2 className="text-xl font-semibold">Your Order</h2>
           <button 
-            onClick={toggleCart} 
+            onClick={handleCloseDrawer} 
             className="text-gray-400 hover:text-white transition"
             aria-label="Close cart"
           >
@@ -99,7 +111,7 @@ const CartDrawer: React.FC = () => {
               
               <Link to="/checkout" className="block w-full">
                 <button 
-                  onClick={toggleCart}
+                  onClick={handleCloseDrawer}
                   className="bg-yellow-400 text-black py-3 px-4 rounded-md text-lg font-semibold hover:bg-yellow-300 transition w-full"
                 >
                   Proceed to Checkout

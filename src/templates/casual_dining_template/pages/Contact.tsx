@@ -1,5 +1,4 @@
 import React from 'react';
-import { Navigation } from '../components/Navigation';
 import { useContent } from '../context/ContentContext';
 import { MapPin, Clock, Phone, Mail, Users } from 'lucide-react';
 import { Footer } from '../components/Footer';
@@ -10,7 +9,6 @@ export function Contact() {
 
   return (
 <>
-<Navigation/>
     <div className="min-h-screen bg-black text-white">
 
       <div className="relative h-screen">

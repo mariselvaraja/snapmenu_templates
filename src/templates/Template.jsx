@@ -74,7 +74,8 @@ const TemplateContent = () => {
   };
 
    // Get template_id from restaurant data or use default
-   const template_id = restaurantState?.info?.template_id;
+   const template_id = "casual_dining_template"
+  //  restaurantState?.info?.template_id;
    console.log("restaurantState", restaurantState)
   // Check if restaurant API returned an error or empty data
   const restaurantApiError = restaurantState.error || !restaurantState.info;

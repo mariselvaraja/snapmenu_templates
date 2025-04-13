@@ -1,5 +1,4 @@
 import React from 'react';
-import { Navigation } from '../components/Navigation';
 import { Calendar, Clock, MapPin, Users } from 'lucide-react';
 import { useContent } from '../context/ContentContext';
 
@@ -21,7 +20,7 @@ export function Events() {
           <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black"></div>
         </div>
         
-        <Navigation />
+
 
         <div className="relative h-full flex flex-col items-center justify-center px-6 text-center">
           <h1 className="text-6xl md:text-8xl font-bold mb-6 animate-fade-in">{sectionTitle}</h1>

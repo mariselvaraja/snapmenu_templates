@@ -1,7 +1,6 @@
 import React from 'react';
 import GalleryComponent from '../components/Gallery';
 import { useContent } from '../context/ContentContext';
-import { Navigation } from '../components/Navigation';
 import { Footer } from '../components/Footer';
 
 const Gallery: React.FC = () => {
@@ -9,7 +8,7 @@ const Gallery: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <Navigation />
+
       <header className="relative h-96">
         <div className="absolute inset-0">
           <img

@@ -1,45 +1,56 @@
 import React, { useState, useEffect } from 'react';
-import { Navigation } from '../components/Navigation';
 import { ArrowRight, ChevronDown } from 'lucide-react';
-import { useMenu } from '../context/MenuContext';
 import { Link } from 'react-router-dom';
+import { useAppSelector } from '../../../redux/hooks';
 
 interface MenuItem {
-  id: string;
+  id: string | number;
   name: string;
   description: string;
-  price: string;
+  price: string | number;
   image: string;
   category: string;
-  subCategory: string;
-  calories: number;
-  nutrients: {
-    protein: string;
-    carbs: string;
-    fat: string;
-    sat: string;
-    unsat: string;
-    trans: string;
-    sugar: string;
-    fiber: string;
+  subCategory?: string;
+  calories?: number;
+  nutrients?: {
+    protein?: string;
+    carbs?: string;
+    fat?: string;
+    sat?: string;
+    unsat?: string;
+    trans?: string;
+    sugar?: string;
+    fiber?: string;
   };
-  dietary: {
-    isVegetarian: boolean;
-    isVegan: boolean;
-    isGlutenFree: boolean;
+  dietary?: {
+    isVegetarian?: boolean;
+    isVegan?: boolean;
+    isGlutenFree?: boolean;
   };
-  allergens: string[];
-  ingredients: string[];
-  pairings: string[];
+  allergens?: string[];
+  ingredients?: string[];
+  pairings?: string[];
 }
 
 export function Menu() {
-  const { menu } = useMenu();
   const [activeCategory, setActiveCategory] = useState("All");
   const [isNavSticky, setIsNavSticky] = useState(false);
-
-  const categories = Object.entries(menu);
-
+  
+  // Get menu items from Redux
+  const menuItems = useAppSelector(state => state.menu.items);
+  
+  // Group menu items by category
+  const menuByCategory: Record<string, MenuItem[]> = {};
+  
+  menuItems.forEach((item: MenuItem) => {
+    if (!menuByCategory[item.category]) {
+      menuByCategory[item.category] = [];
+    }
+    menuByCategory[item.category].push(item);
+  });
+  
+  const categories = Object.entries(menuByCategory);
+  
   const filteredCategories = activeCategory === "All"
     ? categories
     : categories.filter(([categoryName]) => categoryName === activeCategory);
@@ -72,8 +83,6 @@ export function Menu() {
           <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black"></div>
         </div>
         
-        <Navigation />
-
         <div className="relative h-full flex flex-col items-center justify-center px-6 text-center">
           <h1 className="text-6xl md:text-8xl font-bold mb-6 animate-fade-in">Our Menu</h1>
           <p className="text-xl md:text-2xl text-gray-200 max-w-2xl mx-auto mb-12 animate-fade-in-delay-1">
@@ -143,9 +152,7 @@ export function Menu() {
                 {/* Menu Items Side */}
                 <div className="bg-zinc-900/50 backdrop-blur-sm rounded-3xl p-8 lg:p-12">
                   <div className="space-y-8">
-                    {(() => {
-                      const items = menu[categoryName as keyof typeof menu];
-                      return items ? items.map((item: MenuItem, itemIndex: number) => (
+                    {categoryData.map((item: MenuItem, itemIndex: number) => (
                         <Link
                           key={itemIndex}
                           to={`/menu/${item.id}`}
@@ -162,8 +169,7 @@ export function Menu() {
                           </div>
                           <p className="text-gray-400 text-lg">{item.description}</p>
                         </Link>
-                      )) : null;
-                    })()}
+                    ))}
                   </div>
                 </div>
               </div>

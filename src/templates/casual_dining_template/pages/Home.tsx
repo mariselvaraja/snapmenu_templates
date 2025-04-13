@@ -1,7 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { MapPin, Clock, Phone, Mail, ChevronRight, ArrowRight } from 'lucide-react';
-import { Navigation } from '../components/Navigation';
 import { useContent } from '../context/ContentContext';
 import { Footer } from '../components/Footer';
 import { useMenu } from '../context/MenuContext';
@@ -35,8 +34,6 @@ export function Home() {
           <div className="absolute inset-0 bg-gradient-to-b from-black/70 to-black/30"></div>
         </div>
         
-        <Navigation />
-
         <div className="relative z-10 flex items-center h-full max-w-7xl mx-auto px-6">
           <div className="max-w-2xl">
             <h2 className="text-5xl md:text-7xl font-bold mb-6 animate-fade-in">
