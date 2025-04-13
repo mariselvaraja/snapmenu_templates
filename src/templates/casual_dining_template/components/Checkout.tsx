@@ -1,20 +1,36 @@
 import React, { useState } from 'react';
-import { ShoppingCart } from 'lucide-react';
+import { ShoppingCart, ArrowLeft } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { Navigation } from './Navigation';
 import { useCart } from '../context/CartContext';
 import OrderConfirmation from './OrderConfirmation';
 
+interface OrderItem {
+  id: string;
+  name: string;
+  price: string;
+  quantity: number;
+  imageUrl: string;
+}
+
+interface FormData {
+  name: string;
+  phone: string;
+  email: string;
+  specialRequests: string;
+}
+
 const Checkout: React.FC = () => {
-  const [orderMethod, setOrderMethod] = useState<'takeout' | 'delivery'>('takeout');
   const { cart } = useCart();
   const [showConfirmation, setShowConfirmation] = useState(false);
-  interface OrderItem {
-    id: string;
-    name: string;
-    price: string;
-    quantity: number;
-    imageUrl: string;
-  }
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState<FormData>({
+    name: '',
+    phone: '',
+    email: '',
+    specialRequests: '',
+  });
+  const [errors, setErrors] = useState<Partial<FormData>>({});
 
   const [orderDetails, setOrderDetails] = useState({
     orderId: '',
@@ -34,277 +50,277 @@ const Checkout: React.FC = () => {
     specialInstructions: ''
   });
   
-  const calculateSubtotal = () => {
-    return cart.reduce((total, item) => total + parseFloat(item.price) * item.quantity, 0).toFixed(2);
+  // Calculate cart totals
+  const subtotal = cart.reduce((total, item) => total + parseFloat(item.price) * item.quantity, 0);
+  const tax = subtotal * 0.08; // 8% tax
+  const total = subtotal + tax;
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+    // Clear error when field is edited
+    if (errors[name as keyof FormData]) {
+      setErrors({
+        ...errors,
+        [name]: undefined,
+      });
+    }
   };
-  
-  const calculateTax = () => {
-    return (parseFloat(calculateSubtotal()) * 0.08).toFixed(2);
+
+  const validateForm = (): boolean => {
+    const newErrors: Partial<FormData> = {};
+    
+    if (!formData.name.trim()) {
+      newErrors.name = 'Name is required';
+    }
+    
+    if (!formData.phone.trim()) {
+      newErrors.phone = 'Phone number is required';
+    } else if (!/^\d{10,15}$/.test(formData.phone.replace(/[^\d]/g, ''))) {
+      newErrors.phone = 'Please enter a valid phone number';
+    }
+    
+    if (!formData.email.trim()) {
+      newErrors.email = 'Email is required';
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = 'Please enter a valid email address';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
-  
-  const calculateTotal = () => {
-    const subtotal = parseFloat(calculateSubtotal());
-    const tax = parseFloat(calculateTax());
-    const deliveryFee = orderMethod === 'delivery' ? 2.99 : 0;
-    return (subtotal + tax + deliveryFee).toFixed(2);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+    
+    setIsSubmitting(true);
+    
+    // In a real application, this would submit the order to a backend
+    // For now, we'll just simulate a successful order
+    
+    // Generate a random order ID
+    const orderId = Math.floor(10000 + Math.random() * 90000).toString();
+    
+    // Get current date and time
+    const now = new Date();
+    const orderDate = now.toISOString().split('T')[0];
+    const orderTime = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    
+    // Calculate estimated delivery/pickup time (30-45 minutes from now)
+    const estimatedDate = new Date(now.getTime() + 40 * 60000);
+    const estimatedTime = estimatedDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    
+    // Set order details
+    setOrderDetails({
+      orderId,
+      orderDate,
+      orderTime,
+      customerName: formData.name,
+      customerEmail: formData.email,
+      customerPhone: formData.phone,
+      orderMethod: 'takeout',
+      deliveryAddress: '',
+      items: cart.map(item => ({
+        id: item.id,
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity,
+        imageUrl: item.imageUrl
+      })),
+      subtotal: subtotal.toFixed(2),
+      tax: tax.toFixed(2),
+      deliveryFee: '0.00',
+      total: total.toFixed(2),
+      estimatedTime,
+      specialInstructions: formData.specialRequests
+    });
+    
+    // Show confirmation
+    setTimeout(() => {
+      setIsSubmitting(false);
+      setShowConfirmation(true);
+    }, 1500);
   };
+
+  if (showConfirmation) {
+    return <OrderConfirmation orderDetails={orderDetails} />;
+  }
 
   return (
     <div className="min-h-screen bg-black text-white flex flex-col">
       <Navigation />
       
       {/* Hero Section with Background Image */}
-      <div className="relative bg-center bg-cover h-96" style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=2070&auto=format&fit=crop)' }}>
+      <div className="relative bg-center bg-cover h-64" style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=2070&auto=format&fit=crop)' }}>
         <div className="absolute inset-0 bg-black bg-opacity-50 flex flex-col items-center justify-center">
           <div className="text-center">
-            <ShoppingCart className="w-20 h-20 text-yellow-400 mx-auto mb-6" />
-            <h1 className="text-6xl font-bold mb-4">Checkout</h1>
-            <p className="text-2xl">Complete your order</p>
+            <ShoppingCart className="w-16 h-16 text-yellow-400 mx-auto mb-4" />
+            <h1 className="text-5xl font-bold mb-2">Checkout</h1>
+            <p className="text-xl">Complete your order</p>
           </div>
         </div>
       </div>
 
       {/* Checkout Content */}
       <div className="container mx-auto py-12 px-4">
-        <div className="flex flex-col lg:flex-row gap-8">
-          {/* Left Column - Customer Information */}
-          <div className="lg:w-2/3 bg-zinc-900 p-6 rounded-lg">
-            <h2 className="text-2xl font-semibold mb-6">How would you like to receive your order?</h2>
-            
-            {/* Order Method Selection */}
-            <div className="flex mb-8 gap-4">
-              <div 
-                className={`w-1/2 p-4 border rounded-lg cursor-pointer transition ${
-                  orderMethod === 'takeout' 
-                    ? 'border-yellow-400 bg-zinc-800' 
-                    : 'border-zinc-700 hover:border-zinc-500'
-                }`}
-                onClick={() => setOrderMethod('takeout')}
-              >
-                <div className="text-center">
-                  <div className="text-yellow-400 text-xl mb-2">Takeout</div>
-                  <p className="text-gray-400 text-sm">Pick up at restaurant</p>
-                </div>
+        <div className="mb-8">
+          <Link
+            to="/cart"
+            className="inline-flex items-center text-yellow-400 hover:text-yellow-300 transition-colors mb-4"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" /> Back to Cart
+          </Link>
+          <h1 className="text-4xl font-bold">Checkout</h1>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Checkout Form */}
+          <div className="lg:col-span-2">
+            <div className="bg-zinc-900 rounded-lg shadow-lg overflow-hidden">
+              <div className="p-6 border-b border-zinc-800">
+                <h2 className="text-2xl font-semibold">Contact Information</h2>
               </div>
-              
-              <div 
-                className={`w-1/2 p-4 border rounded-lg cursor-pointer transition ${
-                  orderMethod === 'delivery' 
-                    ? 'border-yellow-400 bg-zinc-800' 
-                    : 'border-zinc-700 hover:border-zinc-500'
-                }`}
-                onClick={() => setOrderMethod('delivery')}
-              >
-                <div className="text-center">
-                  <div className="text-yellow-400 text-xl mb-2">Delivery</div>
-                  <p className="text-gray-400 text-sm">Delivered to your address</p>
-                </div>
-              </div>
-            </div>
-            
-            {/* Customer Information Form */}
-            <div>
-              <h2 className="text-2xl font-semibold mb-4">
-                {orderMethod === 'takeout' ? 'Pickup Information' : 'Delivery Information'}
-              </h2>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <form onSubmit={handleSubmit} className="p-6 space-y-6">
                 <div>
-                  <label htmlFor="firstName" className="block text-gray-300 text-sm font-bold mb-2">
-                    First Name *
+                  <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-1">
+                    Full Name
                   </label>
                   <input
                     type="text"
-                    id="firstName"
-                    className="shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline bg-zinc-800 text-white border-zinc-700"
-                    placeholder="John"
+                    id="name"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-yellow-400 focus:outline-none bg-zinc-800 text-white ${
+                      errors.name ? 'border-red-500' : 'border-zinc-700'
+                    }`}
+                    placeholder="Enter your full name"
                   />
+                  {errors.name && <p className="mt-1 text-sm text-red-500">{errors.name}</p>}
                 </div>
+
                 <div>
-                  <label htmlFor="lastName" className="block text-gray-300 text-sm font-bold mb-2">
-                    Last Name *
+                  <label htmlFor="phone" className="block text-sm font-medium text-gray-300 mb-1">
+                    Phone Number
                   </label>
                   <input
-                    type="text"
-                    id="lastName"
-                    className="shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline bg-zinc-800 text-white border-zinc-700"
-                    placeholder="Doe"
+                    type="tel"
+                    id="phone"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-yellow-400 focus:outline-none bg-zinc-800 text-white ${
+                      errors.phone ? 'border-red-500' : 'border-zinc-700'
+                    }`}
+                    placeholder="Enter your phone number"
                   />
+                  {errors.phone && <p className="mt-1 text-sm text-red-500">{errors.phone}</p>}
                 </div>
-              </div>
-              
-              <div className="mb-4">
-                <label htmlFor="email" className="block text-gray-300 text-sm font-bold mb-2">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  className="shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline bg-zinc-800 text-white border-zinc-700"
-                  placeholder="john@example.com"
-                />
-              </div>
-              
-              <div className="mb-4">
-                <label htmlFor="phone" className="block text-gray-300 text-sm font-bold mb-2">
-                  Phone Number
-                </label>
-                <input
-                  type="tel"
-                  id="phone"
-                  className="shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline bg-zinc-800 text-white border-zinc-700"
-                  placeholder="+1 (555) 000-0000"
-                />
-              </div>
-              
-              {orderMethod === 'delivery' && (
-                <div className="mb-4">
-                  <label htmlFor="address" className="block text-gray-300 text-sm font-bold mb-2">
-                    Delivery Address *
+
+                <div>
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-1">
+                    Email Address
                   </label>
                   <input
-                    type="text"
-                    id="address"
-                    className="shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline bg-zinc-800 text-white border-zinc-700 mb-2"
-                    placeholder="Street Address"
+                    type="email"
+                    id="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-yellow-400 focus:outline-none bg-zinc-800 text-white ${
+                      errors.email ? 'border-red-500' : 'border-zinc-700'
+                    }`}
+                    placeholder="Enter your email address"
                   />
-                  <input
-                    type="text"
-                    id="addressLine2"
-                    className="shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline bg-zinc-800 text-white border-zinc-700"
-                    placeholder="Apt, Suite, etc. (optional)"
+                  {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email}</p>}
+                </div>
+
+                <div>
+                  <label htmlFor="specialRequests" className="block text-sm font-medium text-gray-300 mb-1">
+                    Special Requests (Optional)
+                  </label>
+                  <textarea
+                    id="specialRequests"
+                    name="specialRequests"
+                    value={formData.specialRequests}
+                    onChange={handleChange}
+                    rows={3}
+                    className="w-full px-4 py-2 border border-zinc-700 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:outline-none bg-zinc-800 text-white"
+                    placeholder="Any special instructions for your order"
                   />
                 </div>
-              )}
-              
-              <div className="mb-4">
-                <label htmlFor="pickupTime" className="block text-gray-300 text-sm font-bold mb-2">
-                  {orderMethod === 'takeout' ? 'Preferred Pickup Time' : 'Preferred Delivery Time'}
-                </label>
-                <input
-                  type="datetime-local"
-                  id="pickupTime"
-                  className="shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline bg-zinc-800 text-white border-zinc-700"
-                />
-              </div>
-              
-              <div className="mb-4">
-                <label htmlFor="notes" className="block text-gray-300 text-sm font-bold mb-2">
-                  Special Instructions (optional)
-                </label>
-                <textarea
-                  id="notes"
-                  className="shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline bg-zinc-800 text-white border-zinc-700 h-24"
-                  placeholder="Any special requests or notes for your order..."
-                ></textarea>
-              </div>
+
+                <div className="pt-4">
+                  <button
+                    type="submit"
+                    disabled={isSubmitting || cart.length === 0}
+                    className={`w-full bg-yellow-400 text-black py-3 rounded-full font-semibold hover:bg-yellow-300 transition-colors ${
+                      (isSubmitting || cart.length === 0) ? 'opacity-70 cursor-not-allowed' : ''
+                    }`}
+                  >
+                    {isSubmitting ? 'Processing...' : cart.length === 0 ? 'Your Cart is Empty' : 'Complete Order'}
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
-          
-          {/* Right Column - Order Summary */}
-          <div className="lg:w-1/3">
-            <div className="bg-zinc-900 p-6 rounded-lg">
-              <h2 className="text-2xl font-semibold mb-4">Order Summary</h2>
+
+          {/* Order Summary */}
+          <div>
+            <div className="bg-zinc-900 rounded-lg shadow-lg p-6 sticky top-24">
+              <h2 className="text-2xl font-semibold mb-6">Order Summary</h2>
               
-              {/* Order Items */}
-              <div className="mb-4">
+              <div className="max-h-60 overflow-y-auto mb-6">
                 {cart.map((item) => (
-                  <div key={item.id} className="flex items-center py-2 border-b border-zinc-800">
-                    <img src={item.imageUrl} alt={item.name} className="w-16 h-16 object-cover mr-4" />
-                    <div className="flex-1">
-                      <h3 className="font-semibold">{item.name}</h3>
-                      <p className="text-gray-400">Qty: {item.quantity}</p>
+                  <div key={item.id} className="flex justify-between items-center py-2 border-b border-zinc-800">
+                    <div className="flex items-center">
+                      {item.imageUrl ? (
+                        <img
+                          src={item.imageUrl}
+                          alt={item.name}
+                          className="w-10 h-10 object-cover rounded-md mr-2"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 bg-yellow-400 bg-opacity-20 flex items-center justify-center rounded-md mr-2">
+                          <span className="text-sm font-bold text-yellow-400">
+                            {item.name.charAt(0)}
+                          </span>
+                        </div>
+                      )}
+                      <div>
+                        <span className="font-medium">{item.quantity}x</span>
+                        <span className="ml-2">{item.name}</span>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <p>${(parseFloat(item.price) * item.quantity).toFixed(2)}</p>
-                    </div>
+                    <span>${(parseFloat(item.price) * item.quantity).toFixed(2)}</span>
                   </div>
                 ))}
               </div>
               
-              <div className="border-t border-b border-zinc-700 py-4 my-4">
-                <div className="flex justify-between mb-2">
-                  <span>Subtotal:</span>
-                  <span>${calculateSubtotal()}</span>
+              <div className="space-y-4">
+                <div className="flex justify-between">
+                  <span>Subtotal</span>
+                  <span>${subtotal.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between mb-2">
-                  <span>Tax (8%):</span>
-                  <span>${calculateTax()}</span>
+                <div className="flex justify-between">
+                  <span>Tax</span>
+                  <span>${tax.toFixed(2)}</span>
                 </div>
-                {orderMethod === 'delivery' && (
-                  <div className="flex justify-between mb-2">
-                    <span>Delivery Fee:</span>
-                    <span>$2.99</span>
-                  </div>
-                )}
+                <div className="border-t border-zinc-800 pt-4 flex justify-between font-semibold text-lg">
+                  <span>Total</span>
+                  <span>${total.toFixed(2)}</span>
+                </div>
               </div>
               
-              <div className="flex justify-between text-xl font-bold mb-6">
-                <span>Total:</span>
-                <span>${calculateTotal()}</span>
-              </div>
-              
-              <button
-                className="bg-yellow-400 hover:bg-yellow-300 text-black font-bold py-4 px-6 rounded-full w-full text-lg transition"
-                type="button"
-                onClick={() => {
-                  // In a real application, this would submit the order to a backend
-                  // For now, we'll just simulate a successful order
-                  
-                  // Generate a random order ID
-                  const orderId = Math.floor(10000 + Math.random() * 90000).toString();
-                  
-                  // Get current date and time
-                  const now = new Date();
-                  const orderDate = now.toISOString().split('T')[0];
-                  const orderTime = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                  
-                  // Get form values (in a real app, these would be from form inputs)
-                  const firstName = (document.getElementById('firstName') as HTMLInputElement)?.value || 'Guest';
-                  const lastName = (document.getElementById('lastName') as HTMLInputElement)?.value || 'User';
-                  const email = (document.getElementById('email') as HTMLInputElement)?.value || 'guest@example.com';
-                  const phone = (document.getElementById('phone') as HTMLInputElement)?.value || '555-555-5555';
-                  const address = (document.getElementById('address') as HTMLInputElement)?.value || '';
-                  const notes = (document.getElementById('notes') as HTMLTextAreaElement)?.value || '';
-                  
-                  // Calculate estimated delivery/pickup time (30-45 minutes from now)
-                  const estimatedDate = new Date(now.getTime() + 40 * 60000);
-                  const estimatedTime = estimatedDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                  
-                  // Set order details
-                  setOrderDetails({
-                    orderId,
-                    orderDate,
-                    orderTime,
-                    customerName: `${firstName} ${lastName}`,
-                    customerEmail: email,
-                    customerPhone: phone,
-                    orderMethod,
-                    deliveryAddress: address,
-                    items: cart.map(item => ({
-                      id: item.id,
-                      name: item.name,
-                      price: item.price,
-                      quantity: item.quantity,
-                      imageUrl: item.imageUrl
-                    })),
-                    subtotal: calculateSubtotal(),
-                    tax: calculateTax(),
-                    deliveryFee: orderMethod === 'delivery' ? '2.99' : '0.00',
-                    total: calculateTotal(),
-                    estimatedTime,
-                    specialInstructions: notes
-                  });
-                  
-                  // Show confirmation
-                  setShowConfirmation(true);
-                }}
-              >
-                Place Order
-              </button>
-              
-              <p className="text-xs text-center text-gray-400 mt-4">
-                By placing your order, you agree to our Terms of Service and Privacy Policy.
+              <p className="text-sm text-gray-400 text-center mt-6">
+                Estimated delivery time: 30-45 minutes
               </p>
             </div>
           </div>
@@ -312,11 +328,6 @@ const Checkout: React.FC = () => {
       </div>
     </div>
   );
-  
-  // If confirmation is shown, render the OrderConfirmation component
-  if (showConfirmation) {
-    return <OrderConfirmation orderDetails={orderDetails} />;
-  }
 };
 
 export default Checkout;
