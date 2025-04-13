@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { CartContext, CartContextType, useCart } from '../context/CartContext';
 import { ArrowRight, ArrowLeft, ShoppingCart, Info, Tag, Box, Utensils, AlertTriangle, Heart } from 'lucide-react';
@@ -52,12 +52,25 @@ interface ProductItem {
 function ProductDetails() {
   const { itemId } = useParams();
   const navigate = useNavigate();
-  const { addToCart } = useContext(CartContext) as CartContextType;
-  const [quantity, setQuantity] = useState(1);
+  const { addToCart, cart, updateQuantity } = useContext(CartContext) as CartContextType;
   const { toggleCart } = useCart();
   
   const { rawApiResponse } = useAppSelector(state => state.siteContent);
   const { items: menuItems, loading, error } = useAppSelector(state => state.menu);
+  
+  // Find if product is already in cart
+  const cartItem = cart.find(item => item.id === itemId);
+  
+  // Initialize quantity state with cart quantity if product is in cart, otherwise 1
+  const [quantity, setQuantity] = useState(cartItem ? Number(cartItem.quantity) : 1);
+  
+  // Update quantity if cart changes
+  useEffect(() => {
+    const updatedCartItem = cart.find(item => item.id === itemId);
+    if (updatedCartItem) {
+      setQuantity(Number(updatedCartItem.quantity));
+    }
+  }, [cart, itemId]);
   
   // Get site content from Redux state
   const siteContent = rawApiResponse ? 
@@ -80,14 +93,22 @@ function ProductDetails() {
     }
   };
 
+
   const handleAddToCart = () => {
     if (product) {
+      // First add the item to the cart (this will set quantity to 1)
       addToCart({
         id: product.id,
         name: product.name,
         price: typeof product.price === 'number' ? product.price.toFixed(2) : product.price.toString(),
         imageUrl: product.image,
       });
+      
+      // Then update the quantity if it's more than 1
+      if (quantity > 1) {
+        updateQuantity(product.id, quantity);
+      }
+      
       toggleCart();
     }
   };
@@ -259,7 +280,7 @@ function ProductDetails() {
                   <div 
                     key={item.id} 
                     className="bg-zinc-900 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer"
-                    onClick={() => navigate(`/menu/${item.id}`)}
+                    onClick={() => navigate(`/product/${item.id}`)}
                   >
                     <div className="flex items-center p-2">
                       {item.image ? (

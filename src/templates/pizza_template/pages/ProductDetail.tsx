@@ -2,7 +2,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ShoppingCart, ArrowLeft, Info, Tag, Box, Utensils, AlertTriangle, Heart } from 'lucide-react';
 import { useAppDispatch, useAppSelector, addItem, CartItem, fetchMenuRequest, MenuItem } from '../../../common/redux';
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { TbCategory2 } from 'react-icons/tb';
 
 export default function ProductDetail() {
@@ -25,13 +25,40 @@ export default function ProductDetail() {
     // Find the product in the menu data
     const product = items.find(item => item.id.toString() === productId);
 
+    // Get cart items from Redux store
+    const { items: cartItems } = useAppSelector(state => state.cart);
+    
+    // Find if product is already in cart
+    const cartItem = cartItems.find(item => item.id.toString() === productId);
+    
+    // Initialize quantity state with cart quantity if product is in cart, otherwise 1
+    const [quantity, setQuantity] = useState(cartItem ? cartItem.quantity : 1);
+    
+    // Update quantity if cart changes
+    useEffect(() => {
+        const updatedCartItem = cartItems.find(item => item.id.toString() === productId);
+        if (updatedCartItem) {
+            setQuantity(updatedCartItem.quantity);
+        }
+    }, [cartItems, productId]);
+
+    const handleIncrement = () => {
+        setQuantity(quantity + 1);
+    };
+
+    const handleDecrement = () => {
+        if (quantity > 1) {
+            setQuantity(quantity - 1);
+        }
+    };
+
     const handleAddToCart = (menuItem: MenuItem) => {
         const cartItem: CartItem = {
             id: menuItem.id, // ID is already a number
             name: menuItem.name,
             price: menuItem.price, // Price is already a number
             image: menuItem.image,
-            quantity: 1,
+            quantity: quantity,
         };
         dispatch(addItem(cartItem));
     };
@@ -318,18 +345,14 @@ export default function ProductDetail() {
                                     <div className="flex items-center space-x-2 mr-4">
                                         <button
                                             className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded"
-                                            onClick={() => {
-                                                // If we had state for quantity, we would decrement it here
-                                            }}
+                                            onClick={handleDecrement}
                                         >
                                             -
                                         </button>
-                                        <span className="text-lg">1</span>
+                                        <span className="text-lg">{quantity}</span>
                                         <button
                                             className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded"
-                                            onClick={() => {
-                                                // If we had state for quantity, we would increment it here
-                                            }}
+                                            onClick={handleIncrement}
                                         >
                                             +
                                         </button>

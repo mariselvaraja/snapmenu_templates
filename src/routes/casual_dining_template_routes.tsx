@@ -22,7 +22,7 @@ import Checkout from '../templates/casual_dining_template/components/Checkout';
 const CasualDiningTemplateRoutes = [
   <Route key="home" path={commonRoutePaths.home} element={<Home />} />,
   <Route key="menu" path={commonRoutePaths.menu} element={<Menu />} />,
-  <Route key="product-details" path={`${commonRoutePaths.menu}/:itemId`} element={<ProductDetails />} />,
+  <Route key="product-details" path={`${commonRoutePaths.product}/:itemId`} element={<ProductDetails />} />,
   <Route key="about" path={commonRoutePaths.about} element={<Story />} />,
   <Route key="locations" path={commonRoutePaths.locations} element={<Locations />} />,
   <Route key="events" path={commonRoutePaths.events} element={<Events />} />,

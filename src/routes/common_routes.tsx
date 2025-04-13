@@ -33,4 +33,5 @@ export const commonRoutePaths = {
   cart: '/cart',
   productDetail: '/product/:productId',
   checkout: '/checkout',
+  product: '/product',
 };

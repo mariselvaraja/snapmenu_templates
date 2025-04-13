@@ -313,7 +313,7 @@ export function Menu() {
             >
               <div 
                 className="relative cursor-pointer" 
-                onClick={() => navigate(`/menu/${item.id}`)}
+                onClick={() => navigate(`/product/${item.id}`)}
               >
                 {item.image ? (
                   <img
