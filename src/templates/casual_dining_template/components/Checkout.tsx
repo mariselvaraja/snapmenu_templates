@@ -158,7 +158,7 @@ const Checkout: React.FC = () => {
       <Navigation />
       
       {/* Hero Section with Background Image */}
-      <div className="relative bg-center bg-cover h-64" style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=2070&auto=format&fit=crop)' }}>
+      <div className="relative bg-center bg-cover h-[500px]" style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=2070&auto=format&fit=crop)' }}>
         <div className="absolute inset-0 bg-black bg-opacity-50 flex flex-col items-center justify-center">
           <div className="text-center">
             <ShoppingCart className="w-16 h-16 text-yellow-400 mx-auto mb-4" />

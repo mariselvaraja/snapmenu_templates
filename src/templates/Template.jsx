@@ -117,7 +117,7 @@ const TemplateContent = () => {
     switch (template_id) {
       case 'pizza':
         return <PizzaApp />;
-      case 'casual_dining_template':
+      case 'casual_dining':
         return <CasualDiningApp />;
       case 'eatflow':
         return <EatflowApp />;
