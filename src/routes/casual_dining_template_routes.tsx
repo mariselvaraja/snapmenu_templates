@@ -11,6 +11,7 @@ import { Events } from '../templates/casual_dining_template/pages/Events';
 import Gallery from '../templates/casual_dining_template/pages/Gallery';
 import { Contact } from '../templates/casual_dining_template/pages/Contact';
 import ProductDetails from '../templates/casual_dining_template/pages/ProductDetails';
+import Cart from '../templates/casual_dining_template/pages/Cart';
 import Reservation from '../templates/casual_dining_template/components/Reservation';
 import Blog from '../templates/casual_dining_template/components/Blog';
 import Checkout from '../templates/casual_dining_template/components/Checkout';
@@ -30,6 +31,7 @@ const CasualDiningTemplateRoutes = [
   <Route key="contact" path={commonRoutePaths.contact} element={<Contact />} />,
   <Route key="reservation" path={commonRoutePaths.reservation} element={<Reservation />} />,
   <Route key="blog" path={commonRoutePaths.blog} element={<Blog />} />,
+  <Route key="cart" path={commonRoutePaths.cart} element={<Cart />} />,
   <Route key="checkout" path={commonRoutePaths.checkout} element={<Checkout />} />
 ];
 

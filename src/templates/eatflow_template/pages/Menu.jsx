@@ -1,402 +1,145 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { UtensilsCrossed, Search, ChevronDown, ChevronUp, AlertCircle, Leaf, Wheat, X, ExternalLink } from 'lucide-react';
+import { UtensilsCrossed, Search, ChevronDown, ShoppingCart, Plus, Minus, X } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useNavigate } from 'react-router-dom';
+import { useAppSelector, useAppDispatch } from '../../../redux/hooks';
+import { motion } from 'framer-motion';
 
 const MenuItem = ({ item }) => {
-  const [showDetails, setShowDetails] = useState(false);
-  const { addToCart } = useCart();
+  const { addToCart, cart, updateQuantity, removeFromCart } = useCart();
   const navigate = useNavigate();
   
+  const cartItem = cart.find(cartItem => cartItem.id === item.id);
+  
   const handleViewDetails = () => {
+    // Navigate to product details page with the correct ID
     navigate(`/product/${item.id}`);
   };
 
+  const handleAddToCart = (e) => {
+    e.stopPropagation();
+    addToCart({
+      id: item.id,
+      name: item.name,
+      price: typeof item.price === 'number' ? item.price.toFixed(2) : item.price.toString(),
+      imageUrl: item.image,
+    });
+  };
+
   return (
-    <div className="flex flex-col bg-white rounded-2xl overflow-hidden shadow-lg group">
-      <div className="flex">
-        <div 
-          className="w-1/2 relative overflow-hidden cursor-pointer" 
-          style={{ width: '200px', height: '200px' }}
-          onClick={handleViewDetails}
-        >
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow"
+    >
+      <div 
+        className="relative cursor-pointer" 
+        onClick={handleViewDetails}
+      >
+        {item.image ? (
           <img 
             src={item.image} 
             alt={item.name}
-            className="w-full h-full object-cover transform group-hover:scale-110 transition duration-500"
+            className="w-full h-64 object-cover"
           />
-          <div className="absolute inset-0 bg-black bg-opacity-20 group-hover:bg-opacity-30 transition duration-500"></div>
+        ) : (
+          <div className="w-full h-64 bg-gray-200 flex items-center justify-center">
+            <span className="text-6xl font-bold text-green-500">
+              {item.name && item.name.length > 0 
+                ? item.name.charAt(0).toUpperCase() 
+                : 'M'}
+            </span>
+          </div>
+        )}
+        <div className="absolute top-4 left-4 flex gap-2">
+          {item.dietary?.isVegetarian && (
+            <div className="bg-green-500 text-white px-3 py-1 rounded-full text-sm">
+              Vegetarian
+            </div>
+          )}
+          {item.dietary?.isVegan && (
+            <div className="bg-green-500 text-white px-3 py-1 rounded-full text-sm">
+              Vegan
+            </div>
+          )}
+          {item.dietary?.isGlutenFree && (
+            <div className="bg-blue-500 text-white px-3 py-1 rounded-full text-sm">
+              GF
+            </div>
+          )}
         </div>
-        <div className="w-1/2 p-6 flex flex-col justify-between">
-          <div>
-            <div className="flex justify-between items-start">
-              <h3 
-            className="text-2xl font-semibold mb-2 cursor-pointer hover:text-green-600 transition"
+      </div>
+      <div className="p-6">
+        <div className="flex justify-between items-start mb-2">
+          <h3 
+            className="text-xl font-bold cursor-pointer hover:text-green-600 transition"
             onClick={handleViewDetails}
           >
             {item.name}
           </h3>
-              <div className="flex space-x-1">
-                {item.dietary?.isVegetarian && <Leaf className="w-5 h-5 text-green-600" title="Vegetarian" />}
-                {item.dietary?.isVegan && <Leaf className="w-5 h-5 text-green-800" title="Vegan" />}
-                {item.dietary?.isGlutenFree && <Wheat className="w-5 h-5 text-amber-600" title="Gluten-Free" />}
-              </div>
-            </div>
-            <p className="text-gray-600 mb-4">{item.description}</p>
-            <div className="flex items-center space-x-4 text-sm text-gray-500 mb-4">
-              <span>{item.calories} cal</span>
-              <span className="text-xs px-2 py-1 bg-gray-100 rounded-full">{item.subCategory}</span>
-            </div>
-          </div>
-          <div className="flex items-center justify-between mt-4">
-            <span className="text-xl font-bold text-green-600">${item.price}</span>
-            <div className="flex space-x-2">
-              <div className="flex space-x-2">
-                <button 
-                  onClick={() => setShowDetails(!showDetails)}
-                  className="text-gray-600 hover:text-green-600 transition flex items-center"
-                >
-                  {showDetails ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
-                  <span className="ml-1">{showDetails ? 'Less' : 'More'}</span>
-                </button>
-                <button 
-                  onClick={handleViewDetails}
-                  className="text-gray-600 hover:text-green-600 transition flex items-center"
-                >
-                  <ExternalLink className="w-5 h-5" />
-                  <span className="ml-1">Details</span>
-                </button>
-              </div>
-              <button 
-                className="bg-green-500 text-white px-6 py-2 rounded-full hover:bg-green-600 transition text-sm font-medium"
-                onClick={() => addToCart(item)}
-              >
-                Add to Cart
-              </button>
-            </div>
-          </div>
+          <span className="text-lg font-bold text-green-600">${typeof item.price === 'number' ? item.price.toFixed(2) : item.price}</span>
         </div>
-      </div>
-      
-      {/* Expandable details section */}
-      {showDetails && (
-        <div className="p-6 border-t border-gray-100 bg-gray-50 animate-fadeIn">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Allergens */}
-            <div>
-              <h4 className="font-semibold text-gray-700 mb-2 flex items-center">
-                <AlertCircle className="w-4 h-4 mr-2 text-amber-500" />
-                Allergens
-              </h4>
-              {item.allergens && item.allergens.length > 0 ? (
-                <div className="flex flex-wrap gap-2">
-                  {item.allergens.map((allergen, index) => (
-                    <span key={index} className="px-2 py-1 bg-amber-100 text-amber-800 rounded-full text-xs">
-                      {allergen}
-                    </span>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-gray-500">No allergens listed</p>
-              )}
-            </div>
-            
-            {/* Ingredients */}
-            <div>
-              <h4 className="font-semibold text-gray-700 mb-2">Ingredients</h4>
-              {item.ingredients && item.ingredients.length > 0 ? (
-                <ul className="text-sm text-gray-600 list-disc pl-5">
-                  {item.ingredients.map((ingredient, index) => (
-                    <li key={index}>{ingredient}</li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-sm text-gray-500">No ingredients listed</p>
-              )}
-            </div>
-            
-            {/* Pairings */}
-            <div>
-              <h4 className="font-semibold text-gray-700 mb-2">Pairs Well With</h4>
-              {item.pairings && item.pairings.length > 0 ? (
-                <ul className="text-sm text-gray-600 list-disc pl-5">
-                  {item.pairings.map((pairing, index) => (
-                    <li key={index}>{pairing}</li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-sm text-gray-500">No pairings listed</p>
-              )}
-            </div>
-          </div>
-          
-          {/* Nutritional Information */}
-          {item.nutrients && (
-            <div className="mt-4 pt-4 border-t border-gray-200">
-              <h4 className="font-semibold text-gray-700 mb-2">Nutritional Information</h4>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                {Object.entries(item.nutrients).map(([key, value]) => 
-                  value !== "0g" && (
-                    <div key={key} className="text-center p-2 bg-white rounded-lg shadow-sm">
-                      <span className="block text-xs text-gray-500">{key.toUpperCase()}</span>
-                      <span className="font-medium">{value}</span>
-                    </div>
-                  )
-                )}
-              </div>
+        <p 
+          className="text-gray-600 mb-4 line-clamp-2 cursor-pointer hover:text-gray-800 transition"
+          onClick={handleViewDetails}
+        >
+          {item.description}
+        </p>
+        <div className="flex items-center justify-end">
+          {!cartItem || Number(cartItem.quantity) === 0 ? (
+            <button
+              className="inline-flex items-center bg-green-500 text-white px-5 py-2 hover:bg-green-600 transition text-base font-medium"
+              onClick={handleAddToCart}
+            >
+              <ShoppingCart className="h-5 w-5 mr-2" />
+              Add to Cart
+            </button>
+          ) : (
+            <div className="inline-flex items-center bg-gray-100 rounded-full px-2 py-1">
+              <button
+                className="w-8 h-8 flex items-center justify-center bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-full transition-colors"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (Number(cartItem.quantity) > 1) {
+                    updateQuantity(item.id, Number(cartItem.quantity) - 1);
+                  } else {
+                    removeFromCart(item.id);
+                  }
+                }}
+              >
+                <Minus className="w-3 h-3" />
+              </button>
+              <span className="mx-3 text-base font-semibold">{cartItem.quantity}</span>
+              <button
+                className="w-8 h-8 flex items-center justify-center bg-green-500 hover:bg-green-600 text-white rounded-full transition-colors"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  updateQuantity(item.id, Number(cartItem.quantity) + 1);
+                }}
+              >
+                <Plus className="w-3 h-3" />
+              </button>
             </div>
           )}
         </div>
-      )}
-    </div>
+      </div>
+    </motion.div>
   );
 };
 
-// Static menu data
-const staticMenuData = {
-  menu: {
-    starters: [
-      {
-        id: "s1",
-        name: "Avocado Toast",
-        description: "Whole grain toast with smashed avocado, cherry tomatoes, and microgreens",
-        price: "9.99",
-        image: "https://images.unsplash.com/photo-1588137378633-dea1336ce1e2",
-        category: "starters",
-        subCategory: "toast",
-        calories: 320,
-        nutrients: {
-          protein: "8g",
-          carbs: "32g",
-          fat: "18g",
-          sat: "2g",
-          unsat: "16g",
-          trans: "0g",
-          sugar: "3g",
-          fiber: "7g"
-        },
-        dietary: {
-          isVegetarian: true,
-          isVegan: true,
-          isGlutenFree: false
-        },
-        allergens: ["Wheat"],
-        ingredients: ["Whole grain bread", "Avocado", "Cherry tomatoes", "Microgreens", "Lemon juice", "Sea salt", "Black pepper"],
-        pairings: ["Fresh fruit smoothie", "Green tea"]
-      },
-      {
-        id: "s2",
-        name: "Quinoa Salad Bowl",
-        description: "Protein-rich quinoa with mixed vegetables, feta cheese, and lemon vinaigrette",
-        price: "12.99",
-        image: "https://images.unsplash.com/photo-1505253716362-afaea1d3d1af",
-        category: "starters",
-        subCategory: "salad",
-        calories: 380,
-        nutrients: {
-          protein: "12g",
-          carbs: "42g",
-          fat: "16g",
-          sat: "4g",
-          unsat: "12g",
-          trans: "0g",
-          sugar: "5g",
-          fiber: "8g"
-        },
-        dietary: {
-          isVegetarian: true,
-          isVegan: false,
-          isGlutenFree: true
-        },
-        allergens: ["Dairy"],
-        ingredients: ["Quinoa", "Cucumber", "Cherry tomatoes", "Red onion", "Feta cheese", "Olive oil", "Lemon juice", "Fresh herbs"],
-        pairings: ["Grilled chicken", "Sparkling water with lemon"]
-      }
-    ],
-    mains: [
-      {
-        id: "m1",
-        name: "Buddha Bowl",
-        description: "Quinoa, roasted vegetables, avocado, and tahini dressing",
-        price: "15.99",
-        image: "https://images.unsplash.com/photo-1611270629569-8b357cb88da9",
-        category: "mains",
-        subCategory: "bowl",
-        calories: 520,
-        nutrients: {
-          protein: "15g",
-          carbs: "62g",
-          fat: "22g",
-          sat: "3g",
-          unsat: "19g",
-          trans: "0g",
-          sugar: "8g",
-          fiber: "12g"
-        },
-        dietary: {
-          isVegetarian: true,
-          isVegan: true,
-          isGlutenFree: true
-        },
-        allergens: ["Sesame"],
-        ingredients: ["Quinoa", "Sweet potato", "Broccoli", "Chickpeas", "Avocado", "Tahini", "Lemon juice", "Olive oil"],
-        pairings: ["Fresh juice", "Herbal tea"]
-      },
-      {
-        id: "m2",
-        name: "Grilled Salmon",
-        description: "Wild-caught salmon with roasted vegetables and quinoa",
-        price: "24.99",
-        image: "https://images.unsplash.com/photo-1567337710282-00832b415979",
-        category: "mains",
-        subCategory: "fish",
-        calories: 480,
-        nutrients: {
-          protein: "32g",
-          carbs: "38g",
-          fat: "18g",
-          sat: "3g",
-          unsat: "15g",
-          trans: "0g",
-          sugar: "4g",
-          fiber: "6g"
-        },
-        dietary: {
-          isVegetarian: false,
-          isVegan: false,
-          isGlutenFree: true
-        },
-        allergens: ["Fish"],
-        ingredients: ["Wild-caught salmon", "Quinoa", "Asparagus", "Bell peppers", "Olive oil", "Lemon", "Herbs", "Spices"],
-        pairings: ["White wine", "Lemon water"]
-      }
-    ],
-    desserts: [
-      {
-        id: "d1",
-        name: "Acai Bowl",
-        description: "Fresh acai blend topped with granola, banana, and seasonal fruits",
-        price: "12.99",
-        image: "https://images.unsplash.com/photo-1547592180-85f173990554",
-        category: "desserts",
-        subCategory: "bowl",
-        calories: 380,
-        nutrients: {
-          protein: "6g",
-          carbs: "68g",
-          fat: "10g",
-          sat: "2g",
-          unsat: "8g",
-          trans: "0g",
-          sugar: "32g",
-          fiber: "9g"
-        },
-        dietary: {
-          isVegetarian: true,
-          isVegan: true,
-          isGlutenFree: true
-        },
-        allergens: ["Nuts"],
-        ingredients: ["Acai berries", "Banana", "Strawberries", "Blueberries", "Granola", "Coconut flakes", "Honey"],
-        pairings: ["Green tea", "Fresh orange juice"]
-      },
-      {
-        id: "d2",
-        name: "Chia Pudding",
-        description: "Coconut milk chia pudding with fresh berries and honey",
-        price: "8.99",
-        image: "https://images.unsplash.com/photo-1583096114844-06ce5a5f2171",
-        category: "desserts",
-        subCategory: "pudding",
-        calories: 280,
-        nutrients: {
-          protein: "8g",
-          carbs: "32g",
-          fat: "14g",
-          sat: "6g",
-          unsat: "8g",
-          trans: "0g",
-          sugar: "18g",
-          fiber: "12g"
-        },
-        dietary: {
-          isVegetarian: true,
-          isVegan: true,
-          isGlutenFree: true
-        },
-        allergens: [],
-        ingredients: ["Chia seeds", "Coconut milk", "Vanilla extract", "Honey", "Mixed berries"],
-        pairings: ["Herbal tea", "Almond milk latte"]
-      }
-    ],
-    drinks: [
-      {
-        id: "dr1",
-        name: "Green Smoothie",
-        description: "Spinach, banana, mango, and coconut water blend",
-        price: "7.99",
-        image: "https://images.unsplash.com/photo-1610970881699-44a5587cabec",
-        category: "drinks",
-        subCategory: "smoothie",
-        calories: 180,
-        nutrients: {
-          protein: "3g",
-          carbs: "38g",
-          fat: "2g",
-          sat: "0g",
-          unsat: "2g",
-          trans: "0g",
-          sugar: "28g",
-          fiber: "5g"
-        },
-        dietary: {
-          isVegetarian: true,
-          isVegan: true,
-          isGlutenFree: true
-        },
-        allergens: [],
-        ingredients: ["Spinach", "Banana", "Mango", "Coconut water", "Chia seeds"],
-        pairings: ["Avocado toast", "Granola bowl"]
-      },
-      {
-        id: "dr2",
-        name: "Turmeric Latte",
-        description: "Almond milk with turmeric, cinnamon, and honey",
-        price: "5.99",
-        image: "https://images.unsplash.com/photo-1615485290382-441e4d049cb5",
-        category: "drinks",
-        subCategory: "latte",
-        calories: 120,
-        nutrients: {
-          protein: "2g",
-          carbs: "18g",
-          fat: "4g",
-          sat: "0g",
-          unsat: "4g",
-          trans: "0g",
-          sugar: "12g",
-          fiber: "1g"
-        },
-        dietary: {
-          isVegetarian: true,
-          isVegan: false,
-          isGlutenFree: true
-        },
-        allergens: ["Nuts"],
-        ingredients: ["Almond milk", "Turmeric", "Cinnamon", "Ginger", "Honey", "Black pepper"],
-        pairings: ["Chia pudding", "Oatmeal cookie"]
-      }
-    ]
-  }
-};
-
 export function Menu() {
-  // Use static menu data instead of context
-  const menu = staticMenuData;
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  
+  // Get menu items from Redux
+  const { items: menuItems, loading, error } = useAppSelector(state => state.menu);
+  
   const [activeCategory, setActiveCategory] = useState('all');
   const [activeSubCategory, setActiveSubCategory] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [sortBy, setSortBy] = useState('featured');
+  const [isNavSticky, setIsNavSticky] = useState(false);
   const [dietaryFilters, setDietaryFilters] = useState({
     vegetarian: false,
     vegan: false,
@@ -406,19 +149,23 @@ export function Menu() {
 
   // Transform menu data into categories format with subcategories
   const processMenuData = () => {
-    const categories = [];
-    if (menu && menu.menu) {
-      for (const categoryId in menu.menu) {
-        if (menu.menu.hasOwnProperty(categoryId)) {
-          const categoryName = categoryId.charAt(0).toUpperCase() + categoryId.slice(1);
-          categories.push({
-            id: categoryId,
-            name: categoryName,
-            items: menu.menu[categoryId] || []
-          });
-        }
+    // Group menu items by category
+    const categoriesMap = {};
+    
+    menuItems.forEach(item => {
+      const category = item.category || 'other';
+      if (!categoriesMap[category]) {
+        categoriesMap[category] = {
+          id: category,
+          name: category.charAt(0).toUpperCase() + category.slice(1),
+          items: []
+        };
       }
-    }
+      categoriesMap[category].items.push(item);
+    });
+    
+    // Convert map to array
+    const categories = Object.values(categoriesMap);
 
     // Extract subcategories for each category
     categories.forEach(category => {
@@ -437,7 +184,7 @@ export function Menu() {
     return categories;
   };
   
-  const categories = useMemo(() => processMenuData(), [menu]);
+  const categories = useMemo(() => processMenuData(), [menuItems]);
 
   // Apply filters to menu items
   useEffect(() => {
@@ -483,13 +230,39 @@ export function Menu() {
       items = items.filter(item => item.dietary?.isGlutenFree);
     }
     
+    // Sort items
+    if (sortBy === 'price-asc') {
+      items.sort((a, b) => {
+        const priceA = typeof a.price === 'string' ? parseFloat(a.price) : a.price;
+        const priceB = typeof b.price === 'string' ? parseFloat(b.price) : b.price;
+        return priceA - priceB;
+      });
+    } else if (sortBy === 'price-desc') {
+      items.sort((a, b) => {
+        const priceA = typeof a.price === 'string' ? parseFloat(a.price) : a.price;
+        const priceB = typeof b.price === 'string' ? parseFloat(b.price) : b.price;
+        return priceB - priceA;
+      });
+    }
+    
     setFilteredItems(items);
-  }, [activeCategory, activeSubCategory, searchTerm, dietaryFilters, menu, categories]);
+  }, [activeCategory, activeSubCategory, searchTerm, dietaryFilters, sortBy, menuItems, categories]);
   
   // Reset subcategory when category changes
   useEffect(() => {
     setActiveSubCategory('all');
   }, [activeCategory]);
+  
+  // Handle scroll for sticky navigation
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY;
+      setIsNavSticky(scrollPosition > 100);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
   
   // Toggle dietary filter
   const toggleDietaryFilter = (filter) => {
@@ -498,6 +271,42 @@ export function Menu() {
       [filter]: !prev[filter]
     }));
   };
+
+  const scrollToMenu = () => {
+    const menuSection = document.getElementById('menu-section');
+    menuSection?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  // Handle loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-green-500 mx-auto mb-4"></div>
+          <p className="text-xl text-gray-600">Loading menu items...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Handle error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-red-500 text-5xl mb-4">⚠️</div>
+          <h2 className="text-2xl font-bold mb-2">Error Loading Menu</h2>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="bg-green-500 text-white px-4 py-2 hover:bg-green-600 transition"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -512,25 +321,39 @@ export function Menu() {
           <div className="absolute inset-0 bg-black bg-opacity-60"></div>
         </div>
         
-        <div className="relative z-10 container mx-auto px-6 h-[calc(50vh-120px)] flex items-center justify-center text-center">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="relative z-10 container mx-auto px-6 h-full flex items-center justify-center text-center"
+        >
           <div>
             <div className="flex justify-center mb-6">
               <UtensilsCrossed className="w-16 h-16 text-green-400" />
             </div>
-            <h1 className="text-7xl font-bold text-white mb-8">
+            <h1 className="text-6xl md:text-7xl font-bold text-white mb-8">
               Our Menu
             </h1>
-            <p className="text-2xl text-gray-200 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-xl md:text-2xl text-gray-200 max-w-3xl mx-auto leading-relaxed">
               Discover our selection of healthy and delicious meals
             </p>
+            <button 
+              onClick={scrollToMenu}
+              className="mt-8 p-4 rounded-full bg-green-500/20 hover:bg-green-500/30 transition group"
+            >
+              <ChevronDown className="w-8 h-8 text-green-400 animate-bounce" />
+            </button>
           </div>
-        </div>
+        </motion.div>
       </div>
 
-      {/* Search and Filters */}
-      <div className="sticky top-0 z-30 bg-white ">
+      {/* Sticky Navigation with Categories */}
+      <div className={`sticky top-0 z-50 transition-all duration-300 ${
+        isNavSticky ? 'bg-white shadow-lg' : 'bg-gray-50'
+      }`}>
         <div className="container mx-auto px-6 py-4">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          {/* Search and Sort */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
             {/* Search Bar */}
             <div className="relative flex-grow max-w-md">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -553,56 +376,28 @@ export function Menu() {
               )}
             </div>
 
-            {/* Dietary Filters */}
-            <div className="flex space-x-2">
-              <button
-                onClick={() => toggleDietaryFilter('vegetarian')}
-                className={`flex items-center px-3 py-1 rounded-full text-sm ${
-                  dietaryFilters.vegetarian
-                    ? 'bg-green-100 text-green-800 border border-green-300'
-                    : 'bg-gray-100 text-gray-700 border border-gray-200'
-                }`}
+            {/* Sort Options */}
+            <div className="flex-shrink-0">
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
               >
-                <Leaf className="w-4 h-4 mr-1" />
-                Vegetarian
-              </button>
-              <button
-                onClick={() => toggleDietaryFilter('vegan')}
-                className={`flex items-center px-3 py-1 rounded-full text-sm ${
-                  dietaryFilters.vegan
-                    ? 'bg-green-100 text-green-800 border border-green-300'
-                    : 'bg-gray-100 text-gray-700 border border-gray-200'
-                }`}
-              >
-                <Leaf className="w-4 h-4 mr-1" />
-                Vegan
-              </button>
-              <button
-                onClick={() => toggleDietaryFilter('glutenFree')}
-                className={`flex items-center px-3 py-1 rounded-full text-sm ${
-                  dietaryFilters.glutenFree
-                    ? 'bg-amber-100 text-amber-800 border border-amber-300' 
-                    : 'bg-gray-100 text-gray-700 border border-gray-200'
-                }`}
-              >
-                <Wheat className="w-4 h-4 mr-1" />
-                Gluten-Free
-              </button>
+                <option value="featured">Featured</option>
+                <option value="price-asc">Price: Low to High</option>
+                <option value="price-desc">Price: High to Low</option>
+              </select>
             </div>
           </div>
-        </div>
-      </div>
-
-      {/* Category Tabs */}
-      <div className="sticky top-[70px] z-20 bg-white shadow-sm">
-        <div className="container mx-auto px-6">
-          <div className="flex overflow-x-auto space-x-8 py-4">
+          
+          {/* Category Tabs */}
+          <div className="flex overflow-x-auto space-x-4 py-2">
             <button
               onClick={() => setActiveCategory('all')}
-              className={`text-xl font-semibold whitespace-nowrap px-4 py-2 rounded-full transition-colors ${
+              className={`px-4 py-1 text-sm font-medium transition-all duration-300 ${
                 activeCategory === 'all'
-                  ? 'bg-green-500 text-white'
-                  : 'text-gray-600 hover:text-green-500'
+                  ? 'text-green-500 border-b-2 border-green-500'
+                  : 'text-gray-600 hover:text-gray-800'
               }`}
             >
               All
@@ -611,10 +406,10 @@ export function Menu() {
               <button
                 key={category.id}
                 onClick={() => setActiveCategory(category.id)}
-                className={`text-xl font-semibold whitespace-nowrap px-4 py-2 rounded-full transition-colors ${
+                className={`px-4 py-1 text-sm font-medium transition-all duration-300 ${
                   activeCategory === category.id
-                    ? 'bg-green-500 text-white'
-                    : 'text-gray-600 hover:text-green-500'
+                    ? 'text-green-500 border-b-2 border-green-500'
+                    : 'text-gray-600 hover:text-gray-800'
                 }`}
               >
                 {category.name}
@@ -624,41 +419,82 @@ export function Menu() {
         </div>
       </div>
       
-      {/* Subcategory Tabs - Only show if a specific category is selected */}
-      {activeCategory !== 'all' && (
-        <div className="bg-gray-50 border-t border-gray-200">
+      {/* Subcategory and Dietary Filters */}
+      {(activeCategory !== 'all' && categories.find(cat => cat.id === activeCategory)?.subcategories?.length > 0) || true ? (
+        <div className="bg-white border-t border-gray-200 py-3">
           <div className="container mx-auto px-6">
-            <div className="flex overflow-x-auto space-x-4 py-3">
-              <button
-                onClick={() => setActiveSubCategory('all')}
-                className={`text-sm font-medium whitespace-nowrap px-3 py-1 rounded-full transition-colors ${
-                  activeSubCategory === 'all'
-                    ? 'bg-green-100 text-green-800 border border-green-200'
-                    : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
-                }`}
-              >
-                All {categories.find(cat => cat.id === activeCategory)?.name}
-              </button>
-              {categories.find(cat => cat.id === activeCategory)?.subcategories.map((subCat) => (
+            <div className="flex flex-wrap gap-3 items-center">
+              {/* Subcategory Filters - Only show if a specific category is selected */}
+              {activeCategory !== 'all' && categories.find(cat => cat.id === activeCategory)?.subcategories?.length > 0 && (
+                <div className="flex flex-wrap gap-2 mr-4">
+                  <span className="text-sm font-medium text-gray-500">Subcategory:</span>
+                  <button
+                    onClick={() => setActiveSubCategory('all')}
+                    className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                      activeSubCategory === 'all'
+                        ? 'bg-green-100 text-green-800 border border-green-200'
+                        : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
+                    }`}
+                  >
+                    All
+                  </button>
+                  {categories.find(cat => cat.id === activeCategory)?.subcategories.map((subCat) => (
+                    <button
+                      key={subCat.id}
+                      onClick={() => setActiveSubCategory(subCat.id)}
+                      className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                        activeSubCategory === subCat.id
+                          ? 'bg-green-100 text-green-800 border border-green-200'
+                          : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
+                      }`}
+                    >
+                      {subCat.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+              
+              {/* Dietary Filters */}
+              <div className="flex flex-wrap gap-2">
+                <span className="text-sm font-medium text-gray-500">Dietary:</span>
                 <button
-                  key={subCat.id}
-                  onClick={() => setActiveSubCategory(subCat.id)}
-                  className={`text-sm font-medium whitespace-nowrap px-3 py-1 rounded-full transition-colors ${
-                    activeSubCategory === subCat.id
-                      ? 'bg-green-100 text-green-800 border border-green-200'
-                      : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
+                  onClick={() => toggleDietaryFilter('vegetarian')}
+                  className={`flex items-center px-3 py-1 rounded-full text-xs ${
+                    dietaryFilters.vegetarian
+                      ? 'bg-green-100 text-green-800 border border-green-300'
+                      : 'bg-gray-100 text-gray-700 border border-gray-200'
                   }`}
                 >
-                  {subCat.name}
+                  Vegetarian
                 </button>
-              ))}
+                <button
+                  onClick={() => toggleDietaryFilter('vegan')}
+                  className={`flex items-center px-3 py-1 rounded-full text-xs ${
+                    dietaryFilters.vegan
+                      ? 'bg-green-100 text-green-800 border border-green-300'
+                      : 'bg-gray-100 text-gray-700 border border-gray-200'
+                  }`}
+                >
+                  Vegan
+                </button>
+                <button
+                  onClick={() => toggleDietaryFilter('glutenFree')}
+                  className={`flex items-center px-3 py-1 rounded-full text-xs ${
+                    dietaryFilters.glutenFree
+                      ? 'bg-amber-100 text-amber-800 border border-amber-300' 
+                      : 'bg-gray-100 text-gray-700 border border-gray-200'
+                  }`}
+                >
+                  Gluten-Free
+                </button>
+              </div>
             </div>
           </div>
         </div>
-      )}
+      ) : null}
 
       {/* Menu Items */}
-      <section className="py-16">
+      <section id="menu-section" className="py-16">
         <div className="container mx-auto px-6">
           {filteredItems.length === 0 ? (
             <div className="text-center py-16">
@@ -682,7 +518,7 @@ export function Menu() {
               {categories.map((category) => (
                 <div key={category.id}>
                   <h2 className="text-4xl font-bold mb-12 text-center">{category.name}</h2>
-                  <div className="grid md:grid-cols-2 gap-8">
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {category.items.map((item) => (
                       <MenuItem key={item.id} item={item} />
                     ))}
@@ -702,7 +538,7 @@ export function Menu() {
                     ?.subcategories.find(sub => sub.id === activeSubCategory)?.name}</span>
                 )}
               </h2>
-              <div className="grid md:grid-cols-2 gap-8">
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {filteredItems.map((item) => (
                   <MenuItem key={item.id} item={item} />
                 ))}
@@ -712,6 +548,30 @@ export function Menu() {
         </div>
       </section>
 
+      {/* Call to Action */}
+      <div className="relative py-32 bg-gray-900">
+        <div className="absolute inset-0 opacity-20">
+          <img 
+            src="https://images.unsplash.com/photo-1490818387583-1baba5e638af?auto=format&fit=crop&q=80"
+            alt="CTA background"
+            className="w-full h-full object-cover"
+          />
+        </div>
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="relative max-w-7xl mx-auto text-center px-6"
+        >
+          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">Ready to Order?</h2>
+          <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
+            Visit one of our locations or order online for pickup. Experience the authentic taste of healthy eating today.
+          </p>
+          <button className="bg-green-500 text-white px-8 py-4 hover:bg-green-600 transition text-lg font-semibold">
+            Order Now
+          </button>
+        </motion.div>
+      </div>
     </div>
   );
 }

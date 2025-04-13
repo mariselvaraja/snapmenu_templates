@@ -7,7 +7,8 @@ import TitleUpdater from './components/TitleUpdater';
 import { Utensils, Settings, ShoppingCart, Instagram, Facebook, Twitter, Search } from 'lucide-react';
 import { useAppSelector, useAppDispatch } from '../../redux/hooks';
 import { openSearchModal } from '../../redux/slices/searchSlice';
-import { SearchModal } from '../../components/search';
+import SearchInitializer from './components/SearchInitializer';
+import SearchModal from './components/SearchModal';
 
 function App() {
   return (
@@ -104,6 +105,7 @@ function CartContent() {
     <Router>
       <div className="min-h-screen flex flex-col">
         <TitleUpdater />
+        <SearchInitializer />
         
         {/* Navigation bar moved directly into App */}
         <nav className={`fixed top-0 left-0 right-0 z-30 ${isScrolled ? 'bg-black/85 backdrop-blur-sm' : 'bg-black'} transition-all duration-300`}>

@@ -45,6 +45,16 @@ export const CartProvider = ({ children }) => {
     ).filter(item => item.quantity > 0));
   };
 
+  const updateQuantity = (itemId, quantity) => {
+    if (quantity <= 0) {
+      removeFromCart(itemId);
+    } else {
+      setCart(cart.map(item =>
+        item.id === itemId ? { ...item, quantity } : item
+      ));
+    }
+  };
+
   const calculateTotal = () => {
     return cart.reduce((total, item) => total + parseFloat(item.price) * (item.quantity || 1), 0);
   };
@@ -65,6 +75,7 @@ export const CartProvider = ({ children }) => {
         calculateTotal,
         isCartOpen,
         toggleCart,
+        updateQuantity,
       }}
     >
       {children}
