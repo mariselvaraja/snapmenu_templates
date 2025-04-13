@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { ShoppingCart } from 'lucide-react';
 import { Navigation } from './Navigation';
-import { Footer } from './Footer';
 import { useCart } from '../context/CartContext';
 import OrderConfirmation from './OrderConfirmation';
 
@@ -311,7 +310,6 @@ const Checkout: React.FC = () => {
           </div>
         </div>
       </div>
-      <Footer />
     </div>
   );
   

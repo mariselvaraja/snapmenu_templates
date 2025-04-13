@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
-import { Footer } from '../components/Footer';
 import { Calendar, Clock, Users, UtensilsCrossed, MapPin, Phone, ArrowRight } from 'lucide-react';
-import { useContent } from '../context/ContentContext';
 import axios from 'axios';
 import TableConfirmation from './TableConfirmation';
+import { useAppSelector } from '../../../common/redux';
 
 export default function Reservation() {
   const [date, setDate] = useState('');
@@ -26,15 +25,56 @@ export default function Reservation() {
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
 
-  const { siteContent } = useContent();
+  const { rawApiResponse } = useAppSelector(state => state.siteContent);
+  
+  // Get site content from Redux state
+  const siteContent = rawApiResponse ? 
+    (typeof rawApiResponse === 'string' ? JSON.parse(rawApiResponse) : rawApiResponse) : 
+    {};
+  const reservation = siteContent?.reservation || {
+    header: {
+      title: "Reserve a Table",
+      description: "Book your table online and enjoy a seamless dining experience with us."
+    },
+    form: {
+      labels: {
+        date: "Date",
+        time: "Time",
+        guests: "Number of Guests",
+        name: "Full Name",
+        email: "Email Address",
+        phone: "Phone Number",
+        specialRequests: "Special Requests"
+      },
+      placeholders: {
+        name: "John Doe",
+        email: "john@example.com",
+        phone: "+1 (555) 123-4567",
+        specialRequests: "Let us know if you have any special requests or dietary restrictions..."
+      }
+    },
+    info: {
+      hours: {
+        weekdays: { label: "Monday - Friday", time: "11:00 AM - 10:00 PM" },
+        weekends: { label: "Saturday", time: "10:00 AM - 11:00 PM" },
+        sunday: { label: "Sunday", time: "10:00 AM - 9:00 PM" }
+      },
+      location: {
+        street: "123 Restaurant Street",
+        city: "New York",
+        state: "NY",
+        zip: "10001"
+      },
+      contact: {
+        phone: "+1 (555) 123-4567"
+      },
+      note: "For parties larger than 10, please call us directly."
+    }
+  };
 
-  const restaurant_id = sessionStorage.getItem("restaurant_id");
+  const restaurant_id = sessionStorage.getItem("restaurant_id") || "1";
 
-  const api = "http://localhost:5093"
-
-  if (!siteContent) {
-    return <div>Site content not found.</div>;
-  }
+  const api = "http://localhost:5093";
 
   const occasions = [
     "Birthday",
@@ -196,6 +236,7 @@ export default function Reservation() {
   }
 
   return (
+    <>
     <div className="min-h-screen bg-black text-white">
       {/* Hero Section */}
       <div className="relative h-[50vh]">
@@ -216,10 +257,10 @@ export default function Reservation() {
               <UtensilsCrossed className="w-16 h-16 text-yellow-400 mt-[200px]" />
             </div>
             <h1 className="text-5xl md:text-7xl font-bold text-white mb-8 animate-fade-in">
-              {siteContent.reservation.header.title}
+              {reservation?.header?.title || "Reserve a Table"}
             </h1>
             <p className="text-xl md:text-2xl text-gray-200 max-w-3xl mx-auto leading-relaxed animate-fade-in-delay-1">
-              {siteContent.reservation.header.description}
+              {reservation?.header?.description || "Book your table online and enjoy a seamless dining experience with us."}
             </p>
           </div>
         </div>
@@ -237,7 +278,7 @@ export default function Reservation() {
                     <label className="block text-gray-300 font-medium mb-2">
                       <div className="flex items-center mb-2">
                         <Calendar className="w-5 h-5 mr-2 text-yellow-400" />
-                        <span>{siteContent.reservation.form.labels.date}</span>
+                        <span>{reservation?.form?.labels?.date || "Date"}</span>
                       </div>
                     </label>
                     <input
@@ -255,7 +296,7 @@ export default function Reservation() {
                     <label className="block text-gray-300 font-medium mb-2">
                       <div className="flex items-center mb-2">
                         <Clock className="w-5 h-5 mr-2 text-yellow-400" />
-                        <span>{siteContent.reservation.form.labels.time}</span>
+                        <span>{reservation?.form?.labels?.time || "Time"}</span>
                       </div>
                     </label>
                     <select
@@ -276,7 +317,7 @@ export default function Reservation() {
                     <label className="block text-gray-300 font-medium mb-2">
                       <div className="flex items-center mb-2">
                         <Users className="w-5 h-5 mr-2 text-yellow-400" />
-                        <span>{siteContent.reservation.form.labels.guests}</span>
+                        <span>{reservation?.form?.labels?.guests || "Number of Guests"}</span>
                       </div>
                     </label>
                     <select
@@ -336,35 +377,35 @@ export default function Reservation() {
                   <h3 className="text-xl font-semibold text-yellow-400">Contact Information</h3>
                   <div className="grid md:grid-cols-2 gap-6">
                     <div>
-                      <label className="block text-gray-300 font-medium mb-2">{siteContent.reservation.form.labels.name}</label>
+                      <label className="block text-gray-300 font-medium mb-2">{reservation?.form?.labels?.name || "Full Name"}</label>
                       <input
                         type="text"
                         value={name}
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
                         className="w-full px-4 py-3 border border-zinc-600 bg-zinc-700 text-white rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
-                        placeholder={siteContent.reservation.form.placeholders.name}
+                        placeholder={reservation?.form?.placeholders?.name || "John Doe"}
                       />
                       {nameError && <p className="text-red-500 text-sm">{nameError}</p>}
                     </div>
                     <div>
-                      <label className="block text-gray-300 font-medium mb-2">{siteContent.reservation.form.labels.email}</label>
+                      <label className="block text-gray-300 font-medium mb-2">{reservation?.form?.labels?.email || "Email Address"}</label>
                       <input
                         type="email"
                         value={email}
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
                         className="w-full px-4 py-3 border border-zinc-600 bg-zinc-700 text-white rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
-                        placeholder={siteContent.reservation.form.placeholders.email}
+                        placeholder={reservation?.form?.placeholders?.email || "john@example.com"}
                       />
                       {emailError && <p className="text-red-500 text-sm">{emailError}</p>}
                     </div>
                     <div>
-                      <label className="block text-gray-300 font-medium mb-2">{siteContent.reservation.form.labels.phone}</label>
+                      <label className="block text-gray-300 font-medium mb-2">{reservation?.form?.labels?.phone || "Phone Number"}</label>
                       <input
                         type="tel"
                         value={phone}
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPhone(e.target.value)}
                         className="w-full px-4 py-3 border border-zinc-600 bg-zinc-700 text-white rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
-                        placeholder={siteContent.reservation.form.placeholders.phone}
+                        placeholder={reservation?.form?.placeholders?.phone || "+1 (555) 123-4567"}
                       />
                       {phoneError && <p className="text-red-500 text-sm">{phoneError}</p>}
                     </div>
@@ -383,13 +424,13 @@ export default function Reservation() {
 
                 {/* Special Requests */}
                 <div>
-                  <label className="block text-gray-300 font-medium mb-2">{siteContent.reservation.form.labels.specialRequests}</label>
+                  <label className="block text-gray-300 font-medium mb-2">{reservation?.form?.labels?.specialRequests || "Special Requests"}</label>
                   <textarea
                     value={specialRequests}
                     onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setSpecialRequests(e.target.value)}
                     className="w-full px-4 py-3 border border-zinc-600 bg-zinc-700 text-white rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
                     rows={4}
-                    placeholder={siteContent.reservation.form.placeholders.specialRequests}
+                    placeholder={reservation?.form?.placeholders?.specialRequests || "Let us know if you have any special requests or dietary restrictions..."}
                   ></textarea>
                 </div>
 
@@ -411,9 +452,9 @@ export default function Reservation() {
                 </div>
                 <h3 className="text-xl font-semibold mb-2 text-yellow-400">Opening Hours</h3>
                 <p className="text-gray-300">
-                  {siteContent.reservation.info.hours.weekdays.label}: {siteContent.reservation.info.hours.weekdays.time}<br />
-                  {siteContent.reservation.info.hours.weekends.label}: {siteContent.reservation.info.hours.weekends.time}<br />
-                  {siteContent.reservation.info.hours.sunday.label}: {siteContent.reservation.info.hours.sunday.time}
+                  {reservation?.info?.hours?.weekdays?.label || "Monday - Friday"}: {reservation?.info?.hours?.weekdays?.time || "11:00 AM - 10:00 PM"}<br />
+                  {reservation?.info?.hours?.weekends?.label || "Saturday"}: {reservation?.info?.hours?.weekends?.time || "10:00 AM - 11:00 PM"}<br />
+                  {reservation?.info?.hours?.sunday?.label || "Sunday"}: {reservation?.info?.hours?.sunday?.time || "10:00 AM - 9:00 PM"}
                 </p>
               </div>
               <div className="text-center bg-zinc-800 p-6 rounded-xl">
@@ -422,8 +463,8 @@ export default function Reservation() {
                 </div>
                 <h3 className="text-xl font-semibold mb-2 text-yellow-400">Location</h3>
                 <p className="text-gray-300">
-                  {siteContent.reservation.info.location.street}<br />
-                  {siteContent.reservation.info.location.city}, {siteContent.reservation.info.location.state} {siteContent.reservation.info.location.zip}
+                  {reservation?.info?.location?.street || "123 Restaurant Street"}<br />
+                  {reservation?.info?.location?.city || "New York"}, {reservation?.info?.location?.state || "NY"} {reservation?.info?.location?.zip || "10001"}
                 </p>
               </div>
               <div className="text-center bg-zinc-800 p-6 rounded-xl">
@@ -432,16 +473,15 @@ export default function Reservation() {
                 </div>
                 <h3 className="text-xl font-semibold mb-2 text-yellow-400">Contact</h3>
                 <p className="text-gray-300">
-                  Phone: {siteContent.reservation.info.contact.phone}<br />
-                  <span className="text-sm">{siteContent.reservation.info.note}</span>
+                  Phone: {reservation?.info?.contact?.phone || "+1 (555) 123-4567"}<br />
+                  <span className="text-sm">{reservation?.info?.note || "For parties larger than 10, please call us directly."}</span>
                 </p>
               </div>
             </div>
           </div>
         </div>
       </section>
-
-      <Footer />
     </div>
+    </>
   );
 }

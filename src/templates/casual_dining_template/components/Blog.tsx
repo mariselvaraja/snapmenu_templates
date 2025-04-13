@@ -1,11 +1,22 @@
 import React from 'react';
-import { useContent } from '../context/ContentContext';
 import { Navigation } from './Navigation';
-import { Footer } from './Footer';
+import { useAppSelector } from '../../../common/redux';
+
 
 const Blog = () => {
-  const { siteContent } = useContent();
-  const blogData = siteContent.blog;
+  const { rawApiResponse } = useAppSelector(state => state.siteContent);
+  
+  // Get site content from Redux state
+  const siteContent = rawApiResponse ? 
+    (typeof rawApiResponse === 'string' ? JSON.parse(rawApiResponse) : rawApiResponse) : 
+    {};
+  const blog = siteContent?.blog || {
+    header: {
+      title: "Our Blog",
+      description: "Culinary insights, recipes, and stories from our kitchen to yours."
+    },
+    posts: []
+  };
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -23,10 +34,10 @@ const Blog = () => {
         <div className="relative z-10 flex items-center h-full max-w-7xl mx-auto px-6">
           <div className="max-w-2xl">
             <h2 className="text-5xl md:text-7xl font-bold mb-6 animate-fade-in">
-              {blogData.header.title}
+              {blog?.header?.title || "Our Blog"}
             </h2>
             <p className="text-xl md:text-2xl mb-8 text-gray-200 animate-fade-in-delay-1">
-              {blogData.header.description}
+              {blog?.header?.description || "Culinary insights, recipes, and stories from our kitchen to yours."}
             </p>
           </div>
         </div>
@@ -34,7 +45,7 @@ const Blog = () => {
       <section className="py-20 px-6">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {blogData.posts.map((post) => (
+            {blog?.posts?.length > 0 ? blog.posts.map((post : any) => (
               <div key={post.id} className="bg-zinc-900 rounded-xl overflow-hidden group hover:scale-105 transition duration-300">
                 <img src={post.image} alt={post.title} className="w-full h-64 object-cover" />
                 <div className="p-6">
@@ -46,12 +57,16 @@ const Blog = () => {
                   <p className="text-gray-400">{post.content}</p>
                 </div>
               </div>
-            ))}
+            )) : (
+              <div className="col-span-1 md:col-span-2 lg:col-span-3 text-center">
+                <p className="text-xl text-gray-400">No blog posts available at the moment. Check back soon!</p>
+              </div>
+            )}
           </div>
         </div>
 
       </section>
-      <Footer />
+      
     </div>
   );
 };

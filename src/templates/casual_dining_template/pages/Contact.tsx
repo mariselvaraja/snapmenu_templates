@@ -1,11 +1,16 @@
 import React from 'react';
-import { useContent } from '../context/ContentContext';
 import { MapPin, Clock, Phone, Mail, Users } from 'lucide-react';
 import { Footer } from '../components/Footer';
+import { useAppSelector } from '../../../common/redux';
 
 export function Contact() {
-  const { siteContent } = useContent();
-  const contactInfo = siteContent.contact;
+  const { rawApiResponse } = useAppSelector(state => state.siteContent);
+  
+  // Get site content from Redux state
+  const siteContent = rawApiResponse ? 
+    (typeof rawApiResponse === 'string' ? JSON.parse(rawApiResponse) : rawApiResponse) : 
+    {};
+  const contact = siteContent?.contact;
 
   return (
 <>
@@ -23,17 +28,17 @@ export function Contact() {
 
         <div className="relative h-full flex flex-col items-center justify-center px-6 text-center">
           <h1 className="text-6xl md:text-8xl font-bold mb-6 animate-fade-in">
-            {contactInfo.header.title}
+            {contact?.header?.title || "Contact Us"}
           </h1>
           <p className="text-xl md:text-2xl text-gray-200 max-w-2xl mx-auto mb-12 animate-fade-in-delay-1">
-            {contactInfo.header.subtitle}
+            {contact?.header?.subtitle || "Get in touch with us for any questions or concerns."}
           </p>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-20">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {Object.values(contactInfo.infoCards).map((card: any, index) => (
+          {contact?.infoCards && Object.values(contact.infoCards).map((card: any, index) => (
             <div
               key={index}
               className="bg-zinc-900/50 backdrop-blur-sm rounded-3xl overflow-hidden group hover:scale-105 transition duration-300"

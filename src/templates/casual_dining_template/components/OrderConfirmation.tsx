@@ -1,9 +1,8 @@
 import React from 'react';
 import { Navigation } from './Navigation';
-import { Footer } from './Footer';
-import { Check, ShoppingBag, Clock, MapPin, Phone, ArrowRight, Truck, Home } from 'lucide-react';
+import { Check, ShoppingBag, Clock, MapPin, Phone, ArrowRight, Truck, Home, User, Mail } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useContent } from '../context/ContentContext';
+import { useSiteContent } from '../../../common/context/SiteContentContext';
 
 interface OrderItem {
   id: string;
@@ -34,11 +33,7 @@ interface OrderConfirmationProps {
 }
 
 const OrderConfirmation: React.FC<OrderConfirmationProps> = ({ orderDetails }) => {
-  const { siteContent } = useContent();
-
-  if (!siteContent) {
-    return <div>Site content not found.</div>;
-  }
+  const siteContent = useSiteContent();
 
   // Format date for display
   const formatDate = (dateString: string) => {
@@ -68,10 +63,10 @@ const OrderConfirmation: React.FC<OrderConfirmationProps> = ({ orderDetails }) =
                 <Check className="w-12 h-12 text-white" />
               </div>
             </div>
-            <h1 className="text-4xl md:text-6xl font-bold text-white mb-4 animate-fade-in">
+            <h1 className="text-4xl md:text-6xl font-bold text-white mb-4">
               Order Confirmed!
             </h1>
-            <p className="text-xl md:text-2xl text-gray-200 max-w-3xl mx-auto leading-relaxed animate-fade-in-delay-1">
+            <p className="text-xl md:text-2xl text-gray-200 max-w-3xl mx-auto leading-relaxed">
               Your order has been successfully placed
             </p>
           </div>
@@ -133,7 +128,8 @@ const OrderConfirmation: React.FC<OrderConfirmationProps> = ({ orderDetails }) =
                   <h4 className="font-semibold text-white">Order Items</h4>
                 </div>
                 <div className="p-4">
-                  {orderDetails.items.map((item) => (
+                  {orderDetails.items.length > 0 ? (
+                    orderDetails.items.map((item) => (
                     <div key={item.id} className="flex items-center py-3 border-b border-zinc-700 last:border-b-0">
                       <div className="w-16 h-16 mr-4">
                         <img 
@@ -150,7 +146,12 @@ const OrderConfirmation: React.FC<OrderConfirmationProps> = ({ orderDetails }) =
                         <p className="text-yellow-400 font-semibold">${(parseFloat(item.price) * item.quantity).toFixed(2)}</p>
                       </div>
                     </div>
-                  ))}
+                    ))
+                  ) : (
+                    <div className="py-3 text-center text-gray-400">
+                      No items in this order
+                    </div>
+                  )}
                 </div>
               </div>
               
@@ -187,11 +188,7 @@ const OrderConfirmation: React.FC<OrderConfirmationProps> = ({ orderDetails }) =
                 <h3 className="text-xl font-semibold text-white mb-4">Customer Information</h3>
                 <div className="space-y-3">
                   <div className="flex items-start">
-                    <div className="w-6 h-6 mr-3 flex-shrink-0 mt-1 text-yellow-400">
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                      </svg>
-                    </div>
+                  <User className="w-6 h-6 mr-3 text-yellow-400 flex-shrink-0 mt-1" />
                     <div>
                       <h4 className="text-lg font-semibold text-white">Name</h4>
                       <p className="text-gray-300">{orderDetails.customerName}</p>
@@ -199,11 +196,7 @@ const OrderConfirmation: React.FC<OrderConfirmationProps> = ({ orderDetails }) =
                   </div>
                   
                   <div className="flex items-start">
-                    <div className="w-6 h-6 mr-3 flex-shrink-0 mt-1 text-yellow-400">
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                      </svg>
-                    </div>
+                  <Mail className="w-6 h-6 mr-3 text-yellow-400 flex-shrink-0 mt-1" />
                     <div>
                       <h4 className="text-lg font-semibold text-white">Email</h4>
                       <p className="text-gray-300">{orderDetails.customerEmail}</p>
@@ -228,8 +221,8 @@ const OrderConfirmation: React.FC<OrderConfirmationProps> = ({ orderDetails }) =
                     <div>
                       <h4 className="text-lg font-semibold text-white">Location</h4>
                       <p className="text-gray-300">
-                        {siteContent.reservation.info.location.street}<br />
-                        {siteContent.reservation.info.location.city}, {siteContent.reservation.info.location.state} {siteContent.reservation.info.location.zip}
+                        {siteContent.reservation?.info?.location?.street || '123 Restaurant St'}<br />
+                        {siteContent.reservation?.info?.location?.city || 'City'}, {siteContent.reservation?.info?.location?.state || 'State'} {siteContent.reservation?.info?.location?.zip || '12345'}
                       </p>
                     </div>
                   </div>
@@ -238,7 +231,7 @@ const OrderConfirmation: React.FC<OrderConfirmationProps> = ({ orderDetails }) =
                     <Phone className="w-6 h-6 mr-3 text-yellow-400 flex-shrink-0 mt-1" />
                     <div>
                       <h4 className="text-lg font-semibold text-white">Contact</h4>
-                      <p className="text-gray-300">{siteContent.reservation.info.contact.phone}</p>
+                      <p className="text-gray-300">{siteContent.reservation?.info?.contact?.phone || '(555) 123-4567'}</p>
                     </div>
                   </div>
                 </div>
@@ -257,7 +250,7 @@ const OrderConfirmation: React.FC<OrderConfirmationProps> = ({ orderDetails }) =
             <div className="border-t border-zinc-700 pt-8 mt-8">
               <div className="text-center space-y-4">
                 <p className="text-gray-300">
-                  Questions about your order? Please contact us at {siteContent.reservation.info.contact.phone}
+                  Questions about your order? Please contact us at {siteContent.reservation?.info?.contact?.phone || '(555) 123-4567'}
                 </p>
                 
                 <div className="flex flex-col sm:flex-row justify-center gap-4 mt-6">
@@ -276,7 +269,7 @@ const OrderConfirmation: React.FC<OrderConfirmationProps> = ({ orderDetails }) =
         </div>
       </section>
 
-      <Footer />
+  
     </div>
   );
 };

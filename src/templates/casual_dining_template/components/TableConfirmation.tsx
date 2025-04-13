@@ -1,9 +1,7 @@
 import React from 'react';
 import { Navigation } from './Navigation';
-import { Footer } from './Footer';
 import { Check, Calendar, Clock, Users, UtensilsCrossed, MapPin, Phone, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useContent } from '../context/ContentContext';
 
 interface TableConfirmationProps {
   reservationDetails: {
@@ -19,11 +17,7 @@ interface TableConfirmationProps {
 }
 
 const TableConfirmation: React.FC<TableConfirmationProps> = ({ reservationDetails }) => {
-  const { siteContent } = useContent();
 
-  if (!siteContent) {
-    return <div>Site content not found.</div>;
-  }
 
   // Format date for display
   const formatDate = (dateString: string) => {
@@ -163,20 +157,12 @@ const TableConfirmation: React.FC<TableConfirmationProps> = ({ reservationDetail
               <div className="bg-zinc-700 p-6 rounded-xl mb-8">
                 <div className="flex items-start">
                   <MapPin className="w-6 h-6 mr-3 text-yellow-400 flex-shrink-0 mt-1" />
-                  <div>
-                    <h3 className="text-lg font-semibold text-white">Restaurant Location</h3>
-                    <p className="text-gray-300">
-                      {siteContent.reservation.info.location.street}<br />
-                      {siteContent.reservation.info.location.city}, {siteContent.reservation.info.location.state} {siteContent.reservation.info.location.zip}
-                    </p>
-                  </div>
+                 
                 </div>
               </div>
               
               <div className="text-center space-y-4">
-                <p className="text-gray-300">
-                  Need to make changes to your reservation? Please contact us at {siteContent.reservation.info.contact.phone}
-                </p>
+              
                 
                 <div className="flex flex-col sm:flex-row justify-center gap-4 mt-6">
                   <Link to="/menu" className="bg-yellow-400 text-black py-3 px-6 rounded-full hover:bg-yellow-300 transition text-lg font-medium flex items-center justify-center">
@@ -193,8 +179,6 @@ const TableConfirmation: React.FC<TableConfirmationProps> = ({ reservationDetail
           </div>
         </div>
       </section>
-
-      <Footer />
     </div>
   );
 };

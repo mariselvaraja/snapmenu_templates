@@ -22,38 +22,7 @@ export default function Events() {
   const siteContent = rawApiResponse?.data ? 
     (typeof rawApiResponse.data === 'string' ? JSON.parse(rawApiResponse.data) : rawApiResponse.data) : 
     {};
-  const events = siteContent?.events || {
-    section: {
-      title: "Upcoming Events",
-      subtitle: "Join us for special culinary experiences and celebrations"
-    },
-    items: [
-      {
-        image: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&q=80",
-        title: "Wine Tasting Evening",
-        description: "Sample our curated selection of fine wines paired with gourmet appetizers",
-        date: "2025-05-15",
-        time: "7:00 PM - 10:00 PM",
-        location: "Main Dining Room"
-      },
-      {
-        image: "https://images.unsplash.com/photo-1577106263724-2c8e03bfe9cf?auto=format&fit=crop&q=80",
-        title: "Chef's Table Experience",
-        description: "An intimate dining experience with our executive chef",
-        date: "2025-05-22",
-        time: "6:30 PM - 9:30 PM",
-        location: "Private Dining Room"
-      },
-      {
-        image: "https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&q=80",
-        title: "Summer Cocktail Party",
-        description: "Celebrate the season with refreshing cocktails and summer-inspired dishes",
-        date: "2025-06-05",
-        time: "8:00 PM - 11:00 PM",
-        location: "Rooftop Terrace"
-      }
-    ]
-  };
+  const events = siteContent?.event;
   
   // Transform events data from siteContent to include additional properties
   const eventItems: EventItem[] = events.items.map((item: any, index: number) => ({

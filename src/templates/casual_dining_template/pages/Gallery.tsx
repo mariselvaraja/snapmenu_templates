@@ -1,12 +1,25 @@
 import React from 'react';
 import GalleryComponent from '../components/Gallery';
-import { useContent } from '../context/ContentContext';
-import { Footer } from '../components/Footer';
+import { useAppSelector } from '../../../common/redux';
+
 
 const Gallery: React.FC = () => {
-  const { siteContent } = useContent();
+  const { rawApiResponse } = useAppSelector(state => state.siteContent);
+  
+  // Get site content from Redux state
+  const siteContent = rawApiResponse ? 
+    (typeof rawApiResponse === 'string' ? JSON.parse(rawApiResponse) : rawApiResponse) : 
+    {};
+  const gallery = siteContent?.gallery || {
+    section: {
+      title: "Our Gallery",
+      subtitle: "A visual journey through our culinary creations and restaurant atmosphere"
+    },
+    images: []
+  };
 
   return (
+    <>
     <div className="min-h-screen bg-black text-white">
 
       <header className="relative h-96">
@@ -22,21 +35,23 @@ const Gallery: React.FC = () => {
         <div className="relative z-10 flex items-center h-full max-w-7xl mx-auto px-6">
           <div className="max-w-2xl">
             <h2 className="text-5xl md:text-7xl font-bold mb-6 animate-fade-in">
-              {siteContent.gallery.section.title}
+              {gallery?.section?.title || "Our Gallery"}
             </h2>
             <p className="text-xl md:text-2xl mb-8 text-gray-200 animate-fade-in-delay-1">
-              {siteContent.gallery.section.subtitle}
+              {gallery?.section?.subtitle || "A visual journey through our culinary creations"}
             </p>
           </div>
         </div>
       </header>
       <div className="py-20 px-6">
         <div className="max-w-7xl mx-auto">
-          <GalleryComponent images={siteContent.gallery.images} />
+          <GalleryComponent images={gallery?.images || []} />
         </div>
       </div>
-      <Footer />
+      
     </div>
+
+    </>
   );
 };
 
