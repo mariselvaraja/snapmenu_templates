@@ -3,7 +3,7 @@ import { Search, X, Loader } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '../../redux/hooks';
 import { setSearchQuery, setSearchResults, setSearchState } from '../../redux/slices/searchSlice';
-import { searchService, SearchState as SearchServiceState } from '../../services/searchService';
+import searchService, { SearchState as SearchServiceState } from '../../services/searchService';
 
 // Format price to display with currency symbol
 const formatPrice = (price: number): string => {

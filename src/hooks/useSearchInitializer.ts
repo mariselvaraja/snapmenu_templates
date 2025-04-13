@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useAppSelector, useAppDispatch } from '../common/redux/hooks';
-import { searchService, SearchState as SearchServiceState } from '../services/searchService';
+import searchService, { SearchState as SearchServiceState } from '../services/searchService';
 
 /**
  * Custom hook to initialize the search service with menu data
