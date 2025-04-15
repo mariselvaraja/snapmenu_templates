@@ -1,19 +1,19 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ShoppingCart } from 'lucide-react';
-import { useCart } from '../../context/contexts/CartContext';
+import { useAppSelector } from '../../../../common/redux';
 import { CartDrawer } from './CartDrawer';
-import { CART_ACTIONS } from '../../utils/constants';
 
 export function CartSummary() {
-  const { state, dispatch } = useCart();
-  const itemCount = state.items.reduce((acc, item) => acc + item.quantity, 0);
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const { items } = useAppSelector(state => state.cart);
+  const itemCount = items.reduce((acc, item) => acc + item.quantity, 0);
 
   const handleOpenCart = () => {
-    dispatch({ type: CART_ACTIONS.OPEN_DRAWER });
+    setIsCartOpen(true);
   };
 
   const handleCloseCart = () => {
-    dispatch({ type: CART_ACTIONS.CLOSE_DRAWER });
+    setIsCartOpen(false);
   };
 
   return (
@@ -32,7 +32,7 @@ export function CartSummary() {
       </button>
 
       <CartDrawer 
-        isOpen={state.isDrawerOpen} 
+        isOpen={isCartOpen} 
         onClose={handleCloseCart} 
       />
     </>

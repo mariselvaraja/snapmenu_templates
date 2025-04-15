@@ -1,11 +1,40 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useMenu } from '../../../context';
+import { useAppSelector } from '../../../../../common/redux';
 
 export function MenuHeader({ title, description }) {
   const navigate = useNavigate();
-  const { menuData } = useMenu();
+  
+  // Get menu data from Redux store instead of useMenu hook
+  const { items, categories } = useAppSelector(state => state.menu);
+  
+  // Transform Redux menu data to match the expected format
+  const menuData = useMemo(() => {
+    return {
+      categories: categories.map(category => {
+        // Handle case where category might be an object or a string
+        if (typeof category === 'string') {
+          return {
+            id: category,
+            name: category.charAt(0).toUpperCase() + category.slice(1)
+          };
+        } else if (typeof category === 'object' && category !== null) {
+          // If category is already an object with id and name
+          return {
+            id: category.id || category.name || 'unknown',
+            name: category.name || category.id || 'Unknown'
+          };
+        } else {
+          // Fallback for unexpected category format
+          return {
+            id: 'unknown',
+            name: 'Unknown'
+          };
+        }
+      })
+    };
+  }, [categories]);
 
   return (
     <div className="mb-12">

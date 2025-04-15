@@ -1,20 +1,64 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { useMenu } from '../../../context/contexts/MenuContext';
+import { useAppSelector } from '../../../../../common/redux';
 import { useContent } from '../../../context';
-import { getCategoryImage, getCategoryDescription } from '../../../utils/menuHelpers';
+import { getCategoryImage } from '../../../utils/menuHelpers';
 
 export function MenuCategories() {
-  const { menuData } = useMenu();
+  // Get menu data from Redux store instead of useMenu hook
+  const { items, categories, loading, error } = useAppSelector(state => state.menu);
   const { content, siteContent } = useContent();
   
-  console.log('MenuCategories rendered with menuData:', menuData);
+  console.log('MenuCategories rendered with Redux menu data:', { items, categories });
+
+  // Transform Redux menu data to match the expected format
+  const menuData = {
+    menu: {},
+    categories: categories.map(category => {
+      // Handle case where category might be an object or a string
+      if (typeof category === 'string') {
+        return {
+          id: category,
+          name: category.charAt(0).toUpperCase() + category.slice(1)
+        };
+      } else if (typeof category === 'object' && category !== null) {
+        // If category is already an object with id and name
+        return {
+          id: category.id || category.name || 'unknown',
+          name: category.name || category.id || 'Unknown'
+        };
+      } else {
+        // Fallback for unexpected category format
+        return {
+          id: 'unknown',
+          name: 'Unknown'
+        };
+      }
+    })
+  };
+
+  // Group items by category
+  items.forEach(item => {
+    if (!menuData.menu[item.category]) {
+      menuData.menu[item.category] = [];
+    }
+    menuData.menu[item.category].push(item);
+  });
 
   // Early return if menu is not loaded
-  if (!menuData?.categories) {
+  if (loading || !menuData?.categories || menuData.categories.length === 0) {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <div className="text-white">Loading menu categories...</div>
+      </div>
+    );
+  }
+
+  // Show error if there was a problem loading the menu
+  if (error) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="text-white">Error loading menu: {error}</div>
       </div>
     );
   }
@@ -41,22 +85,17 @@ export function MenuCategories() {
             to={`/menu/${category.id}`}
             className="group relative overflow-hidden rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300"
           >
-            <div className="aspect-[16/9] overflow-hidden">
-              <img
-                src={getCategoryImage(category.id, menuData)}
-                alt={category.name}
-                className="w-full h-full object-cover transform transition-transform duration-700 group-hover:scale-110"
-              />
+            <div className="aspect-[16/9] overflow-hidden bg-gradient-to-r from-orange-600 to-orange-400 flex items-center justify-center">
+              <span className="text-8xl font-serif text-white opacity-80">
+                {category.name.charAt(0)}
+              </span>
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
             </div>
             <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
               <h2 className="text-2xl font-serif mb-2 group-hover:text-orange-400 transition-colors">
                 {category.name}
               </h2>
-              <p className="text-white/80 text-sm mb-4">
-                {getCategoryDescription(category.id)}
-              </p>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2 mb-4">
                 {/* Get subcategories from menu items */}
                 {(() => {
                   // Extract unique subcategories from menu items
@@ -75,6 +114,16 @@ export function MenuCategories() {
                     name: id.charAt(0).toUpperCase() + id.slice(1).replace(/-/g, ' ')
                   }));
                   
+                  // If no subcategories, show a default badge
+                  if (subCategories.length === 0) {
+                    return (
+                      <div className="text-sm px-3 py-1 bg-orange-500/80 text-white rounded-full backdrop-blur-sm">
+                        {category.name}
+                      </div>
+                    );
+                  }
+                  
+                  // Otherwise show subcategories as badges
                   return subCategories.map((sub) => (
                     <div
                       key={sub.id}

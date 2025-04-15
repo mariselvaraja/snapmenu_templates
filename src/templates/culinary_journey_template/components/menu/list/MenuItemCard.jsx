@@ -9,12 +9,18 @@ export function MenuItemCard({ item, categoryId }) {
       to={`/menu/${categoryId}/${item.id}`}
       className="group bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300"
     >
-      <div className="relative h-48 overflow-hidden">
-        <img
-          src={item.image}
-          alt={item.name}
-          className="w-full h-full object-cover transform transition-transform duration-700 group-hover:scale-110"
-        />
+      <div className="relative h-48 overflow-hidden bg-gradient-to-r from-orange-600 to-orange-400 flex items-center justify-center">
+        {item.image ? (
+          <img
+            src={item.image}
+            alt={item.name}
+            className="w-full h-full object-cover transform transition-transform duration-700 group-hover:scale-110"
+          />
+        ) : (
+          <span className="text-6xl font-serif text-white opacity-80">
+            {item.name.charAt(0)}
+          </span>
+        )}
         {(item.dietary?.isVegetarian || item.dietary?.isVegan) && (
           <div className="absolute top-2 left-2 bg-green-500 text-white px-3 py-1 rounded-full flex items-center text-sm backdrop-blur-sm">
             <Leaf className="h-4 w-4 mr-1" />

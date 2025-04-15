@@ -1,19 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Search, X, Loader } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useMenu } from '../../context/contexts/MenuContext';
+import { useAppSelector } from '../../../../common/redux';
 import searchService from '../../services/searchService';
 import { formatPrice } from '../../utils/formatPrice';
 
-const QUICK_LINKS = [
-  { text: 'Vegan', query: 'vegan' },
-  { text: 'Vegetarian', query: 'vegetarian' },
-  { text: 'Gluten Free', query: 'gluten free' },
-  { text: 'Healthy Options', query: 'healthy' },
-  { text: 'Spicy', query: 'spicy' },
-  { text: 'Salads', query: 'salad' },
-  { text: 'Desserts', query: 'dessert' }
-];
 
 const SearchModal = ({ isOpen, onClose }) => {
   const [query, setQuery] = useState('');
@@ -28,7 +19,47 @@ const SearchModal = ({ isOpen, onClose }) => {
   const inputRef = useRef(null);
   const resultsRef = useRef(null);
   const navigate = useNavigate();
-  const { isSearchInitialized } = useMenu();
+  // Use Redux instead of useMenu hook
+  const { items, categories, loading, error: menuError } = useAppSelector(state => state.menu);
+  const isSearchInitialized = !loading;
+  
+  // Transform Redux menu data to match the expected format
+  const menuData = React.useMemo(() => {
+    const result = {
+      menu: {},
+      categories: categories.map(category => {
+        // Handle case where category might be an object or a string
+        if (typeof category === 'string') {
+          return {
+            id: category,
+            name: category.charAt(0).toUpperCase() + category.slice(1)
+          };
+        } else if (typeof category === 'object' && category !== null) {
+          // If category is already an object with id and name
+          return {
+            id: category.id || category.name || 'unknown',
+            name: category.name || category.id || 'Unknown'
+          };
+        } else {
+          // Fallback for unexpected category format
+          return {
+            id: 'unknown',
+            name: 'Unknown'
+          };
+        }
+      })
+    };
+    
+    // Group items by category
+    items.forEach(item => {
+      if (!result.menu[item.category]) {
+        result.menu[item.category] = [];
+      }
+      result.menu[item.category].push(item);
+    });
+    
+    return result;
+  }, [items, categories]);
 
   // Listen for search service state changes
   useEffect(() => {
@@ -56,8 +87,8 @@ const SearchModal = ({ isOpen, onClose }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isOpen]);
 
-  // Perform search
-  const performSearch = async (searchQuery) => {
+  // Simple search function that searches through the Redux menu data
+  const performSearch = (searchQuery) => {
     console.log('Starting search with query:', searchQuery);
     if (!searchQuery.trim()) {
       console.log('Empty query, clearing results');
@@ -67,52 +98,52 @@ const SearchModal = ({ isOpen, onClose }) => {
 
     setIsSearching(true);
     setError(null);
+    
     try {
-      if (searchState !== searchService.SEARCH_STATES.READY) {
-        console.log('Search not ready, current state:', searchState);
-        setError('Search is initializing, please try again in a moment');
+      // If menu is still loading, show error
+      if (loading) {
+        setError('Menu data is still loading, please try again in a moment');
         return;
       }
-
-      console.log('Search service ready, performing search for:', searchQuery);
-      const searchResults = await searchService.search(searchQuery);
-      console.log('Raw search results:', searchResults);
-
-      if (!searchResults) {
-        console.error('No search results returned');
-        setError('No results found');
-        setResults({ results: [], grouped: {} });
-        return;
-      }
-
-      if (!searchResults.results || !searchResults.grouped) {
-        console.error('Invalid search results format:', searchResults);
-        setError('Invalid search results format');
-        setResults({ results: [], grouped: {} });
-        return;
-      }
-
-      if (!searchResults.results || searchResults.results.length === 0) {
+      
+      const query = searchQuery.toLowerCase().trim();
+      const searchResults = { results: [], grouped: {} };
+      
+      // Search through all menu items
+      items.forEach(item => {
+        // Check if item matches search query
+        const nameMatch = item.name?.toLowerCase().includes(query);
+        const descMatch = item.description?.toLowerCase().includes(query);
+        const categoryMatch = item.category?.toLowerCase().includes(query);
+        const tagsMatch = item.tags?.some(tag => tag.toLowerCase().includes(query));
+        
+        if (nameMatch || descMatch || categoryMatch || tagsMatch) {
+          // Calculate a simple score based on where the match was found
+          let score = 0;
+          if (nameMatch) score += 10;
+          if (descMatch) score += 5;
+          if (categoryMatch) score += 3;
+          if (tagsMatch) score += 2;
+          
+          // Add to results
+          const result = { item, score };
+          searchResults.results.push(result);
+          
+          // Group by category
+          if (!searchResults.grouped[item.category]) {
+            searchResults.grouped[item.category] = [];
+          }
+          searchResults.grouped[item.category].push(result);
+        }
+      });
+      
+      if (searchResults.results.length === 0) {
         setError('No results found. Try searching for something else.');
         setResults({ results: [], grouped: {} });
-        return;
+      } else {
+        setResults(searchResults);
+        setError(null);
       }
-
-      // Log the search results for debugging
-      console.log('Search results:', {
-        total: searchResults.results.length,
-        grouped: Object.keys(searchResults.grouped).map(category => ({
-          category,
-          count: searchResults.grouped[category].length
-        }))
-      });
-
-      console.log('Setting search results:', {
-        results: searchResults.results.length,
-        categories: Object.keys(searchResults.grouped)
-      });
-      setResults(searchResults);
-      setError(null);
     } catch (error) {
       console.error('Search error:', error);
       setError(error.message);
@@ -209,22 +240,11 @@ const SearchModal = ({ isOpen, onClose }) => {
     }
   }, [isOpen]);
 
- // Handle search with debounce
+  // Handle search with debounce
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       if (query) {
-        searchService.search(query)
-          .then(results => {
-            setResults(results);
-            setIsSearching(false);
-            setError(null);
-          })
-          .catch(error => {
-            console.error('Search error:', error);
-            setError(error.message);
-            setResults({ results: [], grouped: {} });
-            setIsSearching(false);
-          });
+        performSearch(query);
       } else {
         setResults({ results: [], grouped: {} }); // Clear results when query is empty
         setIsSearching(false);
@@ -232,7 +252,7 @@ const SearchModal = ({ isOpen, onClose }) => {
     }, 150);
 
     return () => clearTimeout(timeoutId);
-  }, [query]);
+  }, [query, items]); // Add items as dependency to re-run search when menu data changes
 
   const handleInputChange = (e) => {
     const value = e.target.value;
@@ -314,10 +334,25 @@ const SearchModal = ({ isOpen, onClose }) => {
       // Sort items by score within each category
       const sortedItems = [...items].sort((a, b) => b.score - a.score);
 
+      // Format category name properly
+      const formatCategoryName = (categoryName) => {
+        if (typeof categoryName !== 'string') return 'Unknown';
+        
+        // Handle special category names
+        if (categoryName.toLowerCase() === 'mains') return 'Main Courses';
+        if (categoryName.toLowerCase() === 'appetizers') return 'Appetizers';
+        if (categoryName.toLowerCase() === 'desserts') return 'Desserts';
+        if (categoryName.toLowerCase() === 'drinks') return 'Drinks';
+        if (categoryName.toLowerCase() === 'sides') return 'Side Dishes';
+        
+        // Default formatting
+        return categoryName.charAt(0).toUpperCase() + categoryName.slice(1);
+      };
+      
       return (
         <div key={category} className="mb-4">
           <h3 className="px-4 py-2 text-sm font-medium text-gray-400 bg-gray-800/50">
-            {category.charAt(0).toUpperCase() + category.slice(1)}
+            {formatCategoryName(category)}
           </h3>
           <div className="divide-y divide-gray-700">
             {sortedItems.map((result, index) => {
@@ -411,18 +446,23 @@ const SearchModal = ({ isOpen, onClose }) => {
             />
           </div>
 
-          {/* Quick links */}
-          {!query && searchState === searchService.SEARCH_STATES.READY && (
+          {/* Menu Categories */}
+          {!query && !loading && (
             <div className="p-4 border-b border-gray-700">
-              <div className="text-sm font-medium text-gray-400 mb-2">Quick Links</div>
+              <div className="text-sm font-medium text-gray-400 mb-2">Menu Categories</div>
               <div className="flex flex-wrap gap-2">
-                {QUICK_LINKS.map((link) => (
+                {menuData.categories.map((category) => (
                   <button
-                    key={link.query}
-                    onClick={() => handleQuickLinkClick(link)}
+                    key={category.id}
+                    onClick={() => {
+                      setQuery(category.name);
+                      if (inputRef.current) {
+                        inputRef.current.focus();
+                      }
+                    }}
                     className="px-3 py-1.5 text-sm bg-gray-800 text-gray-300 rounded-full hover:bg-gray-700 hover:text-white transition-colors"
                   >
-                    {link.text}
+                    {category.name}
                   </button>
                 ))}
               </div>
