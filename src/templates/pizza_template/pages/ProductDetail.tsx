@@ -93,7 +93,7 @@ export default function ProductDetail() {
                         {/* Product Details skeleton on RHS */}
                         <div className="md:col-span-3">
                             {/* Product Header with Image on Right */}
-                            <div className="flex flex-col md:flex-row justify-between items-start mb-8">
+                            <div className="flex flex-col md:flex-row justify-between items-start mb-4">
                                 <div className="md:pr-8 md:w-1/2">
                                     <div className="h-8 w-48 bg-red-100 rounded animate-pulse mb-2"></div>
                                     <div className="h-6 w-24 bg-red-100 rounded animate-pulse mb-4"></div>
@@ -318,7 +318,7 @@ export default function ProductDetail() {
                         className="md:col-span-3"
                     >
                         {/* Product Header with Image on Right */}
-                        <div className="flex flex-col md:flex-row justify-between items-start mb-8">
+                        <div className="flex flex-col md:flex-row justify-between items-start mb-4">
                             <div className="md:pr-8 md:w-1/2">
                                 <h1 className="text-3xl font-bold mb-2">{product.name}</h1>
                              
@@ -339,7 +339,7 @@ export default function ProductDetail() {
                                         </div>
                                     )}
                                 </div>}
-                                <p className="text-gray-700 mb-6">{product.description}</p>
+                                <p className="text-gray-700 mb-3">{product.description}</p>
                                 
                                 <div className="flex items-center justify-between">
                                     <div className="text-2xl font-bold text-red-500">${product.price}</div>
@@ -374,6 +374,26 @@ export default function ProductDetail() {
                             </div>
                             <div className="md:w-1/2 mt-4 md:mt-0">
                                 <div className="relative rounded-lg overflow-hidden shadow-lg">
+                                    {/* Dietary Information overlay */}
+                                    {product.dietary && Object.values(product.dietary).some(value => value) && (
+                                        <div className="absolute top-2 right-2 z-10 flex flex-wrap gap-1 justify-end">
+                                            {product.dietary.isVegan && (
+                                                <span className="bg-green-500 text-white px-2 py-1 rounded-full text-xs font-medium">
+                                                    Vegan
+                                                </span>
+                                            )}
+                                            {product.dietary.isVegetarian && (
+                                                <span className="bg-green-500 text-white px-2 py-1 rounded-full text-xs font-medium">
+                                                    Vegetarian
+                                                </span>
+                                            )}
+                                            {product.dietary.isGlutenFree && (
+                                                <span className="bg-blue-500 text-white px-2 py-1 rounded-full text-xs font-medium">
+                                                    Gluten Free
+                                                </span>
+                                            )}
+                                        </div>
+                                    )}
                                     {product.image ? (
                                         <img 
                                             src={product.image} 
@@ -514,28 +534,21 @@ export default function ProductDetail() {
                         {/* Nutritional information section */}
                         {(product.calories || (product.nutrients && Object.keys(product.nutrients).length > 0)) && (
                             <div className="mb-8">
-                                <h2 className="text-xl font-semibold mb-4 flex items-center">
-                                    <Utensils className="h-5 w-5 mr-2" />
+                                <h2 className="text-xl font-semibold mb-4">
                                     Nutritional Information
                                 </h2>
-                                <div className="space-y-4">
+                                <div className="flex flex-wrap gap-4 pl-2 border-b border-gray-100 pb-4">
                                     {product.calories && (
-                                        <div className="border-b border-gray-100 pb-3">
-                                            <div className="flex items-center mb-1">
-                                                <Utensils className="h-4 w-4 mr-2 text-gray-500" />
-                                                <span className="font-medium text-gray-700">Calories</span>
-                                            </div>
-                                            <div className="text-gray-900 pl-6">{product.calories}</div>
+                                        <div className="flex flex-col items-center">
+                                            <span className="font-medium text-gray-700">Calories</span>
+                                            <span className="text-gray-900">{product.calories}</span>
                                         </div>
                                     )}
                                     {product.nutrients && Object.entries(product.nutrients).map(([key, value]) => (
                                         value && (
-                                            <div key={key} className="border-b border-gray-100 pb-3">
-                                                <div className="flex items-center mb-1">
-                                                    <Utensils className="h-4 w-4 mr-2 text-gray-500" />
-                                                    <span className="font-medium text-gray-700">{key.charAt(0).toUpperCase() + key.slice(1)}</span>
-                                                </div>
-                                                <div className="text-gray-900 pl-6">{value}</div>
+                                            <div key={key} className="flex flex-col items-center">
+                                                <span className="font-medium text-gray-700">{key.charAt(0).toUpperCase() + key.slice(1)}</span>
+                                                <span className="text-gray-900">{value}</span>
                                             </div>
                                         )
                                     ))}
@@ -543,32 +556,6 @@ export default function ProductDetail() {
                             </div>
                         )}
 
-                        {/* Dietary Information */}
-                        {product.dietary && Object.values(product.dietary).some(value => value) && (
-                            <div className="mb-8">
-                                <h2 className="text-xl font-semibold mb-4 flex items-center">
-                                    <Tag className="h-5 w-5 mr-2" />
-                                    Dietary Information
-                                </h2>
-                                <div className="flex flex-wrap gap-2 pl-6">
-                                    {product.dietary.isVegan && (
-                                        <span className="bg-green-500 text-white px-3 py-1 rounded-full text-sm">
-                                            Vegan
-                                        </span>
-                                    )}
-                                    {product.dietary.isVegetarian && (
-                                        <span className="bg-green-500 text-white px-3 py-1 rounded-full text-sm">
-                                            Vegetarian
-                                        </span>
-                                    )}
-                                    {product.dietary.isGlutenFree && (
-                                        <span className="bg-blue-500 text-white px-3 py-1 rounded-full text-sm">
-                                            Gluten Free
-                                        </span>
-                                    )}
-                                </div>
-                            </div>
-                        )}
 
                         {/* Ingredients section */}
                         {product.ingredients && product.ingredients.length > 0 && (
