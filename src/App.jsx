@@ -17,10 +17,7 @@ export default function App() {
     //     const domain = domainParts.slice(0, -2).join('.');
     //     return store.dispatch(fetchRestaurantByDomainRequest({ domain, restaurantId: "2256b9a6-5d53-4b77-b6a0-539043489ad3" }));
     // }
-    return store.dispatch(fetchRestaurantByDomainRequest({ 
-      domain: "pizza2", 
-      restaurantId: "2256b9a6-5d53-4b77-b6a0-539043489ad3" 
-    }))
+    return store.dispatch(fetchRestaurantByDomainRequest())
   }
  
   useEffect(() => {

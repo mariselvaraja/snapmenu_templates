@@ -73,19 +73,13 @@ export const restaurantService = {
    * Fetches restaurant information by domain
    * @deprecated Use getRestaurantInfo instead
    */
-  getRestaurantByDomain: async (domain: string, restaurantId?: string): Promise<Restaurant> => {
-    console.log(`Fetching restaurant info for domain ${domain} from API`);
+  getRestaurantByDomain: async (): Promise<Restaurant> => {
+  
     
     try {
-      const headers = {
-        restaurantid: restaurantId || "2256b9a6-5d53-4b77-b6a0-539043489ad3"
-      };
-      // Use getInfo instead of getByDomain
-      console.log("2")
-      const response = await api.get<Restaurant>(endpoints.restaurant.getInfo, { headers });
+      const response = await api.get<Restaurant>(endpoints.restaurant.getInfo);
       return response.data;
     } catch (error) {
-      console.error(`Error fetching restaurant info for domain ${domain}:`, error);
       throw error;
     }
   },

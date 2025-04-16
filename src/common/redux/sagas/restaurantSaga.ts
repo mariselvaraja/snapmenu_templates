@@ -36,19 +36,14 @@ function* fetchRestaurantInfoSaga(): Generator<any, void, any> {
 // Worker Saga for fetching restaurant info by specific domain
 function* fetchRestaurantByDomainSaga(action: ReturnType<typeof fetchRestaurantByDomainRequest>): Generator<any, void, any> {
   try {
-    // Get the domain and restaurantId from the action payload
-    const { domain, restaurantId } = action.payload;
-    
+
     // Get the restaurant info from the API
-    let restaurantInfo: any = yield call(restaurantService.getRestaurantByDomain, domain, restaurantId);
+    let restaurantInfo: any = yield call(restaurantService.getRestaurantByDomain);
     
     // If the response is an array, take the first item
     if (Array.isArray(restaurantInfo)) {
       restaurantInfo = restaurantInfo[0];
     }
-    
-    // Log the restaurant info for debugging
-    console.log(`RestaurantSaga: Restaurant info for domain ${domain}`, restaurantInfo);
     
     // Dispatch success action with the restaurant info
     yield put(fetchRestaurantByDomainSuccess(restaurantInfo));
