@@ -18,7 +18,7 @@ export default function App() {
     //     return store.dispatch(fetchRestaurantByDomainRequest({ domain, restaurantId: "2256b9a6-5d53-4b77-b6a0-539043489ad3" }));
     // }
     return store.dispatch(fetchRestaurantByDomainRequest({ 
-      domain: "tonyspizza", 
+      domain: "pizza2", 
       restaurantId: "2256b9a6-5d53-4b77-b6a0-539043489ad3" 
     }))
   }

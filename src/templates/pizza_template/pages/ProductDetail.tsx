@@ -321,8 +321,8 @@ export default function ProductDetail() {
                         <div className="flex flex-col md:flex-row justify-between items-start mb-8">
                             <div className="md:pr-8 md:w-1/2">
                                 <h1 className="text-3xl font-bold mb-2">{product.name}</h1>
-                                <div className="text-2xl font-bold text-red-500 mb-4">${product.price}</div>
-                                <div className="flex flex-wrap gap-2 mb-4">
+                             
+                              {  product.tags && <div className="flex flex-wrap gap-2 mb-4">
                                     {product.tags && product.tags.includes('vegetarian') && (
                                         <div className="bg-green-500 text-white px-3 py-1 rounded-full text-sm">
                                             Vegetarian
@@ -338,10 +338,10 @@ export default function ProductDetail() {
                                             GF
                                         </div>
                                     )}
-                                </div>
+                                </div>}
                                 <p className="text-gray-700 mb-6">{product.description}</p>
                                 
-                                <div className="flex items-center justify-between mb-6">
+                                <div className="flex items-center justify-between">
                                     <div className="text-2xl font-bold text-red-500">${product.price}</div>
                                     
                                     {/* Add button or quantity controls */}
