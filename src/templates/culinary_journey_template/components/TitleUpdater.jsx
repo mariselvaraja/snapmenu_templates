@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import { useAppSelector } from '../../../common/redux/hooks';
 
@@ -10,22 +10,22 @@ export default function TitleUpdater() {
   
   // Get site content from Redux state
   const siteContent = rawApiResponse ? 
-    (typeof rawApiResponse.data === 'string' ? JSON.parse(rawApiResponse) : rawApiResponse) : 
+    (typeof rawApiResponse === 'string' ? JSON.parse(rawApiResponse) : rawApiResponse) : 
     { navigationBar: { brand: { name: 'Loading' } }, blog: { posts: [] } };
-  const { navigationBar = { brand: { name: 'Loading' } }, blog = { posts: [] } } = siteContent;
+  const { navigationBar = { brand: { name: 'Loading' } }, blog = { posts: [] } } = siteContent || {};
   const location = useLocation();
   const params = useParams();
   const restaurantName = navigationBar?.brand?.name || 'Loading';
   
   // Get menu items from Redux store for product detail pages
   const menuItems = useAppSelector(state => state.menu.items);
-
+  
   useEffect(() => {
     let title = restaurantName;
     
     // Check if we're on a blog post page
     if (location.pathname.startsWith('/blog/') && params.id && blog?.posts) {
-      const blogPost = blog.posts.find((post: any) => post.id === params.id);
+      const blogPost = blog.posts.find(post => post.id === params.id);
       if (blogPost) {
         title = `${blogPost.title} | ${restaurantName}`;
       } else {
@@ -55,7 +55,7 @@ export default function TitleUpdater() {
   }, [location.pathname, restaurantName, params, blog, menuItems]);
 
   // Helper function to get the page name from the path
-  const getPageNameFromPath = (path: string): string => {
+  const getPageNameFromPath = (path) => {
     // Remove leading slash and get the first segment
     const segment = path.substring(1).split('/')[0];
     

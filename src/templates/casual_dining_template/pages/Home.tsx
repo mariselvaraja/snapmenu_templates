@@ -258,7 +258,7 @@ export function Home() {
             <p className="text-xl text-gray-400">Find your nearest Taco Spot</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {siteContent.contact.infoCards && Object.values(siteContent.contact.infoCards).map((location: any, index) => {
+            {siteContent?.contact?.infoCards && Object.values(siteContent.contact.infoCards).map((location: any, index) => {
               let contactInfo = null;
 
               // Check if this is an address card

@@ -8,6 +8,7 @@ import { GalleryPage } from './components/gallery';
 import { EventsPage } from './components/events';
 import { ContactPage } from './components/contact/ContactPage';
 import { MetaHead } from './components/seo/MetaHead';
+import TitleUpdater from './components/TitleUpdater';
 import { Navbar, Footer } from './components/layout';
 import { Hero, FoodCarousel, Experience, Testimonials } from './components/home';
 import { MenuCategories, MenuList, ProductDetail } from './components/menu';
@@ -79,6 +80,7 @@ export function CulinaryJourneyLayout() {
                   <ErrorBoundary>
                     <div className="min-h-screen">
                       <MetaHead />
+                      <TitleUpdater />
                       <Routes>
                         {/* Login Route */}
                         <Route path="/login" element={<LoginPage />} />
@@ -153,6 +155,8 @@ export function CulinaryJourneyRoutes() {
               <ReservationProvider>
                 <HelmetProvider>
                   <ErrorBoundary>
+                    <MetaHead />
+                    <TitleUpdater />
                     <Routes>
                       {/* Login Route */}
                       <Route path="/login" element={<LoginPage />} />

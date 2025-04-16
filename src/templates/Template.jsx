@@ -110,6 +110,7 @@ const TemplateContent = () => {
 
   // For testing purposes, you can change this value to "culinary_journey" to see the culinary journey template
   const template_id = restaurantState?.info?.template_id; // Options: "pizza", "casual_dining", "eatflow", "culinary_journey"
+  // restaurantState?.info?.template_id
   // In production, this would come from the API: 
   console.log("restaurantState", restaurantState)
   // Check if restaurant API returned an error or empty data

@@ -9,8 +9,8 @@ export default function TitleUpdater() {
   const { rawApiResponse } = useAppSelector(state => state.siteContent);
   
   // Get site content from Redux state
-  const siteContent = rawApiResponse?.data ? 
-    (typeof rawApiResponse.data === 'string' ? JSON.parse(rawApiResponse.data) : rawApiResponse.data) : 
+  const siteContent = rawApiResponse ? 
+    (typeof rawApiResponse === 'string' ? JSON.parse(rawApiResponse) : rawApiResponse) : 
     { navigationBar: { brand: { name: 'Loading' } }, blog: { posts: [] } };
   const { navigationBar = { brand: { name: 'Loading' } }, blog = { posts: [] } } = siteContent;
   const location = useLocation();
