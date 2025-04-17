@@ -501,8 +501,9 @@ function ProductDetails() {
               </div>
             )}
 
-            {/* Nutritional information section */}
-            {(product.calories || (product.nutrients && Object.keys(product.nutrients).length > 0)) && (
+            {/* Nutritional information section - Only show if nutritional data exists */}
+            {(product.calories || 
+              (product.nutrients && Object.values(product.nutrients).some(value => value !== undefined && value !== ''))) && (
               <div className="mb-8">
                 <h2 className="text-xl font-semibold mb-4 flex items-center">
                   <Utensils className="h-5 w-5 mr-2 text-yellow-400" />

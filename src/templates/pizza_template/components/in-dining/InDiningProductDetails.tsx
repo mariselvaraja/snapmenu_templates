@@ -210,28 +210,39 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
                 </div>
               )}
               
-              {/* Nutritional Information */}
-              <div className="mb-4">
-                <h3 className="text-sm font-semibold text-gray-500 uppercase mb-1">Nutritional Information</h3>
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="bg-gray-50 p-2 rounded">
-                    <span className="text-xs text-gray-500">Calories</span>
-                    <p className="font-medium">{product.calories || '450'} kcal</p>
-                  </div>
-                  <div className="bg-gray-50 p-2 rounded">
-                    <span className="text-xs text-gray-500">Protein</span>
-                    <p className="font-medium">{product.protein || '12'}g</p>
-                  </div>
-                  <div className="bg-gray-50 p-2 rounded">
-                    <span className="text-xs text-gray-500">Carbs</span>
-                    <p className="font-medium">{product.carbs || '45'}g</p>
-                  </div>
-                  <div className="bg-gray-50 p-2 rounded">
-                    <span className="text-xs text-gray-500">Fat</span>
-                    <p className="font-medium">{product.fat || '18'}g</p>
+              {/* Nutritional Information - Only show if nutritional data exists */}
+              {(product.calories || product.protein || product.carbs || product.fat || 
+                (product.nutrients && Object.values(product.nutrients).some(value => value !== undefined && value !== ''))) && (
+                <div className="mb-4">
+                  <h3 className="text-sm font-semibold text-gray-500 uppercase mb-1">Nutritional Information</h3>
+                  <div className="grid grid-cols-2 gap-2">
+                    {(product.calories || product.nutrients?.calories) && (
+                      <div className="bg-gray-50 p-2 rounded">
+                        <span className="text-xs text-gray-500">Calories</span>
+                        <p className="font-medium">{product.calories || product.nutrients?.calories || '450'} kcal</p>
+                      </div>
+                    )}
+                    {(product.protein || product.nutrients?.protein) && (
+                      <div className="bg-gray-50 p-2 rounded">
+                        <span className="text-xs text-gray-500">Protein</span>
+                        <p className="font-medium">{product.protein || product.nutrients?.protein || '12'}g</p>
+                      </div>
+                    )}
+                    {(product.carbs || product.nutrients?.carbs) && (
+                      <div className="bg-gray-50 p-2 rounded">
+                        <span className="text-xs text-gray-500">Carbs</span>
+                        <p className="font-medium">{product.carbs || product.nutrients?.carbs || '45'}g</p>
+                      </div>
+                    )}
+                    {(product.fat || product.nutrients?.fat) && (
+                      <div className="bg-gray-50 p-2 rounded">
+                        <span className="text-xs text-gray-500">Fat</span>
+                        <p className="font-medium">{product.fat || product.nutrients?.fat || '18'}g</p>
+                      </div>
+                    )}
                   </div>
                 </div>
-              </div>
+              )}
               
               {/* Preparation Time */}
               <div className="mb-4">
