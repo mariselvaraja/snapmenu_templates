@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { BrowserRouter as Router, Routes, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Link, useLocation } from 'react-router-dom';
 import { CartProvider, useCart } from './context/CartContext';
 import { CartDrawer } from './components/CartDrawer';
 import { Footer } from './components/Footer';
-import { EatflowTemplateRoutes } from '../../routes';
+import EatflowTemplateRoutes from '../../routes/eatflow_template_routes';
 import TitleUpdater from './components/TitleUpdater';
 import { Utensils, Settings, ShoppingCart, Search } from 'lucide-react';
 import { useAppSelector, useAppDispatch } from '../../redux';
@@ -11,16 +11,8 @@ import { openSearchModal } from '../../redux/slices/searchSlice';
 import SearchInitializer from './components/SearchInitializer';
 import SearchModal from './components/SearchModal';
 
-function App() {
-  return (
-    <CartProvider>
-      {/* Use the hook inside the provider */} <CartContent />
-    </CartProvider>
-  );
-}
-
-
-function CartContent() {
+// Layout component that conditionally renders the Navbar and Footer
+const Layout = () => {
   const { isCartOpen, toggleCart } = useCart();
   const dispatch = useAppDispatch();
   const isSearchModalOpen = useAppSelector((state) => state.search.isModalOpen);
@@ -33,6 +25,12 @@ function CartContent() {
     { navigationBar: { brand: { logo: {} }, navigation: { links: [] } } };
   const navigationBar = siteContent?.navigationBar || { brand: { logo: {} }, navigation: { links: [] } };
   const { brand, navigation } = navigationBar;
+
+  // Check if current page is an in-dining order page
+  const location = useLocation();
+  const isInDiningOrderPage = location.pathname === '/placeindiningorder';
+  const isInDiningOrderPageWithTable = location.pathname.startsWith('/placeindiningorder/');
+  const shouldShowNavAndFooter = !isInDiningOrderPage && !isInDiningOrderPageWithTable;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -62,12 +60,12 @@ function CartContent() {
   };
 
   return (
-    <Router>
-      <div className="min-h-screen flex flex-col">
-        <TitleUpdater />
-        <SearchInitializer />
-        
-        {/* Navigation bar moved directly into App */}
+    <div className="min-h-screen flex flex-col">
+      <TitleUpdater />
+      <SearchInitializer />
+      
+      {/* Navigation bar - only shown on non-in-dining pages */}
+      {shouldShowNavAndFooter && (
         <nav className={`fixed top-0 left-0 right-0 z-30 ${isScrolled ? 'bg-black/85 backdrop-blur-sm' : 'bg-black'} transition-all duration-300`}>
           <div className="container mx-auto px-6 py-8">
             <div className="flex items-center justify-between">
@@ -105,23 +103,33 @@ function CartContent() {
             </div>
           </div>
         </nav>
-        
-        {/* Spacer to prevent content from being hidden behind fixed navbar */}
-        <div className="h-24"></div>
-        
-        <CartDrawer isOpen={isCartOpen} onClose={toggleCart} />
-        <SearchModal 
-          isOpen={isSearchModalOpen} 
-          onClose={() => dispatch({ type: 'search/closeSearchModal' })} 
-        />
-        <main className="flex-grow">
-          <Routes>
-            {EatflowTemplateRoutes}
-          </Routes>
-        </main>
-        <Footer />
-      </div>
-    </Router>
+      )}
+      
+      {/* Spacer to prevent content from being hidden behind fixed navbar - only added when navbar is shown */}
+      {shouldShowNavAndFooter && <div className="h-24"></div>}
+      
+      <CartDrawer isOpen={isCartOpen} onClose={toggleCart} />
+      <SearchModal 
+        isOpen={isSearchModalOpen} 
+        onClose={() => dispatch({ type: 'search/closeSearchModal' })} 
+      />
+      <main className="flex-grow">
+        <Routes>
+          {EatflowTemplateRoutes}
+        </Routes>
+      </main>
+      {shouldShowNavAndFooter && <Footer />}
+    </div>
+  );
+};
+
+function App() {
+  return (
+    <CartProvider>
+      <Router>
+        <Layout />
+      </Router>
+    </CartProvider>
   );
 }
 

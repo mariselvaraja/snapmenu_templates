@@ -3,21 +3,8 @@ import { motion } from 'framer-motion';
 import { Utensils, ClipboardList, ArrowLeft, Calendar, Clock, Users, ChevronDown, ChevronUp, X } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import { useLocation } from 'react-router-dom';
-import { RootState } from '../../../../common/store';
 
-interface OrderItem {
-  name: string;
-  quantity: number;
-  price: number;
-  image?: string;
-}
-
-interface InDiningOrdersProps {
-  onClose: () => void;
-  newOrderNumber?: string;
-}
-
-const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber }) => {
+const InDiningOrders = ({ onClose, newOrderNumber }) => {
   const [showNotification, setShowNotification] = useState(!!newOrderNumber);
   // Mock orders data - in a real app, this would come from a backend
   const mockOrders = [
@@ -27,9 +14,9 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
       status: 'In Progress',
       total: 24.99,
       items: [
-        { name: 'Pepperoni Pizza', quantity: 1, price: 14.99, image: '' },
-        { name: 'Garlic Bread', quantity: 1, price: 4.99, image: '' },
-        { name: 'Coke', quantity: 1, price: 2.99, image: '' }
+        { name: 'Avocado Toast', quantity: 1, price: 14.99 },
+        { name: 'Fresh Juice', quantity: 1, price: 4.99 },
+        { name: 'Espresso', quantity: 1, price: 2.99 }
       ]
     },
     {
@@ -38,9 +25,9 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
       status: 'Completed',
       total: 32.99,
       items: [
-        { name: 'Margherita Pizza', quantity: 1, price: 12.99, image: '' },
-        { name: 'Hawaiian Pizza', quantity: 1, price: 15.99, image: '' },
-        { name: 'Sprite', quantity: 1, price: 2.99, image: '' }
+        { name: 'Quinoa Bowl', quantity: 1, price: 12.99 },
+        { name: 'Acai Smoothie', quantity: 1, price: 15.99 },
+        { name: 'Mineral Water', quantity: 1, price: 2.99 }
       ]
     }
   ];
@@ -52,10 +39,10 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
           id: newOrderNumber,
           date: new Date().toISOString(),
           status: 'Preparing',
-          total: useSelector((state: RootState) => 
+          total: useSelector((state) => 
             state.cart.items.reduce((total, item) => total + item.price * item.quantity, 0) * 1.1
           ),
-          items: useSelector((state: RootState) => 
+          items: useSelector((state) => 
             state.cart.items.map(item => ({
               name: item.name,
               quantity: item.quantity,
@@ -70,7 +57,7 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
 
   // Get table number from URL
   const location = useLocation();
-  const [tableNumber, setTableNumber] = useState<string | null>(null);
+  const [tableNumber, setTableNumber] = useState(null);
   
   useEffect(() => {
     // Extract table number from URL query parameter or path parameter
@@ -105,10 +92,10 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
   const [timeSlot] = useState('12:30 PM - 2:00 PM');
   
   // State to track which orders are expanded
-  const [expandedOrders, setExpandedOrders] = useState<Record<string, boolean>>({});
+  const [expandedOrders, setExpandedOrders] = useState({});
   
   // Toggle expanded state for an order
-  const toggleOrderExpanded = (orderId: string) => {
+  const toggleOrderExpanded = (orderId) => {
     setExpandedOrders(prev => ({
       ...prev,
       [orderId]: !prev[orderId]
@@ -125,7 +112,7 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
               onClick={onClose}
               className="p-1 mr-3"
             >
-              <ArrowLeft className="h-6 w-6 text-red-500" />
+              <ArrowLeft className="h-6 w-6 text-green-500" />
             </button>
             <div>
               <h2 className="text-lg font-semibold text-white">Your Orders</h2>
@@ -144,22 +131,22 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="bg-red-50 border-l-4 border-red-500 p-4 mx-4 mt-4 rounded-md relative"
+          className="bg-green-50 border-l-4 border-green-500 p-4 mx-4 mt-4 rounded-md relative"
         >
           <button 
             onClick={() => setShowNotification(false)} 
-            className="absolute top-2 right-2 text-red-500 hover:text-red-700"
+            className="absolute top-2 right-2 text-green-500 hover:text-green-700"
             aria-label="Close notification"
           >
             <X className="h-5 w-5" />
           </button>
           <div className="flex items-start">
             <div className="flex-shrink-0">
-              <Utensils className="h-5 w-5 text-red-500" />
+              <Utensils className="h-5 w-5 text-green-500" />
             </div>
             <div className="ml-3">
-              <h3 className="text-sm font-medium text-red-800">Order Placed Successfully!</h3>
-              <div className="mt-2 text-sm text-red-700">
+              <h3 className="text-sm font-medium text-green-800">Order Placed Successfully!</h3>
+              <div className="mt-2 text-sm text-green-700">
                 <p>Your order #{newOrderNumber} has been received and is being prepared.</p>
               </div>
             </div>
@@ -171,8 +158,8 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
       <div className="p-4">
         {orders.length === 0 ? (
           <div className="text-center py-12 flex flex-col items-center">
-            <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mb-4">
-              <ClipboardList className="h-10 w-10 text-red-300" />
+            <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mb-4">
+              <ClipboardList className="h-10 w-10 text-green-300" />
             </div>
             <p className="text-gray-500 text-lg font-medium">No orders yet</p>
             <p className="text-gray-400 text-sm mt-2">Your order history will appear here</p>
@@ -183,12 +170,12 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
               <div 
                 key={order.id} 
                 className={`border rounded-lg overflow-hidden shadow-sm mb-4 ${
-                  order.id === newOrderNumber ? 'border-red-300' : 'border-gray-200'
+                  order.id === newOrderNumber ? 'border-green-300' : 'border-gray-200'
                 }`}
               >
                 {/* Order Header - Always Visible */}
                 <div 
-                  className="p-4 bg-red-50 flex justify-between items-center cursor-pointer"
+                  className="p-4 bg-green-50 flex justify-between items-center cursor-pointer"
                   onClick={() => toggleOrderExpanded(order.id)}
                 >
                   <div className="flex items-center">
@@ -206,7 +193,7 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
                             ? 'bg-green-100 text-green-800' 
                             : order.status === 'In Progress' 
                               ? 'bg-blue-100 text-blue-800'
-                              : 'bg-red-100 text-red-800'
+                              : 'bg-green-100 text-green-800'
                         }`}>
                           {order.status}
                         </span>
@@ -218,7 +205,7 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
                   </div>
                   <div className="text-right">
                     <div className="text-sm font-medium">{order.items.length} items</div>
-                    <div className="text-red-500 font-bold">${order.total.toFixed(2)}</div>
+                    <div className="text-green-500 font-bold">${order.total.toFixed(2)}</div>
                   </div>
                 </div>
                 
@@ -230,11 +217,11 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
                       {order.items.map((item, index) => (
                         <div key={index} className="flex items-center justify-between text-sm">
                           <div className="flex items-center">
-                            <div className="w-10 h-10 rounded-md overflow-hidden mr-3 flex-shrink-0 bg-red-100 flex items-center justify-center">
+                            <div className="w-10 h-10 rounded-md overflow-hidden mr-3 flex-shrink-0 bg-green-100 flex items-center justify-center">
                               {item.image ? (
                                 <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
                               ) : (
-                                <span className="text-lg font-bold text-red-500">
+                                <span className="text-lg font-bold text-green-500">
                                   {item.name.charAt(0)}
                                 </span>
                               )}
@@ -251,10 +238,8 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
                     {/* Total */}
                     <div className="border-t border-gray-100 pt-3 flex justify-between">
                       <span className="font-bold">Total</span>
-                      <span className="font-bold text-red-500">${order.total.toFixed(2)}</span>
+                      <span className="font-bold text-green-500">${order.total.toFixed(2)}</span>
                     </div>
-                    
-
                   </div>
                 )}
               </div>
