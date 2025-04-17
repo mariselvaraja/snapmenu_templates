@@ -1,16 +1,17 @@
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
-import { Utensils, Trash2, Plus, X, Minus, Search, UtensilsCrossed, Pizza, ArrowLeft, ShoppingCart, ClipboardList } from 'lucide-react';
+import { Utensils, Trash2, Plus, X, Minus, Search, UtensilsCrossed, Pizza, ArrowLeft, ShoppingCart, ClipboardList, Filter } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../../../../common/store';
 import { useDispatch } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 import { addItem, updateItemQuantity, removeItem, toggleDrawer } from '../../../../common/redux/slices/cartSlice';
-import { setSearchQuery } from '../../../../redux/slices/searchSlice';
+import { setSearchQuery } from '../../../../common/redux/slices/searchSlice';
 import SearchBarComponent from '../SearchBarComponent';
 import InDiningProductDetails from './InDiningProductDetails';
 import InDiningCartDrawer from './InDiningCartDrawer';
 import InDiningOrders from './InDiningOrders';
+  import FilterDrawer from './FilterDrawer';
 
 export default function InDiningOrder() {
   const [orderPlaced, setOrderPlaced] = useState<boolean>(false);
@@ -23,6 +24,7 @@ export default function InDiningOrder() {
   const [isSearchActive, setIsSearchActive] = useState<boolean>(false);
   const [showOrders, setShowOrders] = useState<boolean>(false);
   const [tableNumber, setTableNumber] = useState<string | null>(null);
+  const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState<boolean>(false);
   
   // Get table number from URL
   const location = useLocation();
@@ -231,97 +233,192 @@ export default function InDiningOrder() {
         </div>
       </div>
       
-      {/* Fixed Categories and Subcategories Container */}
+      {/* Menu Item Count and Categories */}
       <div className="sticky top-16 z-30">
-        {/* Main Categories */}
         <div className="bg-white shadow-sm">
           <div className="mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="overflow-x-auto py-2">
-              <div className="flex space-x-3 min-w-max">
-                {/* Always include "All" category */}
-                <button
-                  key="All"
-                  onClick={() => {
-                    setSelectedCategory('All');
-                    setSelectedSubcategory('All');
-                  }}
-                  className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap flex items-center ${
-                    selectedCategory === 'All'
-                      ? 'bg-red-500 text-white'
-                      : 'bg-gray-300 text-gray-800 hover:bg-gray-400'
-                  }`}
-                >
-                  All
-                </button>
-                
-                {/* Main categories extracted directly from menu items */}
-                {uniqueCategories.map((category) => (
-                  <button
-                    key={category}
-                    onClick={() => {
-                      setSelectedCategory(category);
-                      setSelectedSubcategory('All');
-                    }}
-                    className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap flex items-center ${
-                      selectedCategory === category
-                        ? 'bg-red-500 text-white'
-                        : 'bg-gray-300 text-gray-800 hover:bg-gray-400'
-                    }`}
-                  >
-                    {category}
-                  </button>
-                ))}
+            {/* Desktop View */}
+            <div className="hidden sm:flex py-3 justify-between items-center">
+              <div className="text-sm font-medium text-gray-700">
+                Showing {filteredMenuItems.length} menu items
+              </div>
+              <div className="overflow-x-auto">
+                <div className="flex space-x-2">
+                  {selectedCategory === 'All' ? (
+                    <>
+                      {/* All Category */}
+                      <button
+                        key="All"
+                        onClick={() => {
+                          setSelectedCategory('All');
+                          setSelectedSubcategory('All');
+                        }}
+                        className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex items-center ${
+                          selectedCategory === 'All'
+                            ? 'bg-red-500 text-white'
+                            : 'bg-gray-300 text-gray-800 hover:bg-gray-400'
+                        }`}
+                      >
+                        All
+                      </button>
+                      
+                      {/* Main categories */}
+                      {uniqueCategories.map((category) => (
+                        <button
+                          key={category}
+                          onClick={() => {
+                            setSelectedCategory(category);
+                            setSelectedSubcategory('All');
+                          }}
+                          className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex items-center ${
+                            selectedCategory === category
+                              ? 'bg-red-500 text-white'
+                              : 'bg-gray-300 text-gray-800 hover:bg-gray-400'
+                          }`}
+                        >
+                          {category}
+                        </button>
+                      ))}
+                    </>
+                  ) : (
+                    <>
+                      {/* Show All Categories button */}
+                      <button
+                        onClick={() => {
+                          setSelectedCategory('All');
+                          setSelectedSubcategory('All');
+                        }}
+                        className="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex items-center bg-gray-300 text-gray-800 hover:bg-gray-400"
+                      >
+                        All
+                      </button>
+                      
+                      {/* All Subcategories for selected category */}
+                      <button
+                        onClick={() => {
+                          setSelectedSubcategory('All');
+                        }}
+                        className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex items-center ${
+                          selectedSubcategory === 'All'
+                            ? 'bg-red-500 text-white'
+                            : 'bg-gray-300 text-gray-800 hover:bg-gray-400'
+                        }`}
+                      >
+                        All {selectedCategory}
+                      </button>
+                      
+                      {/* Subcategories for selected category */}
+                      {uniqueSubcategories.map((subcategory) => (
+                        <button
+                          key={subcategory}
+                          onClick={() => {
+                            setSelectedSubcategory(subcategory);
+                          }}
+                          className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex items-center ${
+                            selectedSubcategory === subcategory
+                              ? 'bg-red-500 text-white'
+                              : 'bg-gray-300 text-gray-800 hover:bg-gray-400'
+                          }`}
+                        >
+                          {subcategory}
+                        </button>
+                      ))}
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+            
+            {/* Mobile View */}
+            <div className="sm:hidden py-2">
+              <div className="overflow-x-auto">
+                <div className="flex space-x-2">
+                  {selectedCategory === 'All' ? (
+                    <>
+                      {/* All Category */}
+                      <button
+                        key="All"
+                        onClick={() => {
+                          setSelectedCategory('All');
+                          setSelectedSubcategory('All');
+                        }}
+                        className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex items-center ${
+                          selectedCategory === 'All'
+                            ? 'bg-red-500 text-white'
+                            : 'bg-gray-300 text-gray-800 hover:bg-gray-400'
+                        }`}
+                      >
+                        All
+                      </button>
+                      
+                      {/* Main categories - show all in mobile */}
+                      {uniqueCategories.map((category) => (
+                        <button
+                          key={category}
+                          onClick={() => {
+                            setSelectedCategory(category);
+                            setSelectedSubcategory('All');
+                          }}
+                          className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex items-center ${
+                            selectedCategory === category
+                              ? 'bg-red-500 text-white'
+                              : 'bg-gray-300 text-gray-800 hover:bg-gray-400'
+                          }`}
+                        >
+                          {category}
+                        </button>
+                      ))}
+                    </>
+                  ) : (
+                    <>
+                      {/* Show All Categories button */}
+                      <button
+                        onClick={() => {
+                          setSelectedCategory('All');
+                          setSelectedSubcategory('All');
+                        }}
+                        className="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex items-center bg-gray-300 text-gray-800 hover:bg-gray-400"
+                      >
+                         All 
+                      </button>
+                      
+                      {/* All Subcategories for selected category */}
+                      <button
+                        onClick={() => {
+                          setSelectedSubcategory('All');
+                        }}
+                        className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex items-center ${
+                          selectedSubcategory === 'All'
+                            ? 'bg-red-500 text-white'
+                            : 'bg-gray-300 text-gray-800 hover:bg-gray-400'
+                        }`}
+                      >
+                        All {selectedCategory}
+                      </button>
+                      
+                      {/* Subcategories for selected category */}
+                      {uniqueSubcategories.map((subcategory) => (
+                        <button
+                          key={subcategory}
+                          onClick={() => {
+                            setSelectedSubcategory(subcategory);
+                          }}
+                          className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex items-center ${
+                            selectedSubcategory === subcategory
+                              ? 'bg-red-500 text-white'
+                              : 'bg-gray-300 text-gray-800 hover:bg-gray-400'
+                          }`}
+                        >
+                          {subcategory}
+                        </button>
+                      ))}
+                    </>
+                  )}
+                </div>
               </div>
             </div>
           </div>
         </div>
-        
-        {/* Subcategories - always show the container for consistent layout */}
-        {/* <div className="bg-white shadow-sm">
-          <div className="mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="overflow-x-auto py-2">
-              <div className="flex space-x-3 min-w-max">
-                {uniqueSubcategories.length > 0 ? (
-                  <>
-                    
-                    <button
-                      key="All-sub"
-                      onClick={() => setSelectedSubcategory('All')}
-                      className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap flex items-center ${
-                        selectedSubcategory === 'All'
-                          ? 'bg-red-500 text-white'
-                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                      }`}
-                    >
-                      All {selectedCategory !== 'All' ? selectedCategory : ''} Items
-                    </button>
-                    
-                    
-                    {uniqueSubcategories.map((subcategory) => (
-                      <button
-                        key={subcategory}
-                        onClick={() => setSelectedSubcategory(subcategory)}
-                        className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap flex items-center ${
-                          selectedSubcategory === subcategory
-                            ? 'bg-red-500 text-white'
-                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                        }`}
-                      >
-                        {subcategory}
-                      </button>
-                    ))}
-                  </>
-                ) : (
-                  <div className="py-1 text-xs text-gray-500">
-                    {selectedCategory !== 'All' 
-                      ? `No subcategories for ${selectedCategory}` 
-                      : 'Select a category to see subcategories'}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div> */}
       </div>
       
       <div className=" mt-3 mx-auto px-4 sm:px-6 lg:px-8">
@@ -458,6 +555,7 @@ export default function InDiningOrder() {
       
       {/* Cart Drawer Component */}
       <InDiningCartDrawer onPlaceOrder={handlePlaceOrder} />
+      
       
     </div>
   );

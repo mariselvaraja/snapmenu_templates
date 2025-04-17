@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { ArrowRight, ArrowLeft, ShoppingCart, Info, Tag, Box, Utensils, AlertTriangle, Heart, Minus, Plus } from 'lucide-react';
 import { useAppSelector } from '../../../redux/hooks';
@@ -18,6 +18,58 @@ function ProductDetails() {
   
   // Initialize quantity state with cart quantity if product is in cart, otherwise 1
   const [quantity, setQuantity] = useState(cartItem ? Number(cartItem.quantity) : 1);
+  const [isMobile, setIsMobile] = useState(false);
+  const [isInDining, setIsInDining] = useState(false);
+  const location = useLocation();
+  
+  // Check if we're in in-dining context
+  useEffect(() => {
+    setIsInDining(location.pathname.includes('placeindiningorder'));
+  }, [location]);
+  
+  // Function to hide URL bar on mobile
+  const hideUrlBar = () => {
+    if (isMobile && isInDining) {
+      window.scrollTo(0, 1);
+    }
+  };
+
+  // Check if device is mobile and hide URL bar
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    // Check on mount
+    checkMobile();
+    
+    // Add event listener for resize
+    window.addEventListener('resize', checkMobile);
+    
+    // Hide URL bar on load and resize
+    window.addEventListener('load', hideUrlBar);
+    window.addEventListener('resize', hideUrlBar);
+    window.addEventListener('orientationchange', hideUrlBar);
+    
+    // Initial attempt to hide URL bar
+    setTimeout(hideUrlBar, 100);
+    
+    return () => {
+      window.removeEventListener('resize', checkMobile);
+      window.removeEventListener('load', hideUrlBar);
+      window.removeEventListener('resize', hideUrlBar);
+      window.removeEventListener('orientationchange', hideUrlBar);
+    };
+  }, [isInDining]);
+  
+  // Hide URL bar when component mounts and when orientation changes
+  useEffect(() => {
+    if (isMobile && isInDining) {
+      hideUrlBar();
+      // Try again after a short delay to ensure it works
+      setTimeout(hideUrlBar, 300);
+    }
+  }, [isMobile, isInDining]);
   
   // Update quantity if cart changes
   useEffect(() => {

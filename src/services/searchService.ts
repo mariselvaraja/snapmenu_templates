@@ -549,8 +549,12 @@ class SearchService {
 
   // Perform search with error handling
   async search(query: string): Promise<SearchResponse> {
+    console.log('Search service state:', this.state);
+    
     if (this.state !== SearchState.READY) {
-      throw new Error('Search index not initialized');
+      console.error('Search index not initialized, current state:', this.state);
+      // Instead of throwing an error, return empty results
+      return { results: [], grouped: {} };
     }
 
     try {
@@ -560,6 +564,7 @@ class SearchService {
       }
       
       console.log('Performing search for:', query);
+      console.log('Embeddings available:', Object.keys(this.embeddings).length);
       
       // Check if this is a category search (single word that might be a category)
       const isCategorySearch = query.trim().split(/\s+/).length === 1;

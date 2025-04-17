@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Utensils, ClipboardList, ArrowLeft, Calendar, Clock, Users, ChevronDown, ChevronUp, X } from 'lucide-react';
 import { useSelector } from 'react-redux';
@@ -6,76 +6,65 @@ import { useLocation } from 'react-router-dom';
 
 const InDiningOrders = ({ onClose, newOrderNumber }) => {
   const [showNotification, setShowNotification] = useState(!!newOrderNumber);
-  const [isMobile, setIsMobile] = useState(false);
+  
+  // Auto-close notification after 10 seconds
+  useEffect(() => {
+    if (showNotification) {
+      const timer = setTimeout(() => {
+        setShowNotification(false);
+      }, 10000); // 10 seconds
+      
+      return () => clearTimeout(timer);
+    }
+  }, [showNotification]);
+  
+  // Refs for URL bar hiding
+  const isMobileRef = useRef(false);
+  const isComponentMountedRef = useRef(false);
   
   // Function to hide URL bar on mobile
-  const hideUrlBar = () => {
-    if (isMobile) {
+  const hideUrlBar = useRef(() => {
+    if (isMobileRef.current && isComponentMountedRef.current) {
       window.scrollTo(0, 1);
     }
-  };
+  }).current;
 
-  // Check if device is mobile and hide URL bar
+  // Check if device is mobile and set up URL bar hiding
   useEffect(() => {
+    isComponentMountedRef.current = true;
+    
     const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 768);
+      isMobileRef.current = window.innerWidth <= 768;
+      if (isMobileRef.current) {
+        hideUrlBar();
+      }
     };
     
     // Check on mount
     checkMobile();
     
-    // Add event listener for resize
+    // Set up event listeners
     window.addEventListener('resize', checkMobile);
-    
-    // Hide URL bar on load and resize
     window.addEventListener('load', hideUrlBar);
     window.addEventListener('resize', hideUrlBar);
     window.addEventListener('orientationchange', hideUrlBar);
     
-    // Initial attempt to hide URL bar
+    // Initial attempts to hide URL bar with different timing
     setTimeout(hideUrlBar, 100);
+    setTimeout(hideUrlBar, 300);
+    setTimeout(hideUrlBar, 1000);
     
     return () => {
+      isComponentMountedRef.current = false;
       window.removeEventListener('resize', checkMobile);
       window.removeEventListener('load', hideUrlBar);
       window.removeEventListener('resize', hideUrlBar);
       window.removeEventListener('orientationchange', hideUrlBar);
     };
-  }, []);
+  }, [hideUrlBar]);
   
-  // Hide URL bar when component mounts and when orientation changes
-  useEffect(() => {
-    if (isMobile) {
-      hideUrlBar();
-      // Try again after a short delay to ensure it works
-      setTimeout(hideUrlBar, 300);
-    }
-  }, [isMobile]);
   // Mock orders data - in a real app, this would come from a backend
-  const mockOrders = [
-    {
-      id: '12345',
-      date: new Date(Date.now() - 1000 * 60 * 5).toISOString(), // 5 minutes ago
-      status: 'In Progress',
-      total: 24.99,
-      items: [
-        { name: 'Avocado Toast', quantity: 1, price: 14.99 },
-        { name: 'Fresh Juice', quantity: 1, price: 4.99 },
-        { name: 'Espresso', quantity: 1, price: 2.99 }
-      ]
-    },
-    {
-      id: '12344',
-      date: new Date(Date.now() - 1000 * 60 * 30).toISOString(), // 30 minutes ago
-      status: 'Completed',
-      total: 32.99,
-      items: [
-        { name: 'Quinoa Bowl', quantity: 1, price: 12.99 },
-        { name: 'Acai Smoothie', quantity: 1, price: 15.99 },
-        { name: 'Mineral Water', quantity: 1, price: 2.99 }
-      ]
-    }
-  ];
+  const mockOrders = [];
 
   // If there's a new order number, add it to the top of the list
   const orders = newOrderNumber 
@@ -190,9 +179,9 @@ const InDiningOrders = ({ onClose, newOrderNumber }) => {
               <Utensils className="h-5 w-5 text-green-500" />
             </div>
             <div className="ml-3">
-              <h3 className="text-sm font-medium text-green-800">Order Placed Successfully!</h3>
+              <h3 className="text-sm font-medium text-green-800">Order Update</h3>
               <div className="mt-2 text-sm text-green-700">
-                <p>Your order #{newOrderNumber} has been received and is being prepared.</p>
+                <p>Your order is start preparing</p>
               </div>
             </div>
           </div>
@@ -210,59 +199,36 @@ const InDiningOrders = ({ onClose, newOrderNumber }) => {
             <p className="text-gray-400 text-sm mt-2">Your order history will appear here</p>
           </div>
         ) : (
-          <div className="space-y-4">
-            {orders.map((order) => (
-              <div 
-                key={order.id} 
-                className={`border rounded-lg overflow-hidden shadow-sm mb-4 ${
-                  order.id === newOrderNumber ? 'border-green-300' : 'border-gray-200'
-                }`}
-              >
-                {/* Order Header - Always Visible */}
-                <div 
-                  className="p-4 bg-green-50 flex justify-between items-center cursor-pointer"
-                  onClick={() => toggleOrderExpanded(order.id)}
-                >
-                  <div className="flex items-center">
-                    <div className="mr-3">
-                      {expandedOrders[order.id] ? 
-                        <ChevronUp className="h-5 w-5 text-gray-500" /> : 
-                        <ChevronDown className="h-5 w-5 text-gray-500" />
-                      }
-                    </div>
-                    <div>
-                      <div className="flex items-center">
-                        <span className="text-sm font-medium">Order #{order.id}</span>
-                        <span className={`ml-3 px-2 py-0.5 text-xs rounded-full ${
-                          order.status === 'Completed' 
-                            ? 'bg-green-100 text-green-800' 
-                            : order.status === 'In Progress' 
-                              ? 'bg-blue-100 text-blue-800'
-                              : 'bg-green-100 text-green-800'
-                        }`}>
-                          {order.status}
-                        </span>
-                      </div>
-                      <div className="text-xs text-gray-500 mt-1">
-                        {new Date(order.date).toLocaleString()}
+          <div>
+            {/* Orders as Cards */}
+            <div className="space-y-4">
+              {orders.map((order, orderIndex) => (
+                <div key={orderIndex} className="bg-white rounded-lg shadow-md overflow-hidden">
+                  {/* Order Header */}
+                  <div className="bg-green-50 p-4 border-b border-green-200">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <div className="flex items-center">
+                          <span className="text-sm font-medium">Order #{order.id}</span>
+                          <span className="ml-3 px-2 py-0.5 text-xs rounded-full bg-green-100 text-green-800">
+                            {order.status}
+                          </span>
+                        </div>
+                        <div className="text-xs text-gray-500 mt-1">
+                          {new Date(order.date).toLocaleString()}
+                        </div>
                       </div>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <div className="text-sm font-medium">{order.items.length} items</div>
-                    <div className="text-green-500 font-bold">${order.total.toFixed(2)}</div>
-                  </div>
-                </div>
-                
-                {/* Order Details - Only Visible When Expanded */}
-                {expandedOrders[order.id] && (
-                  <div className="p-4 border-t border-gray-200">
-                    {/* Order Items */}
-                    <div className="space-y-3 mb-4">
+                  
+                  {/* Order Items */}
+                  <div className="p-4">
+                    <div className="space-y-3">
                       {order.items.map((item, index) => (
-                        <div key={index} className="flex items-center justify-between text-sm">
+                        <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          {/* Product Info */}
                           <div className="flex items-center">
-                            <div className="w-10 h-10 rounded-md overflow-hidden mr-3 flex-shrink-0 bg-green-100 flex items-center justify-center">
+                            <div className="w-12 h-12 rounded-md overflow-hidden mr-3 flex-shrink-0 bg-green-100 flex items-center justify-center">
                               {item.image ? (
                                 <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
                               ) : (
@@ -272,25 +238,52 @@ const InDiningOrders = ({ onClose, newOrderNumber }) => {
                               )}
                             </div>
                             <div>
-                              <span className="font-medium">{item.quantity}x</span> {item.name}
+                              <div className="text-sm font-medium">{item.name}</div>
+                              <div className="text-xs text-gray-500">
+                                <span className="px-2 py-0.5 rounded-full bg-green-100 text-green-800 mr-2">
+                                  Preparing
+                                </span>
+                                <span>Qty: {item.quantity}</span>
+                              </div>
                             </div>
                           </div>
-                          <div className="text-gray-700">${(item.price * item.quantity).toFixed(2)}</div>
+                          
+                          {/* Price */}
+                          <div className="font-medium text-sm">
+                            ${(item.price * item.quantity).toFixed(2)}
+                          </div>
                         </div>
                       ))}
                     </div>
-                    
-                    {/* Total */}
-                    <div className="border-t border-gray-100 pt-3 flex justify-between">
-                      <span className="font-bold">Total</span>
-                      <span className="font-bold text-green-500">${order.total.toFixed(2)}</span>
-                    </div>
                   </div>
-                )}
-              </div>
-            ))}
+                </div>
+              ))}
+            </div>
           </div>
         )}
+      </div>
+      
+      {/* Fixed Bottom Bar */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 flex justify-between items-center">
+        <div>
+          <div className="text-sm text-gray-600">Total Amount</div>
+          <div className="text-xl font-bold text-green-500">
+            ${orders.length > 0 ? orders[0].total.toFixed(2) : '0.00'}
+          </div>
+        </div>
+        <div className="flex space-x-3">
+          <button 
+            className="bg-green-500 text-white px-4 py-2 rounded-full font-medium hover:bg-green-600 transition-colors"
+            onClick={onClose}
+          >
+            Continue Ordering
+          </button>
+          <button 
+            className="bg-gray-800 text-white px-4 py-2 rounded-full font-medium hover:bg-gray-900 transition-colors"
+          >
+            View Bill
+          </button>
+        </div>
       </div>
     </div>
   );

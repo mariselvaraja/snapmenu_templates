@@ -3,30 +3,29 @@ import { Search, X, ArrowLeft, Plus, Filter } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import InDiningProductDetails from './in-dining/InDiningProductDetails';
 import { useSelector, useDispatch } from 'react-redux';
-import { RootState, AppDispatch } from '../../../common/store';
 import { setSearchQuery, setSearchResults, setSearchState } from '../../../common/redux/slices/searchSlice';
 import { addItem, toggleDrawer } from '../../../common/redux/slices/cartSlice';
 import searchService, { SearchState as SearchServiceState } from '../../../services/searchService';
 
-interface SearchBarComponentProps {
-  onClose: () => void;
-}
-
-const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
-  const dispatch = useDispatch<AppDispatch>();
+/**
+ * SearchBarComponent for the eatflow template
+ * This component provides a full-screen search experience
+ */
+const SearchBarComponent = ({ onClose }) => {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   
   // Get search state and menu data from Redux
-  const { query, results, searchState, error } = useSelector((state: RootState) => state.search);
-  const menuItems = useSelector((state: RootState) => state.menu.items);
-  const menuCategories = useSelector((state: RootState) => state.menu.categories);
-  const cartItems = useSelector((state: RootState) => state.cart.items);
+  const { query, results, searchState, error } = useSelector((state) => state.search);
+  const menuItems = useSelector((state) => state.menu.items);
+  const menuCategories = useSelector((state) => state.menu.categories);
+  const cartItems = useSelector((state) => state.cart.items);
   
   // Local state
   const [isSearching, setIsSearching] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
-  const [selectedProduct, setSelectedProduct] = useState<any>(null);
-  const [isProductDetailsOpen, setIsProductDetailsOpen] = useState<boolean>(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [isProductDetailsOpen, setIsProductDetailsOpen] = useState(false);
   const [filters, setFilters] = useState({
     vegetarian: true,
     vegan: true,
@@ -34,8 +33,8 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
   });
   
   // Refs
-  const inputRef = useRef<HTMLInputElement>(null);
-  const resultsRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef(null);
+  const resultsRef = useRef(null);
 
   // Focus input on mount and clear any existing search query
   useEffect(() => {
@@ -55,14 +54,20 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
       return;
     }
 
+    console.log('Search query changed:', query);
+    console.log('Current search state:', searchState);
+
     const timeoutId = setTimeout(async () => {
       if (searchState !== SearchServiceState.READY) {
+        console.log('Search service not ready, state:', searchState);
         return;
       }
 
       setIsSearching(true);
       try {
+        console.log('Performing search for:', query);
         const searchResults = await searchService.search(query);
+        console.log('Search results:', searchResults);
         dispatch(setSearchResults(searchResults));
       } catch (error) {
         console.error('Search error:', error);
@@ -81,7 +86,7 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
   const isInDiningContext = location.pathname.includes('placeindiningorder');
 
   // Handle item select
-  const handleItemSelect = (item: any) => {
+  const handleItemSelect = (item) => {
     if (isInDiningContext) {
       // In in-dining context, show the product details popup
       setSelectedProduct(item);
@@ -106,27 +111,30 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
     // Get all items first
     let items = Object.values(results.grouped)
       .flat()
-      .sort((a: any, b: any) => b.similarity - a.similarity);
+      .sort((a, b) => b.similarity - a.similarity);
     
-    // Apply dietary filters if any are active
-    if (filters.vegetarian || filters.vegan || filters.glutenFree) {
-      items = items.filter((result: any) => {
-        const item = result.item;
-        if (!item || !item.dietary) return false;
-        
-        // OR condition - show item if it matches ANY active filter
-        return (filters.vegetarian && item.dietary.isVegetarian) || 
-               (filters.vegan && item.dietary.isVegan) || 
-               (filters.glutenFree && item.dietary.isGlutenFree);
-      });
-    }
+  // Apply dietary filters if any are active
+  if (filters.vegetarian || filters.vegan || filters.glutenFree) {
+    items = items.filter((result) => {
+      const item = result.item;
+      if (!item) return false;
+      
+      // If item doesn't have dietary info, include it in results
+      if (!item.dietary) return true;
+      
+      // OR condition - show item if it matches ANY active filter
+      return (filters.vegetarian && item.dietary.isVegetarian) || 
+             (filters.vegan && item.dietary.isVegan) || 
+             (filters.glutenFree && item.dietary.isGlutenFree);
+    });
+  }
     
     return items;
   }, [results.grouped, filters]);
 
   // Handle keyboard navigation
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
+    const handleKeyDown = (e) => {
       switch (e.key) {
         case 'ArrowDown':
           e.preventDefault();
@@ -171,13 +179,13 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
   }, [selectedIndex]);
 
   // Handle input change
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e) => {
     dispatch(setSearchQuery(e.target.value));
     setSelectedIndex(-1);
   };
   
   // Handle filter toggle
-  const handleFilterToggle = (filterName: 'vegetarian' | 'vegan' | 'glutenFree') => {
+  const handleFilterToggle = (filterName) => {
     setFilters(prev => ({
       ...prev,
       [filterName]: !prev[filterName]
@@ -186,27 +194,27 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
   };
 
   // Format price to display with currency symbol
-  const formatPrice = (price: number): string => {
+  const formatPrice = (price) => {
     return `$${price.toFixed(2)}`;
   };
 
   // Render highlighted text
-  const renderHighlightedText = (text: string, searchQuery: string) => {
+  const renderHighlightedText = (text, searchQuery) => {
     if (!text || !searchQuery) return text || '';
     const parts = text.split(new RegExp(`(${searchQuery})`, 'gi'));
-    return parts.map((part: string, i: number) => 
+    return parts.map((part, i) => 
       part.toLowerCase() === searchQuery.toLowerCase() ? 
-        <span key={i} className="bg-red-100 text-red-800">{part}</span> : part
+        <span key={i} className="bg-green-100 text-green-800">{part}</span> : part
     );
   };
 
   // Render menu items in a grid
-  const renderMenuItemsGrid = (items: any[], highlightQuery: boolean = false) => {
+  const renderMenuItemsGrid = (items, highlightQuery = false) => {
     if (!items || items.length === 0) {
       return (
         <div className="flex flex-col items-center justify-center py-8 px-4">
-          <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mb-4">
-            <Search className="h-8 w-8 text-red-400" />
+          <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mb-4">
+            <Search className="h-8 w-8 text-green-400" />
           </div>
           <h3 className="text-lg font-semibold text-gray-800 mb-2">No items in this category</h3>
           <p className="text-gray-500 text-center max-w-md mb-4 text-sm">
@@ -236,8 +244,8 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-red-100">
-                    <span className="text-3xl font-bold text-red-500">
+                  <div className="w-full h-full flex items-center justify-center bg-green-100">
+                    <span className="text-3xl font-bold text-green-500">
                       {item.name.charAt(0).toUpperCase()}
                     </span>
                   </div>
@@ -283,7 +291,7 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
               {/* Tags */}
               {item.tags && item.tags.length > 0 && (
                 <div className="mt-2 mb-3 flex flex-wrap items-center gap-1">
-                  {item.tags.slice(0, 2).map((tag: string, idx: number) => (
+                  {item.tags.slice(0, 2).map((tag, idx) => (
                     <span key={idx} className="text-xs px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded">
                       {tag}
                     </span>
@@ -296,7 +304,7 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
               
               {/* Price and Add to Order */}
               <div className="flex justify-between items-center mt-auto">
-                <p className="text-sm font-bold text-red-500">{formatPrice(item.price)}</p>
+                <p className="text-sm font-bold text-green-500">{formatPrice(item.price)}</p>
                 <button 
                   onClick={() => {
                     dispatch(addItem({
@@ -307,7 +315,7 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
                       image: item.image || ''
                     }));
                   }}
-                  className="text-xs flex items-center gap-2 bg-red-500 text-white px-2 py-1 rounded-full hover:bg-red-600 transition-colors"
+                  className="text-xs flex items-center gap-2 bg-green-500 text-white px-2 py-1 rounded-full hover:bg-green-600 transition-colors"
                 >
                   Add <Plus className='text-xs'/>
                 </button>
@@ -321,11 +329,55 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
 
   // Render results by category
   const renderResultsByCategory = () => {
-    if (!results?.grouped || typeof results.grouped !== 'object') {
+    console.log('Rendering search results, grouped:', results?.grouped);
+    
+    // If no results or empty results, try a fallback to show all menu items that match the query
+    if (!results?.grouped || typeof results.grouped !== 'object' || Object.keys(results.grouped).length === 0) {
+      console.log('No grouped results, trying fallback search');
+      
+      // Simple text-based search as fallback
+      const matchingItems = menuItems.filter(item => {
+        const searchTerms = [
+          item.name,
+          item.description || '',
+          item.category || '',
+          ...(item.tags || [])
+        ].join(' ').toLowerCase();
+        
+        return query.toLowerCase().split(/\s+/).some(word => 
+          word.length > 1 && searchTerms.includes(word.toLowerCase())
+        );
+      });
+      
+      console.log('Fallback search found', matchingItems.length, 'items');
+      
+      if (matchingItems.length > 0) {
+        // Group items by category
+        const groupedByCategory = {};
+        matchingItems.forEach(item => {
+          const category = item.category || 'Other';
+          if (!groupedByCategory[category]) {
+            groupedByCategory[category] = [];
+          }
+          groupedByCategory[category].push(item);
+        });
+        
+        // Render the fallback results
+        return Object.entries(groupedByCategory).map(([category, items]) => (
+          <div key={category} className="mb-6">
+            <h3 className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100">
+              {category.charAt(0).toUpperCase() + category.slice(1)}
+            </h3>
+            {renderMenuItemsGrid(items, true)}
+          </div>
+        ));
+      }
+      
+      // If fallback also found nothing, show the "no results" message
       return (
         <div className="flex flex-col items-center justify-center py-16 px-4">
-          <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mb-6">
-            <Search className="h-10 w-10 text-red-400" />
+          <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mb-6">
+            <Search className="h-10 w-10 text-green-400" />
           </div>
           <h3 className="text-xl font-semibold text-gray-800 mb-2">No matches found</h3>
           <p className="text-gray-500 text-center max-w-md mb-6">
@@ -333,7 +385,7 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
           </p>
           <button
             onClick={() => dispatch(setSearchQuery(''))}
-            className="px-6 py-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors flex items-center"
+            className="px-6 py-2 bg-green-500 text-white rounded-full hover:bg-green-600 transition-colors flex items-center"
           >
             View All Items
           </button>
@@ -342,17 +394,20 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
     }
 
     // Apply filters to each category's items
-    const filteredGrouped: Record<string, any[]> = {};
-    Object.entries(results.grouped).forEach(([category, items]: [string, any]) => {
+    const filteredGrouped = {};
+    Object.entries(results.grouped).forEach(([category, items]) => {
       if (!Array.isArray(items)) return;
       
       let filteredItems = items;
       
       // Apply dietary filters if any are active
       if (filters.vegetarian || filters.vegan || filters.glutenFree) {
-        filteredItems = items.filter((result: any) => {
+        filteredItems = items.filter((result) => {
           const item = result.item;
-          if (!item || !item.dietary) return false;
+          if (!item) return false;
+          
+          // If item doesn't have dietary info, include it in results
+          if (!item.dietary) return true;
           
           // OR condition - show item if it matches ANY active filter
           return (filters.vegetarian && item.dietary.isVegetarian) || 
@@ -367,14 +422,14 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
     });
 
     const categories = Object.entries(filteredGrouped)
-      .filter(([_, items]: [string, unknown]) => Array.isArray(items) && items.length > 0)
-      .sort(([a]: [string, unknown], [b]: [string, unknown]) => a.localeCompare(b));
+      .filter(([_, items]) => Array.isArray(items) && items.length > 0)
+      .sort(([a], [b]) => a.localeCompare(b));
 
     if (categories.length === 0) {
       return (
         <div className="flex flex-col items-center justify-center py-16 px-4">
-          <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mb-6">
-            <Search className="h-10 w-10 text-red-400" />
+          <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mb-6">
+            <Search className="h-10 w-10 text-green-400" />
           </div>
           <h3 className="text-xl font-semibold text-gray-800 mb-2">No matches found</h3>
           <p className="text-gray-500 text-center max-w-md mb-6">
@@ -382,7 +437,7 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
           </p>
           <button
             onClick={() => dispatch(setSearchQuery(''))}
-            className="px-6 py-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors flex items-center"
+            className="px-6 py-2 bg-green-500 text-white rounded-full hover:bg-green-600 transition-colors flex items-center"
           >
             View All Items
           </button>
@@ -390,7 +445,7 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
       );
     }
 
-    return categories.map(([category, items]: [string, unknown]) => {
+    return categories.map(([category, items]) => {
       // Type guard to ensure items is an array
       if (!Array.isArray(items)) return null;
       // Only render category if it has items
@@ -399,7 +454,7 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
       }
 
       // Sort items by score within each category
-      const sortedItems = [...items].sort((a: any, b: any) => b.similarity - a.similarity);
+      const sortedItems = [...items].sort((a, b) => b.similarity - a.similarity);
       const mappedItems = sortedItems.map(result => result.item);
 
       return (
@@ -418,8 +473,8 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
     if (!menuItems || menuItems.length === 0) {
       return (
         <div className="flex flex-col items-center justify-center py-16 px-4">
-          <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mb-6">
-            <Search className="h-10 w-10 text-red-400" />
+          <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mb-6">
+            <Search className="h-10 w-10 text-green-400" />
           </div>
           <h3 className="text-xl font-semibold text-gray-800 mb-2">No menu items available</h3>
           <p className="text-gray-500 text-center max-w-md mb-6">
@@ -435,7 +490,10 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
     // Apply dietary filters if any are active
     if (filters.vegetarian || filters.vegan || filters.glutenFree) {
       filteredItems = menuItems.filter((item) => {
-        if (!item || !item.dietary) return false;
+        if (!item) return false;
+        
+        // If item doesn't have dietary info, include it in results
+        if (!item.dietary) return true;
         
         // OR condition - show item if it matches ANY active filter
         return (filters.vegetarian && item.dietary.isVegetarian) || 
@@ -447,8 +505,8 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
     if (filteredItems.length === 0) {
       return (
         <div className="flex flex-col items-center justify-center py-16 px-4">
-          <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mb-6">
-            <Search className="h-10 w-10 text-red-400" />
+          <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mb-6">
+            <Search className="h-10 w-10 text-green-400" />
           </div>
           <h3 className="text-xl font-semibold text-gray-800 mb-2">No matching items</h3>
           <p className="text-gray-500 text-center max-w-md mb-6">
@@ -476,7 +534,7 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
               onClick={onClose}
               className="p-2 rounded-full hover:bg-black hover:bg-opacity-50 mr-2"
             >
-              <ArrowLeft className="h-6 w-6 text-red-500" />
+              <ArrowLeft className="h-6 w-6 text-green-500" />
             </button>
             
             {/* Search input */}
@@ -501,8 +559,6 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
                 )}
               </div>
             </div>
-            
-            {/* Cart Icon removed */}
           </div>
         </div>
       </div>
@@ -548,8 +604,6 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
           </button>
         </div>
       </div>
-
-      {/* Debug info removed */}
       
       {/* Results */}
       <div className="flex-1 overflow-y-auto">
@@ -569,8 +623,8 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
                         <div className="h-3 bg-gray-100 rounded w-full"></div>
                         <div className="h-3 bg-gray-100 rounded w-1/2"></div>
                         <div className="flex justify-between items-center pt-2">
-                          <div className="h-4 bg-red-200 rounded w-1/4"></div>
-                          <div className="h-6 bg-red-200 rounded-full w-16"></div>
+                          <div className="h-4 bg-green-200 rounded w-1/4"></div>
+                          <div className="h-6 bg-green-200 rounded-full w-16"></div>
                         </div>
                       </div>
                     </div>
@@ -590,8 +644,8 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
                         <div className="h-3 bg-gray-100 rounded w-full"></div>
                         <div className="h-3 bg-gray-100 rounded w-1/2"></div>
                         <div className="flex justify-between items-center pt-2">
-                          <div className="h-4 bg-red-200 rounded w-1/4"></div>
-                          <div className="h-6 bg-red-200 rounded-full w-16"></div>
+                          <div className="h-4 bg-green-200 rounded w-1/4"></div>
+                          <div className="h-6 bg-green-200 rounded-full w-16"></div>
                         </div>
                       </div>
                     </div>
@@ -602,8 +656,8 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
           </div>
         ) : error ? (
           <div className="flex flex-col items-center justify-center py-16 px-4">
-            <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mb-6">
-              <X className="h-10 w-10 text-red-500" />
+            <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mb-6">
+              <X className="h-10 w-10 text-green-500" />
             </div>
             <h3 className="text-xl font-semibold text-gray-800 mb-2">Oops! Something went wrong</h3>
             <p className="text-gray-500 text-center max-w-md mb-6">
@@ -611,7 +665,7 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
             </p>
             <button
               onClick={() => dispatch(setSearchQuery(''))}
-              className="px-6 py-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors flex items-center"
+              className="px-6 py-2 bg-green-500 text-white rounded-full hover:bg-green-600 transition-colors flex items-center"
             >
               View All Items
             </button>

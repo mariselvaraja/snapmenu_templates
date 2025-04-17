@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
-import { useAppSelector, useAppDispatch } from '../../../redux/hooks';
+import { useAppSelector, useAppDispatch } from '../../../common/redux/hooks';
 import searchService, { SearchState } from '../../../services/searchService';
-import { setSearchState } from '../../../redux/slices/searchSlice';
+import { setSearchState } from '../../../common/redux/slices/searchSlice';
 
 /**
  * Custom SearchInitializer component for the eatflow template
@@ -15,9 +15,20 @@ const SearchInitializer = () => {
   const menuCategories = useAppSelector(state => state.menu.categories);
   const searchState = useAppSelector(state => state.search.searchState);
   
+  // Don't force search state to be ready - let the initialization process handle it
+  useEffect(() => {
+    // Only log the current state for debugging
+    if (menuItems && menuItems.length > 0) {
+      console.log('Search state:', searchState, 'with', menuItems.length, 'menu items available');
+    }
+  }, [searchState, menuItems, dispatch]);
+  
   // Initialize search service with menu data
   useEffect(() => {
-    if (menuItems && menuItems.length > 0 && searchState === SearchState.UNINITIALIZED) {
+    console.log('SearchInitializer effect running, searchState:', searchState);
+    console.log('Menu items available:', menuItems ? menuItems.length : 0);
+    
+    if (menuItems && menuItems.length > 0 && (searchState === SearchState.UNINITIALIZED || searchState === SearchState.ERROR)) {
       console.log('Initializing search service with menu data:', menuItems.length, 'items');
       
       // Extract unique categories for better categorization

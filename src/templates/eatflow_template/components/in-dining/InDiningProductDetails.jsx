@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { X, Plus, Minus, ArrowLeft, Heart, ShoppingCart } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -13,51 +13,51 @@ const InDiningProductDetails = ({ product, onClose, menuItems }) => {
   // Get table number from URL
   const location = useLocation();
   const [tableNumber, setTableNumber] = useState(null);
-  const [isMobile, setIsMobile] = useState(false);
+  
+  // Refs for URL bar hiding
+  const isMobileRef = useRef(false);
+  const isComponentMountedRef = useRef(false);
   
   // Function to hide URL bar on mobile
-  const hideUrlBar = () => {
-    if (isMobile) {
+  const hideUrlBar = useRef(() => {
+    if (isMobileRef.current && isComponentMountedRef.current) {
       window.scrollTo(0, 1);
     }
-  };
+  }).current;
 
-  // Check if device is mobile and hide URL bar
+  // Check if device is mobile and set up URL bar hiding
   useEffect(() => {
+    isComponentMountedRef.current = true;
+    
     const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 768);
+      isMobileRef.current = window.innerWidth <= 768;
+      if (isMobileRef.current) {
+        hideUrlBar();
+      }
     };
     
     // Check on mount
     checkMobile();
     
-    // Add event listener for resize
+    // Set up event listeners
     window.addEventListener('resize', checkMobile);
-    
-    // Hide URL bar on load and resize
     window.addEventListener('load', hideUrlBar);
     window.addEventListener('resize', hideUrlBar);
     window.addEventListener('orientationchange', hideUrlBar);
     
-    // Initial attempt to hide URL bar
+    // Initial attempts to hide URL bar with different timing
     setTimeout(hideUrlBar, 100);
+    setTimeout(hideUrlBar, 300);
+    setTimeout(hideUrlBar, 1000);
     
     return () => {
+      isComponentMountedRef.current = false;
       window.removeEventListener('resize', checkMobile);
       window.removeEventListener('load', hideUrlBar);
       window.removeEventListener('resize', hideUrlBar);
       window.removeEventListener('orientationchange', hideUrlBar);
     };
-  }, []);
-  
-  // Hide URL bar when component mounts and when orientation changes
-  useEffect(() => {
-    if (isMobile) {
-      hideUrlBar();
-      // Try again after a short delay to ensure it works
-      setTimeout(hideUrlBar, 300);
-    }
-  }, [isMobile]);
+  }, [hideUrlBar]);
   
   useEffect(() => {
     // Extract table number from URL query parameter or path parameter

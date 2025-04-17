@@ -6,8 +6,8 @@ import { Footer } from './components/Footer';
 import EatflowTemplateRoutes from '../../routes/eatflow_template_routes';
 import TitleUpdater from './components/TitleUpdater';
 import { Utensils, Settings, ShoppingCart, Search } from 'lucide-react';
-import { useAppSelector, useAppDispatch } from '../../redux';
-import { openSearchModal } from '../../redux/slices/searchSlice';
+import { useAppSelector, useAppDispatch } from '../../common/redux/hooks';
+import { openSearchModal } from '../../common/redux/slices/searchSlice';
 import SearchInitializer from './components/SearchInitializer';
 import SearchModal from './components/SearchModal';
 
