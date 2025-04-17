@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import CartDrawer from './components/CartDrawer';
@@ -8,22 +8,32 @@ import PizzaTemplateRoutes from '../../routes/pizza_template_routes';
 import { SiteContentProvider } from './context/SiteContentContext';
 import { SearchInitializer } from '../../components';
 
+// Layout component that conditionally renders the Navbar
+const Layout = () => {
+  const location = useLocation();
+  const isInDiningOrderPage = location.pathname === '/placeindiningorder';
+
+  return (
+    <div className="min-h-screen flex flex-col">
+      <SearchInitializer />
+      <TitleUpdater />
+      {!isInDiningOrderPage && <Navbar />}
+      <CartDrawer />
+      <main className={`flex-grow ${!isInDiningOrderPage ? 'pt-20' : ''}`}>
+        <Routes>
+          {PizzaTemplateRoutes}
+        </Routes>
+      </main>
+      <Footer />
+    </div>
+  );
+};
+
 function App() {
   return (
     <SiteContentProvider>
       <Router>
-        <div className="min-h-screen flex flex-col">
-          <SearchInitializer />
-          <TitleUpdater />
-          <Navbar />
-          <CartDrawer />
-          <main className="flex-grow pt-20">
-            <Routes>
-              {PizzaTemplateRoutes}
-            </Routes>
-          </main>
-          <Footer />
-        </div>
+        <Layout />
       </Router>
     </SiteContentProvider>
   );

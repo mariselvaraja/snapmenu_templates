@@ -59,6 +59,7 @@ export default function Navbar() {
               >
                 Order Now
               </Link>
+
               <button
                 onClick={() => dispatch(openSearchModal())}
                 className="hover:text-red-500 transition-colors"
@@ -112,6 +113,12 @@ export default function Navbar() {
               className="block px-3 py-2 bg-red-500 text-center rounded-full mt-4 hover:bg-red-600"
             >
               Order Now
+            </Link>
+            <Link
+              to="/in-dining-order"
+              className="block px-3 py-2 bg-orange-500 text-center rounded-full mt-4 hover:bg-orange-600"
+            >
+              In-Dining Order
             </Link>
             <div className="flex justify-center mt-4 space-x-4">
               <button 

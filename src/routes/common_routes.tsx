@@ -25,6 +25,7 @@ export const commonRoutePaths = {
   about: '/our-story',
   contact: '/contact',
   order: '/order',
+  inDiningOrder: '/placeindiningorder',
   events: '/events',
   gallery: '/gallery',
   blog: '/blog',
