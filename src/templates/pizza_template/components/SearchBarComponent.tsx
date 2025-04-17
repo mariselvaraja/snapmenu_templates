@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, X, ArrowLeft, Plus, ShoppingCart } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Search, X, ArrowLeft, Plus } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import InDiningProductDetails from './in-dining/InDiningProductDetails';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../../../common/store';
 import { setSearchQuery, setSearchResults, setSearchState } from '../../../redux/slices/searchSlice';
@@ -24,6 +25,8 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
   // Local state
   const [isSearching, setIsSearching] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
+  const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [isProductDetailsOpen, setIsProductDetailsOpen] = useState<boolean>(false);
   
   // Refs
   const inputRef = useRef<HTMLInputElement>(null);
@@ -66,10 +69,29 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
     return () => clearTimeout(timeoutId);
   }, [query, searchState, dispatch]);
 
+  // Get location from react-router
+  const location = useLocation();
+  
+  // Check if we're in the in-dining context
+  const isInDiningContext = location.pathname.includes('placeindiningorder');
+
   // Handle item select
   const handleItemSelect = (item: any) => {
-    onClose();
-    navigate(`/product/${item.id}`);
+    if (isInDiningContext) {
+      // In in-dining context, show the product details popup
+      setSelectedProduct(item);
+      setIsProductDetailsOpen(true);
+    } else {
+      // In other contexts, navigate to the product route
+      onClose();
+      navigate(`/product/${item.id}`);
+    }
+  };
+
+  // Close product details
+  const closeProductDetails = () => {
+    setIsProductDetailsOpen(false);
+    setSelectedProduct(null);
   };
 
   // Get flattened list of all items for keyboard navigation
@@ -151,8 +173,14 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
   const renderMenuItemsGrid = (items: any[], highlightQuery: boolean = false) => {
     if (!items || items.length === 0) {
       return (
-        <div className="p-4 text-center text-gray-500">
-          No items found
+        <div className="flex flex-col items-center justify-center py-8 px-4">
+          <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mb-4">
+            <Search className="h-8 w-8 text-red-400" />
+          </div>
+          <h3 className="text-lg font-semibold text-gray-800 mb-2">No items in this category</h3>
+          <p className="text-gray-500 text-center max-w-md mb-4 text-sm">
+            Try browsing other categories or use the search to find what you're looking for.
+          </p>
         </div>
       );
     }
@@ -264,8 +292,20 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
   const renderResultsByCategory = () => {
     if (!results?.grouped || typeof results.grouped !== 'object') {
       return (
-        <div className="p-4 text-center text-gray-500">
-          No results found
+        <div className="flex flex-col items-center justify-center py-16 px-4">
+          <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mb-6">
+            <Search className="h-10 w-10 text-red-400" />
+          </div>
+          <h3 className="text-xl font-semibold text-gray-800 mb-2">No matches found</h3>
+          <p className="text-gray-500 text-center max-w-md mb-6">
+            We couldn't find any items matching your search. Try using different keywords or browse our menu categories.
+          </p>
+          <button
+            onClick={() => dispatch(setSearchQuery(''))}
+            className="px-6 py-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors flex items-center"
+          >
+            View All Items
+          </button>
         </div>
       );
     }
@@ -276,8 +316,20 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
 
     if (categories.length === 0) {
       return (
-        <div className="p-4 text-center text-gray-500">
-          No results found. Try searching for something else.
+        <div className="flex flex-col items-center justify-center py-16 px-4">
+          <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mb-6">
+            <Search className="h-10 w-10 text-red-400" />
+          </div>
+          <h3 className="text-xl font-semibold text-gray-800 mb-2">No matches found</h3>
+          <p className="text-gray-500 text-center max-w-md mb-6">
+            We couldn't find any items matching your search. Try using different keywords or browse our menu categories.
+          </p>
+          <button
+            onClick={() => dispatch(setSearchQuery(''))}
+            className="px-6 py-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors flex items-center"
+          >
+            View All Items
+          </button>
         </div>
       );
     }
@@ -309,8 +361,14 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
   const renderAllMenuItems = () => {
     if (!menuItems || menuItems.length === 0) {
       return (
-        <div className="p-4 text-center text-gray-500">
-          No menu items available
+        <div className="flex flex-col items-center justify-center py-16 px-4">
+          <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mb-6">
+            <Search className="h-10 w-10 text-red-400" />
+          </div>
+          <h3 className="text-xl font-semibold text-gray-800 mb-2">No menu items available</h3>
+          <p className="text-gray-500 text-center max-w-md mb-6">
+            We're currently updating our menu. Please check back soon for delicious options.
+          </p>
         </div>
       );
     }
@@ -350,8 +408,8 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
                   value={query}
                   onChange={handleInputChange}
                   placeholder="Type to search..."
-                  className="w-full py-2  bg-transparent text-white focus:outline-none"
-                  disabled={searchState !== SearchServiceState.READY}
+                  className="w-full py-2 px-3 bg-transparent text-white focus:outline-none"
+                  disabled={searchState !== 'ready'}
                 />
                 {query && (
                   <button
@@ -364,31 +422,77 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
               </div>
             </div>
             
-            {/* Cart Icon */}
-            <button 
-              onClick={() => dispatch(toggleDrawer())}
-              className="p-2 rounded-full hover:bg-black hover:bg-opacity-50 relative ml-2"
-            >
-              <ShoppingCart className="h-6 w-6 text-red-500" />
-              {cartItems.length > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                  {cartItems.reduce((total, item) => total + item.quantity, 0)}
-                </span>
-              )}
-            </button>
+            {/* Cart Icon removed */}
           </div>
         </div>
       </div>
 
+      {/* Debug info removed */}
+      
       {/* Results */}
       <div className="flex-1 overflow-y-auto">
         {isSearching ? (
-          <div className="p-4 text-center text-gray-500">
-            Searching...
+          <div className="p-8">
+            {/* Skeleton Loader */}
+            <div className="animate-pulse space-y-8">
+              {/* Skeleton Category */}
+              <div className="space-y-4">
+                <div className="h-6 bg-gray-200 rounded w-1/4"></div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {[...Array(4)].map((_, index) => (
+                    <div key={index} className="bg-white rounded-lg shadow-md overflow-hidden">
+                      <div className="h-32 bg-gray-200"></div>
+                      <div className="p-3 space-y-2">
+                        <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                        <div className="h-3 bg-gray-100 rounded w-full"></div>
+                        <div className="h-3 bg-gray-100 rounded w-1/2"></div>
+                        <div className="flex justify-between items-center pt-2">
+                          <div className="h-4 bg-red-200 rounded w-1/4"></div>
+                          <div className="h-6 bg-red-200 rounded-full w-16"></div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              {/* Second Skeleton Category */}
+              <div className="space-y-4">
+                <div className="h-6 bg-gray-200 rounded w-1/3"></div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {[...Array(4)].map((_, index) => (
+                    <div key={index} className="bg-white rounded-lg shadow-md overflow-hidden">
+                      <div className="h-32 bg-gray-200"></div>
+                      <div className="p-3 space-y-2">
+                        <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                        <div className="h-3 bg-gray-100 rounded w-full"></div>
+                        <div className="h-3 bg-gray-100 rounded w-1/2"></div>
+                        <div className="flex justify-between items-center pt-2">
+                          <div className="h-4 bg-red-200 rounded w-1/4"></div>
+                          <div className="h-6 bg-red-200 rounded-full w-16"></div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
         ) : error ? (
-          <div className="p-4 text-center text-red-500">
-            Error: {error}
+          <div className="flex flex-col items-center justify-center py-16 px-4">
+            <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mb-6">
+              <X className="h-10 w-10 text-red-500" />
+            </div>
+            <h3 className="text-xl font-semibold text-gray-800 mb-2">Oops! Something went wrong</h3>
+            <p className="text-gray-500 text-center max-w-md mb-6">
+              {error || "We encountered an error while searching. Please try again later."}
+            </p>
+            <button
+              onClick={() => dispatch(setSearchQuery(''))}
+              className="px-6 py-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors flex items-center"
+            >
+              View All Items
+            </button>
           </div>
         ) : query ? (
           <div ref={resultsRef} className="pb-16">
@@ -400,6 +504,15 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
           </div>
         )}
       </div>
+
+      {/* Product Details Component - Only shown in in-dining context */}
+      {isInDiningContext && isProductDetailsOpen && selectedProduct && (
+        <InDiningProductDetails
+          product={selectedProduct}
+          onClose={closeProductDetails}
+          menuItems={menuItems}
+        />
+      )}
     </div>
   );
 };

@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { X, Plus, Minus, ArrowLeft, Heart, ShoppingCart } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
-import { AppDispatch, RootState } from '../../../common/store';
-import { addItem, toggleDrawer } from '../../../common/redux/slices/cartSlice';
+import { useLocation } from 'react-router-dom';
+import { AppDispatch, RootState } from '../../../../common/store';
+import { addItem, toggleDrawer } from '../../../../common/redux/slices/cartSlice';
 
 interface InDiningProductDetailsProps {
   product: any;
@@ -19,6 +20,35 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
   const [quantity, setQuantity] = useState<number>(1);
   const dispatch = useDispatch<AppDispatch>();
   const cartItems = useSelector((state: RootState) => state.cart.items);
+  
+  // Get table number from URL
+  const location = useLocation();
+  const [tableNumber, setTableNumber] = useState<string | null>(null);
+  
+  useEffect(() => {
+    // Extract table number from URL query parameter or path parameter
+    // Examples: 
+    // - Query parameter: /placeindiningorder?table=12
+    // - Path parameter: /placeindiningorder/12
+    
+    // First check for query parameter
+    const searchParams = new URLSearchParams(location.search);
+    const tableFromQuery = searchParams.get('table');
+    
+    // Then check for path parameter
+    const pathSegments = location.pathname.split('/');
+    const lastSegment = pathSegments[pathSegments.length - 1];
+    const tableFromPath = !isNaN(Number(lastSegment)) ? lastSegment : null;
+    
+    // Use table from query parameter first, then fall back to path parameter
+    if (tableFromQuery && !isNaN(Number(tableFromQuery))) {
+      setTableNumber(tableFromQuery);
+    } else if (tableFromPath) {
+      setTableNumber(tableFromPath);
+    } else {
+      setTableNumber(null);
+    }
+  }, [location]);
 
   if (!product) return null;
 
@@ -39,9 +69,14 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
                 onClick={onClose}
                 className="p-1 mr-3"
               >
-                <ArrowLeft className="h-6 w-6 text-white" />
+                <ArrowLeft className="h-6 w-6 text-red-500" />
               </button>
-              <h2 className="text-lg font-semibold text-white truncate">{product.name}</h2>
+              <div>
+                <h2 className="text-lg font-semibold text-white truncate">{product.name}</h2>
+                <p className="text-xs text-gray-300">
+                  Table Number: {tableNumber ? `#${tableNumber}` : 'No Table'}
+                </p>
+              </div>
             </div>
             
             {/* Cart Icon */}

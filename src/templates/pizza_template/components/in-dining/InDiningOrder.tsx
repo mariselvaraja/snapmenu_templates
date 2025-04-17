@@ -1,14 +1,16 @@
 import { motion } from 'framer-motion';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Utensils, Trash2, Plus, X, Minus, Search, UtensilsCrossed, Pizza, ArrowLeft, ShoppingCart, ClipboardList } from 'lucide-react';
 import { useSelector } from 'react-redux';
-import { RootState, AppDispatch } from '../../../common/store';
+import { RootState, AppDispatch } from '../../../../common/store';
 import { useDispatch } from 'react-redux';
-import { addItem, updateItemQuantity, removeItem, toggleDrawer } from '../../../common/redux/slices/cartSlice';
-import { setSearchQuery } from '../../../redux/slices/searchSlice';
-import SearchBarComponent from './SearchBarComponent';
+import { useLocation } from 'react-router-dom';
+import { addItem, updateItemQuantity, removeItem, toggleDrawer } from '../../../../common/redux/slices/cartSlice';
+import { setSearchQuery } from '../../../../redux/slices/searchSlice';
+import SearchBarComponent from '../SearchBarComponent';
 import InDiningProductDetails from './InDiningProductDetails';
 import InDiningCartDrawer from './InDiningCartDrawer';
+import InDiningOrders from './InDiningOrders';
 
 export default function InDiningOrder() {
   const [orderPlaced, setOrderPlaced] = useState<boolean>(false);
@@ -20,6 +22,40 @@ export default function InDiningOrder() {
   const [selectedSubcategory, setSelectedSubcategory] = useState<string>('All');
   const [isSearchActive, setIsSearchActive] = useState<boolean>(false);
   const [showOrders, setShowOrders] = useState<boolean>(false);
+  const [tableNumber, setTableNumber] = useState<string | null>(null);
+  
+  // Get table number from URL
+  const location = useLocation();
+  
+  useEffect(() => {
+    // Extract table number from URL query parameter or path parameter
+    // Examples: 
+    // - Query parameter: /placeindiningorder?table=12
+    // - Path parameter: /placeindiningorder/12
+    
+    // First check for query parameter
+    const searchParams = new URLSearchParams(location.search);
+    const tableFromQuery = searchParams.get('table');
+    
+    // Then check for path parameter
+    const pathSegments = location.pathname.split('/');
+    const lastSegment = pathSegments[pathSegments.length - 1];
+    const tableFromPath = !isNaN(Number(lastSegment)) ? lastSegment : null;
+    
+    console.log("URL:", location.pathname + location.search);
+    console.log("Search Params:", location.search);
+    console.log("Table from Query:", tableFromQuery);
+    console.log("Table from Path:", tableFromPath);
+    
+    // Use table from query parameter first, then fall back to path parameter
+    if (tableFromQuery && !isNaN(Number(tableFromQuery))) {
+      setTableNumber(tableFromQuery);
+    } else if (tableFromPath) {
+      setTableNumber(tableFromPath);
+    } else {
+      setTableNumber(null);
+    }
+  }, [location]);
   
   const cartItems = useSelector((state: RootState) => state.cart.items);
   const menuItems = useSelector((state: RootState) => state.menu.items);
@@ -81,7 +117,9 @@ export default function InDiningOrder() {
     // Generate a random order number
     const randomOrderNumber = Math.floor(10000 + Math.random() * 90000).toString();
     setOrderNumber(randomOrderNumber);
-    setOrderPlaced(true);
+    
+    // Show the orders view instead of the order confirmation
+    setShowOrders(true);
     
     // In a real application, you would send the order to a backend service here
     console.log('Order placed:', {
@@ -99,34 +137,19 @@ export default function InDiningOrder() {
     });
   };
 
-  if (orderPlaced) {
+  // Show orders view if showOrders is true
+  if (showOrders) {
     return (
-      <div className="py-10 sm:py-20">
-        <div className="mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5 }}
-            className="bg-white rounded-lg shadow-lg p-6 sm:p-8 text-center"
-          >
-            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
-              <Utensils className="h-8 w-8 sm:h-10 sm:w-10 text-green-600" />
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-bold mb-3 sm:mb-4">Order Confirmed!</h2>
-            <p className="text-lg sm:text-xl text-gray-600 mb-2">Your order number is:</p>
-            <p className="text-3xl sm:text-4xl font-bold text-red-500 mb-4 sm:mb-6">{orderNumber}</p>
-            <p className="text-gray-600 mb-6 sm:mb-8 text-sm sm:text-base">
-              We've received your order. Your delicious pizza will be served shortly!
-            </p>
-            <button
-              onClick={resetOrder}
-              className="bg-red-500 text-white px-6 sm:px-8 py-2 sm:py-3 rounded-full hover:bg-red-600 transition-colors text-sm sm:text-base"
-            >
-              Place Another Order
-            </button>
-          </motion.div>
-        </div>
-      </div>
+      <InDiningOrders 
+        onClose={() => {
+          setShowOrders(false);
+          // If we just placed an order, reset the cart
+          if (orderNumber) {
+            resetOrder();
+          }
+        }}
+        newOrderNumber={orderNumber}
+      />
     );
   }
 
@@ -141,10 +164,15 @@ export default function InDiningOrder() {
       <div className="sticky top-0 z-40 bg-black bg-opacity-90 backdrop-blur-sm shadow-md">
         <div className=" mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            {/* Restaurant Name with Icon */}
+            {/* Restaurant Name with Icon and Table Number */}
             <div className="flex-shrink-0 flex items-center">
               <UtensilsCrossed className="h-6 w-6 text-red-500 mr-2" />
-              <h1 className="text-xl font-bold text-white">Pizza Palace</h1>
+              <div>
+                <h1 className="text-xl font-bold text-white">Pizza Palace</h1>
+                <p className="text-xs text-gray-300">
+                  Table Number: {tableNumber ? `#${tableNumber}` : 'No Table'}
+                </p>
+              </div>
             </div>
             
             {/* Icons on right */}
@@ -168,13 +196,13 @@ export default function InDiningOrder() {
               
               {/* Orders Icon with Tooltip */}
               <div className="relative group">
-                <button 
-                  onClick={() => setShowOrders(!showOrders)}
-                  className="p-2 rounded-full hover:bg-black hover:bg-opacity-50"
-                  aria-label="Orders"
-                >
-                  <ClipboardList className="h-6 w-6 text-red-500" />
-                </button>
+              <button 
+                onClick={() => setShowOrders(true)}
+                className="p-2 rounded-full hover:bg-black hover:bg-opacity-50"
+                aria-label="Orders"
+              >
+                <ClipboardList className="h-6 w-6 text-red-500" />
+              </button>
                 <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
                   Orders
                 </div>
@@ -429,7 +457,7 @@ export default function InDiningOrder() {
       )}
       
       {/* Cart Drawer Component */}
-      <InDiningCartDrawer />
+      <InDiningCartDrawer onPlaceOrder={handlePlaceOrder} />
       
     </div>
   );

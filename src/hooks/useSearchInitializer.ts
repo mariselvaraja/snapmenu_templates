@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useAppSelector, useAppDispatch } from '../common/redux/hooks';
 import searchService, { SearchState as SearchServiceState } from '../services/searchService';
+import { setSearchState } from '../redux/slices/searchSlice';
 
 /**
  * Custom hook to initialize the search service with menu data
@@ -95,9 +96,21 @@ export function useSearchInitializer() {
       searchService.initializeIndex(searchData)
         .then(() => {
           console.log('Search service initialized successfully');
+          // Update search state in Redux store
+          dispatch(setSearchState({
+            state: SearchServiceState.READY,
+            error: null,
+            progress: 100
+          }));
         })
         .catch((error) => {
           console.error('Failed to initialize search service:', error);
+          // Update search state in Redux store with error
+          dispatch(setSearchState({
+            state: SearchServiceState.ERROR,
+            error: error.message || 'Failed to initialize search service',
+            progress: 0
+          }));
         });
     }
   }, [searchState, menuItems]);

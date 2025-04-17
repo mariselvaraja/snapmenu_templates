@@ -1,13 +1,47 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Plus, Minus, Trash2, ShoppingBag } from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux';
-import { RootState, AppDispatch } from '../../../common/store';
-import { toggleDrawer, updateItemQuantity, removeItem } from '../../../common/redux/slices/cartSlice';
+import { useLocation } from 'react-router-dom';
+import { RootState, AppDispatch } from '../../../../common/store';
+import { toggleDrawer, updateItemQuantity, removeItem } from '../../../../common/redux/slices/cartSlice';
 
-const InDiningCartDrawer: React.FC = () => {
+interface InDiningCartDrawerProps {
+  onPlaceOrder?: () => void;
+}
+
+const InDiningCartDrawer: React.FC<InDiningCartDrawerProps> = ({ onPlaceOrder }) => {
   const dispatch = useDispatch<AppDispatch>();
   const { drawerOpen, items } = useSelector((state: RootState) => state.cart);
+  
+  // Get table number from URL
+  const location = useLocation();
+  const [tableNumber, setTableNumber] = useState<string | null>(null);
+  
+  useEffect(() => {
+    // Extract table number from URL query parameter or path parameter
+    // Examples: 
+    // - Query parameter: /placeindiningorder?table=12
+    // - Path parameter: /placeindiningorder/12
+    
+    // First check for query parameter
+    const searchParams = new URLSearchParams(location.search);
+    const tableFromQuery = searchParams.get('table');
+    
+    // Then check for path parameter
+    const pathSegments = location.pathname.split('/');
+    const lastSegment = pathSegments[pathSegments.length - 1];
+    const tableFromPath = !isNaN(Number(lastSegment)) ? lastSegment : null;
+    
+    // Use table from query parameter first, then fall back to path parameter
+    if (tableFromQuery && !isNaN(Number(tableFromQuery))) {
+      setTableNumber(tableFromQuery);
+    } else if (tableFromPath) {
+      setTableNumber(tableFromPath);
+    } else {
+      setTableNumber(null);
+    }
+  }, [location]);
   
   // Calculate total price
   const totalPrice = items.reduce(
@@ -38,14 +72,21 @@ const InDiningCartDrawer: React.FC = () => {
             className="fixed top-0 right-0 h-full w-full sm:w-96 bg-white shadow-xl z-50 flex flex-col"
           >
             {/* Header */}
-            <div className="p-4 border-b border-gray-200 flex justify-between items-center">
-              <h2 className="text-xl font-semibold">Your Order</h2>
-              <button
-                onClick={() => dispatch(toggleDrawer())}
-                className="p-1 rounded-full hover:bg-gray-100"
-              >
-                <X className="h-6 w-6 text-gray-500" />
-              </button>
+            <div className="p-4 border-b border-gray-200">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h2 className="text-xl font-semibold">Your Order</h2>
+                  <p className="text-xs text-gray-500">
+                    Table Number: {tableNumber ? `#${tableNumber}` : 'No Table'}
+                  </p>
+                </div>
+                <button
+                  onClick={() => dispatch(toggleDrawer())}
+                  className="p-1 rounded-full hover:bg-gray-100"
+                >
+                  <X className="h-6 w-6 text-gray-500" />
+                </button>
+              </div>
             </div>
             
             {/* Cart Items */}
@@ -124,8 +165,10 @@ const InDiningCartDrawer: React.FC = () => {
                   items.length === 0 ? 'bg-gray-400 cursor-not-allowed' : 'bg-red-500 hover:bg-red-600'
                 }`}
                 onClick={() => {
-                  // This would be handled by the parent component
                   dispatch(toggleDrawer());
+                  if (onPlaceOrder && items.length > 0) {
+                    onPlaceOrder();
+                  }
                 }}
               >
                 Place Order

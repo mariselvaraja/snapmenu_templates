@@ -12,19 +12,20 @@ import { SearchInitializer } from '../../components';
 const Layout = () => {
   const location = useLocation();
   const isInDiningOrderPage = location.pathname === '/placeindiningorder';
+  const isInDiningOrderPageWithTable = location.pathname.startsWith('/placeindiningorder/');
 
   return (
     <div className="min-h-screen flex flex-col">
       <SearchInitializer />
       <TitleUpdater />
-      {!isInDiningOrderPage && <Navbar />}
+      {!isInDiningOrderPage && !isInDiningOrderPageWithTable && <Navbar />}
       <CartDrawer />
-      <main className={`flex-grow ${!isInDiningOrderPage ? 'pt-20' : ''}`}>
+      <main className={`flex-grow ${!isInDiningOrderPage && !isInDiningOrderPageWithTable ? 'pt-20' : ''}`}>
         <Routes>
           {PizzaTemplateRoutes}
         </Routes>
       </main>
-      {!isInDiningOrderPage && <Footer />}
+      {!isInDiningOrderPage && !isInDiningOrderPageWithTable && <Footer />}
     </div>
   );
 };

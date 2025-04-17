@@ -26,6 +26,7 @@ export const commonRoutePaths = {
   contact: '/contact',
   order: '/order',
   inDiningOrder: '/placeindiningorder',
+  inDiningOrderWithTable: '/placeindiningorder/:table',
   events: '/events',
   gallery: '/gallery',
   blog: '/blog',

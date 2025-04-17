@@ -17,7 +17,7 @@ import Reservation from '../templates/pizza_template/pages/Reservation';
 import Cart from '../templates/pizza_template/pages/Cart';
 import ProductDetail from '../templates/pizza_template/pages/ProductDetail';
 import Checkout from '../templates/pizza_template/pages/Checkout';
-import InDiningOrder from '../templates/pizza_template/components/InDiningOrder';
+import { InDiningOrder } from '../templates/pizza_template/components/in-dining';
 
 /**
  * Define routes for the pizza template
@@ -31,6 +31,7 @@ const PizzaTemplateRoutes = [
   <Route key="contact" path={commonRoutePaths.contact} element={<Contact />} />,
   <Route key="order" path={commonRoutePaths.order} element={<Order />} />,
   <Route key="in-dining-order" path={commonRoutePaths.inDiningOrder} element={<InDiningOrder />} />,
+  <Route key="in-dining-order-with-table" path={commonRoutePaths.inDiningOrderWithTable} element={<InDiningOrder />} />,
   <Route key="events" path={commonRoutePaths.events} element={<Events />} />,
   <Route key="gallery" path={commonRoutePaths.gallery} element={<Gallery />} />,
   <Route key="blog" path={commonRoutePaths.blog} element={<Blog />} />,
