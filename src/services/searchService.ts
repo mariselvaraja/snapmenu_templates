@@ -551,11 +551,14 @@ class SearchService {
   async search(query: string): Promise<SearchResponse> {
     console.log('Search service state:', this.state);
     
-    if (this.state !== SearchState.READY) {
+    if (this.state !== SearchState.READY && this.state !== SearchState.LOADING) {
       console.error('Search index not initialized, current state:', this.state);
       // Instead of throwing an error, return empty results
       return { results: [], grouped: {} };
     }
+
+    // Set state to LOADING while search is in progress
+    this.setState(SearchState.LOADING);
 
     try {
       if (!query || typeof query !== 'string') {
@@ -686,12 +689,17 @@ class SearchService {
       // Group the results by category
       const grouped = this.groupResults(searchResults);
 
+      // Set state back to READY after search is complete
+      this.setState(SearchState.READY);
+
       return {
         results: searchResults,
         grouped: grouped
       };
     } catch (error: any) {
       console.error('Search error:', error);
+      // Set state back to READY even if an error occurs
+      this.setState(SearchState.READY, error.message);
       throw error;
     }
   }

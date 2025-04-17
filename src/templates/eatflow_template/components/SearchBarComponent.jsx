@@ -63,17 +63,23 @@ const SearchBarComponent = ({ onClose }) => {
         return;
       }
 
-      setIsSearching(true);
-      try {
-        console.log('Performing search for:', query);
-        const searchResults = await searchService.search(query);
-        console.log('Search results:', searchResults);
-        dispatch(setSearchResults(searchResults));
-      } catch (error) {
-        console.error('Search error:', error);
-      } finally {
+    setIsSearching(true);
+    try {
+      console.log('Performing search for:', query);
+      const searchResults = await searchService.search(query);
+      console.log('Search results:', searchResults);
+      
+      // Only set isSearching to false if we have actual results
+      if (searchResults && searchResults.grouped && 
+          Object.keys(searchResults.grouped).length > 0) {
         setIsSearching(false);
       }
+      
+      dispatch(setSearchResults(searchResults));
+    } catch (error) {
+      console.error('Search error:', error);
+      setIsSearching(false);
+    }
     }, 150);
 
     return () => clearTimeout(timeoutId);
@@ -334,6 +340,11 @@ const SearchBarComponent = ({ onClose }) => {
     // If no results or empty results, try a fallback to show all menu items that match the query
     if (!results?.grouped || typeof results.grouped !== 'object' || Object.keys(results.grouped).length === 0) {
       console.log('No grouped results, trying fallback search');
+      
+      // If we're still searching, don't show the fallback search yet
+      if (isSearching) {
+        return null; // Return null to let the parent component show the loading skeleton
+      }
       
       // Simple text-based search as fallback
       const matchingItems = menuItems.filter(item => {
