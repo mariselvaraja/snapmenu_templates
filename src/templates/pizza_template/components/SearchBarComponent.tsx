@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, X, ArrowLeft, Plus } from 'lucide-react';
+import { Search, X, ArrowLeft, Plus, Filter } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import InDiningProductDetails from './in-dining/InDiningProductDetails';
 import { useSelector, useDispatch } from 'react-redux';
@@ -27,6 +27,11 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [isProductDetailsOpen, setIsProductDetailsOpen] = useState<boolean>(false);
+  const [filters, setFilters] = useState({
+    vegetarian: true,
+    vegan: true,
+    glutenFree: true
+  });
   
   // Refs
   const inputRef = useRef<HTMLInputElement>(null);
@@ -97,10 +102,27 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
   // Get flattened list of all items for keyboard navigation
   const allItems = React.useMemo(() => {
     if (!results.grouped) return [];
-    return Object.values(results.grouped)
+    
+    // Get all items first
+    let items = Object.values(results.grouped)
       .flat()
       .sort((a: any, b: any) => b.similarity - a.similarity);
-  }, [results.grouped]);
+    
+    // Apply dietary filters if any are active
+    if (filters.vegetarian || filters.vegan || filters.glutenFree) {
+      items = items.filter((result: any) => {
+        const item = result.item;
+        if (!item || !item.dietary) return false;
+        
+        // OR condition - show item if it matches ANY active filter
+        return (filters.vegetarian && item.dietary.isVegetarian) || 
+               (filters.vegan && item.dietary.isVegan) || 
+               (filters.glutenFree && item.dietary.isGlutenFree);
+      });
+    }
+    
+    return items;
+  }, [results.grouped, filters]);
 
   // Handle keyboard navigation
   useEffect(() => {
@@ -151,6 +173,15 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
   // Handle input change
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     dispatch(setSearchQuery(e.target.value));
+    setSelectedIndex(-1);
+  };
+  
+  // Handle filter toggle
+  const handleFilterToggle = (filterName: 'vegetarian' | 'vegan' | 'glutenFree') => {
+    setFilters(prev => ({
+      ...prev,
+      [filterName]: !prev[filterName]
+    }));
     setSelectedIndex(-1);
   };
 
@@ -310,7 +341,32 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
       );
     }
 
-    const categories = Object.entries(results.grouped)
+    // Apply filters to each category's items
+    const filteredGrouped: Record<string, any[]> = {};
+    Object.entries(results.grouped).forEach(([category, items]: [string, any]) => {
+      if (!Array.isArray(items)) return;
+      
+      let filteredItems = items;
+      
+      // Apply dietary filters if any are active
+      if (filters.vegetarian || filters.vegan || filters.glutenFree) {
+        filteredItems = items.filter((result: any) => {
+          const item = result.item;
+          if (!item || !item.dietary) return false;
+          
+          // OR condition - show item if it matches ANY active filter
+          return (filters.vegetarian && item.dietary.isVegetarian) || 
+                 (filters.vegan && item.dietary.isVegan) || 
+                 (filters.glutenFree && item.dietary.isGlutenFree);
+        });
+      }
+      
+      if (filteredItems.length > 0) {
+        filteredGrouped[category] = filteredItems;
+      }
+    });
+
+    const categories = Object.entries(filteredGrouped)
       .filter(([_, items]: [string, unknown]) => Array.isArray(items) && items.length > 0)
       .sort(([a]: [string, unknown], [b]: [string, unknown]) => a.localeCompare(b));
 
@@ -373,15 +429,39 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
       );
     }
 
-    return (
-      
-        <div className="mb-4">
-          {/* <h3 className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100">
-            All Menu Items
-          </h3> */}
-          {renderMenuItemsGrid(menuItems)}
+    // Apply dietary filters to all menu items
+    let filteredItems = [...menuItems];
+    
+    // Apply dietary filters if any are active
+    if (filters.vegetarian || filters.vegan || filters.glutenFree) {
+      filteredItems = menuItems.filter((item) => {
+        if (!item || !item.dietary) return false;
+        
+        // OR condition - show item if it matches ANY active filter
+        return (filters.vegetarian && item.dietary.isVegetarian) || 
+               (filters.vegan && item.dietary.isVegan) || 
+               (filters.glutenFree && item.dietary.isGlutenFree);
+      });
+    }
+
+    if (filteredItems.length === 0) {
+      return (
+        <div className="flex flex-col items-center justify-center py-16 px-4">
+          <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mb-6">
+            <Search className="h-10 w-10 text-red-400" />
+          </div>
+          <h3 className="text-xl font-semibold text-gray-800 mb-2">No matching items</h3>
+          <p className="text-gray-500 text-center max-w-md mb-6">
+            No items match your dietary preferences. Try adjusting your filters.
+          </p>
         </div>
-      
+      );
+    }
+
+    return (
+      <div className="mb-4">
+        {renderMenuItemsGrid(filteredItems)}
+      </div>
     );
   };
 
@@ -424,6 +504,48 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
             
             {/* Cart Icon removed */}
           </div>
+        </div>
+      </div>
+      
+      {/* Dietary Filters */}
+      <div className="flex flex-wrap items-center justify-between px-3 py-1 bg-gray-100 border-t border-gray-200">
+        <div className="text-xs text-gray-600">
+          {query 
+            ? `Showing ${allItems.length} results` 
+            : `Showing ${menuItems.length} items`
+          }
+        </div>
+        <div className="flex items-center space-x-1">
+          <button
+            onClick={() => handleFilterToggle('vegetarian')}
+            className={`px-1.5 py-0.5 text-[10px] rounded-full ${
+              filters.vegetarian 
+                ? 'bg-green-500 text-white' 
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+          >
+            Veg
+          </button>
+          <button
+            onClick={() => handleFilterToggle('vegan')}
+            className={`px-1.5 py-0.5 text-[10px] rounded-full ${
+              filters.vegan 
+                ? 'bg-green-600 text-white' 
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+          >
+            Vegan
+          </button>
+          <button
+            onClick={() => handleFilterToggle('glutenFree')}
+            className={`px-1.5 py-0.5 text-[10px] rounded-full ${
+              filters.glutenFree 
+                ? 'bg-blue-500 text-white' 
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+          >
+            GF
+          </button>
         </div>
       </div>
 

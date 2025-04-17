@@ -154,7 +154,7 @@ export default function InDiningOrder() {
 
   // If search is active, render only the SearchModal
   if (isSearchActive) {
-    return <SearchModal onClose={() => setIsSearchActive(false)} />;
+    return <SearchModal isOpen={true} onClose={() => setIsSearchActive(false)} />;
   }
 
   return (
