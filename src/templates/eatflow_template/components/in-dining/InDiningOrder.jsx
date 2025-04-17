@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Utensils, Trash2, Plus, X, Minus, Search, UtensilsCrossed, ArrowLeft, ShoppingCart, ClipboardList } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import { useDispatch } from 'react-redux';
@@ -22,9 +22,54 @@ export default function InDiningOrder() {
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [showOrders, setShowOrders] = useState(false);
   const [tableNumber, setTableNumber] = useState(null);
+  const [isMobile, setIsMobile] = useState(false);
   
   // Get table number from URL
   const location = useLocation();
+  
+  // Function to hide URL bar on mobile
+  const hideUrlBar = () => {
+    if (isMobile) {
+      window.scrollTo(0, 1);
+    }
+  };
+
+  // Check if device is mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    // Check on mount
+    checkMobile();
+    
+    // Add event listener for resize
+    window.addEventListener('resize', checkMobile);
+    
+    // Hide URL bar on load and resize
+    window.addEventListener('load', hideUrlBar);
+    window.addEventListener('resize', hideUrlBar);
+    window.addEventListener('orientationchange', hideUrlBar);
+    
+    // Initial attempt to hide URL bar
+    setTimeout(hideUrlBar, 100);
+    
+    return () => {
+      window.removeEventListener('resize', checkMobile);
+      window.removeEventListener('load', hideUrlBar);
+      window.removeEventListener('resize', hideUrlBar);
+      window.removeEventListener('orientationchange', hideUrlBar);
+    };
+  }, []);
+  
+  // Hide URL bar when component mounts and when orientation changes
+  useEffect(() => {
+    if (isMobile) {
+      hideUrlBar();
+      // Try again after a short delay to ensure it works
+      setTimeout(hideUrlBar, 300);
+    }
+  }, [isMobile]);
   
   useEffect(() => {
     // Extract table number from URL query parameter or path parameter
