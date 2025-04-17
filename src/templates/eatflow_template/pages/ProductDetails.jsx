@@ -286,6 +286,27 @@ function ProductDetails() {
                 <div className="flex items-center justify-between mb-6">
                   <div className="text-2xl font-bold text-green-500">${typeof product.price === 'number' ? product.price.toFixed(2) : product.price}</div>
                   
+                  {/* Dietary Information Badges */}
+                  <div className="flex flex-wrap gap-2">
+                    {product.dietary?.isVegetarian && (
+                      <div className="bg-green-500 text-white px-3 py-1 rounded-full text-sm">
+                        Vegetarian
+                      </div>
+                    )}
+                    {product.dietary?.isVegan && (
+                      <div className="bg-green-600 text-white px-3 py-1 rounded-full text-sm">
+                        Vegan
+                      </div>
+                    )}
+                    {product.dietary?.isGlutenFree && (
+                      <div className="bg-blue-500 text-white px-3 py-1 rounded-full text-sm">
+                        GF
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="mb-6">
                   {/* Add button or quantity controls */}
                   {!cartItem || Number(cartItem.quantity) === 0 ? (
                     <button
@@ -431,21 +452,43 @@ function ProductDetails() {
                   <Utensils className="h-5 w-5 mr-2 text-green-500" />
                   Nutritional Information
                 </h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-2">
+                <div className="grid grid-cols-2 gap-2">
                   {product.calories && (
-                    <div className="bg-gray-100 p-4 rounded">
-                      <p className="font-semibold">Calories</p>
-                      <p>{product.calories.toString()}</p>
+                    <div className="bg-gray-50 p-2 rounded">
+                      <span className="text-xs text-gray-500">Calories</span>
+                      <p className="font-medium">{product.calories.toString()} kcal</p>
                     </div>
                   )}
-                  {product.nutrients && Object.entries(product.nutrients).map(([key, value]) => (
-                    value && (
-                      <div key={key} className="bg-gray-100 p-4 rounded">
-                        <p className="font-semibold">{key.charAt(0).toUpperCase() + key.slice(1)}</p>
-                        <p>{value}</p>
-                      </div>
-                    )
-                  ))}
+                  {product.nutrients?.protein && (
+                    <div className="bg-gray-50 p-2 rounded">
+                      <span className="text-xs text-gray-500">Protein</span>
+                      <p className="font-medium">{product.nutrients.protein}</p>
+                    </div>
+                  )}
+                  {product.nutrients?.carbs && (
+                    <div className="bg-gray-50 p-2 rounded">
+                      <span className="text-xs text-gray-500">Carbs</span>
+                      <p className="font-medium">{product.nutrients.carbs}</p>
+                    </div>
+                  )}
+                  {product.nutrients?.fat && (
+                    <div className="bg-gray-50 p-2 rounded">
+                      <span className="text-xs text-gray-500">Fat</span>
+                      <p className="font-medium">{product.nutrients.fat}</p>
+                    </div>
+                  )}
+                  {product.nutrients?.fiber && (
+                    <div className="bg-gray-50 p-2 rounded">
+                      <span className="text-xs text-gray-500">Fiber</span>
+                      <p className="font-medium">{product.nutrients.fiber}</p>
+                    </div>
+                  )}
+                  {product.nutrients?.sugar && (
+                    <div className="bg-gray-50 p-2 rounded">
+                      <span className="text-xs text-gray-500">Sugar</span>
+                      <p className="font-medium">{product.nutrients.sugar}</p>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -457,11 +500,11 @@ function ProductDetails() {
                   <Box className="h-5 w-5 mr-2 text-green-500" />
                   Ingredients
                 </h2>
-                <div className="flex flex-wrap gap-2 pl-6">
+                <div className="flex flex-wrap gap-2">
                   {product.ingredients.map((ingredient, index) => (
                     <span 
                       key={index} 
-                      className="bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm"
+                      className="bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs"
                     >
                       {ingredient}
                     </span>

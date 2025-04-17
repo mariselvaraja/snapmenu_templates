@@ -193,6 +193,7 @@ export function ProductDetail() {
             <div className="md:pr-8 md:w-1/2">
               <h1 className="text-4xl font-serif mb-2">{item.name}</h1>
               <p className="text-2xl text-orange-600 font-serif mb-4">{item.price}</p>
+              {/* Dietary Information Badges */}
               <div className="flex flex-wrap gap-2 mb-4">
                 {item.dietary?.isVegetarian && (
                   <div className="bg-green-500 text-white px-3 py-1 rounded-full text-sm flex items-center">
@@ -290,41 +291,41 @@ export function ProductDetail() {
               <span className="text-orange-500 mr-2">🍽️</span>
               Nutritional Information
             </h2>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 gap-2">
               {item.calories && (
-                <div className="bg-gray-50 p-4 rounded-lg text-center">
-                  <p className="text-sm text-gray-600">Calories</p>
-                  <p className="text-lg font-semibold">{item.calories}</p>
+                <div className="bg-gray-50 p-2 rounded">
+                  <span className="text-xs text-gray-500">Calories</span>
+                  <p className="font-medium">{item.calories} kcal</p>
                 </div>
               )}
               {item.nutrients?.protein && (
-                <div className="bg-gray-50 p-4 rounded-lg text-center">
-                  <p className="text-sm text-gray-600">Protein</p>
-                  <p className="text-lg font-semibold">{item.nutrients.protein}</p>
+                <div className="bg-gray-50 p-2 rounded">
+                  <span className="text-xs text-gray-500">Protein</span>
+                  <p className="font-medium">{item.nutrients.protein}</p>
                 </div>
               )}
               {item.nutrients?.carbs && (
-                <div className="bg-gray-50 p-4 rounded-lg text-center">
-                  <p className="text-sm text-gray-600">Carbs</p>
-                  <p className="text-lg font-semibold">{item.nutrients.carbs}</p>
+                <div className="bg-gray-50 p-2 rounded">
+                  <span className="text-xs text-gray-500">Carbs</span>
+                  <p className="font-medium">{item.nutrients.carbs}</p>
                 </div>
               )}
               {item.nutrients?.fat && (
-                <div className="bg-gray-50 p-4 rounded-lg text-center">
-                  <p className="text-sm text-gray-600">Fat</p>
-                  <p className="text-lg font-semibold">{item.nutrients.fat}</p>
+                <div className="bg-gray-50 p-2 rounded">
+                  <span className="text-xs text-gray-500">Fat</span>
+                  <p className="font-medium">{item.nutrients.fat}</p>
                 </div>
               )}
               {item.nutrients?.fiber && (
-                <div className="bg-gray-50 p-4 rounded-lg text-center">
-                  <p className="text-sm text-gray-600">Fiber</p>
-                  <p className="text-lg font-semibold">{item.nutrients.fiber}</p>
+                <div className="bg-gray-50 p-2 rounded">
+                  <span className="text-xs text-gray-500">Fiber</span>
+                  <p className="font-medium">{item.nutrients.fiber}</p>
                 </div>
               )}
               {item.nutrients?.sugar && (
-                <div className="bg-gray-50 p-4 rounded-lg text-center">
-                  <p className="text-sm text-gray-600">Sugar</p>
-                  <p className="text-lg font-semibold">{item.nutrients.sugar}</p>
+                <div className="bg-gray-50 p-2 rounded">
+                  <span className="text-xs text-gray-500">Sugar</span>
+                  <p className="font-medium">{item.nutrients.sugar}</p>
                 </div>
               )}
             </div>
@@ -337,11 +338,11 @@ export function ProductDetail() {
                 <span className="text-orange-500 mr-2">🥗</span>
                 Ingredients
               </h2>
-              <div className="flex flex-wrap gap-2 pl-6">
+              <div className="flex flex-wrap gap-2">
                 {item.ingredients.map((ingredient, index) => (
                   <span 
                     key={index} 
-                    className="bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm"
+                    className="bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs"
                   >
                     {ingredient}
                   </span>

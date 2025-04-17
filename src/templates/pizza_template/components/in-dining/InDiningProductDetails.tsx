@@ -135,7 +135,29 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
             {/* Product Details - Left Side */}
             <div className="p-6">
               <h2 className="text-2xl font-bold text-gray-800 mb-2">{product.name}</h2>
-              <p className="text-xl font-bold text-red-500 mb-4">${product.price.toFixed(2)}</p>
+              <p className="text-xl font-bold text-red-500 mb-2">${product.price.toFixed(2)}</p>
+              
+              {/* Dietary Information Badges */}
+              {product.dietary && (
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {product.dietary.isVegetarian && (
+                    <div className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+                      Vegetarian
+                    </div>
+                  )}
+                  {product.dietary.isVegan && (
+                    <div className="bg-green-600 text-white px-3 py-1 rounded-full text-sm font-medium">
+                      Vegan
+                    </div>
+                  )}
+                  {product.dietary.isGlutenFree && (
+                    <div className="bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+                      Gluten Free
+                    </div>
+                  )}
+                </div>
+              )}
+              
               <p className="text-gray-600 mb-6">{product.description}</p>
 
               {/* Category */}
@@ -143,6 +165,14 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
                 <div className="mb-4">
                   <h3 className="text-sm font-semibold text-gray-500 uppercase mb-1">Category</h3>
                   <p className="text-gray-700">{product.category}</p>
+                </div>
+              )}
+              
+              {/* Subcategory */}
+              {product.subCategory && (
+                <div className="mb-4">
+                  <h3 className="text-sm font-semibold text-gray-500 uppercase mb-1">Subcategory</h3>
+                  <p className="text-gray-700">{product.subCategory}</p>
                 </div>
               )}
 
