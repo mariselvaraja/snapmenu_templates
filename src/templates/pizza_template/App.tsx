@@ -24,7 +24,7 @@ const Layout = () => {
           {PizzaTemplateRoutes}
         </Routes>
       </main>
-      <Footer />
+      {!isInDiningOrderPage && <Footer />}
     </div>
   );
 };

@@ -1,20 +1,80 @@
 import { motion } from 'framer-motion';
 import { useState } from 'react';
-import { Utensils, Trash2 } from 'lucide-react';
+import { Utensils, Trash2, Plus, X, Minus, Search, UtensilsCrossed, Pizza, ArrowLeft, ShoppingCart, ClipboardList } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../../../common/store';
 import { useDispatch } from 'react-redux';
-import { addItem, updateItemQuantity, removeItem } from '../../../common/redux/slices/cartSlice';
+import { addItem, updateItemQuantity, removeItem, toggleDrawer } from '../../../common/redux/slices/cartSlice';
+import { setSearchQuery } from '../../../redux/slices/searchSlice';
+import SearchBarComponent from './SearchBarComponent';
+import InDiningProductDetails from './InDiningProductDetails';
+import InDiningCartDrawer from './InDiningCartDrawer';
 
 export default function InDiningOrder() {
   const [orderPlaced, setOrderPlaced] = useState<boolean>(false);
   const [orderNumber, setOrderNumber] = useState<string>('');
+  const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [isProductDetailsOpen, setIsProductDetailsOpen] = useState<boolean>(false);
+  const [quantity, setQuantity] = useState<number>(1);
+  const [selectedCategory, setSelectedCategory] = useState<string>('All');
+  const [selectedSubcategory, setSelectedSubcategory] = useState<string>('All');
+  const [isSearchActive, setIsSearchActive] = useState<boolean>(false);
+  const [showOrders, setShowOrders] = useState<boolean>(false);
   
   const cartItems = useSelector((state: RootState) => state.cart.items);
   const menuItems = useSelector((state: RootState) => state.menu.items);
+  const menuCategories = useSelector((state: RootState) => state.menu.categories);
   const loading = useSelector((state: RootState) => state.menu.loading);
+  
+  // Filter menu items by selected category and subcategory
+  const filteredMenuItems = selectedCategory === 'All' 
+    ? (selectedSubcategory === 'All' 
+        ? menuItems 
+        : menuItems.filter(item => item.level2_category === selectedSubcategory))
+    : (selectedSubcategory === 'All'
+        ? menuItems.filter(item => item.category === selectedCategory)
+        : menuItems.filter(item => item.category === selectedCategory && item.level2_category === selectedSubcategory));
+  
   const dispatch = useDispatch<AppDispatch>();
+  
+  // Extract unique main categories directly from menu items
+  const uniqueCategories = Array.from(
+    new Set(menuItems.map(item => item.category))
+  ).filter(Boolean).sort();
+  
+  // Extract unique subcategories based on selected main category
+  const uniqueSubcategories = Array.from(
+    new Set(
+      selectedCategory === 'All'
+        ? menuItems.map(item => item.level2_category).filter((cat): cat is string => !!cat)
+        : menuItems
+            .filter(item => item.category === selectedCategory)
+            .map(item => item.level2_category)
+            .filter((cat): cat is string => !!cat)
+    )
+  ).sort();
+  
+  // Calculate total price
+  const totalPrice = cartItems.reduce(
+    (total, item) => total + item.price * item.quantity, 
+    0
+  );
 
+  const handleProductClick = (product: any) => {
+    setSelectedProduct(product);
+    setIsProductDetailsOpen(true);
+    
+    // Check if product is in cart to set initial quantity
+    const cartItem = cartItems.find(item => item.id === product.id);
+    setQuantity(cartItem ? cartItem.quantity : 1);
+  };
+  
+  const closeProductDetails = () => {
+    setIsProductDetailsOpen(false);
+    setSelectedProduct(null);
+    setQuantity(1);
+  };
+  
   const handlePlaceOrder = () => {
     if (cartItems.length === 0) return;
     
@@ -41,26 +101,26 @@ export default function InDiningOrder() {
 
   if (orderPlaced) {
     return (
-      <div className="py-20">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="py-10 sm:py-20">
+        <div className="mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5 }}
-            className="bg-white rounded-lg shadow-lg p-8 text-center"
+            className="bg-white rounded-lg shadow-lg p-6 sm:p-8 text-center"
           >
-            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Utensils className="h-10 w-10 text-green-600" />
+            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
+              <Utensils className="h-8 w-8 sm:h-10 sm:w-10 text-green-600" />
             </div>
-            <h2 className="text-3xl font-bold mb-4">Order Confirmed!</h2>
-            <p className="text-xl text-gray-600 mb-2">Your order number is:</p>
-            <p className="text-4xl font-bold text-red-500 mb-6">{orderNumber}</p>
-            <p className="text-gray-600 mb-8">
+            <h2 className="text-2xl sm:text-3xl font-bold mb-3 sm:mb-4">Order Confirmed!</h2>
+            <p className="text-lg sm:text-xl text-gray-600 mb-2">Your order number is:</p>
+            <p className="text-3xl sm:text-4xl font-bold text-red-500 mb-4 sm:mb-6">{orderNumber}</p>
+            <p className="text-gray-600 mb-6 sm:mb-8 text-sm sm:text-base">
               We've received your order. Your delicious pizza will be served shortly!
             </p>
             <button
               onClick={resetOrder}
-              className="bg-red-500 text-white px-8 py-3 rounded-full hover:bg-red-600 transition-colors"
+              className="bg-red-500 text-white px-6 sm:px-8 py-2 sm:py-3 rounded-full hover:bg-red-600 transition-colors text-sm sm:text-base"
             >
               Place Another Order
             </button>
@@ -70,13 +130,177 @@ export default function InDiningOrder() {
     );
   }
 
+  // If search is active, render only the SearchBarComponent
+  if (isSearchActive) {
+    return <SearchBarComponent onClose={() => setIsSearchActive(false)} />;
+  }
+
   return (
-    <div className="py-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+    <div className="pt-0 pb-8 sm:pb-20">
+      {/* Navbar */}
+      <div className="sticky top-0 z-40 bg-black bg-opacity-90 backdrop-blur-sm shadow-md">
+        <div className=" mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            {/* Restaurant Name with Icon */}
+            <div className="flex-shrink-0 flex items-center">
+              <UtensilsCrossed className="h-6 w-6 text-red-500 mr-2" />
+              <h1 className="text-xl font-bold text-white">Pizza Palace</h1>
+            </div>
+            
+            {/* Icons on right */}
+            <div className="flex items-center space-x-4">
+              {/* Search Icon with Tooltip */}
+              <div className="relative group">
+                <button 
+                  onClick={() => {
+                    setIsSearchActive(true);
+                    dispatch(setSearchQuery(''));
+                  }}
+                  className="p-2 rounded-full hover:bg-black hover:bg-opacity-50"
+                  aria-label="Search"
+                >
+                  <Search className="h-6 w-6 text-red-500" />
+                </button>
+                <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
+                  Search
+                </div>
+              </div>
+              
+              {/* Orders Icon with Tooltip */}
+              <div className="relative group">
+                <button 
+                  onClick={() => setShowOrders(!showOrders)}
+                  className="p-2 rounded-full hover:bg-black hover:bg-opacity-50"
+                  aria-label="Orders"
+                >
+                  <ClipboardList className="h-6 w-6 text-red-500" />
+                </button>
+                <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
+                  Orders
+                </div>
+              </div>
+              
+              {/* Cart Icon with Tooltip */}
+              <div className="relative group">
+                <button 
+                  onClick={() => dispatch(toggleDrawer())}
+                  className="p-2 rounded-full hover:bg-black hover:bg-opacity-50 relative"
+                  aria-label="Cart"
+                >
+                  <ShoppingCart className="h-6 w-6 text-red-500" />
+                  {cartItems.length > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                      {cartItems.reduce((total, item) => total + item.quantity, 0)}
+                    </span>
+                  )}
+                </button>
+                <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
+                  {cartItems.length > 0 ? `Cart (${cartItems.length})` : 'Cart'}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      {/* Fixed Categories and Subcategories Container */}
+      <div className="sticky top-16 z-30">
+        {/* Main Categories */}
+        <div className="bg-white shadow-sm">
+          <div className="mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="overflow-x-auto py-2">
+              <div className="flex space-x-3 min-w-max">
+                {/* Always include "All" category */}
+                <button
+                  key="All"
+                  onClick={() => {
+                    setSelectedCategory('All');
+                    setSelectedSubcategory('All');
+                  }}
+                  className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap flex items-center ${
+                    selectedCategory === 'All'
+                      ? 'bg-red-500 text-white'
+                      : 'bg-gray-300 text-gray-800 hover:bg-gray-400'
+                  }`}
+                >
+                  All
+                </button>
+                
+                {/* Main categories extracted directly from menu items */}
+                {uniqueCategories.map((category) => (
+                  <button
+                    key={category}
+                    onClick={() => {
+                      setSelectedCategory(category);
+                      setSelectedSubcategory('All');
+                    }}
+                    className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap flex items-center ${
+                      selectedCategory === category
+                        ? 'bg-red-500 text-white'
+                        : 'bg-gray-300 text-gray-800 hover:bg-gray-400'
+                    }`}
+                  >
+                    {category}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Subcategories - always show the container for consistent layout */}
+        {/* <div className="bg-white shadow-sm">
+          <div className="mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="overflow-x-auto py-2">
+              <div className="flex space-x-3 min-w-max">
+                {uniqueSubcategories.length > 0 ? (
+                  <>
+                    
+                    <button
+                      key="All-sub"
+                      onClick={() => setSelectedSubcategory('All')}
+                      className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap flex items-center ${
+                        selectedSubcategory === 'All'
+                          ? 'bg-red-500 text-white'
+                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      }`}
+                    >
+                      All {selectedCategory !== 'All' ? selectedCategory : ''} Items
+                    </button>
+                    
+                    
+                    {uniqueSubcategories.map((subcategory) => (
+                      <button
+                        key={subcategory}
+                        onClick={() => setSelectedSubcategory(subcategory)}
+                        className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap flex items-center ${
+                          selectedSubcategory === subcategory
+                            ? 'bg-red-500 text-white'
+                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        }`}
+                      >
+                        {subcategory}
+                      </button>
+                    ))}
+                  </>
+                ) : (
+                  <div className="py-1 text-xs text-gray-500">
+                    {selectedCategory !== 'All' 
+                      ? `No subcategories for ${selectedCategory}` 
+                      : 'Select a category to see subcategories'}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div> */}
+      </div>
+      
+      <div className=" mt-3 mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 gap-6 sm:gap-8">
           {/* Menu Items */}
-          <div className="md:col-span-2">
-            <div className="space-y-6">
+          <div>
+            <div className="space-y-4 sm:space-y-6">
               {loading ? (
                 <div className="text-center py-8">
                   <p>Loading menu items...</p>
@@ -85,46 +309,107 @@ export default function InDiningOrder() {
                 <div className="text-center py-8">
                   <p>No menu items available</p>
                 </div>
+              ) : filteredMenuItems.length === 0 ? (
+                <div className="flex items-center justify-center h-[50vh]">
+                  <div className="text-center max-w-md">
+                    <div className="w-24 h-24 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                      <UtensilsCrossed className="h-12 w-12 text-red-400" />
+                    </div>
+                    <h3 className="text-2xl font-semibold text-gray-800 mb-3">No Items Available</h3>
+                    <p className="text-gray-600 mb-8 px-4">
+                      There are no items available in the "{selectedCategory}" category at the moment.
+                    </p>
+                    <button
+                      onClick={() => setSelectedCategory('All')}
+                      className="px-8 py-3 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors flex items-center mx-auto"
+                    >
+                      
+                      View All Menu Items
+                    </button>
+                  </div>
+                </div>
               ) : (
-                menuItems.map((item, index) => (
+                filteredMenuItems.map((item, index) => (
                 <motion.div
                   key={item.name}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.2 }}
-                  className="bg-white rounded-lg shadow-md overflow-hidden flex"
+                  initial={{ opacity: 1, y: 0 }}
+                  className="bg-white rounded-lg shadow-md overflow-hidden flex flex-row"
                 >
-                  {item.image ? (
-                    <img
-                      src={item.image}
-                      alt={item.name}
-                      className="w-1/3 object-cover"
-                    />
-                  ) : (
-                    <div className="w-1/3 bg-red-100 flex items-center justify-center">
-                      <span className="text-4xl font-bold text-red-500">
-                        {item.name.charAt(0)}
-                      </span>
+                  <div className="relative w-1/3">
+                    {item.image ? (
+                      <img
+                        src={item.image}
+                        alt={item.name}
+                        className="w-full h-full object-cover cursor-pointer"
+                        onClick={() => handleProductClick(item)}
+                      />
+                    ) : (
+                      <div 
+                        className="w-full h-full bg-red-100 flex items-center justify-center cursor-pointer"
+                        onClick={() => handleProductClick(item)}
+                      >
+                        <span className="text-4xl font-bold text-red-500">
+                          {item.name.charAt(0)}
+                        </span>
+                      </div>
+                    )}
+                    
+                    {/* Dietary Information Badges */}
+                    {item.dietary && (
+                      <div className="absolute top-2 right-2 flex flex-col gap-1">
+                        {item.dietary.isVegetarian && (
+                          <div className="bg-green-500 text-white px-2 py-1 rounded-full text-xs font-medium">
+                            Veg
+                          </div>
+                        )}
+                        {item.dietary.isVegan && (
+                          <div className="bg-green-600 text-white px-2 py-1 rounded-full text-xs font-medium">
+                            Vegan
+                          </div>
+                        )}
+                        {item.dietary.isGlutenFree && (
+                          <div className="bg-blue-500 text-white px-2 py-1 rounded-full text-xs font-medium">
+                            GF
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-4 sm:p-6 flex-1 flex flex-col justify-between">
+                    {/* Product name with left-right alignment on mobile */}
+                    <div className="flex justify-between items-start mb-2">
+                      <h3 
+                        className="text-lg sm:text-xl font-semibold cursor-pointer hover:text-red-500"
+                        onClick={() => handleProductClick(item)}
+                      >
+                        {item.name}
+                      </h3>
                     </div>
-                  )}
-                  <div className="p-6 flex-1 flex flex-col justify-between">
-                    <div>
-                      <h3 className="text-xl font-semibold mb-2">{item.name}</h3>
-                      <p className="text-gray-600 mb-4">{item.description}</p>
-                      <p className="text-lg font-bold text-red-500">${item.price.toFixed(2)}</p>
-                    </div>
-                    <button 
-                      onClick={() => dispatch(addItem({
-                        id: item.id,
-                        name: item.name,
-                        price: item.price,
-                        quantity: 1,
-                        image: item.image || ''
-                      }))}
-                      className="bg-red-500 text-white px-6 py-2 rounded-full hover:bg-red-600 transition-colors"
+                    
+                    {/* Description with line clamp */}
+                    <p 
+                      className="text-gray-600 mb-3 sm:mb-4 text-sm sm:text-base line-clamp-2 overflow-hidden cursor-pointer hover:text-gray-800"
+                      onClick={() => handleProductClick(item)}
                     >
-                      Add to Order
-                    </button>
+                      {item.description}
+                    </p>
+                    
+                    {/* Price on bottom left and Add to Order on bottom right */}
+                    <div className="flex justify-between items-center mt-auto">
+                      <p className="text-lg font-bold text-red-500">${item.price.toFixed(2)}</p>
+                      <button 
+                        onClick={() => dispatch(addItem({
+                          id: item.id,
+                          name: item.name,
+                          price: item.price,
+                          quantity: 1,
+                          image: item.image || ''
+                        }))}
+                        className="flex items-center gap-2 bg-red-500 text-white px-4 sm:px-6 py-2 rounded-full hover:bg-red-600 transition-colors text-sm sm:text-base"
+                      >
+                        Add <Plus/>
+                      </button>
+                    </div>
                   </div>
                 </motion.div>
                 ))
@@ -133,6 +418,19 @@ export default function InDiningOrder() {
           </div>
         </div>
       </div>
+      
+      {/* Product Details Component */}
+      {isProductDetailsOpen && selectedProduct && (
+        <InDiningProductDetails
+          product={selectedProduct}
+          onClose={closeProductDetails}
+          menuItems={menuItems}
+        />
+      )}
+      
+      {/* Cart Drawer Component */}
+      <InDiningCartDrawer />
+      
     </div>
   );
 }
