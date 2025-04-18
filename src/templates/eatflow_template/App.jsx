@@ -108,7 +108,8 @@ const Layout = () => {
       {/* Spacer to prevent content from being hidden behind fixed navbar - only added when navbar is shown */}
       {shouldShowNavAndFooter && <div className="h-24"></div>}
       
-      <CartDrawer isOpen={isCartOpen} onClose={toggleCart} />
+      {/* Only show the regular CartDrawer when not in the in-dining context */}
+      {shouldShowNavAndFooter && <CartDrawer isOpen={isCartOpen} onClose={toggleCart} />}
       <SearchModal 
         isOpen={isSearchModalOpen} 
         onClose={() => dispatch({ type: 'search/closeSearchModal' })} 

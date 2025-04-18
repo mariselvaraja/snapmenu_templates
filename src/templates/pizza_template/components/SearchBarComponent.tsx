@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Search, X, ArrowLeft, Plus, Filter } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import InDiningProductDetails from './in-dining/InDiningProductDetails';
+import InDiningCartDrawer from './in-dining/InDiningCartDrawer';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../../../common/store';
 import { setSearchQuery, setSearchResults, setSearchState } from '../../../common/redux/slices/searchSlice';
@@ -37,7 +38,7 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
 
-  // Focus input on mount and clear any existing search query
+  // Focus input on mount and load all menu items initially
   useEffect(() => {
     // Clear any existing search query when component mounts
     dispatch(setSearchQuery(''));
@@ -45,7 +46,14 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
     if (inputRef.current) {
       inputRef.current.focus();
     }
-  }, [dispatch]);
+    
+    // Initially show all menu items
+    if (menuItems && menuItems.length > 0) {
+      console.log('Initially loading all menu items');
+      // We don't need to do anything special here since renderAllMenuItems
+      // will be called when query is empty
+    }
+  }, [dispatch, menuItems]);
 
   // Perform search with debounce
   useEffect(() => {
@@ -112,7 +120,10 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
     if (filters.vegetarian || filters.vegan || filters.glutenFree) {
       items = items.filter((result: any) => {
         const item = result.item;
-        if (!item || !item.dietary) return false;
+        if (!item) return false;
+        
+        // If item doesn't have dietary info, include it in results
+        if (!item.dietary) return true;
         
         // OR condition - show item if it matches ANY active filter
         return (filters.vegetarian && item.dietary.isVegetarian) || 
@@ -306,6 +317,11 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
                       quantity: 1,
                       image: item.image || ''
                     }));
+                    
+                    // Open cart drawer when in placeindiningorder context
+                    if (isInDiningContext) {
+                      dispatch(toggleDrawer(true));
+                    }
                   }}
                   className="text-xs flex items-center gap-2 bg-red-500 text-white px-2 py-1 rounded-full hover:bg-red-600 transition-colors"
                 >
@@ -319,26 +335,145 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
     );
   };
 
+  // State to control the loading skeleton for no results
+  const [showNoResultsSkeleton, setShowNoResultsSkeleton] = useState(false);
+  const [showNoResultsMessage, setShowNoResultsMessage] = useState(false);
+
   // Render results by category
   const renderResultsByCategory = () => {
-    if (!results?.grouped || typeof results.grouped !== 'object') {
-      return (
-        <div className="flex flex-col items-center justify-center py-16 px-4">
-          <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mb-6">
-            <Search className="h-10 w-10 text-red-400" />
+    console.log('Rendering search results, grouped:', results?.grouped);
+    
+    // If no results or empty results, try a fallback to show all menu items that match the query
+    if (!results?.grouped || typeof results.grouped !== 'object' || Object.keys(results.grouped).length === 0) {
+      console.log('No grouped results, trying fallback search');
+      
+      // If we're still searching, don't show the fallback search yet
+      if (isSearching) {
+        return null; // Return null to let the parent component show the loading skeleton
+      }
+      
+      // Simple text-based search as fallback
+      const matchingItems = menuItems.filter(item => {
+        const searchTerms = [
+          item.name,
+          item.description || '',
+          item.category || '',
+          ...(item.tags || [])
+        ].join(' ').toLowerCase();
+        
+        return query.toLowerCase().split(/\s+/).some(word => 
+          word.length > 1 && searchTerms.includes(word.toLowerCase())
+        );
+      });
+      
+      console.log('Fallback search found', matchingItems.length, 'items');
+      
+      if (matchingItems.length > 0) {
+        // Group items by category
+        const groupedByCategory: Record<string, any[]> = {};
+        matchingItems.forEach(item => {
+          const category = item.category || 'Other';
+          if (!groupedByCategory[category]) {
+            groupedByCategory[category] = [];
+          }
+          groupedByCategory[category].push(item);
+        });
+        
+        // Render the fallback results
+        return Object.entries(groupedByCategory).map(([category, items]) => (
+          <div key={category} className="mb-6">
+            <h3 className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100">
+              {category.charAt(0).toUpperCase() + category.slice(1)}
+            </h3>
+            {renderMenuItemsGrid(items, true)}
           </div>
-          <h3 className="text-xl font-semibold text-gray-800 mb-2">No matches found</h3>
-          <p className="text-gray-500 text-center max-w-md mb-6">
-            We couldn't find any items matching your search. Try using different keywords or browse our menu categories.
-          </p>
-          <button
-            onClick={() => dispatch(setSearchQuery(''))}
-            className="px-6 py-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors flex items-center"
-          >
-            View All Items
-          </button>
-        </div>
-      );
+        ));
+      }
+      
+      // For placeindiningorder context, always show skeleton for 3 seconds before showing "no results" message
+      if (isInDiningContext) {
+        if (!showNoResultsSkeleton && !showNoResultsMessage) {
+          setShowNoResultsSkeleton(true);
+          setTimeout(() => {
+            setShowNoResultsSkeleton(false);
+            setShowNoResultsMessage(true);
+          }, 3000);
+        }
+        
+        if (showNoResultsSkeleton) {
+          // Show skeleton loader
+          return (
+            <div className="p-8">
+              {/* Skeleton Loader */}
+              <div className="animate-pulse space-y-8">
+                {/* Skeleton Category */}
+                <div className="space-y-4">
+                  <div className="h-6 bg-gray-200 rounded w-1/4"></div>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {[...Array(4)].map((_, index) => (
+                      <div key={index} className="bg-white rounded-lg shadow-md overflow-hidden">
+                        <div className="h-32 bg-gray-200"></div>
+                        <div className="p-3 space-y-2">
+                          <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                          <div className="h-3 bg-gray-100 rounded w-full"></div>
+                          <div className="h-3 bg-gray-100 rounded w-1/2"></div>
+                          <div className="flex justify-between items-center pt-2">
+                            <div className="h-4 bg-red-200 rounded w-1/4"></div>
+                            <div className="h-6 bg-red-200 rounded-full w-16"></div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        }
+        
+        if (showNoResultsMessage) {
+          // Show no results message
+          return (
+            <div className="flex flex-col items-center justify-center py-16 px-4">
+              <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mb-6">
+                <Search className="h-10 w-10 text-red-400" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-800 mb-2">No matches found</h3>
+              <p className="text-gray-500 text-center max-w-md mb-6">
+                We couldn't find any items matching your search. Try using different keywords or browse our menu categories.
+              </p>
+              <button
+                onClick={() => dispatch(setSearchQuery(''))}
+                className="px-6 py-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors flex items-center"
+              >
+                View All Items
+              </button>
+            </div>
+          );
+        }
+      } else {
+        // For non-placeindiningorder context, show the no results message immediately
+        return (
+          <div className="flex flex-col items-center justify-center py-16 px-4">
+            <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mb-6">
+              <Search className="h-10 w-10 text-red-400" />
+            </div>
+            <h3 className="text-xl font-semibold text-gray-800 mb-2">No matches found</h3>
+            <p className="text-gray-500 text-center max-w-md mb-6">
+              We couldn't find any items matching your search. Try using different keywords or browse our menu categories.
+            </p>
+            <button
+              onClick={() => dispatch(setSearchQuery(''))}
+              className="px-6 py-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors flex items-center"
+            >
+              View All Items
+            </button>
+          </div>
+        );
+      }
+      
+      // Default return while states are being set
+      return null;
     }
 
     // Apply filters to each category's items
@@ -352,7 +487,10 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
       if (filters.vegetarian || filters.vegan || filters.glutenFree) {
         filteredItems = items.filter((result: any) => {
           const item = result.item;
-          if (!item || !item.dietary) return false;
+          if (!item) return false;
+          
+          // If item doesn't have dietary info, include it in results
+          if (!item.dietary) return true;
           
           // OR condition - show item if it matches ANY active filter
           return (filters.vegetarian && item.dietary.isVegetarian) || 
@@ -435,7 +573,10 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
     // Apply dietary filters if any are active
     if (filters.vegetarian || filters.vegan || filters.glutenFree) {
       filteredItems = menuItems.filter((item) => {
-        if (!item || !item.dietary) return false;
+        if (!item) return false;
+        
+        // If item doesn't have dietary info, include it in results
+        if (!item.dietary) return true;
         
         // OR condition - show item if it matches ANY active filter
         return (filters.vegetarian && item.dietary.isVegetarian) || 
@@ -458,9 +599,12 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
       );
     }
 
+    // Limit initial display to 12 items
+    const limitedItems = filteredItems.slice(0, 12);
+
     return (
       <div className="mb-4">
-        {renderMenuItemsGrid(filteredItems)}
+        {renderMenuItemsGrid(limitedItems)}
       </div>
     );
   };
@@ -507,45 +651,13 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
         </div>
       </div>
       
-      {/* Dietary Filters */}
-      <div className="flex flex-wrap items-center justify-between px-3 py-1 bg-gray-100 border-t border-gray-200">
+      {/* Results Count */}
+      <div className="flex flex-wrap items-center px-3 py-1 bg-gray-100 border-t border-gray-200">
         <div className="text-xs text-gray-600">
           {query 
             ? `Showing ${allItems.length} results` 
             : `Showing ${menuItems.length} items`
           }
-        </div>
-        <div className="flex items-center space-x-1">
-          <button
-            onClick={() => handleFilterToggle('vegetarian')}
-            className={`px-1.5 py-0.5 text-[10px] rounded-full ${
-              filters.vegetarian 
-                ? 'bg-green-500 text-white' 
-                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-            }`}
-          >
-            Veg
-          </button>
-          <button
-            onClick={() => handleFilterToggle('vegan')}
-            className={`px-1.5 py-0.5 text-[10px] rounded-full ${
-              filters.vegan 
-                ? 'bg-green-600 text-white' 
-                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-            }`}
-          >
-            Vegan
-          </button>
-          <button
-            onClick={() => handleFilterToggle('glutenFree')}
-            className={`px-1.5 py-0.5 text-[10px] rounded-full ${
-              filters.glutenFree 
-                ? 'bg-blue-500 text-white' 
-                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-            }`}
-          >
-            GF
-          </button>
         </div>
       </div>
 
@@ -634,6 +746,14 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
           onClose={closeProductDetails}
           menuItems={menuItems}
         />
+      )}
+      
+      {/* InDiningCartDrawer - Only shown in in-dining context */}
+      {isInDiningContext && (
+        <InDiningCartDrawer onPlaceOrder={() => {
+          // Handle place order if needed
+          console.log('Order placed from SearchBarComponent');
+        }} />
       )}
     </div>
   );

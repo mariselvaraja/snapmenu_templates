@@ -19,7 +19,7 @@ const Layout = () => {
       <SearchInitializer />
       <TitleUpdater />
       {!isInDiningOrderPage && !isInDiningOrderPageWithTable && <Navbar />}
-      <CartDrawer />
+      {!isInDiningOrderPage && !isInDiningOrderPageWithTable && <CartDrawer />}
       <main className={`flex-grow ${!isInDiningOrderPage && !isInDiningOrderPageWithTable ? 'pt-20' : ''}`}>
         <Routes>
           {PizzaTemplateRoutes}
