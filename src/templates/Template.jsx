@@ -5,6 +5,7 @@ import CasualDiningApp from './casual_dining_template/App';
 import EatflowApp from './eatflow_template/App';
 import CulinaryJourneyApp from './culinary_journey_template/App';
 import TemplateNotFound from './TemplateNotFound';
+import { LocationSelector } from '../components';
 
 // Create a context for template-specific settings
 export const TemplateContext = createContext(null);
@@ -24,6 +25,7 @@ export const useTemplate = () => {
  */
 const TemplateContent = () => {
   const [theme, setTheme] = useState('light');
+  const [showLocationSelector, setShowLocationSelector] = useState(false);
   const [templateConfig, setTemplateConfig] = useState({
     name: 'Pizza Template',
     version: '1.0.0',
@@ -65,6 +67,46 @@ const TemplateContent = () => {
       ...newConfig
     }));
   };
+
+  // State to track if a location has been selected
+  const [locationSelected, setLocationSelected] = useState(false);
+  
+  // Handle location selection
+  const handleSelectLocation = (location) => {
+    console.log('Selected location:', location);
+    // Set the location selected state to true
+    setLocationSelected(true);
+    // You can add additional logic here if needed
+  };
+
+  // Check if current URL includes placeindiningorder
+  const isPlaceInDiningOrderRoute = window.location.pathname.includes('placeindiningorder');
+
+  // Check if a location has been selected and show location selector when the website finishes loading
+  useEffect(() => {
+    // Only proceed when the site is fully loaded
+    if (!isLoading) {
+      // Check if location is already selected in localStorage
+      const savedLocation = localStorage.getItem('selectedLocation');
+      if (savedLocation) {
+        // If a location is already saved, set locationSelected to true
+        setLocationSelected(true);
+      } else if (!isPlaceInDiningOrderRoute) {
+        // If no location is selected and we're not on the placeindiningorder route, show the selector after a short delay
+        const timer = setTimeout(() => {
+          setShowLocationSelector(true);
+        }, 500);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [isLoading, isPlaceInDiningOrderRoute]); // Re-run when loading state changes or route changes
+
+  // Make sure the location selector is always shown if no location is selected
+  useEffect(() => {
+    if (!locationSelected && !isLoading && !showLocationSelector && !isPlaceInDiningOrderRoute) {
+      setShowLocationSelector(true);
+    }
+  }, [locationSelected, isLoading, showLocationSelector, isPlaceInDiningOrderRoute]);
 
   // Template context value
   const templateContextValue = {
@@ -133,7 +175,29 @@ const TemplateContent = () => {
 
   return (
     <TemplateContext.Provider value={templateContextValue}>
-      {renderTemplate()}
+      {/* Only render the template if a location has been selected */}
+      {locationSelected ? (
+        renderTemplate()
+      ) : (
+        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+          
+        </div>
+      )}
+      
+      {/* Location Selector Popup - Don't show for placeindiningorder route */}
+      {!isPlaceInDiningOrderRoute && (
+        <LocationSelector 
+          isOpen={showLocationSelector}
+          onClose={() => {
+            // Only allow closing if a location has been selected
+            if (locationSelected) {
+              setShowLocationSelector(false);
+            }
+          }}
+          onSelectLocation={handleSelectLocation}
+          showCloseButton={locationSelected} // Only show close button if a location has been selected
+        />
+      )}
     </TemplateContext.Provider>
   );
 };
