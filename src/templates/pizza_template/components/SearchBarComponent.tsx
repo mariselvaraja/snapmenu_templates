@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Search, X, ArrowLeft, Plus, Filter } from 'lucide-react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { Search, X, ArrowLeft, Plus, Filter, Loader, Mic } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import InDiningProductDetails from './in-dining/InDiningProductDetails';
 import InDiningCartDrawer from './in-dining/InDiningCartDrawer';
@@ -8,6 +8,14 @@ import { RootState, AppDispatch } from '../../../common/store';
 import { setSearchQuery, setSearchResults, setSearchState } from '../../../common/redux/slices/searchSlice';
 import { addItem, toggleDrawer } from '../../../common/redux/slices/cartSlice';
 import searchService, { SearchState as SearchServiceState } from '../../../services/searchService';
+
+// Add TypeScript declarations for the Web Speech API
+declare global {
+  interface Window {
+    SpeechRecognition: any;
+    webkitSpeechRecognition: any;
+  }
+}
 
 interface SearchBarComponentProps {
   onClose: () => void;
@@ -28,6 +36,8 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [isProductDetailsOpen, setIsProductDetailsOpen] = useState<boolean>(false);
+  const [isListening, setIsListening] = useState(false);
+  const [speechError, setSpeechError] = useState<string | null>(null);
   const [filters, setFilters] = useState({
     vegetarian: true,
     vegan: true,
@@ -55,7 +65,81 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
     }
   }, [dispatch, menuItems]);
 
-  // Perform search with debounce
+  // Generate quick links from menu categories and popular dietary options
+  const quickLinks = useMemo(() => {
+    const links = [];
+    
+    // Add dietary options
+    links.push({ text: 'Vegetarian', query: 'vegetarian' });
+    links.push({ text: 'Vegan', query: 'vegan' });
+    links.push({ text: 'Gluten Free', query: 'gluten free' });
+    
+    // Add categories from menu data
+    if (menuCategories && menuCategories.length > 0) {
+      // Use categories from the menu API
+      menuCategories.forEach((category: any) => {
+        if (category && category.name) {
+          links.push({
+            text: category.name,
+            query: category.name.toLowerCase()
+          });
+        }
+      });
+    } else if (menuItems && menuItems.length > 0) {
+      // Extract unique categories from menu items if menuCategories is not available
+      const uniqueCategories = [...new Set(menuItems.map((item: any) => item.category))];
+      uniqueCategories.forEach((category: string) => {
+        if (category) {
+          links.push({
+            text: category.charAt(0).toUpperCase() + category.slice(1),
+            query: category.toLowerCase()
+          });
+        }
+      });
+    }
+    
+    return links;
+  }, [menuCategories, menuItems]);
+
+  // Handle quick link click
+  const handleQuickLinkClick = (quickLink: { text: string, query: string }) => {
+    dispatch(setSearchQuery(quickLink.query));
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  };
+
+  // Expand health-related terms for better semantic matching
+  const expandHealthTerms = (query: string): string => {
+    // Use the searchService's expandHealthTerms function if available
+    if (typeof searchService.expandHealthTerms === 'function') {
+      return searchService.expandHealthTerms(query);
+    }
+    
+    // Fallback implementation if the service function is not available
+    const healthTermsMap: Record<string, string> = {
+      'healthy': 'nutritious fresh light lean natural wholesome balanced',
+      'vegetarian': 'plant-based meatless veggie vegetables',
+      'vegan': 'plant-based dairy-free egg-free animal-free',
+      'gluten-free': 'celiac wheat-free grain-free',
+      'spicy': 'hot chili pepper fiery'
+    };
+
+    const queryTerms = query.toLowerCase().split(/\s+/);
+    const expandedTerms = new Set(queryTerms);
+
+    queryTerms.forEach(term => {
+      if (healthTermsMap[term]) {
+        healthTermsMap[term].split(' ').forEach(expandedTerm => {
+          expandedTerms.add(expandedTerm);
+        });
+      }
+    });
+
+    return Array.from(expandedTerms).join(' ');
+  };
+
+  // Perform search with debounce and enhanced query processing
   useEffect(() => {
     if (!query) {
       dispatch(setSearchResults({ results: [], grouped: {} }));
@@ -70,7 +154,12 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
 
       setIsSearching(true);
       try {
-        const searchResults = await searchService.search(query);
+        // Expand health-related terms for better semantic matching
+        const expandedQuery = expandHealthTerms(query);
+        console.log('Expanded query:', expandedQuery);
+        
+        // Perform search with expanded query
+        const searchResults = await searchService.search(expandedQuery);
         dispatch(setSearchResults(searchResults));
       } catch (error) {
         console.error('Search error:', error);
@@ -185,6 +274,50 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     dispatch(setSearchQuery(e.target.value));
     setSelectedIndex(-1);
+  };
+
+  // Voice search functionality
+  const startVoiceSearch = () => {
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+      setSpeechError('Voice search is not supported in your browser');
+      return;
+    }
+
+    setSpeechError(null);
+    setIsListening(true);
+
+    try {
+      // Create speech recognition object
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const recognition = new SpeechRecognition();
+    
+      recognition.lang = 'en-US';
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+      
+      recognition.onresult = (event: any) => {
+        const speechResult = event.results[0][0].transcript;
+        console.log('Voice search result:', speechResult);
+        dispatch(setSearchQuery(speechResult));
+        setIsListening(false);
+      };
+      
+      recognition.onerror = (event: any) => {
+        console.error('Speech recognition error', event.error);
+        setSpeechError(`Error: ${event.error}`);
+        setIsListening(false);
+      };
+      
+      recognition.onend = () => {
+        setIsListening(false);
+      };
+      
+      recognition.start();
+    } catch (error) {
+      console.error('Failed to initialize speech recognition:', error);
+      setSpeechError('Failed to initialize speech recognition');
+      setIsListening(false);
+    }
   };
   
   // Handle filter toggle
@@ -626,16 +759,31 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
             {/* Search input */}
             <div className="flex-1">
               <div className="relative w-full">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
                 <input
                   ref={inputRef}
                   type="text"
                   value={query}
                   onChange={handleInputChange}
-                  placeholder="Type to search..."
-                  className="w-full py-2 px-3 bg-transparent text-white focus:outline-none"
-                  disabled={searchState !== 'ready'}
+                  placeholder={isListening ? "Listening..." : "Type or speak to search..."}
+                  className="w-full py-2 pl-10 pr-16 bg-transparent text-white focus:outline-none"
+                  disabled={searchState !== SearchServiceState.READY || isListening}
                 />
-                {query && (
+                
+                {/* Voice search button */}
+                <button
+                  onClick={startVoiceSearch}
+                  disabled={isListening || searchState !== SearchServiceState.READY}
+                  className={`absolute right-10 top-1/2 transform -translate-y-1/2 p-1 rounded-full 
+                    ${isListening 
+                      ? 'bg-red-500 text-white' 
+                      : 'text-gray-400 hover:text-white'}`}
+                  title="Search by voice"
+                >
+                  <Mic className={`h-5 w-5 ${isListening ? 'animate-pulse' : ''}`} />
+                </button>
+                
+                {query && !isListening && (
                   <button
                     onClick={() => dispatch(setSearchQuery(''))}
                     className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
@@ -643,13 +791,42 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
                     <X className="h-5 w-5" />
                   </button>
                 )}
+                
+                {searchState === SearchServiceState.LOADING && !isListening && (
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                    <Loader className="h-5 w-5 text-gray-400 animate-spin" />
+                  </div>
+                )}
               </div>
+              
+              {/* Speech error message */}
+              {speechError && (
+                <div className="text-red-400 text-xs mt-1 px-2">
+                  {speechError}
+                </div>
+              )}
             </div>
-            
-            {/* Cart Icon removed */}
           </div>
         </div>
       </div>
+      
+      {/* Quick links - only show when no query is entered */}
+      {!query && quickLinks.length > 0 && (
+        <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
+          <div className="text-sm font-medium text-gray-600 mb-2">Quick Links</div>
+          <div className="flex flex-wrap gap-2">
+            {quickLinks.map((link, index) => (
+              <button
+                key={index}
+                onClick={() => handleQuickLinkClick(link)}
+                className="px-3 py-1.5 text-sm bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300 transition-colors"
+              >
+                {link.text}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
       
       {/* Results Count */}
       <div className="flex flex-wrap items-center px-3 py-1 bg-gray-100 border-t border-gray-200">
