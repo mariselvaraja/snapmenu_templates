@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, X, ArrowLeft, Plus, Filter } from 'lucide-react';
+import { Search, X, ArrowLeft, Plus, Filter, Loader, Mic } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import InDiningProductDetails from './in-dining/InDiningProductDetails';
 import InDiningCartDrawer from './in-dining/InDiningCartDrawer';
@@ -27,6 +27,8 @@ const SearchBarComponent = ({ onClose }) => {
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isProductDetailsOpen, setIsProductDetailsOpen] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [speechError, setSpeechError] = useState(null);
   const [filters, setFilters] = useState({
     vegetarian: true,
     vegan: true,
@@ -54,7 +56,37 @@ const SearchBarComponent = ({ onClose }) => {
     }
   }, [dispatch, menuItems]);
 
-  // Perform search with debounce
+  // Expand health-related terms for better semantic matching
+  const expandHealthTerms = (query) => {
+    // Use the searchService's expandHealthTerms function if available
+    if (typeof searchService.expandHealthTerms === 'function') {
+      return searchService.expandHealthTerms(query);
+    }
+    
+    // Fallback implementation if the service function is not available
+    const healthTermsMap = {
+      'healthy': 'nutritious fresh light lean natural wholesome balanced',
+      'vegetarian': 'plant-based meatless veggie vegetables',
+      'vegan': 'plant-based dairy-free egg-free animal-free',
+      'gluten-free': 'celiac wheat-free grain-free',
+      'spicy': 'hot chili pepper fiery'
+    };
+
+    const queryTerms = query.toLowerCase().split(/\s+/);
+    const expandedTerms = new Set(queryTerms);
+
+    queryTerms.forEach(term => {
+      if (healthTermsMap[term]) {
+        healthTermsMap[term].split(' ').forEach(expandedTerm => {
+          expandedTerms.add(expandedTerm);
+        });
+      }
+    });
+
+    return Array.from(expandedTerms).join(' ');
+  };
+
+  // Perform search with debounce and enhanced query processing
   useEffect(() => {
     if (!query) {
       dispatch(setSearchResults({ results: [], grouped: {} }));
@@ -71,23 +103,28 @@ const SearchBarComponent = ({ onClose }) => {
         return;
       }
 
-    setIsSearching(true);
-    try {
-      console.log('Performing search for:', query);
-      const searchResults = await searchService.search(query);
-      console.log('Search results:', searchResults);
-      
-      // Only set isSearching to false if we have actual results
-      if (searchResults && searchResults.grouped && 
-          Object.keys(searchResults.grouped).length > 0) {
+      setIsSearching(true);
+      try {
+        // Expand health-related terms for better semantic matching
+        const expandedQuery = expandHealthTerms(query);
+        console.log('Expanded query:', expandedQuery);
+        
+        // Perform search with expanded query
+        console.log('Performing search for:', expandedQuery);
+        const searchResults = await searchService.search(expandedQuery);
+        console.log('Search results:', searchResults);
+        
+        // Only set isSearching to false if we have actual results
+        if (searchResults && searchResults.grouped && 
+            Object.keys(searchResults.grouped).length > 0) {
+          setIsSearching(false);
+        }
+        
+        dispatch(setSearchResults(searchResults));
+      } catch (error) {
+        console.error('Search error:', error);
         setIsSearching(false);
       }
-      
-      dispatch(setSearchResults(searchResults));
-    } catch (error) {
-      console.error('Search error:', error);
-      setIsSearching(false);
-    }
     }, 150);
 
     return () => clearTimeout(timeoutId);
@@ -196,6 +233,50 @@ const SearchBarComponent = ({ onClose }) => {
   const handleInputChange = (e) => {
     dispatch(setSearchQuery(e.target.value));
     setSelectedIndex(-1);
+  };
+
+  // Voice search functionality
+  const startVoiceSearch = () => {
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+      setSpeechError('Voice search is not supported in your browser');
+      return;
+    }
+
+    setSpeechError(null);
+    setIsListening(true);
+
+    try {
+      // Create speech recognition object
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const recognition = new SpeechRecognition();
+    
+      recognition.lang = 'en-US';
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+      
+      recognition.onresult = (event) => {
+        const speechResult = event.results[0][0].transcript;
+        console.log('Voice search result:', speechResult);
+        dispatch(setSearchQuery(speechResult));
+        setIsListening(false);
+      };
+      
+      recognition.onerror = (event) => {
+        console.error('Speech recognition error', event.error);
+        setSpeechError(`Error: ${event.error}`);
+        setIsListening(false);
+      };
+      
+      recognition.onend = () => {
+        setIsListening(false);
+      };
+      
+      recognition.start();
+    } catch (error) {
+      console.error('Failed to initialize speech recognition:', error);
+      setSpeechError('Failed to initialize speech recognition');
+      setIsListening(false);
+    }
   };
   
   // Handle filter toggle
@@ -616,16 +697,31 @@ const SearchBarComponent = ({ onClose }) => {
             {/* Search input */}
             <div className="flex-1">
               <div className="relative w-full">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
                 <input
                   ref={inputRef}
                   type="text"
                   value={query}
                   onChange={handleInputChange}
-                  placeholder="Type to search..."
-                  className="w-full py-2 px-3 bg-transparent text-white focus:outline-none"
-                  disabled={searchState !== 'ready'}
+                  placeholder={isListening ? "Listening..." : "Type or speak to search..."}
+                  className="w-full py-2 pl-10 pr-16 bg-transparent text-white focus:outline-none"
+                  disabled={isListening}
                 />
-                {query && (
+                
+                {/* Voice search button */}
+                <button
+                  onClick={startVoiceSearch}
+                  disabled={isListening}
+                  className={`absolute right-10 top-1/2 transform -translate-y-1/2 p-1 rounded-full 
+                    ${isListening 
+                      ? 'bg-green-500 text-white' 
+                      : 'text-gray-400 hover:text-white'}`}
+                  title="Search by voice"
+                >
+                  <Mic className={`h-5 w-5 ${isListening ? 'animate-pulse' : ''}`} />
+                </button>
+                
+                {query && !isListening && (
                   <button
                     onClick={() => dispatch(setSearchQuery(''))}
                     className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
@@ -633,11 +729,65 @@ const SearchBarComponent = ({ onClose }) => {
                     <X className="h-5 w-5" />
                   </button>
                 )}
+                
+                {searchState === SearchServiceState.LOADING && !isListening && (
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                    <Loader className="h-5 w-5 text-gray-400 animate-spin" />
+                  </div>
+                )}
               </div>
+              
+              {/* Speech error message */}
+              {speechError && (
+                <div className="text-green-400 text-xs mt-1 px-2">
+                  {speechError}
+                </div>
+              )}
             </div>
           </div>
         </div>
       </div>
+      
+      {/* Quick links - only show when no query is entered */}
+      {!query && menuCategories && menuCategories.length > 0 && (
+        <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
+          <div className="text-sm font-medium text-gray-600 mb-2">Quick Links</div>
+          <div className="flex flex-wrap gap-2">
+            {/* Dietary options */}
+            <button
+              onClick={() => dispatch(setSearchQuery('vegetarian'))}
+              className="px-3 py-1.5 text-sm bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300 transition-colors"
+            >
+              Vegetarian
+            </button>
+            <button
+              onClick={() => dispatch(setSearchQuery('vegan'))}
+              className="px-3 py-1.5 text-sm bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300 transition-colors"
+            >
+              Vegan
+            </button>
+            <button
+              onClick={() => dispatch(setSearchQuery('gluten free'))}
+              className="px-3 py-1.5 text-sm bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300 transition-colors"
+            >
+              Gluten Free
+            </button>
+            
+            {/* Categories from menu data */}
+            {menuCategories.map((category, index) => (
+              category && category.name && (
+                <button
+                  key={index}
+                  onClick={() => dispatch(setSearchQuery(category.name.toLowerCase()))}
+                  className="px-3 py-1.5 text-sm bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300 transition-colors"
+                >
+                  {category.name}
+                </button>
+              )
+            ))}
+          </div>
+        </div>
+      )}
       
       {/* Results Count */}
       <div className="flex flex-wrap items-center px-3 py-1 bg-gray-100 border-t border-gray-200">
