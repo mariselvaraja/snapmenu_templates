@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, X, Loader } from 'lucide-react';
+import { Search, X, Loader, Mic } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '../../redux/hooks';
 import { setSearchQuery, setSearchResults, setSearchState } from '../../redux/slices/searchSlice';
@@ -26,6 +26,8 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
   const [isSearching, setIsSearching] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [searchProgress, setSearchProgress] = useState(0);
+  const [isListening, setIsListening] = useState(false);
+  const [speechError, setSpeechError] = useState<string | null>(null);
   
   // Refs
   const searchRef = useRef<HTMLDivElement>(null);
@@ -75,7 +77,37 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isOpen]);
 
-  // Perform search with debounce
+  // Expand health-related terms for better semantic matching
+  const expandHealthTerms = (query: string): string => {
+    // Use the searchService's expandHealthTerms function if available
+    if (typeof searchService.expandHealthTerms === 'function') {
+      return searchService.expandHealthTerms(query);
+    }
+    
+    // Fallback implementation if the service function is not available
+    const healthTermsMap: Record<string, string> = {
+      'healthy': 'nutritious fresh light lean natural wholesome balanced',
+      'vegetarian': 'plant-based meatless veggie vegetables',
+      'vegan': 'plant-based dairy-free egg-free animal-free',
+      'gluten-free': 'celiac wheat-free grain-free',
+      'spicy': 'hot chili pepper fiery'
+    };
+
+    const queryTerms = query.toLowerCase().split(/\s+/);
+    const expandedTerms = new Set(queryTerms);
+
+    queryTerms.forEach(term => {
+      if (healthTermsMap[term]) {
+        healthTermsMap[term].split(' ').forEach(expandedTerm => {
+          expandedTerms.add(expandedTerm);
+        });
+      }
+    });
+
+    return Array.from(expandedTerms).join(' ');
+  };
+
+  // Perform search with debounce and enhanced query processing
   useEffect(() => {
     if (!query) {
       dispatch(setSearchResults({ results: [], grouped: {} }));
@@ -90,7 +122,12 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
 
       setIsSearching(true);
       try {
-        const searchResults = await searchService.search(query);
+        // Expand health-related terms for better semantic matching
+        const expandedQuery = expandHealthTerms(query);
+        console.log('Expanded query:', expandedQuery);
+        
+        // Perform search with expanded query
+        const searchResults = await searchService.search(expandedQuery);
         dispatch(setSearchResults(searchResults));
       } catch (error) {
         console.error('Search error:', error);
@@ -188,6 +225,50 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
     setSelectedIndex(-1);
   };
 
+  // Voice search functionality
+  const startVoiceSearch = () => {
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+      setSpeechError('Voice search is not supported in your browser');
+      return;
+    }
+
+    setSpeechError(null);
+    setIsListening(true);
+
+    try {
+      // Create speech recognition object
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      const recognition = new SpeechRecognition();
+    
+      recognition.lang = 'en-US';
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+      
+      recognition.onresult = (event: any) => {
+        const speechResult = event.results[0][0].transcript;
+        console.log('Voice search result:', speechResult);
+        dispatch(setSearchQuery(speechResult));
+        setIsListening(false);
+      };
+      
+      recognition.onerror = (event: any) => {
+        console.error('Speech recognition error', event.error);
+        setSpeechError(`Error: ${event.error}`);
+        setIsListening(false);
+      };
+      
+      recognition.onend = () => {
+        setIsListening(false);
+      };
+      
+      recognition.start();
+    } catch (error) {
+      console.error('Failed to initialize speech recognition:', error);
+      setSpeechError('Failed to initialize speech recognition');
+      setIsListening(false);
+    }
+  };
+
   // Get menu data from Redux store
   const menuItems = useAppSelector((state) => state.menu.items);
   const menuCategories = useAppSelector((state) => state.menu.categories);
@@ -262,24 +343,199 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
     );
   };
 
+  // State for dietary filters
+  const [filters, setFilters] = useState({
+    vegetarian: false,
+    vegan: false,
+    glutenFree: false
+  });
+
+  // Handle filter toggle
+  const handleFilterToggle = (filterName: 'vegetarian' | 'vegan' | 'glutenFree') => {
+    setFilters(prev => ({
+      ...prev,
+      [filterName]: !prev[filterName]
+    }));
+    setSelectedIndex(-1);
+  };
+
+  // State to control the loading skeleton for no results
+  const [showNoResultsSkeleton, setShowNoResultsSkeleton] = useState(false);
+  const [showNoResultsMessage, setShowNoResultsMessage] = useState(false);
+
   // Render results by category
   const renderResultsByCategory = () => {
-    if (!results?.grouped || typeof results.grouped !== 'object') {
+    if (!results?.grouped || typeof results.grouped !== 'object' || Object.keys(results.grouped).length === 0) {
+      // If we're still searching, don't show the fallback search yet
+      if (isSearching) {
+        return null;
+      }
+      
+      // Simple text-based search as fallback
+      const matchingItems = menuItems?.filter((item: any) => {
+        if (!item) return false;
+        
+        const searchTerms = [
+          item.name,
+          item.description || '',
+          item.category || '',
+          ...(item.tags || [])
+        ].join(' ').toLowerCase();
+        
+        return query.toLowerCase().split(/\s+/).some(word => 
+          word.length > 1 && searchTerms.includes(word.toLowerCase())
+        );
+      }) || [];
+      
+      console.log('Fallback search found', matchingItems.length, 'items');
+      
+      if (matchingItems.length > 0) {
+        // Group items by category
+        const groupedByCategory: Record<string, any[]> = {};
+        matchingItems.forEach((item: any) => {
+          const category = item.category || 'Other';
+          if (!groupedByCategory[category]) {
+            groupedByCategory[category] = [];
+          }
+          groupedByCategory[category].push(item);
+        });
+        
+        // Render the fallback results
+        return Object.entries(groupedByCategory).map(([category, items]) => (
+          <div key={category} className="mb-4">
+            <h3 className="px-4 py-2 text-sm font-medium text-gray-400 bg-gray-800/50">
+              {category.charAt(0).toUpperCase() + category.slice(1)}
+            </h3>
+            <div className="divide-y divide-gray-700">
+              {items.map((item: any, index: number) => (
+                <div
+                  key={item.id || `item-${index}`}
+                  onClick={() => handleItemSelect({ item })}
+                  data-result-item
+                  className="px-4 py-3 hover:bg-gray-800 cursor-pointer"
+                >
+                  <div className="flex-1">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <div className="font-medium text-white">
+                          {renderHighlightedText(item.name, query)}
+                        </div>
+                        <div className="text-sm text-gray-400">
+                          {renderHighlightedText(item.description || 'No description available', query)}
+                        </div>
+                      </div>
+                      <div className="text-sm font-medium text-gray-300 ml-4">
+                        {formatPrice(item.price)}
+                      </div>
+                    </div>
+                    {item.tags && item.tags.length > 0 && (
+                      <div className="mt-1 flex items-center gap-2">
+                        {item.tags.map((tag: string, idx: number) => (
+                          <span key={idx} className="text-xs px-2 py-0.5 bg-gray-700 text-gray-100 rounded">
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    {/* Dietary Information */}
+                    {item.dietary && (
+                      <div className="mt-1 flex items-center gap-2">
+                        {item.dietary.isVegetarian && (
+                          <span className="text-xs px-2 py-0.5 bg-green-900 text-green-100 rounded">
+                            Vegetarian
+                          </span>
+                        )}
+                        {item.dietary.isVegan && (
+                          <span className="text-xs px-2 py-0.5 bg-green-900 text-green-100 rounded">
+                            Vegan
+                          </span>
+                        )}
+                        {item.dietary.isGlutenFree && (
+                          <span className="text-xs px-2 py-0.5 bg-yellow-900 text-yellow-100 rounded">
+                            Gluten Free
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ));
+      }
+      
+      // Show no results message
       return (
-        <div className="p-4 text-center text-gray-400">
-          No results found
+        <div className="p-8 text-center">
+          <div className="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Search className="h-8 w-8 text-gray-400" />
+          </div>
+          <h3 className="text-lg font-medium text-white mb-2">No matches found</h3>
+          <p className="text-gray-400 mb-6">
+            We couldn't find any items matching your search. Try using different keywords or browse our menu categories.
+          </p>
+          <button
+            onClick={() => dispatch(setSearchQuery(''))}
+            className="px-4 py-2 bg-gray-800 text-white rounded-full hover:bg-gray-700 transition-colors"
+          >
+            View All Items
+          </button>
         </div>
       );
     }
 
-    const categories = Object.entries(results.grouped)
+    // Apply filters to each category's items
+    const filteredGrouped: Record<string, any[]> = {};
+    Object.entries(results.grouped).forEach(([category, items]: [string, any]) => {
+      if (!Array.isArray(items)) return;
+      
+      let filteredItems = items;
+      
+      // Apply dietary filters if any are active
+      if (filters.vegetarian || filters.vegan || filters.glutenFree) {
+        filteredItems = items.filter((result: any) => {
+          const item = result.item;
+          if (!item) return false;
+          
+          // If item doesn't have dietary info, include it in results
+          if (!item.dietary) return true;
+          
+          // OR condition - show item if it matches ANY active filter
+          return (filters.vegetarian && item.dietary.isVegetarian) || 
+                 (filters.vegan && item.dietary.isVegan) || 
+                 (filters.glutenFree && item.dietary.isGlutenFree);
+        });
+      }
+      
+      if (filteredItems.length > 0) {
+        filteredGrouped[category] = filteredItems;
+      }
+    });
+
+    const categories = Object.entries(filteredGrouped)
       .filter(([_, items]: [string, unknown]) => Array.isArray(items) && items.length > 0)
       .sort(([a]: [string, unknown], [b]: [string, unknown]) => a.localeCompare(b));
 
     if (categories.length === 0) {
       return (
-        <div className="p-4 text-center text-gray-400">
-          No results found. Try searching for something else.
+        <div className="p-8 text-center">
+          <div className="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Search className="h-8 w-8 text-gray-400" />
+          </div>
+          <h3 className="text-lg font-medium text-white mb-2">No matches found</h3>
+          <p className="text-gray-400 mb-6">
+            We couldn't find any items matching your search. Try using different keywords or adjusting your filters.
+          </p>
+          <button
+            onClick={() => {
+              setFilters({ vegetarian: false, vegan: false, glutenFree: false });
+              dispatch(setSearchQuery(''));
+            }}
+            className="px-4 py-2 bg-gray-800 text-white rounded-full hover:bg-gray-700 transition-colors"
+          >
+            Reset Filters
+          </button>
         </div>
       );
     }
@@ -331,15 +587,35 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
                         {formatPrice(item.price)}
                       </div>
                     </div>
-                    {item.tags && item.tags.length > 0 && (
-                      <div className="mt-1 flex items-center gap-2">
-                        {item.tags.map((tag: string, idx: number) => (
+                    <div className="mt-1 flex flex-wrap items-center gap-2">
+                      {item.tags && item.tags.length > 0 && (
+                        item.tags.map((tag: string, idx: number) => (
                           <span key={idx} className="text-xs px-2 py-0.5 bg-gray-700 text-gray-100 rounded">
                             {tag}
                           </span>
-                        ))}
-                      </div>
-                    )}
+                        ))
+                      )}
+                      {/* Dietary Information */}
+                      {item.dietary && (
+                        <>
+                          {item.dietary.isVegetarian && (
+                            <span className="text-xs px-2 py-0.5 bg-green-900 text-green-100 rounded">
+                              Vegetarian
+                            </span>
+                          )}
+                          {item.dietary.isVegan && (
+                            <span className="text-xs px-2 py-0.5 bg-green-900 text-green-100 rounded">
+                              Vegan
+                            </span>
+                          )}
+                          {item.dietary.isGlutenFree && (
+                            <span className="text-xs px-2 py-0.5 bg-yellow-900 text-yellow-100 rounded">
+                              Gluten Free
+                            </span>
+                          )}
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
               );
@@ -376,11 +652,31 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
               type="text"
               value={query}
               onChange={handleInputChange}
-              placeholder="Search menu..."
-              className="w-full p-4 pl-12 text-lg bg-gray-800 text-white placeholder-gray-400 focus:outline-none rounded-t-xl"
-              disabled={searchState !== SearchServiceState.READY}
+              placeholder={isListening ? "Listening..." : "Search menu..."}
+              className="w-full p-4 pl-12 pr-12 text-lg bg-gray-800 text-white placeholder-gray-400 focus:outline-none rounded-t-xl"
+              disabled={isListening}
             />
+            
+            {/* Voice search button */}
+            <button
+              onClick={startVoiceSearch}
+              disabled={isListening}
+              className={`absolute right-4 top-5 p-1 rounded-full 
+                ${isListening 
+                  ? 'bg-red-500 text-white' 
+                  : 'text-gray-400 hover:text-white'}`}
+              title="Search by voice"
+            >
+              <Mic className={`h-5 w-5 ${isListening ? 'animate-pulse' : ''}`} />
+            </button>
           </div>
+          
+          {/* Speech error message */}
+          {speechError && (
+            <div className="px-4 py-2 text-red-400 text-xs">
+              {speechError}
+            </div>
+          )}
 
           {/* Quick links */}
           {!query && searchState === SearchServiceState.READY && (
@@ -400,6 +696,43 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
             </div>
           )}
 
+          {/* Dietary Filters */}
+          {query && (
+            <div className="px-4 py-2 border-b border-gray-700 flex items-center gap-3">
+              <span className="text-sm text-gray-400">Filter:</span>
+              <button
+                onClick={() => handleFilterToggle('vegetarian')}
+                className={`px-2 py-1 text-xs rounded-full ${
+                  filters.vegetarian 
+                    ? 'bg-green-900 text-green-100' 
+                    : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                }`}
+              >
+                Vegetarian
+              </button>
+              <button
+                onClick={() => handleFilterToggle('vegan')}
+                className={`px-2 py-1 text-xs rounded-full ${
+                  filters.vegan 
+                    ? 'bg-green-900 text-green-100' 
+                    : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                }`}
+              >
+                Vegan
+              </button>
+              <button
+                onClick={() => handleFilterToggle('glutenFree')}
+                className={`px-2 py-1 text-xs rounded-full ${
+                  filters.glutenFree 
+                    ? 'bg-yellow-900 text-yellow-100' 
+                    : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                }`}
+              >
+                Gluten Free
+              </button>
+            </div>
+          )}
+
           {/* Results */}
           <div className="max-h-[calc(100vh-300px)] overflow-y-auto">
             {searchState !== SearchServiceState.READY ? (
@@ -409,8 +742,41 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
                 Error: {error}
               </div>
             ) : isSearching ? (
-              <div className="p-4 text-center text-gray-400">
-                Searching...
+              <div className="p-8">
+                {/* Skeleton Loader */}
+                <div className="animate-pulse space-y-8">
+                  {/* Skeleton Category */}
+                  <div className="space-y-4">
+                    <div className="h-6 bg-gray-800 rounded w-1/4"></div>
+                    <div className="space-y-3">
+                      {[...Array(3)].map((_, index) => (
+                        <div key={index} className="flex justify-between p-3 border-b border-gray-800">
+                          <div className="space-y-2 flex-1">
+                            <div className="h-4 bg-gray-800 rounded w-3/4"></div>
+                            <div className="h-3 bg-gray-800 rounded w-full"></div>
+                          </div>
+                          <div className="h-4 bg-gray-800 rounded w-16 ml-4"></div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  {/* Second Skeleton Category */}
+                  <div className="space-y-4">
+                    <div className="h-6 bg-gray-800 rounded w-1/3"></div>
+                    <div className="space-y-3">
+                      {[...Array(2)].map((_, index) => (
+                        <div key={index} className="flex justify-between p-3 border-b border-gray-800">
+                          <div className="space-y-2 flex-1">
+                            <div className="h-4 bg-gray-800 rounded w-3/4"></div>
+                            <div className="h-3 bg-gray-800 rounded w-full"></div>
+                          </div>
+                          <div className="h-4 bg-gray-800 rounded w-16 ml-4"></div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </div>
             ) : query ? (
               <div ref={resultsRef}>
