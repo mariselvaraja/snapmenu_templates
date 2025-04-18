@@ -1,27 +1,36 @@
-import { motion } from 'framer-motion';
-import { useState, useEffect } from 'react';
-import { Utensils, Trash2, Plus, X, Minus, Search, UtensilsCrossed, ArrowLeft, ShoppingCart, ClipboardList, Filter } from 'lucide-react';
-import { useSelector } from 'react-redux';
-import { RootState, AppDispatch } from '../../../../common/store';
-import { useDispatch } from 'react-redux';
-import { useLocation } from 'react-router-dom';
-import { addItem, updateItemQuantity, removeItem, toggleDrawer } from '../../../../common/redux/slices/cartSlice';
+import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { 
+  Utensils, 
+  Search, 
+  ShoppingCart, 
+  ClipboardList, 
+  Filter, 
+  ArrowLeft, 
+  Plus, 
+  UtensilsCrossed 
+} from 'lucide-react';
+import { useSelector, useDispatch } from 'react-redux';
+import { addItem, toggleDrawer, removeItem } from '../../../../common/redux/slices/cartSlice';
 import { setSearchQuery } from '../../../../common/redux/slices/searchSlice';
-import { InDiningProductDetails, InDiningCartDrawer, InDiningOrders, FilterDrawer } from './index';
+import InDiningProductDetails from './InDiningProductDetails';
+import InDiningCartDrawer from './InDiningCartDrawer';
+import InDiningOrders from './InDiningOrders';
+import FilterDrawer from './FilterDrawer';
 import SearchBarComponent from '../SearchBarComponent';
 
 export default function InDiningOrder() {
-  const [orderPlaced, setOrderPlaced] = useState<boolean>(false);
-  const [orderNumber, setOrderNumber] = useState<string>('');
-  const [selectedProduct, setSelectedProduct] = useState<any>(null);
-  const [isProductDetailsOpen, setIsProductDetailsOpen] = useState<boolean>(false);
-  const [quantity, setQuantity] = useState<number>(1);
-  const [selectedCategory, setSelectedCategory] = useState<string>('All');
-  const [selectedSubcategory, setSelectedSubcategory] = useState<string>('All');
-  const [isSearchActive, setIsSearchActive] = useState<boolean>(false);
-  const [showOrders, setShowOrders] = useState<boolean>(false);
-  const [tableNumber, setTableNumber] = useState<string | null>(null);
-  const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState<boolean>(false);
+  const [orderPlaced, setOrderPlaced] = useState(false);
+  const [orderNumber, setOrderNumber] = useState('');
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [isProductDetailsOpen, setIsProductDetailsOpen] = useState(false);
+  const [quantity, setQuantity] = useState(1);
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedSubcategory, setSelectedSubcategory] = useState('All');
+  const [isSearchActive, setIsSearchActive] = useState(false);
+  const [showOrders, setShowOrders] = useState(false);
+  const [tableNumber, setTableNumber] = useState(null);
+  const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
   
   // Get table number from URL
   const location = useLocation();
@@ -56,10 +65,10 @@ export default function InDiningOrder() {
     }
   }, [location]);
   
-  const cartItems = useSelector((state: RootState) => state.cart.items);
-  const menuItems = useSelector((state: RootState) => state.menu.items);
-  const menuCategories = useSelector((state: RootState) => state.menu.categories);
-  const loading = useSelector((state: RootState) => state.menu.loading);
+  const cartItems = useSelector((state) => state.cart.items);
+  const menuItems = useSelector((state) => state.menu.items);
+  const menuCategories = useSelector((state) => state.menu.categories);
+  const loading = useSelector((state) => state.menu.loading);
   
   // Filter menu items by selected category and subcategory
   const filteredMenuItems = selectedCategory === 'All' 
@@ -70,7 +79,7 @@ export default function InDiningOrder() {
         ? menuItems.filter(item => item.category === selectedCategory)
         : menuItems.filter(item => item.category === selectedCategory && item.level2_category === selectedSubcategory));
   
-  const dispatch = useDispatch<AppDispatch>();
+  const dispatch = useDispatch();
   
   // Extract unique main categories directly from menu items
   const uniqueCategories = Array.from(
@@ -81,11 +90,11 @@ export default function InDiningOrder() {
   const uniqueSubcategories = Array.from(
     new Set(
       selectedCategory === 'All'
-        ? menuItems.map(item => item.level2_category).filter((cat): cat is string => !!cat)
+        ? menuItems.map(item => item.level2_category).filter(cat => !!cat)
         : menuItems
             .filter(item => item.category === selectedCategory)
             .map(item => item.level2_category)
-            .filter((cat): cat is string => !!cat)
+            .filter(cat => !!cat)
     )
   ).sort();
   
@@ -95,7 +104,7 @@ export default function InDiningOrder() {
     0
   );
 
-  const handleProductClick = (product: any) => {
+  const handleProductClick = (product) => {
     setSelectedProduct(product);
     setIsProductDetailsOpen(true);
     
@@ -165,10 +174,10 @@ export default function InDiningOrder() {
           <div className="flex justify-between items-center h-16">
             {/* Restaurant Name with Icon and Table Number */}
             <div className="flex-shrink-0 flex items-center">
-              <Utensils className="h-6 w-6 text-amber-500 mr-2" />
+              <Utensils className="h-6 w-6 text-orange-600 mr-2" />
               <div>
                 <h1 className="text-xl font-bold text-white">In-Dining Order</h1>
-                <p className="text-xs text-amber-400">
+                <p className="text-xs text-orange-400">
                   Table Number: {tableNumber ? `#${tableNumber}` : 'No Table'}
                 </p>
               </div>
@@ -183,10 +192,10 @@ export default function InDiningOrder() {
                     setIsSearchActive(true);
                     dispatch(setSearchQuery(''));
                   }}
-                  className="p-2 rounded-full hover:bg-amber-700"
+                  className="p-2 rounded-full hover:bg-gray-800"
                   aria-label="Search"
                 >
-                  <Search className="h-6 w-6 text-amber-500" />
+                  <Search className="h-6 w-6 text-orange-600" />
                 </button>
                 <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
                   Search
@@ -197,10 +206,10 @@ export default function InDiningOrder() {
               <div className="relative group">
               <button 
                 onClick={() => setShowOrders(true)}
-                className="p-2 rounded-full hover:bg-amber-700"
+                className="p-2 rounded-full hover:bg-gray-800"
                 aria-label="Orders"
               >
-                <ClipboardList className="h-6 w-6 text-amber-500" />
+                <ClipboardList className="h-6 w-6 text-orange-600" />
               </button>
                 <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
                   Orders
@@ -211,12 +220,12 @@ export default function InDiningOrder() {
               <div className="relative group">
                 <button 
                   onClick={() => dispatch(toggleDrawer())}
-                  className="p-2 rounded-full hover:bg-amber-700 relative"
+                  className="p-2 rounded-full hover:bg-gray-800 relative"
                   aria-label="Cart"
                 >
-                  <ShoppingCart className="h-6 w-6 text-amber-500" />
+                  <ShoppingCart className="h-6 w-6 text-orange-600" />
                   {cartItems.length > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-amber-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                    <span className="absolute -top-1 -right-1 bg-orange-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                       {cartItems.reduce((total, item) => total + item.quantity, 0)}
                     </span>
                   )}
@@ -230,10 +239,10 @@ export default function InDiningOrder() {
               <div className="relative group">
                 <button 
                   onClick={() => setIsFilterDrawerOpen(true)}
-                  className="p-2 rounded-full hover:bg-amber-700"
+                  className="p-2 rounded-full hover:bg-gray-800"
                   aria-label="Filter"
                 >
-                  <Filter className="h-6 w-6 text-amber-500" />
+                  <Filter className="h-6 w-6 text-orange-600" />
                 </button>
                 <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
                   Filter
@@ -266,7 +275,7 @@ export default function InDiningOrder() {
                         }}
                         className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex items-center ${
                           selectedCategory === 'All'
-                            ? 'bg-amber-500 text-white'
+                            ? 'bg-orange-600 text-white'
                             : 'bg-gray-300 text-gray-800 hover:bg-gray-400'
                         }`}
                       >
@@ -283,7 +292,7 @@ export default function InDiningOrder() {
                           }}
                           className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex items-center ${
                             selectedCategory === category
-                              ? 'bg-amber-500 text-white'
+                              ? 'bg-orange-600 text-white'
                               : 'bg-gray-300 text-gray-800 hover:bg-gray-400'
                           }`}
                         >
@@ -311,7 +320,7 @@ export default function InDiningOrder() {
                         }}
                         className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex items-center ${
                           selectedSubcategory === 'All'
-                            ? 'bg-amber-500 text-white'
+                            ? 'bg-orange-600 text-white'
                             : 'bg-gray-300 text-gray-800 hover:bg-gray-400'
                         }`}
                       >
@@ -327,7 +336,7 @@ export default function InDiningOrder() {
                           }}
                           className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex items-center ${
                             selectedSubcategory === subcategory
-                              ? 'bg-amber-500 text-white'
+                              ? 'bg-orange-600 text-white'
                               : 'bg-gray-300 text-gray-800 hover:bg-gray-400'
                           }`}
                         >
@@ -355,7 +364,7 @@ export default function InDiningOrder() {
                         }}
                         className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex items-center ${
                           selectedCategory === 'All'
-                            ? 'bg-amber-500 text-white'
+                            ? 'bg-orange-600 text-white'
                             : 'bg-gray-300 text-gray-800 hover:bg-gray-400'
                         }`}
                       >
@@ -372,7 +381,7 @@ export default function InDiningOrder() {
                           }}
                           className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex items-center ${
                             selectedCategory === category
-                              ? 'bg-amber-500 text-white'
+                              ? 'bg-orange-600 text-white'
                               : 'bg-gray-300 text-gray-800 hover:bg-gray-400'
                           }`}
                         >
@@ -400,7 +409,7 @@ export default function InDiningOrder() {
                         }}
                         className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex items-center ${
                           selectedSubcategory === 'All'
-                            ? 'bg-amber-500 text-white'
+                            ? 'bg-orange-600 text-white'
                             : 'bg-gray-300 text-gray-800 hover:bg-gray-400'
                         }`}
                       >
@@ -416,7 +425,7 @@ export default function InDiningOrder() {
                           }}
                           className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex items-center ${
                             selectedSubcategory === subcategory
-                              ? 'bg-amber-500 text-white'
+                              ? 'bg-orange-600 text-white'
                               : 'bg-gray-300 text-gray-800 hover:bg-gray-400'
                           }`}
                         >
@@ -448,8 +457,8 @@ export default function InDiningOrder() {
               ) : filteredMenuItems.length === 0 ? (
                 <div className="flex items-center justify-center h-[50vh]">
                   <div className="text-center max-w-md">
-                    <div className="w-24 h-24 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                      <UtensilsCrossed className="h-12 w-12 text-amber-400" />
+                    <div className="w-24 h-24 bg-orange-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                      <UtensilsCrossed className="h-12 w-12 text-orange-400" />
                     </div>
                     <h3 className="text-2xl font-semibold text-gray-800 mb-3">No Items Available</h3>
                     <p className="text-gray-600 mb-8 px-4">
@@ -457,7 +466,7 @@ export default function InDiningOrder() {
                     </p>
                     <button
                       onClick={() => setSelectedCategory('All')}
-                      className="px-8 py-3 bg-amber-500 text-white rounded-full hover:bg-amber-600 transition-colors flex items-center mx-auto"
+                      className="px-8 py-3 bg-orange-600 text-white rounded-full hover:bg-orange-700 transition-colors flex items-center mx-auto"
                     >
                       View All Menu Items
                     </button>
@@ -465,9 +474,8 @@ export default function InDiningOrder() {
                 </div>
               ) : (
                 filteredMenuItems.map((item, index) => (
-                <motion.div
+                <div
                   key={item.name}
-                  initial={{ opacity: 1, y: 0 }}
                   className="bg-white rounded-lg shadow-md overflow-hidden flex flex-row"
                 >
                   <div className="relative w-1/3">
@@ -480,10 +488,10 @@ export default function InDiningOrder() {
                       />
                     ) : (
                       <div 
-                        className="w-full h-full bg-amber-100 flex items-center justify-center cursor-pointer"
+                        className="w-full h-full bg-orange-100 flex items-center justify-center cursor-pointer"
                         onClick={() => handleProductClick(item)}
                       >
-                        <span className="text-4xl font-bold text-amber-500">
+                        <span className="text-4xl font-bold text-orange-600">
                           {item.name.charAt(0)}
                         </span>
                       </div>
@@ -514,7 +522,7 @@ export default function InDiningOrder() {
                     {/* Product name with left-right alignment on mobile */}
                     <div className="flex justify-between items-start mb-2">
                       <h3 
-                        className="text-lg sm:text-xl font-semibold cursor-pointer hover:text-amber-500"
+                        className="text-lg sm:text-xl font-semibold cursor-pointer hover:text-orange-600"
                         onClick={() => handleProductClick(item)}
                       >
                         {item.name}
@@ -531,7 +539,7 @@ export default function InDiningOrder() {
                     
                     {/* Price on bottom left and Add to Order on bottom right */}
                     <div className="flex justify-between items-center mt-auto">
-                      <p className="text-lg font-bold text-amber-500">${item.price.toFixed(2)}</p>
+                      <p className="text-lg font-bold text-orange-600">${item.price.toFixed(2)}</p>
                       <button 
                         onClick={() => dispatch(addItem({
                           id: item.id,
@@ -540,13 +548,13 @@ export default function InDiningOrder() {
                           quantity: 1,
                           image: item.image || ''
                         }))}
-                        className="flex items-center gap-2 bg-amber-500 text-white px-4 sm:px-6 py-2 rounded-full hover:bg-amber-600 transition-colors text-sm sm:text-base"
+                        className="flex items-center gap-2 bg-orange-600 text-white px-4 sm:px-6 py-2 rounded-full hover:bg-orange-700 transition-colors text-sm sm:text-base"
                       >
                         Add <Plus/>
                       </button>
                     </div>
                   </div>
-                </motion.div>
+                </div>
                 ))
               )}
             </div>

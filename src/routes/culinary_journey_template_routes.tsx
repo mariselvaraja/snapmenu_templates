@@ -31,6 +31,8 @@ import { LoginPage } from '../templates/culinary_journey_template/components/aut
 import { AdminDashboard } from '../templates/culinary_journey_template/components/admin/AdminDashboard';
 // @ts-ignore
 import { Navbar, Footer } from '../templates/culinary_journey_template/components/layout';
+// @ts-ignore
+import { InDiningOrder } from '../templates/culinary_journey_template/components/in-dining';
 // Import CulinaryJourneyLayout to access its components
 // @ts-ignore
 import { CulinaryJourneyLayout } from '../templates/culinary_journey_template/CulinaryJourneyLayout';
@@ -56,6 +58,9 @@ function PublicLayout({ children }: { children: React.ReactNode }) {
  * These routes are used in the culinary_journey_template/App.jsx file
  */
 const CulinaryJourneyTemplateRoutes = [
+  // In-dining routes
+  <Route key="in-dining-order" path={commonRoutePaths.inDiningOrder} element={<InDiningOrder />} />,
+  <Route key="in-dining-order-with-table" path={commonRoutePaths.inDiningOrderWithTable} element={<InDiningOrder />} />,
   // Home route
   <Route key="home" path={commonRoutePaths.home} element={
     <PublicLayout>

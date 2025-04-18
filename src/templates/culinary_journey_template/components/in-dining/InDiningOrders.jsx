@@ -1,24 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Utensils, ClipboardList, ArrowLeft, Calendar, Clock, Users, ChevronDown, ChevronUp, X } from 'lucide-react';
+import { Utensils, ClipboardList, ArrowLeft, X } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import { useLocation } from 'react-router-dom';
-import { RootState } from '../../../../common/store';
-import { BillComponent } from './index';
+import BillComponent from './BillComponent';
 
-interface OrderItem {
-  name: string;
-  quantity: number;
-  price: number;
-  image?: string;
-}
-
-interface InDiningOrdersProps {
-  onClose: () => void;
-  newOrderNumber?: string;
-}
-
-const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber }) => {
+const InDiningOrders = ({ onClose, newOrderNumber }) => {
   const [showNotification, setShowNotification] = useState(!!newOrderNumber);
   const [showBill, setShowBill] = useState(false);
   
@@ -79,35 +66,39 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
   }, [hideUrlBar]);
   
   // Define the order interface
-  interface Order {
-    id: string;
-    date: string;
-    status: string;
-    total: number;
-    items: OrderItem[];
-  }
+  const OrderItem = {
+    name: '',
+    quantity: 0,
+    price: 0,
+    image: ''
+  };
+
+  const Order = {
+    id: '',
+    date: '',
+    status: '',
+    total: 0,
+    items: []
+  };
 
   // Mock orders data - in a real app, this would come from a backend
-  const mockOrders: Order[] = [];
+  const mockOrders = [];
 
   // If there's a new order number, add it to the top of the list
+  const cartItems = useSelector((state) => state.cart.items);
   const orders = newOrderNumber 
     ? [
         {
           id: newOrderNumber,
           date: new Date().toISOString(),
           status: 'Preparing',
-          total: useSelector((state: RootState) => 
-            state.cart.items.reduce((total, item) => total + item.price * item.quantity, 0) * 1.1
-          ),
-          items: useSelector((state: RootState) => 
-            state.cart.items.map(item => ({
-              name: item.name,
-              quantity: item.quantity,
-              price: item.price,
-              image: item.image || ''
-            }))
-          )
+          total: cartItems.reduce((total, item) => total + item.price * item.quantity, 0) * 1.1,
+          items: cartItems.map(item => ({
+            name: item.name,
+            quantity: item.quantity,
+            price: item.price,
+            image: item.image || ''
+          }))
         },
         ...mockOrders
       ]
@@ -115,7 +106,7 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
 
   // Get table number from URL
   const location = useLocation();
-  const [tableNumber, setTableNumber] = useState<string | null>(null);
+  const [tableNumber, setTableNumber] = useState(null);
   
   useEffect(() => {
     // Extract table number from URL query parameter or path parameter
@@ -152,11 +143,11 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
               onClick={onClose}
               className="p-1 mr-3"
             >
-              <ArrowLeft className="h-6 w-6 text-amber-500" />
+              <ArrowLeft className="h-6 w-6 text-orange-600" />
             </button>
             <div>
               <h2 className="text-lg font-semibold text-white">Your Orders</h2>
-              <p className="text-xs text-amber-400">
+              <p className="text-xs text-orange-400">
                 Table Number: {tableNumber ? `#${tableNumber}` : 'No Table'}
               </p>
             </div>
@@ -171,22 +162,22 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="bg-amber-50 border-l-4 border-amber-500 p-4 mx-4 mt-4 rounded-md relative"
+          className="bg-orange-50 border-l-4 border-orange-600 p-4 mx-4 mt-4 rounded-md relative"
         >
           <button 
             onClick={() => setShowNotification(false)} 
-            className="absolute top-2 right-2 text-amber-500 hover:text-amber-700"
+            className="absolute top-2 right-2 text-orange-600 hover:text-orange-700"
             aria-label="Close notification"
           >
             <X className="h-5 w-5" />
           </button>
           <div className="flex items-start">
             <div className="flex-shrink-0">
-              <Utensils className="h-5 w-5 text-amber-500" />
+              <Utensils className="h-5 w-5 text-orange-600" />
             </div>
             <div className="ml-3">
-              <h3 className="text-sm font-medium text-amber-800">Order Update</h3>
-              <div className="mt-2 text-sm text-amber-700">
+              <h3 className="text-sm font-medium text-orange-800">Order Update</h3>
+              <div className="mt-2 text-sm text-orange-700">
                 <p>Your order is being prepared</p>
               </div>
             </div>
@@ -198,8 +189,8 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
       <div className="p-4">
         {orders.length === 0 ? (
           <div className="text-center py-12 flex flex-col items-center">
-            <div className="w-20 h-20 bg-amber-50 rounded-full flex items-center justify-center mb-4">
-              <ClipboardList className="h-10 w-10 text-amber-300" />
+            <div className="w-20 h-20 bg-orange-50 rounded-full flex items-center justify-center mb-4">
+              <ClipboardList className="h-10 w-10 text-orange-300" />
             </div>
             <p className="text-gray-500 text-lg font-medium">No orders yet</p>
             <p className="text-gray-400 text-sm mt-2">Your order history will appear here</p>
@@ -208,20 +199,20 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
           <div>
             {/* Orders as Cards */}
             <div className="space-y-4">
-              {orders.map((order: Order, orderIndex: number) => (
+              {orders.map((order, orderIndex) => (
                 <div key={orderIndex} className="bg-white overflow-hidden">
                   {/* Order Items */}
                   <div className="p-4">
                     <div className="space-y-4">
-                      {order.items.map((item: OrderItem, index: number) => (
+                      {order.items.map((item, index) => (
                         <div key={index} className="flex items-center justify-between border-b border-gray-100 pb-3">
                           {/* Product Info */}
                           <div className="flex items-center">
-                            <div className="w-12 h-12 rounded-md overflow-hidden mr-3 flex-shrink-0 bg-amber-100 flex items-center justify-center">
+                            <div className="w-12 h-12 rounded-md overflow-hidden mr-3 flex-shrink-0 bg-orange-100 flex items-center justify-center">
                               {item.image ? (
                                 <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
                               ) : (
-                                <span className="text-lg font-bold text-amber-500">
+                                <span className="text-lg font-bold text-orange-600">
                                   {item.name.charAt(0)}
                                 </span>
                               )}
@@ -229,7 +220,7 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
                             <div>
                               <div className="text-sm font-medium">{item.name}</div>
                               <div className="text-xs text-gray-500 flex items-center mt-1">
-                                <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 mr-2">
+                                <span className="px-2 py-0.5 rounded-full bg-orange-100 text-orange-800 mr-2">
                                   Preparing
                                 </span>
                                 <span>Qty: {item.quantity}</span>
@@ -256,13 +247,13 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 flex justify-between items-center">
         <div>
           <div className="text-sm text-gray-600">Total Amount</div>
-          <div className="text-xl font-bold text-amber-500">
+          <div className="text-xl font-bold text-orange-600">
             ${orders.length > 0 ? orders[0].total.toFixed(2) : '0.00'}
           </div>
         </div>
         <div className="flex space-x-3">
           <button 
-            className="bg-amber-500 text-white px-4 py-2 rounded-full font-medium hover:bg-amber-600 transition-colors"
+            className="bg-orange-600 text-white px-4 py-2 rounded-full font-medium hover:bg-orange-700 transition-colors"
             onClick={onClose}
           >
             Continue Ordering

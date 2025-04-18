@@ -10,6 +10,7 @@ import { ContactPage } from './components/contact/ContactPage';
 import { MetaHead } from './components/seo/MetaHead';
 import TitleUpdater from './components/TitleUpdater';
 import { Navbar, Footer } from './components/layout';
+import { InDiningOrder } from './components/in-dining';
 import { Hero, FoodCarousel, Experience, Testimonials } from './components/home';
 import { MenuCategories, MenuList, ProductDetail } from './components/menu';
 import { StoryPage } from './components/story/StoryPage';
@@ -57,12 +58,12 @@ function AdminRoute({ children }) {
 }
 
 // Layout wrapper for public routes
-function PublicLayout({ children }) {
+function PublicLayout({ children, hideNavAndFooter = false }) {
   return (
     <>
-      <Navbar />
+      {!hideNavAndFooter && <Navbar />}
       {children}
-      <Footer />
+      {!hideNavAndFooter && <Footer />}
     </>
   );
 }
@@ -84,6 +85,10 @@ export function CulinaryJourneyLayout() {
                       <Routes>
                         {/* Login Route */}
                         <Route path="/login" element={<LoginPage />} />
+
+                        {/* In-Dining Routes */}
+                        <Route path="/placeindiningorder" element={<InDiningOrder />} />
+                        <Route path="/placeindiningorder/:table" element={<InDiningOrder />} />
 
                         {/* Admin Routes */}
                         <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>}>
@@ -160,6 +165,10 @@ export function CulinaryJourneyRoutes() {
                     <Routes>
                       {/* Login Route */}
                       <Route path="/login" element={<LoginPage />} />
+                      
+                      {/* In-Dining Routes */}
+                      <Route path="/placeindiningorder" element={<InDiningOrder />} />
+                      <Route path="/placeindiningorder/:table" element={<InDiningOrder />} />
 
                       {/* Admin Routes */}
                       <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>}>
