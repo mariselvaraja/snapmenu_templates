@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, X } from 'lucide-react';
+import { MapPin, X, Search } from 'lucide-react';
 
 // Sample location data - this would typically come from an API or props
 const locations = [
@@ -8,25 +8,37 @@ const locations = [
     id: 1,
     name: "Downtown Location",
     address: "123 Main Street",
-    phone: "(555) 123-4567",
-    hours: "Mon-Sun: 11am - 11pm",
-    image: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
+   
   },
   {
     id: 2,
     name: "Uptown Location",
     address: "456 Park Avenue",
-    phone: "(555) 234-5678",
-    hours: "Mon-Sun: 11am - 12am",
-    image: "https://images.unsplash.com/photo-1567967455389-e778e3b2c5f1?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
   },
   {
     id: 3,
     name: "Riverside Location",
     address: "789 River Road",
-    phone: "(555) 345-6789",
-    hours: "Mon-Sun: 10am - 10pm",
-    image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
+  },
+  {
+    id: 3,
+    name: "Riverside Location",
+    address: "789 River Road",
+  },
+  {
+    id: 3,
+    name: "Riverside Location",
+    address: "789 River Road",
+  },
+  {
+    id: 3,
+    name: "Riverside Location",
+    address: "789 River Road",
+  },
+  {
+    id: 3,
+    name: "Riverside Location",
+    address: "789 River Road",
   }
 ];
 
@@ -54,10 +66,29 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
   showCloseButton = true // Default to true for backward compatibility
 }) => {
   // Use provided locations or default to sample data
-  const displayLocations = propLocations || locations;
+  const allLocations = propLocations || locations;
   
-  // State to track selected location
+  // State to track selected location and search query
   const [selectedLocation, setSelectedLocation] = useState<number | null>(null);
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  
+  // Focus search input when component opens
+  useEffect(() => {
+    if (isOpen && searchInputRef.current) {
+      setTimeout(() => {
+        searchInputRef.current?.focus();
+      }, 100);
+    }
+  }, [isOpen]);
+  
+  // Filter locations based on search query
+  const displayLocations = searchQuery.trim() === '' 
+    ? allLocations 
+    : allLocations.filter(location => 
+        location.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        location.address.toLowerCase().includes(searchQuery.toLowerCase())
+      );
 
   // Handle location selection
   const handleSelectLocation = (location: any) => {
@@ -85,63 +116,113 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
-            className="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto"
+            className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 h-[80vh] overflow-hidden flex flex-col"
           >
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-orange-600">Select Your Location</h2>
-                {showCloseButton && (
-                  <button 
-                    onClick={onClose}
-                    className="text-gray-500 hover:text-orange-600 transition-colors"
-                  >
-                    <X size={24} />
-                  </button>
-                )}
+            {/* Elegant fixed header and search bar */}
+            <div className="sticky top-0 bg-white z-10 border-b border-gray-100 shadow-sm">
+              <div className="px-5 pt-5 pb-3">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-xl font-semibold text-orange-600 tracking-tight">Select Your Location</h2>
+                  {showCloseButton && (
+                    <motion.button 
+                      onClick={onClose}
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="text-gray-400 hover:text-orange-500 transition-colors rounded-full p-1 hover:bg-orange-50"
+                    >
+                      <X size={18} />
+                    </motion.button>
+                  )}
+                </div>
+                
+                {/* Refined Search Bar with bottom border only */}
+                <div className="relative mb-2">
+                  <div className="flex items-center border-b border-gray-200 pb-1 group focus-within:border-orange-300 transition-colors">
+                    <div className="pl-1 pr-2">
+                      <Search className="h-4 w-4 text-gray-400 group-focus-within:text-orange-400 transition-colors" />
+                    </div>
+                    <input
+                      ref={searchInputRef}
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Search locations..."
+                      className="w-full py-2 px-1 focus:outline-none text-gray-700 text-sm placeholder-gray-400"
+                    />
+                    {searchQuery && (
+                      <motion.button
+                        onClick={() => setSearchQuery('')}
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="pr-1 text-gray-400 hover:text-gray-600"
+                      >
+                        <X size={14} />
+                      </motion.button>
+                    )}
+                  </div>
+                </div>
               </div>
-              
-              <p className="text-gray-600 mb-8">
-                Please select a location to continue to our menu and services.
-              </p>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {displayLocations.map((location) => (
+            </div>
+            
+            {/* Scrollable content area with elegant styling */}
+            <div className="overflow-y-auto flex-1 px-2">
+              <div className="flex flex-col">
+                {displayLocations.length > 0 ? (
+                  displayLocations.map((location) => (
                   <motion.div
                     key={location.id}
-                    whileHover={{ scale: 1.03 }}
-                    whileTap={{ scale: 0.98 }}
-                    className={`cursor-pointer rounded-lg overflow-hidden shadow-md transition-all
-                      ${selectedLocation === location.id ? 'ring-2 ring-orange-500' : 'hover:shadow-lg'}`}
+                    whileHover={{ scale: 1.01, x: 2 }}
+                    whileTap={{ scale: 0.99 }}
+                    className={`cursor-pointer border-b border-gray-100 transition-all
+                      ${selectedLocation === location.id ? 'bg-orange-50' : 'hover:bg-gray-50'}`}
                     onClick={() => handleSelectLocation(location)}
                   >
-                    <div className="relative h-40">
-                      <img
-                        src={location.image}
-                        alt={location.name}
-                        className="w-full h-full object-cover"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                      <div className="absolute bottom-0 left-0 p-4">
-                        <h3 className="text-white font-bold text-lg">{location.name}</h3>
+                    <div className="flex py-4 px-3">
+                      <div className="w-10 h-10 flex-shrink-0 rounded-full bg-gradient-to-br from-orange-100 to-orange-50 flex items-center justify-center shadow-sm">
+                        <MapPin className="h-5 w-5 text-orange-500" />
                       </div>
-                    </div>
-                    <div className="p-4 bg-white">
-                      <div className="flex items-center text-gray-600 mb-2">
-                        <MapPin className="h-4 w-4 mr-2 flex-shrink-0 text-orange-500" />
-                        <span className="text-sm">{location.address}</span>
+                      <div className="ml-3 flex-1">
+                        <h3 className="font-medium text-gray-800 leading-tight">{location.name}</h3>
+                        <div className="flex items-center text-gray-500 mt-1">
+                          <span className="text-sm">{location.address}</span>
+                        </div>
                       </div>
-                      <button 
-                        className="mt-2 w-full py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-md transition-colors text-sm font-medium"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleSelectLocation(location);
-                        }}
-                      >
-                        Select Location
-                      </button>
+                      <div className="flex items-center">
+                        <motion.div 
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: selectedLocation === location.id ? 1 : 0 }}
+                          className="text-orange-500"
+                        >
+                          <div className="w-2 h-2 rounded-full bg-orange-500"></div>
+                        </motion.div>
+                      </div>
                     </div>
                   </motion.div>
-                ))}
+                  ))
+                ) : (
+                  <div className="text-center py-12">
+                    <motion.div 
+                      initial={{ scale: 0.9, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ delay: 0.1 }}
+                      className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-orange-100 to-orange-50 mb-4 shadow-sm"
+                    >
+                      <MapPin className="h-8 w-8 text-orange-500" />
+                    </motion.div>
+                    <h3 className="text-lg font-medium text-gray-800 mb-2">No locations found</h3>
+                    <p className="text-gray-500 max-w-xs mx-auto">Try a different search term or browse all locations.</p>
+                    {searchQuery && (
+                      <motion.button
+                        whileHover={{ scale: 1.03 }}
+                        whileTap={{ scale: 0.97 }}
+                        onClick={() => setSearchQuery('')}
+                        className="mt-5 px-5 py-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-full transition-all shadow-sm hover:shadow text-sm font-medium"
+                      >
+                        Show All Locations
+                      </motion.button>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </motion.div>
