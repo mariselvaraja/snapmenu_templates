@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { X, Plus, Minus, ArrowLeft, Heart, ShoppingCart } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useLocation } from 'react-router-dom';
-import { addItem, toggleDrawer } from '../../../../common/redux/slices/cartSlice';
+import { addItem, toggleDrawer } from '../../../../redux/slices/cartSlice';
 
 const InDiningProductDetails = ({ product, onClose, menuItems }) => {
   const [quantity, setQuantity] = useState(1);

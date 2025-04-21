@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Search, X, Loader } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useAppSelector, useAppDispatch } from '../../../common/redux/hooks';
-import { setSearchQuery, setSearchResults, setSearchState } from '../../../common/redux/slices/searchSlice';
+import { useAppSelector, useAppDispatch } from '../../../redux/hooks';
+import { setSearchQuery, setSearchResults, setSearchState } from '../../../redux/slices/searchSlice';
 import searchService, { SearchState } from '../../../services/searchService';
 
 // Format price to display with currency symbol

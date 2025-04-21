@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Plus, Minus, Trash2, ShoppingBag } from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useLocation } from 'react-router-dom';
-import { toggleDrawer, updateItemQuantity, removeItem } from '../../../../common/redux/slices/cartSlice';
+import { toggleDrawer, updateItemQuantity, removeItem } from '../../../../redux/slices/cartSlice';
 
 const InDiningCartDrawer = ({ onPlaceOrder }) => {
   const dispatch = useDispatch();

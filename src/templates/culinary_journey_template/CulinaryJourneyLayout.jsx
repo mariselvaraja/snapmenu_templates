@@ -9,6 +9,7 @@ import { EventsPage } from './components/events';
 import { ContactPage } from './components/contact/ContactPage';
 import { MetaHead } from './components/seo/MetaHead';
 import TitleUpdater from './components/TitleUpdater';
+import { SearchInitializer } from '../../components/search';
 import { Navbar, Footer } from './components/layout';
 import { InDiningOrder } from './components/in-dining';
 import { Hero, FoodCarousel, Experience, Testimonials } from './components/home';
@@ -82,6 +83,7 @@ export function CulinaryJourneyLayout() {
                     <div className="min-h-screen">
                       <MetaHead />
                       <TitleUpdater />
+                      <SearchInitializer />
                       <Routes>
                         {/* Login Route */}
                         <Route path="/login" element={<LoginPage />} />

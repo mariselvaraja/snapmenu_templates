@@ -4,8 +4,8 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import InDiningProductDetails from './in-dining/InDiningProductDetails';
 import InDiningCartDrawer from './in-dining/InDiningCartDrawer';
 import { useSelector, useDispatch } from 'react-redux';
-import { setSearchQuery, setSearchResults, setSearchState } from '../../../common/redux/slices/searchSlice';
-import { addItem, toggleDrawer } from '../../../common/redux/slices/cartSlice';
+import { setSearchQuery, setSearchResults, setSearchState } from '../../../redux/slices/searchSlice';
+import { addItem, toggleDrawer } from '../../../redux/slices/cartSlice';
 import searchService, { SearchState as SearchServiceState } from '../../../services/searchService';
 
 /**

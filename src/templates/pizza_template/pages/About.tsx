@@ -17,24 +17,43 @@ export default function About() {
     (typeof rawApiResponse.data === 'string' ? JSON.parse(rawApiResponse.data) : rawApiResponse.data) : 
     {};
   const story = siteContent?.story;
+  
+  // Check if story data is available
+  const isStoryAvailable = story && story.hero;
+  
   return (
     <div className="py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Hero Section */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="text-center mb-16"
-        >
-          <h1 className="text-4xl font-bold mb-4">{story.hero.title}</h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            {story.hero.description}
-          </p>
-        </motion.div>
+        {isStoryAvailable ? (
+          /* Hero Section */
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="text-center mb-16"
+          >
+            <h1 className="text-4xl font-bold mb-4">{story.hero.title}</h1>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              {story.hero.description}
+            </p>
+          </motion.div>
+        ) : (
+          /* Fallback when story is not available */
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="text-center mb-16"
+          >
+            <h1 className="text-4xl font-bold mb-4">Story is not Available</h1>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Our story content is currently unavailable. Please check back later.
+            </p>
+          </motion.div>
+        )}
 
-        {/* Image Section - only show if image exists */}
-        {story.hero.image && (
+        {/* Image Section - only show if story and image exist */}
+        {isStoryAvailable && story.hero.image && (
           <motion.div
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
@@ -52,8 +71,8 @@ export default function About() {
           </motion.div>
         )}
 
-        {/* Values Section - only show if values exist */}
-        {story.values && story.values.length > 0 ? (
+        {/* Values Section - only show if story and values exist */}
+        {isStoryAvailable && story.values && story.values.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
             {story.values.map((value: StoryValue, index: number) => {
               // Map icon string to actual icon component
@@ -98,7 +117,7 @@ export default function About() {
           </motion.div>
         )}
 
-        {/* Mission Statement */}
+        {/* Mission Statement - always show */}
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}

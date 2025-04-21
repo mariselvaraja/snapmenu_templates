@@ -4,7 +4,7 @@ import { useAuth } from '../../../context';
 import { Link, useNavigate } from 'react-router-dom';
 import { MobileMenu } from '../MobileMenu';
 import { CartSummary } from '../../cart/CartSummary';
-import SearchModal from '../../common/SearchModal';
+import { SearchModal } from '../../../../../components/search';
 
 export function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);

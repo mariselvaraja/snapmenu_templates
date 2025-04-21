@@ -2,8 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Search, X, ArrowLeft, Plus, Loader, Mic } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { setSearchQuery, setSearchResults, setSearchState } from '../../../common/redux/slices/searchSlice';
-import { addItem, toggleDrawer } from '../../../common/redux/slices/cartSlice';
+import { setSearchQuery, setSearchResults, setSearchState } from '../../../redux/slices/searchSlice';
+import { addItem, toggleDrawer } from '../../../redux/slices/cartSlice';
 import searchService, { SearchState as SearchServiceState } from '../../../services/searchService';
 import { InDiningProductDetails, InDiningCartDrawer } from './in-dining';
 

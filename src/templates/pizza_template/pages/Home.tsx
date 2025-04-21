@@ -19,37 +19,59 @@ export default function Home() {
   const navigationBar = siteContent?.navigationBar;
   const heroData = navigationBar?.hero;
   
+  // Fallback banner data if heroData or heroData.banners is not available
+  const fallbackBanners = [
+    {
+      image: "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&q=80",
+      title: "Authentic Italian Pizza",
+      subtitle: "Made with fresh ingredients and traditional recipes"
+    },
+    {
+      image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&q=80",
+      title: "Handcrafted to Perfection",
+      subtitle: "Every pizza is made with love and attention to detail"
+    },
+    {
+      image: "https://images.unsplash.com/photo-1571407970349-bc81e7e96d47?auto=format&fit=crop&q=80",
+      title: "Fast & Fresh Delivery",
+      subtitle: "Hot and delicious pizza delivered to your doorstep"
+    }
+  ];
+  
+  // Use heroData.banners if available, otherwise use fallbackBanners
+  const banners = heroData?.banners?.length > 0 ? heroData.banners : fallbackBanners;
+  
   // Auto-rotate carousel
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentBannerIndex((prevIndex) => 
-        (prevIndex + 1) % heroData.banners.length
+        (prevIndex + 1) % banners.length
       );
     }, 5000); // Change slide every 5 seconds
     
     return () => clearInterval(interval);
-  }, [heroData.banners.length]);
+  }, [banners.length]);
   
   const goToNextSlide = () => {
     setCurrentBannerIndex((prevIndex) => 
-      (prevIndex + 1) % heroData.banners.length
+      (prevIndex + 1) % banners.length
     );
   };
   
   const goToPrevSlide = () => {
     setCurrentBannerIndex((prevIndex) => 
-      (prevIndex - 1 + heroData.banners.length) % heroData.banners.length
+      (prevIndex - 1 + banners.length) % banners.length
     );
   };
   
-  const currentBanner = heroData?.banners[currentBannerIndex];
+  const currentBanner = banners[currentBannerIndex];
 
   return (
     <div>
       {/* Hero Section with Carousel */}
       <section className="relative h-screen flex items-center overflow-hidden">
         <div className="absolute inset-0 z-0">
-          {heroData.banners.map((banner: { image: string }, index: number) => (
+          {banners.map((banner: { image: string }, index: number) => (
             <motion.div
               key={index}
               className="absolute inset-0"
@@ -99,20 +121,6 @@ export default function Home() {
               </button>
             </div>
           </motion.div>
-          
-          {/* Carousel Navigation */}
-          <div className="absolute bottom-10 left-0 right-0 flex justify-center gap-4 z-20">
-            {heroData.banners.map((_: any, index: number) => (
-              <button
-                key={index}
-                onClick={() => setCurrentBannerIndex(index)}
-                className={`w-3 h-3 rounded-full transition-colors ${
-                  index === currentBannerIndex ? 'bg-red-500' : 'bg-white bg-opacity-50 hover:bg-opacity-75'
-                }`}
-                aria-label={`Go to slide ${index + 1}`}
-              />
-            ))}
-          </div>
           
           {/* Carousel arrows removed as requested */}
         </div>

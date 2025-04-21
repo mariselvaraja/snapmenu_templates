@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
-import { useAppSelector, useAppDispatch } from '../../../common/redux/hooks';
+import { useAppSelector, useAppDispatch } from '../../../redux/hooks';
 import searchService, { SearchState } from '../../../services/searchService';
-import { setSearchState } from '../../../common/redux/slices/searchSlice';
+import { setSearchState } from '../../../redux/slices/searchSlice';
 
 /**
  * Custom SearchInitializer component for the eatflow template

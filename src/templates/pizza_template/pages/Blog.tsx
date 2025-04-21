@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+ import { motion } from 'framer-motion';
 import { Calendar, User, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAppSelector } from '../../../common/redux';
@@ -71,14 +71,17 @@ export default function Blog() {
     ]
   };
   
-  // Use API data if available, otherwise use default data
-  const blog = siteContent?.blog || defaultBlog;
+  // Check if blog data is available
+  const isBlogAvailable = siteContent?.blog !== undefined;
+  
+  // Use API data if available, otherwise use default data for rendering
+  const blog = isBlogAvailable ? siteContent.blog : defaultBlog;
   
   // Log the blog data being used
   console.log('Blog component: Using blog data', blog);
   
   // Transform blog data from siteContent to match the format expected by the component
-  const blogPosts: BlogPost[] = blog.posts.map((post: any) => ({
+  const blogPosts: BlogPost[] = isBlogAvailable ? blog.posts.map((post: any) => ({
     id: post.id,
     title: post.title,
     excerpt: post.subtitle,
@@ -86,27 +89,41 @@ export default function Blog() {
     date: post.date,
     category: post.readTime.includes("min") ? "Culinary Techniques" : "Chef Stories",
     image: post.image
-  }));
+  })) : [];
   
   // Use the first post as the featured post if available
   const featuredPost = blogPosts.length > 0 ? blogPosts[0] : null;
   return (
     <div className="py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="text-center mb-16"
-        >
-          <h1 className="text-4xl font-bold mb-4">{blog.header.title}</h1>
-          <p className="text-xl text-gray-600">
-            {blog.header.description}
-          </p>
-        </motion.div>
+        {isBlogAvailable ? (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="text-center mb-16"
+          >
+            <h1 className="text-4xl font-bold mb-4">{blog.header.title}</h1>
+            <p className="text-xl text-gray-600">
+              {blog.header.description}
+            </p>
+          </motion.div>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="text-center mb-16"
+          >
+            <h1 className="text-4xl font-bold mb-4">Blog is not Available</h1>
+            <p className="text-xl text-gray-600">
+              Our blog content is currently unavailable. Please check back later.
+            </p>
+          </motion.div>
+        )}
 
-        {/* Featured Post */}
-        {featuredPost && (
+        {/* Featured Post - only show if blog is available */}
+        {isBlogAvailable && featuredPost && (
           <motion.div
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
@@ -171,69 +188,71 @@ export default function Blog() {
           </motion.div>
         )}
 
-        {/* Blog Posts Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {blogPosts.map((post, index) => (
-            <motion.article
-              key={post.id}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.2 }}
-              className="bg-white rounded-lg overflow-hidden shadow-lg"
-            >
-              {post.image ? (
-                <div className="w-full h-48">
-                  <img
-                    src={post.image}
-                    alt={post.title}
-                    className="w-full h-48 object-cover"
-                    onError={(e) => {
-                      e.currentTarget.style.display = 'none';
-                      const parent = e.currentTarget.parentElement;
-                      if (parent) {
-                        parent.classList.add('bg-red-100', 'flex', 'items-center', 'justify-center');
-                        const fallbackEl = document.createElement('span');
-                        fallbackEl.className = 'text-4xl font-bold text-red-500';
-                        fallbackEl.textContent = post.title && post.title.length > 0 
-                          ? post.title.charAt(0).toUpperCase() 
-                          : 'B';
-                        parent.appendChild(fallbackEl);
-                      }
-                    }}
-                  />
-                </div>
-              ) : (
-                <div className="w-full h-48 bg-red-100 flex items-center justify-center">
-                  <span className="text-4xl font-bold text-red-500">
-                    {post.title && post.title.length > 0 
-                      ? post.title.charAt(0).toUpperCase() 
-                      : 'B'}
-                  </span>
-                </div>
-              )}
-              <div className="p-6">
-                <div className="flex items-center gap-4 text-sm text-gray-600 mb-4">
-                  <div className="flex items-center">
-                    <User className="h-4 w-4 mr-2" />
-                    <span>{post.author}</span>
+        {/* Blog Posts Grid - only show if blog is available */}
+        {isBlogAvailable ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {blogPosts.map((post, index) => (
+              <motion.article
+                key={post.id}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.2 }}
+                className="bg-white rounded-lg overflow-hidden shadow-lg"
+              >
+                {post.image ? (
+                  <div className="w-full h-48">
+                    <img
+                      src={post.image}
+                      alt={post.title}
+                      className="w-full h-48 object-cover"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                        const parent = e.currentTarget.parentElement;
+                        if (parent) {
+                          parent.classList.add('bg-red-100', 'flex', 'items-center', 'justify-center');
+                          const fallbackEl = document.createElement('span');
+                          fallbackEl.className = 'text-4xl font-bold text-red-500';
+                          fallbackEl.textContent = post.title && post.title.length > 0 
+                            ? post.title.charAt(0).toUpperCase() 
+                            : 'B';
+                          parent.appendChild(fallbackEl);
+                        }
+                      }}
+                    />
                   </div>
-                  <div className="flex items-center">
-                    <Calendar className="h-4 w-4 mr-2" />
-                    <span>{new Date(post.date).toLocaleDateString()}</span>
+                ) : (
+                  <div className="w-full h-48 bg-red-100 flex items-center justify-center">
+                    <span className="text-4xl font-bold text-red-500">
+                      {post.title && post.title.length > 0 
+                        ? post.title.charAt(0).toUpperCase() 
+                        : 'B'}
+                    </span>
                   </div>
+                )}
+                <div className="p-6">
+                  <div className="flex items-center gap-4 text-sm text-gray-600 mb-4">
+                    <div className="flex items-center">
+                      <User className="h-4 w-4 mr-2" />
+                      <span>{post.author}</span>
+                    </div>
+                    <div className="flex items-center">
+                      <Calendar className="h-4 w-4 mr-2" />
+                      <span>{new Date(post.date).toLocaleDateString()}</span>
+                    </div>
+                  </div>
+                  <h3 className="text-xl font-semibold mb-2">{post.title}</h3>
+                  <p className="text-gray-600 mb-4">{post.excerpt}</p>
+                  <Link
+                    to={`/blog/${post.id}`}
+                    className="inline-flex items-center text-red-500 hover:text-red-600 transition-colors"
+                  >
+                    Read More <ArrowRight className="h-4 w-4 ml-2" />
+                  </Link>
                 </div>
-                <h3 className="text-xl font-semibold mb-2">{post.title}</h3>
-                <p className="text-gray-600 mb-4">{post.excerpt}</p>
-                <Link
-                  to={`/blog/${post.id}`}
-                  className="inline-flex items-center text-red-500 hover:text-red-600 transition-colors"
-                >
-                  Read More <ArrowRight className="h-4 w-4 ml-2" />
-                </Link>
-              </div>
-            </motion.article>
-          ))}
-        </div>
+              </motion.article>
+            ))}
+          </div>
+        ) : null}
 
         {/* Newsletter Section */}
         <motion.div

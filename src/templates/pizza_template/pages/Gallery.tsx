@@ -21,7 +21,12 @@ export default function Gallery() {
   const siteContent = rawApiResponse?.data ? 
     (typeof rawApiResponse.data === 'string' ? JSON.parse(rawApiResponse.data) : rawApiResponse.data) : 
     {};
-  const gallery = siteContent?.gallery || {
+    
+  // Check if gallery data is available
+  const isGalleryAvailable = siteContent?.gallery !== undefined;
+  
+  // Default gallery data in case API data is not available
+  const defaultGallery = {
     section: {
       title: "Our Gallery",
       subtitle: "Explore our restaurant and cuisine through our gallery"
@@ -44,12 +49,15 @@ export default function Gallery() {
       }
     ]
   };
+  
+  // Use API data if available, otherwise use default data for rendering
+  const gallery = isGalleryAvailable ? siteContent.gallery : defaultGallery;
   const [galleryItems, setGalleryItems] = useState<MediaItem[]>([]);
   const [selectedMedia, setSelectedMedia] = useState<MediaItem | null>(null);
 
   // Transform gallery data from siteContent to match the component's expected format
   useEffect(() => {
-    if (gallery && gallery.images) {
+    if (isGalleryAvailable && gallery && gallery.images) {
       const transformedItems = gallery.images.map((item: any, index: number) => ({
         id: index + 1,
         title: item.title,
@@ -61,67 +69,83 @@ export default function Gallery() {
       }));
       setGalleryItems(transformedItems);
     }
-  }, [gallery]);
+  }, [gallery, isGalleryAvailable]);
 
   return (
     <div className="py-20 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="text-center mb-16"
-        >
-          <h1 className="text-4xl font-bold mb-4">{gallery.section.title}</h1>
-          <p className="text-xl text-gray-600">
-            {gallery.section.subtitle}
-          </p>
-        </motion.div>
+        {isGalleryAvailable ? (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="text-center mb-16"
+          >
+            <h1 className="text-4xl font-bold mb-4">{gallery.section.title}</h1>
+            <p className="text-xl text-gray-600">
+              {gallery.section.subtitle}
+            </p>
+          </motion.div>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="text-center mb-16"
+          >
+            <h1 className="text-4xl font-bold mb-4">Gallery is not Available</h1>
+            <p className="text-xl text-gray-600">
+              Our gallery content is currently unavailable. Please check back later.
+            </p>
+          </motion.div>
+        )}
 
-        {/* Gallery Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {galleryItems.map((item, index) => (
-            <motion.div
-              key={item.id}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="relative group cursor-pointer bg-white rounded-xl overflow-hidden shadow-lg"
-              onClick={() => setSelectedMedia({
-                id: Number(item.id),
-                type: item.type,
-                title: item.title,
-                image: item.type === 'image' ? item.image : undefined,
-                thumbnail: item.type === 'video' ? item.thumbnail : undefined,
-                videoUrl: item.type === 'video' ? item.videoUrl : undefined
-              })}
-            >
-              <div className="aspect-w-16 aspect-h-9">
-                <img
-                  src={item.type === 'image' ? item.image : item.thumbnail}
-                  alt={item.title}
-                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-                />
-                {item.type === 'video' && (
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="bg-red-500 rounded-full p-4 opacity-90">
-                      <Play className="h-8 w-8 text-white" />
+        {/* Gallery Grid - only show if gallery is available */}
+        {isGalleryAvailable ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {galleryItems.map((item, index) => (
+              <motion.div
+                key={item.id}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                className="relative group cursor-pointer bg-white rounded-xl overflow-hidden shadow-lg"
+                onClick={() => setSelectedMedia({
+                  id: Number(item.id),
+                  type: item.type,
+                  title: item.title,
+                  image: item.type === 'image' ? item.image : undefined,
+                  thumbnail: item.type === 'video' ? item.thumbnail : undefined,
+                  videoUrl: item.type === 'video' ? item.videoUrl : undefined
+                })}
+              >
+                <div className="aspect-w-16 aspect-h-9">
+                  <img
+                    src={item.type === 'image' ? item.image : item.thumbnail}
+                    alt={item.title}
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                  />
+                  {item.type === 'video' && (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="bg-red-500 rounded-full p-4 opacity-90">
+                        <Play className="h-8 w-8 text-white" />
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
-              <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-opacity duration-300 flex items-center justify-center">
-                <p className="text-white text-lg font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  {item.title}
-                </p>
-              </div>
-              <div className="p-4">
-                <h3 className="text-lg font-semibold">{item.title}</h3>
-                <p className="text-sm text-gray-500">{item.description}</p>
-              </div>
-            </motion.div>
-          ))}
-        </div>
+                  )}
+                </div>
+                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-opacity duration-300 flex items-center justify-center">
+                  <p className="text-white text-lg font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    {item.title}
+                  </p>
+                </div>
+                <div className="p-4">
+                  <h3 className="text-lg font-semibold">{item.title}</h3>
+                  <p className="text-sm text-gray-500">{item.description}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        ) : null}
 
         {/* Lightbox */}
         {selectedMedia && (

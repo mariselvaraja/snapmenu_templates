@@ -4,8 +4,8 @@ import { Utensils, Trash2, Plus, X, Minus, Search, UtensilsCrossed, ArrowLeft, S
 import { useSelector } from 'react-redux';
 import { useDispatch } from 'react-redux';
 import { useLocation } from 'react-router-dom';
-import { addItem, updateItemQuantity, removeItem, toggleDrawer } from '../../../../common/redux/slices/cartSlice';
-import { setSearchQuery } from '../../../../common/redux/slices/searchSlice';
+import { addItem, updateItemQuantity, removeItem, toggleDrawer } from '../../../../redux/slices/cartSlice';
+import { setSearchQuery } from '../../../../redux/slices/searchSlice';
 import SearchBarComponent from '../SearchBarComponent';
 import InDiningProductDetails from './InDiningProductDetails';
 import InDiningCartDrawer from './InDiningCartDrawer';
