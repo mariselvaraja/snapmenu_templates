@@ -8,6 +8,13 @@ export default function App() {
   // This would typically come from an API or configuration
   const [templateId, setTemplateId] = useState('casual_dining_template');
 
+  // Check for preview mode in URL and store in session storage
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const isPreview = urlParams.get('preview') === 'true';
+    sessionStorage.setItem('isPreviewMode', isPreview.toString());
+  }, []);
+
   function getSubdomain(url) {
     const { hostname } = new URL(url);
     const domainParts = hostname.split('.');

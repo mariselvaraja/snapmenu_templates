@@ -1,11 +1,19 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import { useAppSelector } from '../../../common/redux/hooks';
 
 /**
  * Component that updates the document title based on the current page and restaurant name
+ * Also adds a preview indicator when in preview mode
  */
 export default function TitleUpdater() {
+  const [isPreviewMode, setIsPreviewMode] = useState(false);
+  
+  // Check session storage for preview mode on component mount
+  useEffect(() => {
+    const previewMode = sessionStorage.getItem('isPreviewMode') === 'true';
+    setIsPreviewMode(previewMode);
+  }, []);
   const { rawApiResponse } = useAppSelector(state => state.siteContent);
   
   // Get site content from Redux state
@@ -50,9 +58,9 @@ export default function TitleUpdater() {
       }
     }
     
-    // Set the document title
-    document.title = title;
-  }, [location.pathname, restaurantName, params, blog, menuItems]);
+    // Set the document title with preview indicator if in preview mode
+    document.title = isPreviewMode ? `[Preview] ${title}` : title;
+  }, [location.pathname, restaurantName, params, blog, menuItems, isPreviewMode]);
 
   // Helper function to get the page name from the path
   const getPageNameFromPath = (path) => {

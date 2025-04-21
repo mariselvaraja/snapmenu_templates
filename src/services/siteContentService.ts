@@ -17,7 +17,18 @@ export const siteContentService = {
     console.log('Fetching site content data from API');
     
     try {
-      const response = await api.get<any>(endpoints.siteContent.getAll);
+      // Check if we're in preview mode from sessionStorage
+      const isPreviewMode = sessionStorage.getItem('isPreviewMode') === 'true';
+      
+      // Determine the folder path based on preview mode
+      const folderPath = isPreviewMode ? 'preview' : 'v1';
+      
+      // Add folder_path parameter to the API call
+      const url = `${endpoints.siteContent.getAll}${endpoints.siteContent.getAll.includes('?') ? '&' : '?'}folder_path=${folderPath}`;
+      
+      console.log(`Using folder_path=${folderPath} for site content API call`);
+      
+      const response = await api.get<any>(url);
       
       // Store the raw API response
       let rawApiResponse = response.data;
@@ -67,6 +78,38 @@ export const siteContentService = {
   /**
    * Fetches a specific section of the site content
    */
+  getSiteContentSection: async (section: string): Promise<any> => {
+    try {
+      // Check if we're in preview mode from sessionStorage
+      const isPreviewMode = sessionStorage.getItem('isPreviewMode') === 'true';
+      
+      // Determine the folder path based on preview mode
+      const folderPath = isPreviewMode ? 'preview' : 'v1';
+      
+      // Add folder_path and section parameters to the API call
+      const url = `${endpoints.siteContent.getAll}${endpoints.siteContent.getAll.includes('?') ? '&' : '?'}folder_path=${folderPath}&section=${section}`;
+      
+      console.log(`Using folder_path=${folderPath} and section=${section} for site content API call`);
+      
+      // Make API call to get the specific section
+      const response = await api.get<any>(url);
+      
+      // Log the section API response for debugging
+      console.log(`SiteContentService: Raw API response for section "${section}"`, response);
+      
+      // Check if response data is valid
+      if (!response.data) {
+        console.warn(`SiteContentService: Empty data for section "${section}"`);
+        return {};
+      }
+      
+      return response.data;
+    } catch (error) {
+      console.error(`Error fetching site content section ${section}:`, error);
+      // Return empty object instead of throwing
+      return {};
+    }
+  }
 };
 
 export default siteContentService;

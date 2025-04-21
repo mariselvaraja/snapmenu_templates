@@ -21,8 +21,19 @@ export const siteContentService = {
       let data;
       if (!apiData) {
         try {
+          // Check if we're in preview mode from sessionStorage
+          const isPreviewMode = sessionStorage.getItem('isPreviewMode') === 'true';
+          
+          // Determine the folder path based on preview mode
+          const folderPath = isPreviewMode ? 'preview' : 'v1';
+          
+          // Add folder_path parameter to the API call
+          const url = `${endpoints.siteContent.getAll}${endpoints.siteContent.getAll.includes('?') ? '&' : '?'}folder_path=${folderPath}`;
+          
+          console.log(`Using folder_path=${folderPath} for site content API call`);
+          
           // Make API call to get site content data
-          const response = await api.get<any>(endpoints.siteContent.getAll);
+          const response = await api.get<any>(url);
           
           // Log the raw API response for debugging
           console.log('SiteContentService: Raw API response', response);
@@ -158,8 +169,19 @@ export const siteContentService = {
    */
   getSiteContentSection: async (section: string): Promise<any> => {
     try {
+      // Check if we're in preview mode from sessionStorage
+      const isPreviewMode = sessionStorage.getItem('isPreviewMode') === 'true';
+      
+      // Determine the folder path based on preview mode
+      const folderPath = isPreviewMode ? 'preview' : 'v1';
+      
+      // Add folder_path and section parameters to the API call
+      const url = `${endpoints.siteContent.getAll}${endpoints.siteContent.getAll.includes('?') ? '&' : '?'}folder_path=${folderPath}&section=${section}`;
+      
+      console.log(`Using folder_path=${folderPath} and section=${section} for site content API call`);
+      
       // Make API call to get the specific section
-      const response = await api.get<any>(endpoints.siteContent.getSection(section));
+      const response = await api.get<any>(url);
       
       // Log the section API response for debugging
       console.log(`SiteContentService: Raw API response for section "${section}"`, response);

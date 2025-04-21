@@ -151,47 +151,6 @@ export default function Events() {
             ))}
           </div>
         ) : null}
-
-        {/* Custom Events Section */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          transition={{ duration: 0.8 }}
-          className="mt-20 bg-gray-100 rounded-xl p-12"
-        >
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold mb-4">Plan Your Private Event</h2>
-            <p className="text-xl text-gray-600">
-              Looking to host a special celebration? We offer custom event packages!
-            </p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              {
-                title: "Birthday Parties",
-                description: "Make your birthday celebration special with our party packages"
-              },
-              {
-                title: "Corporate Events",
-                description: "Perfect for team building and business meetings"
-              },
-              {
-                title: "Special Occasions",
-                description: "Customize your event exactly how you want it"
-              }
-            ].map((item, index) => (
-              <div key={index} className="text-center p-6">
-                <h3 className="text-xl font-semibold mb-2">{item.title}</h3>
-                <p className="text-gray-600">{item.description}</p>
-              </div>
-            ))}
-          </div>
-          <div className="text-center mt-8">
-            <button className="bg-red-500 text-white px-8 py-3 rounded-full hover:bg-red-600 transition-colors">
-              Inquire About Private Events
-            </button>
-          </div>
-        </motion.div>
       </div>
     </div>
   );
