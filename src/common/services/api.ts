@@ -134,13 +134,14 @@ export const api = {
    */
   get: <T>(url: string, options: RequestInit = {}): Promise<ApiResponse<T>> => {
     // Get restaurant_id from Redux store if available
-    const state = getStoreState();
-    const restaurantId = state?.restaurant?.info?.restaurant_id;
+    
+    const restaurantId = sessionStorage.getItem("franchise_id");
     
     // Merge headers from options with default headers
     const mergedHeaders = {
       ...((options.headers as Record<string, string>) || {}),
-      // Only add restaurantid if it's not already provided in options
+      // Add restaurantid if it's not already provided in options
+      ...(restaurantId && { restaurantid: restaurantId }),
     };
     
     return request<T>(url, { 
@@ -155,17 +156,15 @@ export const api = {
    */
   post: <T>(url: string, body: any, options: RequestInit = {}): Promise<ApiResponse<T>> => {
     // Get restaurant_id from Redux store if available
-    const state = getStoreState();
-    const restaurantId = state?.restaurant?.info?.restaurant_id;
+    const restaurantId = sessionStorage.getItem("franchise_id");
     
     // Merge headers from options with default headers
     const mergedHeaders = {
       ...((options.headers as Record<string, string>) || {}),
     };
     
-    // Add restaurant header for placeOrder endpoint if not already provided
-    if (url.includes('/placeOrder') && 
-        !(options.headers && (options.headers as Record<string, string>).restaurantid)) {
+    // Add restaurant header if not already provided
+    if (restaurantId && !(options.headers && (options.headers as Record<string, string>).restaurantid)) {
       mergedHeaders.restaurantid = restaurantId;
     }
     
@@ -181,8 +180,19 @@ export const api = {
    * Makes a PUT request to the specified URL with the given body
    */
   put: <T>(url: string, body: any, options: RequestInit = {}): Promise<ApiResponse<T>> => {
+    // Get restaurant_id from Redux store if available
+    const state = getStoreState();
+    const restaurantId = sessionStorage.getItem("franchise_id");
+    
+    // Merge headers from options with default headers
+    const mergedHeaders = {
+      ...((options.headers as Record<string, string>) || {}),
+      ...(restaurantId && { restaurantid: restaurantId }),
+    };
+    
     return request<T>(url, {
       ...options,
+      headers: mergedHeaders,
       method: 'PUT',
       body: JSON.stringify(body),
     });
@@ -192,8 +202,19 @@ export const api = {
    * Makes a PATCH request to the specified URL with the given body
    */
   patch: <T>(url: string, body: any, options: RequestInit = {}): Promise<ApiResponse<T>> => {
+    // Get restaurant_id from Redux store if available
+
+    const restaurantId = sessionStorage.getItem("franchise_id");
+    
+    // Merge headers from options with default headers
+    const mergedHeaders = {
+      ...((options.headers as Record<string, string>) || {}),
+      ...(restaurantId && { restaurantid: restaurantId }),
+    };
+    
     return request<T>(url, {
       ...options,
+      headers: mergedHeaders,
       method: 'PATCH',
       body: JSON.stringify(body),
     });
@@ -203,7 +224,21 @@ export const api = {
    * Makes a DELETE request to the specified URL
    */
   delete: <T>(url: string, options: RequestInit = {}): Promise<ApiResponse<T>> => {
-    return request<T>(url, { ...options, method: 'DELETE' });
+    // Get restaurant_id from Redux store if available
+
+    const restaurantId =  sessionStorage.getItem("franchise_id");
+    
+    // Merge headers from options with default headers
+    const mergedHeaders = {
+      ...((options.headers as Record<string, string>) || {}),
+      ...(restaurantId && { restaurantid: restaurantId }),
+    };
+    
+    return request<T>(url, { 
+      ...options, 
+      headers: mergedHeaders,
+      method: 'DELETE' 
+    });
   },
 };
 

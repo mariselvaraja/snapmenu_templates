@@ -24,9 +24,8 @@ function* fetchRestaurantInfoSaga(): Generator<any, void, any> {
     // Dispatch success action with the restaurant info
     yield put(fetchRestaurantInfoSuccess(restaurantInfo));
     
-    // After successfully fetching restaurant info, fetch site content and menu
-    yield put(fetchSiteContentRequest());
-    yield put(fetchMenuRequest());
+    // Removed: No longer automatically fetch site content and menu
+    // We'll fetch these after location selection instead
   } catch (error) {
     console.error('Error in fetchRestaurantInfoSaga:', error);
     yield put(fetchRestaurantInfoFailure(error instanceof Error ? error.message : 'An unknown error occurred'));
@@ -42,15 +41,14 @@ function* fetchRestaurantByDomainSaga(action: ReturnType<typeof fetchRestaurantB
     
     // If the response is an array, take the first item
     if (Array.isArray(restaurantInfo)) {
-      restaurantInfo = restaurantInfo[0];
+      restaurantInfo = restaurantInfo;
     }
     
     // Dispatch success action with the restaurant info
     yield put(fetchRestaurantByDomainSuccess(restaurantInfo));
     
-    // After successfully fetching restaurant info, fetch site content and menu
-    yield put(fetchSiteContentRequest());
-    yield put(fetchMenuRequest());
+    // Removed: No longer automatically fetch site content and menu
+    // We'll fetch these after location selection instead
   } catch (error) {
     console.error('Error in fetchRestaurantByDomainSaga:', error);
     yield put(fetchRestaurantByDomainFailure(error instanceof Error ? error.message : 'An unknown error occurred'));

@@ -90,7 +90,7 @@ const TemplateContent = () => {
       const savedLocation = localStorage.getItem('selectedLocation');
       if (savedLocation) {
         // If a location is already saved, set locationSelected to true
-        setLocationSelected(true);
+        // setLocationSelected(true);
       } else if (!isPlaceInDiningOrderRoute) {
         // If no location is selected and we're not on the placeindiningorder route, show the selector after a short delay
         const timer = setTimeout(() => {
@@ -142,13 +142,13 @@ const TemplateContent = () => {
   }
   
   // If other required data is not loaded, show TemplateNotFound
-  if (!allDataLoaded) {
-    console.error('Required data not loaded:', {
-      menuLoaded: menuState.items.length > 0,
-      siteContentLoaded: !!siteContentState.content
-    });
-    return <TemplateNotFound />;
-  }
+  // if (!allDataLoaded) {
+  //   console.error('Required data not loaded:', {
+  //     menuLoaded: menuState.items.length > 0,
+  //     siteContentLoaded: !!siteContentState.content
+  //   });
+  //   return <TemplateNotFound />;
+  // }
 
   // For testing purposes, you can change this value to "culinary_journey" to see the culinary journey template
   const template_id = "culinary_journey"; // Options: "pizza", "casual_dining", "eatflow", "culinary_journey"
@@ -168,35 +168,27 @@ const TemplateContent = () => {
         return <EatflowApp />;
       case 'culinary_journey':
         return <CulinaryJourneyApp />;
-      default:
-        return <TemplateNotFound />;
+      // default:
+      //   return <TemplateNotFound />;
     }
   };
 
   return (
     <TemplateContext.Provider value={templateContextValue}>
-      {/* Only render the template if a location has been selected */}
+      {/* Conditionally render either the template or the location selector screen */}
       {locationSelected ? (
         renderTemplate()
       ) : (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
-          
-        </div>
-      )}
-      
-      {/* Location Selector Popup - Don't show for placeindiningorder route */}
-      {!isPlaceInDiningOrderRoute && (
-        <LocationSelector 
-          isOpen={showLocationSelector}
-          onClose={() => {
-            // Only allow closing if a location has been selected
-            if (locationSelected) {
-              setShowLocationSelector(false);
-            }
-          }}
-          onSelectLocation={handleSelectLocation}
-          showCloseButton={locationSelected} // Only show close button if a location has been selected
-        />
+        !isPlaceInDiningOrderRoute && (
+          <div className="min-h-screen bg-white">
+            <LocationSelector 
+              isOpen={true}
+              onClose={() => setShowLocationSelector(false)}
+              onSelectLocation={handleSelectLocation}
+              showCloseButton={false}
+            />
+          </div>
+        )
       )}
     </TemplateContext.Provider>
   );

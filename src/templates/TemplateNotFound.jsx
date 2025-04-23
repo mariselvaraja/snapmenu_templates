@@ -10,6 +10,7 @@ const TemplateNotFound = () => {
   useEffect(() => {
     // Trigger the fade-in animation after component mounts
     setVisible(true);
+    sessionStorage.removeItem("franchise_id")
   }, []);
 
   return (
