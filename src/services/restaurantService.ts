@@ -62,7 +62,7 @@ export const restaurantService = {
         restaurantid: "2256b9a6-5d53-4b77-b6a0-539043489ad3"
       };
       console.log("3")
-      const response = await api.get<Restaurant>(endpoints.restaurant.getInfo, { headers });
+      const response = await api.get<Restaurant>(endpoints.restaurant.getInfo);
       return response.data;
     } catch (error) {
       console.error('Error fetching restaurant info:', error);
@@ -84,7 +84,7 @@ export const restaurantService = {
       };
       // Use getInfo instead of getByDomain
       console.log("4")
-      const response = await api.get<Restaurant>(endpoints.restaurant.getInfo, { headers });
+      const response = await api.get<Restaurant>(endpoints.restaurant.getInfo);
       return response.data;
     } catch (error) {
       console.error(`Error fetching restaurant info for domain ${domain}:`, error);

@@ -33,7 +33,7 @@ export const restaurantService = {
         restaurantid: "2256b9a6-5d53-4b77-b6a0-539043489ad3"
       };
       console.log("5")
-      const response = await api.get<any>(endpoints.restaurant.getInfo, { headers });
+      const response = await api.get<any>(endpoints.restaurant.getInfo);
       console.log('Restaurant API response:', response);
       
       // Check if response data is valid
@@ -85,7 +85,7 @@ export const restaurantService = {
       };
       
       // Make the request directly using fetch
-      const fetchResponse = await fetch(url, requestOptions);
+      const fetchResponse = await fetch(url);
       
       if (!fetchResponse.ok) {
         throw new Error(`HTTP error! status: ${fetchResponse.status}`);

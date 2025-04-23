@@ -141,8 +141,6 @@ export const api = {
     const mergedHeaders = {
       ...((options.headers as Record<string, string>) || {}),
       // Only add restaurantid if it's not already provided in options
-      ...(!(options.headers && (options.headers as Record<string, string>).restaurantid) && 
-          { restaurantid: restaurantId })
     };
     
     return request<T>(url, { 

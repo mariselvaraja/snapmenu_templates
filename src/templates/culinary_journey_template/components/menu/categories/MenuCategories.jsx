@@ -1,15 +1,27 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAppSelector } from '../../../../../common/redux';
-import { useContent } from '../../../context';
-import { getCategoryImage } from '../../../utils/menuHelpers';
+import _ from 'lodash';
 
 export function MenuCategories() {
   // Get menu data from Redux store instead of useMenu hook
   const { items, categories, loading, error } = useAppSelector(state => state.menu);
-  const { content, siteContent } = useContent();
-  
-  console.log('MenuCategories rendered with Redux menu data:', { items, categories });
+
+  const getCategory = () => {
+    const category = items.map((item, index) => ({
+      id: index,
+      name: item.level1_category,
+    }));
+    return _.uniqBy(category, 'name');
+  };
+
+  const getSubcategory = (item_category)=>{
+    const subCategory = _.map(
+      _.filter(items, item => _.toLower(item?.level1_category) === _.toLower(item_category)),
+      'level2_category'
+    );
+    return _.uniq(subCategory);
+  }
 
   // Transform Redux menu data to match the expected format
   const menuData = {
@@ -79,7 +91,7 @@ export function MenuCategories() {
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {menuData.categories.map((category) => (
+        {getCategory().map((category) => (
           <Link
             key={category.id}
             to={`/menu/${category.id}`}
@@ -95,48 +107,28 @@ export function MenuCategories() {
               <h2 className="text-2xl font-serif mb-2 group-hover:text-orange-400 transition-colors">
                 {category.name}
               </h2>
-              <div className="flex flex-wrap gap-2 mb-4">
-                {/* Get subcategories from menu items */}
-                {(() => {
-                  // Extract unique subcategories from menu items
-                  const uniqueSubCategories = new Set();
-                  const categoryItems = menuData.menu[category.id] || [];
-                  
-                  categoryItems.forEach(item => {
-                    if (item.subCategory) {
-                      uniqueSubCategories.add(item.subCategory);
-                    }
-                  });
-                  
-                  // Convert to array of objects
-                  const subCategories = Array.from(uniqueSubCategories).map(id => ({
-                    id,
-                    name: id.charAt(0).toUpperCase() + id.slice(1).replace(/-/g, ' ')
-                  }));
-                  
-                  // If no subcategories, show a default badge
-                  if (subCategories.length === 0) {
-                    return (
-                      <div className="text-sm px-3 py-1 bg-orange-500/80 text-white rounded-full backdrop-blur-sm">
-                        {category.name}
-                      </div>
-                    );
-                  }
-                  
-                  // Otherwise show subcategories as badges
-                  return subCategories.map((sub) => (
-                    <div
-                      key={sub.id}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        window.location.href = `/menu/${category.id}?subCategory=${sub.id}`;
-                      }}
-                      className="text-sm px-3 py-1 bg-white/20 hover:bg-white/30 rounded-full backdrop-blur-sm transition-colors cursor-pointer"
-                    >
-                      {sub.name}
-                    </div>
-                  ));
-                })()}
+              {/* Container for subcategory badges */}
+              <div className="flex flex-row flex-wrap gap-2 mt-2">
+                {getSubcategory(category.name).map((sub) => (
+                  <div
+                    key={sub} // Use sub directly as key since it's a unique string
+                    onClick={(e) => {
+                      e.preventDefault(); // Prevent link navigation if clicking badge
+                      window.location.href = `/menu/${category?.id}?subCategory=${sub}`;
+                    }}
+                    className="text-sm px-3 py-1 bg-white/20 hover:bg-white/30 rounded-full backdrop-blur-sm transition-colors cursor-pointer"
+                    role="button"
+                    tabIndex={0} // Keep focusable
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault(); // Prevent link navigation/default space behavior
+                        window.location.href = `/menu/${category?.id}?subCategory=${sub}`;
+                      }
+                    }}
+                  >
+                    {sub}
+                  </div>
+                ))}
               </div>
             </div>
           </Link>

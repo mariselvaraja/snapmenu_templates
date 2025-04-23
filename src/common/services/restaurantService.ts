@@ -61,7 +61,7 @@ export const restaurantService = {
         restaurantid: "2256b9a6-5d53-4b77-b6a0-539043489ad3"
       };
       console.log("1")
-      const response = await api.get<Restaurant>(endpoints.restaurant.getInfo,{headers});
+      const response = await api.get<Restaurant>(endpoints.restaurant.getInfo);
       return response.data;
     } catch (error) {
       console.error('Error fetching restaurant info:', error);

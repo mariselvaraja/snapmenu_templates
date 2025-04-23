@@ -8,7 +8,7 @@ const ENV = import.meta.env.VITE_ENV || 'development';
 
 // Base URL from environment variables
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-const API_BASE_URL_PYTHON = import.meta.env.VITE_API_BASE_URL_PYTHON;
+const API_BASE_URL_AUTH = import.meta.env.VITE_API_AUTH_BASE_URL;
 
 // API paths from environment variables
 const MENU_API_PATH = import.meta.env.VITE_MENU_VIEW_API_PATH || import.meta.env.VITE_MENU_API_PATH;
@@ -27,7 +27,7 @@ const getDomainFromUrl = () => {
         if (domainParts.length > 2) {
             return domainParts.slice(0, -2).join('.');
         }
-        return "pizza2"; // No subdomain present, use tonyspizza as default
+        return "mari.test"; // No subdomain present, use tonyspizza as default
 };
 
 // Endpoint configuration object
@@ -49,7 +49,7 @@ export const endpoints = {
   
   // Restaurant endpoints
   restaurant: {
-    getInfo: `${API_BASE_URL_PYTHON}${RESTAURANT_DETAILS_API_PATH_PYTHON}?domain=${getDomainFromUrl()}`,
+    getInfo: `${API_BASE_URL_AUTH}${RESTAURANT_DETAILS_API_PATH_PYTHON}?domain=${getDomainFromUrl()}`,
   },
 };
 
