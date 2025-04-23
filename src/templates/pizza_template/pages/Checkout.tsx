@@ -158,9 +158,11 @@ export default function Checkout() {
           method: 'card', // Default payment method
         },
       };
+
+      let restaurant_id = sessionStorage.getItem("franchise_id");
       
       // Call the placeOrder API endpoint
-      const response = await cartService.placeOrder(orderData);
+      const response = await cartService.placeOrder(orderData,restaurant_id);
       console.log('Order placed successfully:', response);
       
       setOrderResponse(response);

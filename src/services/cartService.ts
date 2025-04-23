@@ -142,13 +142,13 @@ export const cartService = {
   /**
    * Places an order with the current cart items and customer information
    */
-  placeOrder: async (orderData: OrderData): Promise<any> => {
+  placeOrder: async (orderData: OrderData, restaurant_id: any): Promise<any> => {
     console.log('Placing order with API');
     
     try {
       // Format the order payload as required
       const formattedPayload = {
-        restaurant_id: "2256b9a6-5d53-4b77-b6a0-539043489ad3",
+        restaurant_id:  sessionStorage.getItem("franchise_id"),
         name: orderData.customerInfo.name,
         phone: orderData.customerInfo.phone,
         email: orderData.customerInfo.email,
