@@ -1,5 +1,6 @@
 import React, { useState, useEffect, createContext, useContext } from 'react';
 import { Provider, useSelector } from 'react-redux';
+import _ from 'lodash';
 import PizzaApp from './pizza_template/App';
 import CasualDiningApp from './casual_dining_template/App';
 import EatflowApp from './eatflow_template/App';
@@ -140,12 +141,12 @@ const TemplateContent = () => {
     return <TemplateNotFound />;
   }
 
-  const getTemlateId=()=>{
-    let franchise = restaurantState.info;
-    let selectedFranchiseId = sessionStorage.getItem("franchise_id");
-    let franchiseInfo = franchise.find((franchise)=>franchise.restaurant_id == selectedFranchiseId)
-    // return franchiseInfo.template_id;
-    return "casual_dining"
+  const getTemlateId = () => {
+    const franchise = restaurantState.info;
+    const selectedFranchiseId = sessionStorage.getItem("franchise_id");
+    const franchiseInfo = _.find(franchise, (franchise) => franchise.restaurant_id == selectedFranchiseId);
+    
+    return _.get(franchiseInfo, 'template_id', 'casual_dining');
   }
   
   // If other required data is not loaded, show TemplateNotFound
