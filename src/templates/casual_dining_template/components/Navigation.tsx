@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Menu as MenuIcon, X, ShoppingCart, Search } from 'lucide-react';
+import { Menu as MenuIcon, X, ShoppingCart, Search, Utensils } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAppSelector, useAppDispatch } from '../../../redux/hooks';
 import { openSearchModal } from '../../../redux/slices/searchSlice';
@@ -85,7 +85,10 @@ export function Navigation() {
       {/* Navigation Bar */}
       <nav className={`w-full fixed z-30 bg-black px-6 py-8 transition-all duration-300`}>
         <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <Link to="/" className="text-3xl font-bold text-white">{brandName}</Link>
+          <Link to="/" className="flex items-center space-x-2">
+            <Utensils className="h-8 w-8 text-yellow-400" />
+            <span className="text-3xl font-bold text-white">{brandName}</span>
+          </Link>
           <div className="hidden md:flex space-x-8 items-center">
             {navigationLinks.filter((link: any) => link.isEnabled).map((link: any) => (
               <Link

@@ -13,7 +13,7 @@ import { Contact } from '../templates/casual_dining_template/pages/Contact';
 import ProductDetails from '../templates/casual_dining_template/pages/ProductDetails';
 import Cart from '../templates/casual_dining_template/pages/Cart';
 import Reservation from '../templates/casual_dining_template/components/Reservation';
-import Blog from '../templates/casual_dining_template/components/Blog';
+import Blog from '../templates/casual_dining_template/pages/Blog';
 import Checkout from '../templates/casual_dining_template/components/Checkout';
 import { InDiningOrder } from '../templates/casual_dining_template/components/in-dining';
 

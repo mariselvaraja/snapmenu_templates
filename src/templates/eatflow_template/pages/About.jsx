@@ -32,36 +32,48 @@ export function About() {
   const story = siteContent?.story;
   const brandName = siteContent?.brand?.name;
   
-
-
+  // Check if story data is available
+  const isStoryAvailable = story && story.hero;
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Hero Section */}
-      <div className="relative h-[70vh]">
-        <div className="absolute inset-0">
-          <img 
-            src={story.hero.image}
-            alt="About background"
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-black bg-opacity-60"></div>
-        </div>
-        
-        <div className="relative z-10 container mx-auto px-6 h-[calc(70vh-120px)] flex items-center justify-center text-center">
-          <div>
-            <div className="flex justify-center mb-6">
-              <Leaf className="w-16 h-16 text-green-400" />
+      {isStoryAvailable ? (
+        /* Hero Section */
+        <div className="relative h-[70vh]">
+          <div className="absolute inset-0">
+            <img 
+              src={story.hero.image}
+              alt="About background"
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-black bg-opacity-60"></div>
+          </div>
+          
+          <div className="relative z-10 container mx-auto px-6 h-[calc(70vh-120px)] flex items-center justify-center text-center">
+            <div>
+              <div className="flex justify-center mb-6">
+                <Leaf className="w-16 h-16 text-green-400" />
+              </div>
+              <h1 className="text-7xl font-bold text-white mb-8">
+                {story.hero.title}
+              </h1>
+              <p className="text-2xl text-gray-200 max-w-3xl mx-auto leading-relaxed">
+                {story.hero.description}
+              </p>
             </div>
-            <h1 className="text-7xl font-bold text-white mb-8">
-              {story.hero.title}
-            </h1>
-            <p className="text-2xl text-gray-200 max-w-3xl mx-auto leading-relaxed">
-              {story.hero.description}
+          </div>
+        </div>
+      ) : (
+        /* Fallback when story is not available */
+        <div className="py-20 bg-gray-50">
+          <div className="container mx-auto px-6 text-center">
+            <h1 className="text-5xl font-bold mb-6">Story not found</h1>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Our story content is currently unavailable. Please check back later.
             </p>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Values Section */}
       <section className="py-24 bg-gray-50">
@@ -69,11 +81,11 @@ export function About() {
           <div className="text-center mb-16">
             <h2 className="text-5xl font-bold mb-6">Our Values</h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              These core principles guide everything we do at {brandName}
+              These core principles guide everything we do at {brandName || 'our restaurant'}
             </p>
           </div>
           <div className="grid md:grid-cols-3 gap-12">
-            {story.values.map((value, index) => {
+            {isStoryAvailable && story.values ? story.values.map((value, index) => {
               // Function to render the appropriate icon
               const renderValueIcon = (iconName) => {
                 switch(iconName) {
@@ -99,7 +111,11 @@ export function About() {
                   </p>
                 </div>
               );
-            })}
+            }) : (
+              <div className="col-span-3 text-center">
+                <p className="text-xl text-gray-500">No values found</p>
+              </div>
+            )}
           </div>
         </div>
       </section>

@@ -1,9 +1,9 @@
-import React from 'react';
+
 import { motion } from 'framer-motion';
 import { Calendar, User, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAppSelector } from '../../../common/redux';
-import { Navigation } from '../components/Navigation';
+
 
 // Define interface for blog post with additional properties
 interface BlogPost {
@@ -70,11 +70,12 @@ export function Blog() {
     ]
   };
   
-  // Use API data if available, otherwise use default data
-  const blog = siteContent?.blog || defaultBlog;
+  // Check if blog data is available
+  const blog = siteContent?.blog;
+  const isBlogAvailable = blog && blog.posts && blog.posts.length > 0;
   
   // Transform blog data from siteContent to match the format expected by the component
-  const blogPosts: BlogPost[] = blog.posts.map((post: any) => ({
+  const blogPosts: BlogPost[] = isBlogAvailable ? blog.posts.map((post: any) => ({
     id: post.id || Math.random().toString(36).substr(2, 9),
     title: post.title,
     excerpt: post.subtitle,
@@ -82,14 +83,17 @@ export function Blog() {
     date: post.date,
     category: post.readTime.includes("min") ? "Culinary Techniques" : "Chef Stories",
     image: post.image
-  }));
+  })) : [];
   
   // Use the first post as the featured post if available
   const featuredPost = blogPosts.length > 0 ? blogPosts[0] : null;
   
+  // Use default header if not available
+  const blogHeader = isBlogAvailable ? blog.header : defaultBlog.header;
+  
   return (
     <div className="min-h-screen bg-black text-white">
-      <Navigation />
+      
       
       <div className="py-20 px-6">
         <div className="max-w-7xl mx-auto">
@@ -99,9 +103,9 @@ export function Blog() {
             transition={{ duration: 0.5 }}
             className="text-center mb-16"
           >
-            <h1 className="text-4xl md:text-6xl font-bold mb-4">{blog.header.title}</h1>
+            <h1 className="text-4xl md:text-6xl font-bold mb-4">{blogHeader.title}</h1>
             <p className="text-xl text-gray-300">
-              {blog.header.description}
+              {blogHeader.description}
             </p>
           </motion.div>
 
@@ -173,8 +177,9 @@ export function Blog() {
           )}
 
           {/* Blog Posts Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {blogPosts.map((post, index) => (
+          {isBlogAvailable ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {blogPosts.map((post, index) => (
               <motion.article
                 key={post.id}
                 initial={{ opacity: 0, y: 20 }}
@@ -234,8 +239,21 @@ export function Blog() {
                   </Link>
                 </div>
               </motion.article>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5 }}
+              className="text-center py-20 bg-zinc-900 rounded-xl"
+            >
+              <h2 className="text-3xl font-bold mb-4">Blog data not found</h2>
+              <p className="text-xl text-gray-400 max-w-2xl mx-auto">
+                Our blog content is currently unavailable. Please check back later for updates.
+              </p>
+            </motion.div>
+          )}
 
           {/* Newsletter Section */}
           <motion.div

@@ -18,33 +18,59 @@ export function Story() {
     {};
   const storyContent = siteContent?.story;
   
+  // Check if story data is available
+  const isStoryAvailable = storyContent && storyContent.hero;
+  
   console.log("Story content:", storyContent);
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <div className="relative h-screen">
-        <div className="absolute inset-0">
-          <img
-            src={storyContent?.hero?.image}
-            alt={storyContent?.hero?.title}
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black"></div>
-        </div>
+      {isStoryAvailable ? (
+        <div className="relative h-screen">
+          <div className="absolute inset-0">
+            <img
+              src={storyContent.hero.image}
+              alt={storyContent.hero.title}
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black"></div>
+          </div>
 
-        <div className="relative h-full flex flex-col items-center justify-center px-6 text-center">
-          <h1 className="text-6xl md:text-8xl font-bold mb-6 animate-fade-in">
-            {storyContent?.hero?.title}
-          </h1>
-          <p className="text-xl md:text-2xl text-gray-200 max-w-2xl mx-auto mb-12 animate-fade-in-delay-1">
-            {storyContent?.hero?.description}
-          </p>
+          <div className="relative h-full flex flex-col items-center justify-center px-6 text-center">
+            <h1 className="text-6xl md:text-8xl font-bold mb-6 animate-fade-in">
+              {storyContent.hero.title}
+            </h1>
+            <p className="text-xl md:text-2xl text-gray-200 max-w-2xl mx-auto mb-12 animate-fade-in-delay-1">
+              {storyContent.hero.description}
+            </p>
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="relative h-screen">
+          <div className="absolute inset-0">
+            <img
+              src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&q=80"
+              alt="Our Story"
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black"></div>
+          </div>
+
+          <div className="relative h-full flex flex-col items-center justify-center px-6 text-center">
+            <h1 className="text-6xl md:text-8xl font-bold mb-6 animate-fade-in">
+              Our Story
+            </h1>
+            <p className="text-xl md:text-2xl text-gray-200 max-w-2xl mx-auto mb-12 animate-fade-in-delay-1">
+              Story data not found
+            </p>
+          </div>
+        </div>
+      )}
 
       <div className="max-w-7xl mx-auto px-6 py-20">
         {/* Content sections - using data from storyContent if available */}
-        {storyContent?.sections && storyContent.sections.map((section: any, index: number) => {
+        {isStoryAvailable && storyContent.sections && storyContent.sections.length > 0 ? (
+          storyContent.sections.map((section: any, index: number) => {
           // Determine if this section should have reversed layout (alternating)
           const isReversed = index % 2 !== 0;
           
@@ -70,9 +96,15 @@ export function Story() {
               </div>
             </div>
           );
-        })}
-        
-        {/* No fallback content - will only display sections if they exist in siteContent */}
+          })
+        ) : (
+          <div className="text-center py-20">
+            <h2 className="text-3xl font-bold mb-4">No Story Sections Available</h2>
+            <p className="text-xl text-gray-400">
+              Our story sections are currently unavailable. Please check back later.
+            </p>
+          </div>
+        )}
 
         {/* Values Section */}
         {storyContent?.values && storyContent.values.length > 0 && (

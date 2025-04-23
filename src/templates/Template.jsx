@@ -73,7 +73,6 @@ const TemplateContent = () => {
   
   // Handle location selection
   const handleSelectLocation = (location) => {
-    console.log('Selected location:', location);
     // Set the location selected state to true
     setLocationSelected(true);
     // You can add additional logic here if needed
@@ -140,6 +139,14 @@ const TemplateContent = () => {
     console.error('Restaurant API error or empty data:', restaurantState.error || 'No restaurant data');
     return <TemplateNotFound />;
   }
+
+  const getTemlateId=()=>{
+    let franchise = restaurantState.info;
+    let selectedFranchiseId = sessionStorage.getItem("franchise_id");
+    let franchiseInfo = franchise.find((franchise)=>franchise.restaurant_id == selectedFranchiseId)
+    // return franchiseInfo.template_id;
+    return "casual_dining"
+  }
   
   // If other required data is not loaded, show TemplateNotFound
   // if (!allDataLoaded) {
@@ -151,8 +158,8 @@ const TemplateContent = () => {
   // }
 
   // For testing purposes, you can change this value to "culinary_journey" to see the culinary journey template
-  const template_id = "culinary_journey"; // Options: "pizza", "casual_dining", "eatflow", "culinary_journey"
-  // restaurantState?.info?.template_id
+  const template_id = getTemlateId(); // Options: "pizza", "casual_dining", "eatflow", "culinary_journey"
+  // 
   // In production, this would come from the API: 
   console.log("restaurantState", restaurantState)
   // Check if restaurant API returned an error or empty data
@@ -168,8 +175,8 @@ const TemplateContent = () => {
         return <EatflowApp />;
       case 'culinary_journey':
         return <CulinaryJourneyApp />;
-      // default:
-      //   return <TemplateNotFound />;
+      default:
+        return <TemplateNotFound />;
     }
   };
 

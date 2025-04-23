@@ -10,6 +10,9 @@ export function Contact() {
     (typeof rawApiResponse === 'string' ? JSON.parse(rawApiResponse) : rawApiResponse) : 
     {};
   const contact = siteContent?.contact;
+  
+  // Check if contact data is available
+  const isContactAvailable = contact && (contact.infoCards || contact.header);
 
   return (
 <>
@@ -36,8 +39,9 @@ export function Contact() {
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-20">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {contact?.infoCards && Object.values(contact.infoCards).map((card: any, index) => (
+        {isContactAvailable && contact.infoCards ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {Object.values(contact.infoCards).map((card: any, index) => (
             <div
               key={index}
               className="bg-zinc-900/50 backdrop-blur-sm rounded-3xl overflow-hidden group hover:scale-105 transition duration-300"
@@ -79,8 +83,16 @@ export function Contact() {
                 <p className="text-gray-400 mb-6">{card.description}</p>
               </div>
             </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-20 bg-zinc-900/50 backdrop-blur-sm rounded-3xl">
+            <h2 className="text-3xl font-bold mb-4">Contact data not found</h2>
+            <p className="text-xl text-gray-400 max-w-2xl mx-auto">
+              Our contact information is currently unavailable. Please check back later.
+            </p>
+          </div>
+        )}
       </div>
     </div>
     </>

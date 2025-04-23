@@ -31,6 +31,10 @@ export default function Reservation() {
   const siteContent = rawApiResponse ? 
     (typeof rawApiResponse === 'string' ? JSON.parse(rawApiResponse) : rawApiResponse) : 
     {};
+  
+  // Check if reservation data is available
+  const isReservationAvailable = siteContent?.reservation !== undefined;
+  
   const reservation = siteContent?.reservation || {
     header: {
       title: "Reserve a Table",
@@ -233,6 +237,44 @@ export default function Reservation() {
   // If confirmation is shown, render the TableConfirmation component
   if (showConfirmation) {
     return <TableConfirmation reservationDetails={reservationDetails} />;
+  }
+
+  // If reservation data is not available, show a message
+  if (!isReservationAvailable) {
+    return (
+      <div className="min-h-screen bg-black text-white">
+        <div className="relative h-[50vh]">
+          <div className="absolute inset-0">
+            <img 
+              src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&q=80"
+              alt="Reservation background"
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/70 to-black/30"></div>
+          </div>
+          
+          <div className="relative z-10 container mx-auto px-6 h-[calc(50vh-120px)] flex items-center justify-center text-center">
+            <div>
+              <div className="flex justify-center mb-6 ">
+                <UtensilsCrossed className="w-16 h-16 text-yellow-400 mt-[200px]" />
+              </div>
+              <h1 className="text-5xl md:text-7xl font-bold text-white mb-8 animate-fade-in">
+                Reserve a Table
+              </h1>
+            </div>
+          </div>
+        </div>
+        
+        <div className="py-24 px-6 bg-zinc-900">
+          <div className="max-w-4xl mx-auto text-center py-20 bg-zinc-800 rounded-2xl">
+            <h2 className="text-3xl font-bold mb-4">Reservation data not found</h2>
+            <p className="text-xl text-gray-400 max-w-2xl mx-auto">
+              Our reservation system is currently unavailable. Please check back later or contact us directly to make a reservation.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (

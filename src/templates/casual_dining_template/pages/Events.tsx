@@ -59,11 +59,12 @@ export function Events() {
     ]
   };
   
-  // Use API data if available, otherwise use default data
-  const events = siteContent?.event || defaultEvents;
+  // Check if events data is available
+  const events = siteContent?.event;
+  const isEventsAvailable = events && events.items && events.items.length > 0;
   
-  // Transform events data to include additional properties
-  const eventItems: EventItem[] = events.items.map((item: any, index: number) => ({
+  // Transform events data to include additional properties if available
+  const eventItems: EventItem[] = isEventsAvailable ? events.items.map((item: any, index: number) => ({
     id: index + 1,
     title: item.title,
     date: item.date,
@@ -73,45 +74,78 @@ export function Events() {
     price: `$${79.99 + (index * 10)}`, // Example price
     image: item.image,
     description: item.description
-  }));
+  })) : [];
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <Navigation />
       
-      <div className="relative h-screen">
-        <div className="absolute inset-0">
-          <img 
-            src="https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?auto=format&fit=crop&q=80"
-            alt="Events"
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black"></div>
+      
+      {isEventsAvailable ? (
+        <div className="relative h-screen">
+          <div className="absolute inset-0">
+            <img 
+              src="https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?auto=format&fit=crop&q=80"
+              alt="Events"
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black"></div>
+          </div>
+          
+          <div className="relative h-full flex flex-col items-center justify-center px-6 text-center">
+            <motion.h1 
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="text-6xl md:text-8xl font-bold mb-6"
+            >
+              {events.section.title}
+            </motion.h1>
+            <motion.p 
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="text-xl md:text-2xl text-gray-200 max-w-2xl mx-auto mb-12"
+            >
+              {events.section.subtitle}
+            </motion.p>
+          </div>
         </div>
-        
-        <div className="relative h-full flex flex-col items-center justify-center px-6 text-center">
-          <motion.h1 
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="text-6xl md:text-8xl font-bold mb-6"
-          >
-            {events.section.title}
-          </motion.h1>
-          <motion.p 
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="text-xl md:text-2xl text-gray-200 max-w-2xl mx-auto mb-12"
-          >
-            {events.section.subtitle}
-          </motion.p>
+      ) : (
+        <div className="relative h-screen">
+          <div className="absolute inset-0">
+            <img 
+              src="https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?auto=format&fit=crop&q=80"
+              alt="Events"
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black"></div>
+          </div>
+          
+          <div className="relative h-full flex flex-col items-center justify-center px-6 text-center">
+            <motion.h1 
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="text-6xl md:text-8xl font-bold mb-6"
+            >
+              Events
+            </motion.h1>
+            <motion.p 
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="text-xl md:text-2xl text-gray-200 max-w-2xl mx-auto mb-12"
+            >
+              Events data not found
+            </motion.p>
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="max-w-7xl mx-auto px-6 py-20">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-32">
-          {eventItems.map((event, index) => (
+        {isEventsAvailable ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-32">
+            {eventItems.map((event, index) => (
             <motion.div
               key={event.id}
               initial={{ opacity: 0, y: 20 }}
@@ -161,8 +195,28 @@ export function Events() {
                 </button>
               </div>
             </motion.div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-20">
+            <motion.h2
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5 }}
+              className="text-3xl font-bold mb-4"
+            >
+              No Events Available
+            </motion.h2>
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="text-xl text-gray-400"
+            >
+              Check back later for upcoming events.
+            </motion.p>
+          </div>
+        )}
 
         {/* Custom Events Section */}
         <motion.div
