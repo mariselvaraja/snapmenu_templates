@@ -115,8 +115,22 @@ export function Checkout() {
   };
 
   if (orderComplete) {
+    // If payment_link exists, show it in a full-page iframe
+    if (orderResponse?.payment_link) {
+      return (
+        <div className="fixed inset-0 w-full h-full z-50">
+          <iframe 
+            src={orderResponse.payment_link} 
+            className="w-full h-full border-0"
+            title="Payment"
+          />
+        </div>
+      );
+    }
+    
+    // If no payment_link, show the order confirmation message
     return (
-      <div >
+      <div>
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-white rounded-lg shadow-lg p-8 text-center">
             <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">

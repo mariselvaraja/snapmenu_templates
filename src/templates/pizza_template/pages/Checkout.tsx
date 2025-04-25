@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -58,6 +58,7 @@ export default function Checkout() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderComplete, setOrderComplete] = useState(false);
   const [orderResponse, setOrderResponse] = useState<{ message?: string, payment_link?: string } | null>(null);
+  
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -165,6 +166,12 @@ export default function Checkout() {
       const response = await cartService.placeOrder(orderData,restaurant_id);
       console.log('Order placed successfully:', response);
       
+      // Handle the specific response format:
+      // {"message":"Order Placed Make Payment","payment_link":"https://api.ipospays.tech/v1/sl/BFtqv_240425021156"}
+      if (response && response.payment_link && response.payment_link.includes('ipospays.tech')) {
+        console.log('Payment link from ipospays.tech detected:', response.payment_link);
+      }
+      
       setOrderResponse(response);
       setOrderComplete(true);
       // Clear the cart after successful order
@@ -177,7 +184,29 @@ export default function Checkout() {
     }
   };
 
+  
+
+
+
+
   if (orderComplete) {
+    // If payment_link exists and payment is still pending, show it in a full-page iframe
+    if (orderResponse?.payment_link) {
+      return (
+        <div className="fixed inset-0 w-full h-full z-50 flex flex-col">
+
+          <iframe 
+            src={orderResponse.payment_link} 
+            className="w-full flex-1 border-0"
+            title="Payment"
+            sandbox="allow-forms allow-scripts allow-same-origin allow-top-navigation allow-popups"
+            allow="payment"
+          />
+        </div>
+      );
+    }
+    
+    // If payment is completed or cancelled, or if there's no payment link, show the order confirmation message
     return (
       <div className="py-20">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -187,33 +216,12 @@ export default function Checkout() {
             transition={{ duration: 0.5 }}
             className="bg-white rounded-lg shadow-lg p-8 text-center"
           >
-            {orderResponse?.payment_link ? (
-              <>
-                <h1 className="text-3xl font-bold mb-4">Order Confirmed!</h1>
-                <div className="w-full h-96 mb-6">
-                  <iframe 
-                    src={orderResponse.payment_link} 
-                    className="w-full h-full border-0 rounded-lg"
-                    title="Payment"
-                  />
-                </div>
-              </>
-            ) : (
-              <>
-                <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                </div>
-                <h1 className="text-3xl font-bold mb-4">Order Confirmed!</h1>
-                <p className="text-gray-600 mb-6">
-                  {orderResponse?.message || "Thank you for your order. We've received your order and will begin preparing it right away."}
-                </p>
-                <p className="text-gray-600 mb-8">
-                  A confirmation email has been sent to {formData.email}.
-                </p>
-              </>
-            )}
+            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            
             <Link
               to="/"
               className="bg-red-500 text-white px-8 py-3 rounded-full font-semibold hover:bg-red-600 transition-colors"

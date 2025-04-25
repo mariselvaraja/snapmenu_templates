@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { Navigation } from './Navigation';
 import { useCart } from '../context/CartContext';
 import OrderConfirmation from './OrderConfirmation';
+import { cartService } from '../../../services';
 
 interface OrderItem {
   id: string;
@@ -21,7 +22,7 @@ interface FormData {
 }
 
 const Checkout: React.FC = () => {
-  const { cart } = useCart();
+  const { cart, removeFromCart } = useCart();
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<FormData>({
@@ -31,6 +32,7 @@ const Checkout: React.FC = () => {
     specialRequests: '',
   });
   const [errors, setErrors] = useState<Partial<FormData>>({});
+  const [orderResponse, setOrderResponse] = useState<{ message?: string, payment_link?: string } | null>(null);
 
   const [orderDetails, setOrderDetails] = useState({
     orderId: '',
@@ -93,7 +95,7 @@ const Checkout: React.FC = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!validateForm()) {
@@ -102,54 +104,100 @@ const Checkout: React.FC = () => {
     
     setIsSubmitting(true);
     
-    // In a real application, this would submit the order to a backend
-    // For now, we'll just simulate a successful order
-    
-    // Generate a random order ID
-    const orderId = Math.floor(10000 + Math.random() * 90000).toString();
-    
-    // Get current date and time
-    const now = new Date();
-    const orderDate = now.toISOString().split('T')[0];
-    const orderTime = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    
-    // Calculate estimated delivery/pickup time (30-45 minutes from now)
-    const estimatedDate = new Date(now.getTime() + 40 * 60000);
-    const estimatedTime = estimatedDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    
-    // Set order details
-    setOrderDetails({
-      orderId,
-      orderDate,
-      orderTime,
-      customerName: formData.name,
-      customerEmail: formData.email,
-      customerPhone: formData.phone,
-      orderMethod: 'takeout',
-      deliveryAddress: '',
-      items: cart.map(item => ({
-        id: item.id,
-        name: item.name,
-        price: item.price,
-        quantity: item.quantity,
-        imageUrl: item.imageUrl
-      })),
-      subtotal: subtotal.toFixed(2),
-      tax: tax.toFixed(2),
-      deliveryFee: '0.00',
-      total: total.toFixed(2),
-      estimatedTime,
-      specialInstructions: formData.specialRequests
-    });
-    
-    // Show confirmation
-    setTimeout(() => {
+    try {
+      // Create the order data
+      const orderData = {
+        items: cart.map(item => ({
+          id: parseInt(item.id) || 0, // Convert string id to number, default to 0 if conversion fails
+          name: item.name,
+          price: parseFloat(item.price),
+          quantity: item.quantity,
+          image: item.imageUrl || '' // Use imageUrl as image
+        })),
+        customerInfo: {
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          address: formData.specialRequests || '', // Use special requests as address
+        },
+        paymentInfo: {
+          method: 'card', // Default payment method
+        },
+      };
+
+      let restaurant_id = sessionStorage.getItem("franchise_id");
+      
+      // Call the placeOrder API endpoint
+      const response = await cartService.placeOrder(orderData, restaurant_id);
+      console.log('Order placed successfully:', response);
+      
+      setOrderResponse(response);
+      
+      // Generate a random order ID
+      const orderId = Math.floor(10000 + Math.random() * 90000).toString();
+      
+      // Get current date and time
+      const now = new Date();
+      const orderDate = now.toISOString().split('T')[0];
+      const orderTime = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      
+      // Calculate estimated delivery/pickup time (30-45 minutes from now)
+      const estimatedDate = new Date(now.getTime() + 40 * 60000);
+      const estimatedTime = estimatedDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      
+      // Set order details
+      setOrderDetails({
+        orderId,
+        orderDate,
+        orderTime,
+        customerName: formData.name,
+        customerEmail: formData.email,
+        customerPhone: formData.phone,
+        orderMethod: 'takeout',
+        deliveryAddress: '',
+        items: cart.map(item => ({
+          id: item.id,
+          name: item.name,
+          price: item.price,
+          quantity: item.quantity,
+          imageUrl: item.imageUrl
+        })),
+        subtotal: subtotal.toFixed(2),
+        tax: tax.toFixed(2),
+        deliveryFee: '0.00',
+        total: total.toFixed(2),
+        estimatedTime,
+        specialInstructions: formData.specialRequests
+      });
+      
+      // Clear the cart after successful order
+      cart.forEach(item => removeFromCart(item.id));
+      
+      // Show confirmation
       setIsSubmitting(false);
       setShowConfirmation(true);
-    }, 1500);
+    } catch (error) {
+      console.error('Error placing order:', error);
+      setIsSubmitting(false);
+      // Handle error (could show an error message to the user)
+    }
   };
 
   if (showConfirmation) {
+    // If payment_link exists, show it in a full-page iframe
+    if (orderResponse?.payment_link) {
+      return (
+        <div className="fixed inset-0 w-full h-full z-50">
+          <iframe 
+            src={orderResponse.payment_link} 
+            className="w-full h-full border-0"
+            title="Payment"
+          />
+        </div>
+      );
+    }
+    
+    // If no payment_link or it's empty, show the order confirmation
     return <OrderConfirmation orderDetails={orderDetails} />;
   }
 

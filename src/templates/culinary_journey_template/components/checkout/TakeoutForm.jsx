@@ -104,9 +104,25 @@ export const TakeoutForm = forwardRef(({ onSubmitStart, onSubmitComplete, onErro
           }));
         }
 
-        // If payment link is available, open it in a new tab
+        // If payment link is available, show it in a full-page iframe
         if (result.message && result.payment_link) {
-          window.open(result.payment_link, '_blank');
+          // Create a full-page iframe element
+          const iframeContainer = document.createElement('div');
+          iframeContainer.style.position = 'fixed';
+          iframeContainer.style.top = '0';
+          iframeContainer.style.left = '0';
+          iframeContainer.style.width = '100%';
+          iframeContainer.style.height = '100%';
+          iframeContainer.style.zIndex = '9999';
+          
+          const iframe = document.createElement('iframe');
+          iframe.src = result.payment_link;
+          iframe.style.width = '100%';
+          iframe.style.height = '100%';
+          iframe.style.border = 'none';
+          
+          iframeContainer.appendChild(iframe);
+          document.body.appendChild(iframeContainer);
         } else {
           // Navigate to confirmation page
           navigate('/checkout/confirmation', { 
