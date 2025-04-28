@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ShoppingCart, ArrowLeft, Info, Tag, Box, Utensils, AlertTriangle, Heart, Minus, Plus, Check } from 'lucide-react';
+import { ShoppingCart, ArrowLeft, Info, Tag, Box, Utensils, AlertTriangle, Heart, Minus, Plus, Check, Flame } from 'lucide-react';
 import { useAppDispatch, useAppSelector, addItem, CartItem, fetchMenuRequest, MenuItem } from '../../../common/redux';
 import { useState, useEffect } from 'react';
 import { TbCategory2 } from 'react-icons/tb';
@@ -484,6 +484,31 @@ export default function ProductDetail() {
                                     )}
                                 </div>
                                 
+                                {/* Chili Pepper Strength Scale */}
+                                <div className="mb-3">
+                                    <div className="flex items-center mb-2">
+                                        <Flame className="h-4 w-4 mr-1 text-red-500" />
+                                        <span className="text-sm font-medium text-gray-700">Spice Level:</span>
+                                    </div>
+                                    <div className="grid grid-cols-3 gap-1">
+                                        <div 
+                                            className="flex items-center justify-center px-2 py-1 rounded cursor-pointer bg-gray-100 border border-gray-200 text-yellow-500 hover:bg-gray-200"
+                                        >
+                                            <span>🌶️</span>
+                                        </div>
+                                        <div 
+                                            className="flex items-center justify-center px-2 py-1 rounded cursor-pointer bg-red-100 border border-red-300 text-red-500"
+                                        >
+                                            <span>🌶️🌶️</span>
+                                        </div>
+                                        <div 
+                                            className="flex items-center justify-center px-2 py-1 rounded cursor-pointer bg-gray-100 border border-gray-200 text-red-600 hover:bg-gray-200"
+                                        >
+                                            <span>🌶️🌶️🌶️</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
                                 {/* Inline Add-ons section */}
                                 {modifiersList.length > 0 && (
                                     <div className="mb-4">
@@ -491,7 +516,7 @@ export default function ProductDetail() {
                                             <Box className="h-4 w-4 mr-1 text-red-500" />
                                             <span className="text-sm font-medium text-gray-700">Optional Add-ons:</span>
                                         </div>
-                                        <div className="flex flex-wrap gap-2">
+                                        <div className="grid grid-cols-3 gap-2">
                                             {modifiersList.flatMap((modifier, modIndex) => 
                                                 modifier.options.map((option, optIndex) => {
                                                     // Handle empty option names by using the modifier name
@@ -509,9 +534,11 @@ export default function ProductDetail() {
                                                             }`}
                                                         >
                                                             <span className="text-sm">{displayName}</span>
-                                                            <span className={`text-sm font-medium ml-1 ${price > 0 ? 'text-red-600' : 'text-green-600'}`}>
-                                                                {price > 0 ? `+$${price.toFixed(2)}` : 'Free'}
-                                                            </span>
+                                                            {price > 0 && (
+                                                                <span className="text-sm font-medium ml-1 text-red-600">
+                                                                    +${price.toFixed(2)}
+                                                                </span>
+                                                            )}
                                                             {isModifierOptionSelected(modifier.name, option.name) && (
                                                                 <Check className="w-3 h-3 ml-1 text-red-600" />
                                                             )}
@@ -565,13 +592,14 @@ export default function ProductDetail() {
                         </div>
 
                         {/* Product Details section */}
-                        <div className="mb-8">
-                            <h2 className="text-xl font-semibold mb-4 flex items-center">
-                                <Info className="h-5 w-5 mr-2" />
-                                Product Details
-                            </h2>
-                            <div className="space-y-4">
-                                {(product.category || product.subCategory) && (
+                        { (
+                            <div className="mb-8">
+                                {/* <h2 className="text-xl font-semibold mb-4 flex items-center">
+                                    <Info className="h-5 w-5 mr-2" />
+                                    Product Details
+                                </h2> */}
+                                <div className="space-y-4">
+                                {/* {(product.category || product.subCategory) && (
                                     <div className="border-b border-gray-100 pb-3">
                                         <div className="flex items-center mb-1">
                                             <Tag className="h-4 w-4 mr-2 text-gray-500" />
@@ -588,13 +616,13 @@ export default function ProductDetail() {
                                             </div>
                                         </div>
                                     </div>
-                                )}
+                                )} */}
                                 
                                 {/* Dietary Information section */}
                                 {product.dietary && Object.values(product.dietary).some(value => value) && (
                                     <div className="border-b border-gray-100 pb-3">
                                         <div className="flex items-center mb-1">
-                                            <LuVegan className="h-4 w-4 mr-2 text-green-500" />
+                                            <LuVegan className="h-4 w-4 mr-2 text-gray-500" />
                                             <span className="font-medium text-gray-700">Dietary Information</span>
                                         </div>
                                         <div className="flex flex-wrap gap-2 pl-6">
@@ -709,8 +737,9 @@ export default function ProductDetail() {
                                         <div className="text-gray-900 pl-6">{product.comment}</div>
                                     </div>
                                 )}
+                                </div>
                             </div>
-                        </div>
+                        )}
 
                         {/* Nutritional information section */}
                         {(product.calories || (product.nutrients && Object.keys(product.nutrients).length > 0)) && (

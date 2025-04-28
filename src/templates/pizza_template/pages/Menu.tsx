@@ -4,6 +4,9 @@ import { ShoppingCart, Plus, Minus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector, addItem, CartItem, fetchMenuRequest, MenuItem, removeItem, updateItemQuantity } from '../../../common/redux';
 import _ from 'lodash';
+import { LuVegan } from 'react-icons/lu';
+import { IoLeafOutline } from 'react-icons/io5';
+import { CiWheat } from 'react-icons/ci';
 
 // Define types for category and subcategory
 interface CategoryType {
@@ -138,7 +141,7 @@ export default function Menu() {
             <div className="py-20">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
                     <div className="text-yellow-500 text-5xl mb-4">🛠️</div>
-                    <h1 className="text-3xl font-bold mb-4">    </h1>
+                    <h1 className="text-3xl font-bold mb-4">Menu Maintenance</h1>
                     <p className="text-xl text-gray-600 mb-6">
                         We're currently updating our menu. Please check back soon!
                     </p>
@@ -188,8 +191,8 @@ export default function Menu() {
        // Get unique values
        level1 = _.uniqBy(level1, (item: any) => item);
        
-       // Add "All" as the default category at the beginning
-       return ["all", ...level1];
+       // Return only the categories without "all" option
+       return level1;
     }
 
     const extractLevel2 = (items: any[], selectedLevel1: string) => {
@@ -208,8 +211,8 @@ export default function Menu() {
             // Get unique values
             level2 = _.uniqBy(level2, (item: any) => item);
             
-            // Add "All" as the default category at the beginning
-            return ["all", ...level2];
+            // Return only the subcategories without "all" option
+            return level2;
         } else {
             // Filter items by the selected level1_category
             const filteredByLevel1 = items.filter((item: any) => 
@@ -225,8 +228,8 @@ export default function Menu() {
             // Get unique values
             level2 = _.uniqBy(level2, (item: any) => item);
             
-            // Add "All" as the default category at the beginning
-            return ["all", ...level2];
+            // Return only the subcategories without "all" option
+            return level2;
         }
      }
 
@@ -251,7 +254,9 @@ export default function Menu() {
                             <button
                                 key={category}
                                 onClick={() => {
-                                    setSelectedType(category);
+                                    // If this category is already selected, deselect it (set to 'all')
+                                    // Otherwise, select this category
+                                    setSelectedType(selectedType === category ? 'all' : category);
                                     setSelectedLevel2('all'); // Reset level2 selection when level1 changes
                                     setSelectedCategory('all');
                                 }}
@@ -261,29 +266,34 @@ export default function Menu() {
                             </button>
                         ))}
                     </div>
-                    <div className="flex flex-row flex-wrap gap-2 overflow-x-auto">
-                        {extractLevel2(items, selectedType).map((category: any) => (
-                            <button
-                                key={category}
-                                onClick={() => {
-                                    setSelectedLevel2(category);
-                                    setSelectedCategory('all');
-                                }}
-                                className={`px-3 py-1 text-xs rounded-full transition-colors capitalize ${selectedLevel2 === category ? 'bg-red-500 text-white' : 'bg-gray-100 hover:bg-gray-200'}`}
-                            >
-                                {category}
-                            </button>
-                        ))}
-                    </div>
+                    {/* Only show subcategories if a category is selected */}
+                    {selectedType !== 'all' && (
+                        <div className="flex flex-row flex-wrap gap-2 overflow-x-auto">
+                            {extractLevel2(items, selectedType).map((category: any) => (
+                                <button
+                                    key={category}
+                                    onClick={() => {
+                                        // If this category is already selected, deselect it (set to 'all')
+                                        // Otherwise, select this category
+                                        setSelectedLevel2(selectedLevel2 === category ? 'all' : category);
+                                        setSelectedCategory('all');
+                                    }}
+                                    className={`px-3 py-1 text-xs rounded-full transition-colors capitalize ${selectedLevel2 === category ? 'bg-red-500 text-white' : 'bg-gray-100 hover:bg-gray-200'}`}
+                                >
+                                    {category}
+                                </button>
+                            ))}
+                        </div>
+                    )}
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {sortedItems.map((item, index) => (
                         <motion.div
-                            // key={item.id}
-                            // initial={{ opacity: 0, y: 20 }}
-                            // whileInView={{ opacity: 1, y: 0 }}
-                            // transition={{ duration: 0.5, delay: index * 0.1 }}
+                            key={item.id}
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.5, delay: index * 0.1 }}
                             className="bg-white rounded-lg overflow-hidden shadow-lg"
                         >
                             <div className="relative cursor-pointer" onClick={() => navigate(`/product/${item.id.toString()}`)}>
@@ -302,20 +312,21 @@ export default function Menu() {
                                         </span>
                                     </div>
                                 )}
-                                <div className="absolute top-4 left-4 flex gap-2">
-                                    {item.tags && item.tags.includes('vegetarian') && (
-                                        <div className="bg-green-500 text-white px-3 py-1 rounded-full text-sm">
-                                            Vegetarian
+                                {/* Dietary Information icons overlay */}
+                                <div className="absolute top-2 right-2 z-10 flex flex-wrap gap-1 justify-end">
+                                    {item.dietary && item.dietary.isVegan && (
+                                        <div className="bg-green-500 text-white w-8 h-8 rounded-full flex items-center justify-center">
+                                            <LuVegan className="w-5 h-5" />
                                         </div>
                                     )}
-                                    {item.tags && item.tags.includes('vegan') && (
-                                        <div className="bg-green-500 text-white px-3 py-1 rounded-full text-sm">
-                                            Vegan
+                                    {item.dietary && item.dietary.isVegetarian && (
+                                        <div className="bg-green-500 text-white w-8 h-8 rounded-full flex items-center justify-center">
+                                            <IoLeafOutline className="w-5 h-5" />
                                         </div>
                                     )}
-                                    {item.tags && item.tags.includes('gluten-free') && (
-                                        <div className="bg-blue-500 text-white px-3 py-1 rounded-full text-sm">
-                                            GF
+                                    {item.dietary && item.dietary.isGlutenFree && (
+                                        <div className="bg-blue-500 text-white w-8 h-8 rounded-full flex items-center justify-center">
+                                            <CiWheat className="w-5 h-5" />
                                         </div>
                                     )}
                                 </div>
