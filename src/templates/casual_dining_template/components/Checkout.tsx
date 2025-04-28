@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShoppingCart, ArrowLeft } from 'lucide-react';
+import { ShoppingCart, ArrowLeft, X, Check } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Navigation } from './Navigation';
 import { useCart } from '../context/CartContext';
@@ -40,6 +40,7 @@ const Checkout: React.FC = () => {
   });
   const [errors, setErrors] = useState<Partial<FormData>>({});
   const [orderResponse, setOrderResponse] = useState<{ message?: string, payment_link?: string } | null>(null);
+  const [showPaymentPopup, setShowPaymentPopup] = useState(false);
 
   const [orderDetails, setOrderDetails] = useState({
     orderId: '',
@@ -173,6 +174,11 @@ const Checkout: React.FC = () => {
       
       setOrderResponse(response);
       
+      // If response contains payment_link, set showPaymentPopup to true
+      if (response && response.payment_link) {
+        setShowPaymentPopup(true);
+      }
+      
       // Generate a random order ID
       const orderId = Math.floor(10000 + Math.random() * 90000).toString();
       
@@ -224,21 +230,64 @@ const Checkout: React.FC = () => {
     }
   };
 
+  // Function to close the payment popup
+  const closePaymentPopup = () => {
+    setShowPaymentPopup(false);
+  };
+
   if (showConfirmation) {
-    // If payment_link exists, show it in a full-page iframe
+    // If there's a payment link, don't show the order confirmation page
     if (orderResponse?.payment_link) {
       return (
-        <div className="fixed inset-0 w-full h-full z-50">
-          <iframe 
-            src={orderResponse.payment_link} 
-            className="w-full h-full border-0"
-            title="Payment"
-          />
+        <div className="min-h-screen bg-black text-white flex flex-col">
+          <Navigation />
+          
+          {/* Main content area */}
+          <div className="flex-grow flex items-center justify-center">
+            <div className="text-center p-8">
+              <div className="mb-6">
+                <div className="bg-green-500 rounded-full p-4 mx-auto w-fit">
+                  <Check className="w-12 h-12 text-white" />
+                </div>
+              </div>
+              <h1 className="text-4xl font-bold mb-4">Order Placed Successfully!</h1>
+              {orderResponse.message && (
+                <p className="text-xl text-gray-300 mb-8">{orderResponse.message}</p>
+              )}
+              <button 
+                onClick={() => setShowPaymentPopup(true)}
+                className="bg-yellow-400 text-black px-6 py-3 rounded-full text-lg font-medium hover:bg-yellow-300 transition-colors"
+              >
+                Make Payment
+              </button>
+            </div>
+          </div>
+          
+          {/* Payment Popup */}
+          {showPaymentPopup && (
+            <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+              <div className="relative w-full max-w-4xl h-[80vh] bg-white rounded-lg shadow-xl">
+                <div className="absolute top-2 right-2 z-10">
+                  <button 
+                    onClick={closePaymentPopup}
+                    className="bg-gray-800 text-white p-2 rounded-full hover:bg-gray-700 transition-colors"
+                  >
+                    <X className="w-6 h-6" />
+                  </button>
+                </div>
+                <iframe 
+                  src={orderResponse.payment_link} 
+                  className="w-full h-full border-0 rounded-lg"
+                  title="Payment"
+                />
+              </div>
+            </div>
+          )}
         </div>
       );
     }
     
-    // If no payment_link or it's empty, show the order confirmation
+    // If no payment link, show the regular order confirmation
     return <OrderConfirmation orderDetails={orderDetails} />;
   }
 

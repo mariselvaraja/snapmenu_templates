@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, X, Check } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAppSelector, useAppDispatch, clearCart } from '../../../common/redux';
 import { cartService } from '../../../services';
@@ -58,7 +58,12 @@ export default function Checkout() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderComplete, setOrderComplete] = useState(false);
   const [orderResponse, setOrderResponse] = useState<{ message?: string, payment_link?: string } | null>(null);
+  const [showPaymentPopup, setShowPaymentPopup] = useState(false);
   
+  // Function to close the payment popup
+  const closePaymentPopup = () => {
+    setShowPaymentPopup(false);
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -164,16 +169,20 @@ export default function Checkout() {
       
       // Call the placeOrder API endpoint
       const response = await cartService.placeOrder(orderData,restaurant_id);
-      console.log('Order placed successfully:', response);
+      console.log('Order placed successfullys:', response);
       
-      // Handle the specific response format:
-      // {"message":"Order Placed Make Payment","payment_link":"https://api.ipospays.tech/v1/sl/BFtqv_240425021156"}
-      if (response && response.payment_link && response.payment_link.includes('ipospays.tech')) {
-        console.log('Payment link from ipospays.tech detected:', response.payment_link);
+      // Set the response first
+      setOrderResponse(response);
+      
+      // Check for payment link and ensure it's properly detected
+      if (response && typeof response === 'object' && 'payment_link' in response && response.payment_link) {
+        console.log('Payment link detected:', response.payment_link);
+        // Force the payment popup to open immediately
+        setShowPaymentPopup(true);
       }
       
-      setOrderResponse(response);
-      setOrderComplete(true);
+      // Set order complete after all other state updates
+      setOrderComplete(true); 
       // Clear the cart after successful order
       dispatch(clearCart());
     } catch (error) {
@@ -190,23 +199,71 @@ export default function Checkout() {
 
 
   if (orderComplete) {
-    // If payment_link exists and payment is still pending, show it in a full-page iframe
     if (orderResponse?.payment_link) {
       return (
-        <div className="fixed inset-0 w-full h-full z-50 flex flex-col">
-
-          <iframe 
-            src={orderResponse.payment_link} 
-            className="w-full flex-1 border-0"
-            title="Payment"
-            sandbox="allow-forms allow-scripts allow-same-origin allow-top-navigation allow-popups"
-            allow="payment"
-          />
+        <div className="py-20">
+          <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5 }}
+              className="bg-white rounded-lg shadow-lg p-8 text-center"
+            >
+              <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Check className="h-10 w-10 text-green-500" />
+              </div>
+              
+              <h2 className="text-3xl font-bold mb-4">Order Placed Successfully!</h2>
+              
+              {orderResponse.message && (
+                <p className="text-xl text-gray-600 mb-8">{orderResponse.message}</p>
+              )}
+              
+              <div className="flex flex-col sm:flex-row justify-center gap-4">
+                <button
+                  onClick={() => setShowPaymentPopup(true)}
+                  className="bg-red-500 text-white px-8 py-3 rounded-full font-semibold hover:bg-red-600 transition-colors"
+                >
+                  Make Payment
+                </button>
+                
+                <Link
+                  to="/"
+                  className="bg-gray-200 text-gray-800 px-8 py-3 rounded-full font-semibold hover:bg-gray-300 transition-colors"
+                >
+                  Return to Home
+                </Link>
+              </div>
+            </motion.div>
+          </div>
+          
+          {/* Payment Popup */}
+          {showPaymentPopup && (
+            <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+              <div className="relative w-full max-w-4xl h-[80vh] bg-white rounded-lg shadow-xl">
+                <div className="absolute top-2 right-2 z-10">
+                  <button 
+                    onClick={closePaymentPopup}
+                    className="bg-gray-800 text-white p-2 rounded-full hover:bg-gray-700 transition-colors"
+                  >
+                    <X className="w-6 h-6" />
+                  </button>
+                </div>
+                <iframe 
+                  src={orderResponse.payment_link} 
+                  className="w-full h-full border-0 rounded-lg"
+                  title="Payment"
+                  sandbox="allow-forms allow-scripts allow-same-origin allow-top-navigation allow-popups"
+                  allow="payment"
+                />
+              </div>
+            </div>
+          )}
         </div>
       );
     }
     
-    // If payment is completed or cancelled, or if there's no payment link, show the order confirmation message
+    // If no payment link, show the regular order confirmation
     return (
       <div className="py-20">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -217,10 +274,11 @@ export default function Checkout() {
             className="bg-white rounded-lg shadow-lg p-8 text-center"
           >
             <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
+              <Check className="h-10 w-10 text-green-500" />
             </div>
+            
+            <h2 className="text-3xl font-bold mb-4">Order Confirmed!</h2>
+            <p className="text-xl text-gray-600 mb-8">Thank you for your order.</p>
             
             <Link
               to="/"
