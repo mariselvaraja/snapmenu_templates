@@ -10,6 +10,7 @@ export interface UISiteContent {
       logo: {
         icon: string;
         text: string;
+        url?: string;
       }
     };
     navigation: {
@@ -383,7 +384,8 @@ export function SiteContentProvider({ children }: SiteContentProviderProps) {
         name: "Pizza Restaurant",
         logo: {
           icon: "/logo.png",
-          text: "Pizza Restaurant"
+          text: "Pizza Restaurant",
+          url: "/logo.png"
         }
       },
       navigation: {

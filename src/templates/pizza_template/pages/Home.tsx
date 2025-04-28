@@ -1,9 +1,37 @@
 import { motion } from 'framer-motion';
-import { ArrowRight, ShoppingCart, Truck, Clock, Award, Pizza, Play, UtensilsCrossed, Heart, Users } from 'lucide-react';
+import { ArrowRight, ShoppingCart, Award, Play, Heart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import { 
+  FaWineGlass, FaUtensils, FaClock, FaCoffee, FaGlassMartini, 
+  FaHamburger, FaPizzaSlice, FaConciergeBell, FaChair, FaFire, FaBreadSlice,
+  FaTruck, FaMotorcycle, FaShoppingBag, FaMapMarkerAlt, FaCalendarAlt, FaUsers,
+  FaStar, FaMoneyBillWave, FaMobileAlt, FaCarSide, FaShippingFast, FaPercent,
+  FaUserTie, FaClipboardList, FaReceipt
+} from 'react-icons/fa';
 
 import { useAppDispatch, useAppSelector, addItem, CartItem } from '../../../common/redux';
+
+// Define interfaces for the experienceCard data structure
+interface ExperienceCardSection {
+  title?: string;
+  subtitle?: string;
+}
+
+interface ExperienceCardItem {
+  icon: string;
+  title: string;
+  description: string;
+  image: string;
+}
+
+interface ExperienceCard {
+  section?: ExperienceCardSection;
+  cards?: ExperienceCardItem[];
+}
+
+// Type for icon components
+type IconComponent = React.ComponentType<React.SVGAttributes<SVGElement>>;
 
 export default function Home() {
   const [videoOpen, setVideoOpen] = useState(false);
@@ -18,6 +46,7 @@ export default function Home() {
     {};
   const navigationBar = siteContent?.navigationBar;
   const heroData = navigationBar?.hero;
+  const experienceCard: ExperienceCard = navigationBar?.experience || {};
   
   // Fallback banner data if heroData or heroData.banners is not available
   const fallbackBanners = [
@@ -111,7 +140,7 @@ export default function Home() {
                 to="/menu"
                 className="inline-flex items-center bg-red-500 text-white px-8 py-3 rounded-full text-lg font-semibold hover:bg-red-600 transition-colors"
               >
-                Order Now <ArrowRight className="ml-2 h-5 w-5" />
+                View Menu <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </div>
           </motion.div>
@@ -142,42 +171,72 @@ export default function Home() {
         </div>
       )}
 
-      {/* Features Section */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-            {[
-              {
-                icon: Pizza,
-                title: "Fresh Ingredients",
-                description: "We use only the freshest ingredients, sourced daily from local suppliers."
-              },
-              {
-                icon: Truck,
-                title: "Fast Delivery",
-                description: "Hot and fresh pizza delivered to your door in 30 minutes or less."
-              },
-              {
-                icon: Award,
-                title: "Award Winning",
-                description: "Voted best pizza in the galaxy for 5 years running."
-              }
-            ].map((feature, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.2 }}
-                className="text-center"
-              >
-                <feature.icon className="h-12 w-12 text-red-500 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-                <p className="text-gray-600">{feature.description}</p>
-              </motion.div>
-            ))}
+      {/* Features Section - Only render if experienceCard has data */}
+      {(experienceCard.cards && experienceCard.cards.length > 0) && (
+        <section className="py-20 bg-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="text-center mb-12"
+            >
+              <h2 className="text-4xl font-bold mb-4">{experienceCard.section?.title || "The Art of Fine Dining"}</h2>
+              <p className="text-xl text-gray-600">{experienceCard.section?.subtitle || "Discover the pillars of our gastronomic excellence"}</p>
+            </motion.div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+              {experienceCard.cards.map((card: ExperienceCardItem, index: number) => {
+                // Map string icon names to imported icon components
+                const iconMap: Record<string, IconComponent> = {
+                  Wine: FaWineGlass,
+                  UtensilsCrossed: FaUtensils,
+                  Clock: FaClock,
+                  Coffee: FaCoffee,
+                  GlassMartini: FaGlassMartini,
+                  Hamburger: FaHamburger,
+                  Pizza: FaPizzaSlice,
+                  ConciergeBell: FaConciergeBell,
+                  Chair: FaChair,
+                  Fire: FaFire,
+                  BreadSlice: FaBreadSlice,
+                  Truck: FaTruck,
+                  Motorcycle: FaMotorcycle,
+                  ShoppingBag: FaShoppingBag,
+                  MapMarker: FaMapMarkerAlt,
+                  Calendar: FaCalendarAlt,
+                  Users: FaUsers,
+                  Star: FaStar,
+                  MoneyBill: FaMoneyBillWave,
+                  Mobile: FaMobileAlt,
+                  Car: FaCarSide,
+                  Shipping: FaShippingFast,
+                  Percent: FaPercent,
+                  UserTie: FaUserTie,
+                  Clipboard: FaClipboardList,
+                  Receipt: FaReceipt
+                };
+                
+                const IconComponent = iconMap[card.icon] || FaUtensils; // Default to FaUtensils if icon not found
+                
+                return (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.2 }}
+                    className="bg-white  p-6 text-center"
+                  >
+                    <IconComponent className="h-12 w-12 text-red-500 mx-auto my-4" />
+                    <h3 className="text-xl font-semibold mb-4">{card.title}</h3>
+                    <p className="text-gray-600">{card.description}</p>
+                  </motion.div>
+                );
+              })}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Featured Menu Items */}
       <section className="py-20 bg-gray-100">
@@ -296,11 +355,11 @@ export default function Home() {
               </p>
               <div className="space-y-4">
                 <div className="flex items-center">
-                  <Clock className="h-6 w-6 text-red-500 mr-4" />
+                  <FaClock className="h-6 w-6 text-red-500 mr-4" />
                   <span>30 Minutes or Less</span>
                 </div>
                 <div className="flex items-center">
-                  <Truck className="h-6 w-6 text-red-500 mr-4" />
+                  <FaTruck className="h-6 w-6 text-red-500 mr-4" />
                   <span>Free Delivery on Orders Over $20</span>
                 </div>
               </div>

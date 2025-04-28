@@ -29,10 +29,15 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           <div className="flex items-center">
-            <Link to="/" className="flex items-center space-x-2">
-              {brand?.logo?.icon === "Utensils" && <UtensilsIcon className="h-8 w-8 text-red-500" />}
-              {brand?.logo?.icon === "Pizza" && <PizzaIcon className="h-8 w-8 text-red-500" />}
-              <span className="text-2xl font-bold">{brand?.logo?.text || 'Restaurant'}</span>
+            <Link to="/" className="flex items-center">
+              <div className="flex items-center">
+                {brand?.logo?.icon ? (
+                  <img src={brand.logo.icon} alt={brand.logo.text || 'Restaurant'} className="h-8 w-auto" />
+                ) : (
+                  <UtensilsIcon className="h-8 w-8 text-red-500" />
+                )}
+              </div>
+              <span className="text-2xl font-bold ml-8">{brand?.logo?.text || 'Restaurant'}</span>
             </Link>
           </div>
 
@@ -59,9 +64,9 @@ export default function Navbar() {
                 className="relative hover:text-red-500 transition-colors"
               >
                 <ShoppingCart className="h-6 w-6" />
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+               { cartItemCount!=0 &&<span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                   {cartItemCount}
-                </span>
+                </span>}
               </button>
             </div>
           </div>
@@ -97,15 +102,15 @@ export default function Navbar() {
               >
                 <Search className="h-6 w-6" />
               </button>
-              <button
+            {  <button
                 onClick={() => dispatch(toggleDrawer())}
                 className="relative p-2"
               >
                 <ShoppingCart className="h-6 w-6" />
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+              { cartItemCount!=0 && <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                   {cartItemCount}
-                </span>
-              </button>
+                </span>}
+              </button>}
             </div>
           </div>
         </div>
