@@ -6,6 +6,13 @@ interface CartItem {
   price: string;
   quantity: number;
   imageUrl: string;
+  selectedModifiers?: {
+    name: string;
+    options: {
+      name: string;
+      price: number;
+    }[];
+  }[];
 }
 
 interface CartContextType {

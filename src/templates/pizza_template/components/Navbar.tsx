@@ -26,7 +26,7 @@ export default function Navbar() {
 
   return (
     <nav className="bg-black text-white fixed w-full z-50">
-      <div className="mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           <div className="flex items-center">
             <Link to="/" className="flex items-center space-x-2">
@@ -47,18 +47,6 @@ export default function Navbar() {
                   {link.label}
                 </Link>
               ))}
-              <Link
-                to="/reservation"
-                className="bg-white text-red-500 px-6 py-2 rounded-full font-semibold hover:bg-gray-100 transition-colors"
-              >
-                Book a Table
-              </Link>
-              <Link
-                to="/order"
-                className="bg-red-500 px-6 py-2 rounded-full font-semibold hover:bg-red-600 transition-colors"
-              >
-                Order Now
-              </Link>
 
               <button
                 onClick={() => dispatch(openSearchModal())}
@@ -102,24 +90,6 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
-            <Link
-              to="/reservation"
-              className="block px-3 py-2 bg-white text-red-500 text-center rounded-full mt-4 hover:bg-gray-100"
-            >
-              Book a Table
-            </Link>
-            <Link
-              to="/order"
-              className="block px-3 py-2 bg-red-500 text-center rounded-full mt-4 hover:bg-red-600"
-            >
-              Order Now
-            </Link>
-            <Link
-              to="/in-dining-order"
-              className="block px-3 py-2 bg-orange-500 text-center rounded-full mt-4 hover:bg-orange-600"
-            >
-              In-Dining Order
-            </Link>
             <div className="flex justify-center mt-4 space-x-4">
               <button 
                 onClick={() => dispatch(openSearchModal())}

@@ -1,9 +1,26 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ShoppingCart, ArrowLeft, Info, Tag, Box, Utensils, AlertTriangle, Heart, Minus, Plus } from 'lucide-react';
+import { ShoppingCart, ArrowLeft, Info, Tag, Box, Utensils, AlertTriangle, Heart, Minus, Plus, Check } from 'lucide-react';
 import { useAppDispatch, useAppSelector, addItem, CartItem, fetchMenuRequest, MenuItem } from '../../../common/redux';
 import { useState, useEffect } from 'react';
 import { TbCategory2 } from 'react-icons/tb';
+import { LuVegan } from 'react-icons/lu';
+import { IoLeafOutline } from 'react-icons/io5';
+import { CiWheat } from 'react-icons/ci';
+
+// Define interfaces for modifiers
+interface ModifierOption {
+    name: string;
+    price: number | string;  // Allow both number and string types
+    selectedByDefult?: string;
+    attrSortIndex?: number;
+    visibility?: string;
+}
+
+interface Modifier {
+    name: string;
+    options: ModifierOption[];
+}
 
 export default function ProductDetail() {
     const { productId } = useParams<{ productId: string }>();
@@ -34,11 +51,51 @@ export default function ProductDetail() {
     // Initialize quantity state with cart quantity if product is in cart, otherwise 1
     const [quantity, setQuantity] = useState(cartItem ? cartItem.quantity : 1);
     
+    // State for selected modifiers
+    const [selectedModifiers, setSelectedModifiers] = useState<{
+        name: string;
+        options: {
+            name: string;
+            price: number | string;
+        }[];
+    }[]>([]);
+    
+    // Calculate total price including modifiers
+    const calculateTotalPrice = () => {
+        let basePrice = product?.price || 0;
+        let modifiersPrice = 0;
+        
+        // Add up all selected modifier prices
+        selectedModifiers.forEach(modifier => {
+            modifier.options.forEach(option => {
+                const optionPrice = typeof option.price === 'string' ? parseFloat(option.price) || 0 : option.price;
+                modifiersPrice += optionPrice;
+            });
+        });
+        
+        return (basePrice + modifiersPrice) * quantity;
+    };
+    
+    // Parse modifiers from product data
+    const [modifiersList, setModifiersList] = useState<Modifier[]>([]);
+    
+    useEffect(() => {
+        console.log("product", product);
+        
+        // Directly use modifiers_list from the product if available
+        if (product?.modifiers_list && Array.isArray(product.modifiers_list)) {
+            setModifiersList(product.modifiers_list);
+                }
+    }, [product]);
+    
     // Update quantity if cart changes
     useEffect(() => {
         const updatedCartItem = cartItems.find(item => item.id.toString() === productId);
         if (updatedCartItem) {
             setQuantity(updatedCartItem.quantity);
+            if (updatedCartItem.selectedModifiers) {
+                setSelectedModifiers(updatedCartItem.selectedModifiers);
+            }
         }
     }, [cartItems, productId]);
 
@@ -52,13 +109,79 @@ export default function ProductDetail() {
         }
     };
 
+    // Handle modifier option selection
+    const handleModifierOptionSelect = (modifierName: string, option: ModifierOption) => {
+        setSelectedModifiers(prev => {
+            // Check if this modifier is already in the selected list
+            const modifierIndex = prev.findIndex(mod => mod.name === modifierName);
+            
+            if (modifierIndex >= 0) {
+                // Modifier exists, check if option is already selected
+                const optionIndex = prev[modifierIndex].options.findIndex(opt => opt.name === option.name);
+                
+                if (optionIndex >= 0) {
+                    // Option is already selected, remove it
+                    const newOptions = [...prev[modifierIndex].options];
+                    newOptions.splice(optionIndex, 1);
+                    
+                    // If no options left, remove the whole modifier
+                    if (newOptions.length === 0) {
+                        const newModifiers = [...prev];
+                        newModifiers.splice(modifierIndex, 1);
+                        return newModifiers;
+                    } else {
+                        // Update options for this modifier
+                        const newModifiers = [...prev];
+                        newModifiers[modifierIndex] = {
+                            ...newModifiers[modifierIndex],
+                            options: newOptions
+                        };
+                        return newModifiers;
+                    }
+                } else {
+                    // Option not selected, add it
+                    const newModifiers = [...prev];
+                    newModifiers[modifierIndex] = {
+                        ...newModifiers[modifierIndex],
+                        options: [...newModifiers[modifierIndex].options, { name: option.name, price: option.price }]
+                    };
+                    return newModifiers;
+                }
+            } else {
+                // Modifier doesn't exist, add it with this option
+                return [...prev, {
+                    name: modifierName,
+                    options: [{ name: option.name, price: option.price }]
+                }];
+            }
+        });
+    };
+    
+    // Check if a modifier option is selected
+    const isModifierOptionSelected = (modifierName: string, optionName: string) => {
+        const modifier = selectedModifiers.find(mod => mod.name === modifierName);
+        if (!modifier) return false;
+        
+        return modifier.options.some(opt => opt.name === optionName);
+    };
+    
     const handleAddToCart = (menuItem: MenuItem) => {
+        // Convert any string prices to numbers for cart compatibility
+        const normalizedModifiers = selectedModifiers.map(modifier => ({
+            name: modifier.name,
+            options: modifier.options.map(option => ({
+                name: option.name,
+                price: typeof option.price === 'string' ? parseFloat(option.price) || 0 : option.price
+            }))
+        }));
+        
         const cartItem: CartItem = {
             id: menuItem.id, // ID is already a number
             name: menuItem.name,
             price: menuItem.price, // Price is already a number
             image: menuItem.image,
             quantity: quantity,
+            selectedModifiers: normalizedModifiers.length > 0 ? normalizedModifiers : undefined
         };
         dispatch(addItem(cartItem));
     };
@@ -321,28 +444,17 @@ export default function ProductDetail() {
                         <div className="flex flex-col md:flex-row justify-between items-start mb-4">
                             <div className="md:pr-8 md:w-1/2">
                                 <h1 className="text-3xl font-bold mb-2">{product.name}</h1>
-                             
-                              {  product.tags && <div className="flex flex-wrap gap-2 mb-4">
-                                    {product.tags && product.tags.includes('vegetarian') && (
-                                        <div className="bg-green-500 text-white px-3 py-1 rounded-full text-sm">
-                                            Vegetarian
-                                        </div>
-                                    )}
-                                    {product.tags && product.tags.includes('vegan') && (
-                                        <div className="bg-green-500 text-white px-3 py-1 rounded-full text-sm">
-                                            Vegan
-                                        </div>
-                                    )}
-                                    {product.tags && product.tags.includes('gluten-free') && (
-                                        <div className="bg-blue-500 text-white px-3 py-1 rounded-full text-sm">
-                                            GF
-                                        </div>
-                                    )}
-                                </div>}
                                 <p className="text-gray-700 mb-3">{product.description}</p>
                                 
-                                <div className="flex items-center justify-between">
-                                    <div className="text-2xl font-bold text-red-500">${product.price}</div>
+                                <div className="flex items-center justify-between mb-4">
+                                    <div>
+                                        <div className="text-2xl font-bold text-red-500">${calculateTotalPrice().toFixed(2)}</div>
+                                        {selectedModifiers.length > 0 && (
+                                            <div className="text-sm text-gray-500">
+                                                Base: ${product.price} + Add-ons: ${(calculateTotalPrice() - product.price * quantity).toFixed(2)}
+                                            </div>
+                                        )}
+                                    </div>
                                     
                                     {/* Add button or quantity controls */}
                                     {!cartItem || cartItem.quantity <= 0 ? (
@@ -371,26 +483,65 @@ export default function ProductDetail() {
                                         </div>
                                     )}
                                 </div>
+                                
+                                {/* Inline Add-ons section */}
+                                {modifiersList.length > 0 && (
+                                    <div className="mb-4">
+                                        <div className="flex items-center mb-2">
+                                            <Box className="h-4 w-4 mr-1 text-red-500" />
+                                            <span className="text-sm font-medium text-gray-700">Optional Add-ons:</span>
+                                        </div>
+                                        <div className="flex flex-wrap gap-2">
+                                            {modifiersList.flatMap((modifier, modIndex) => 
+                                                modifier.options.map((option, optIndex) => {
+                                                    // Handle empty option names by using the modifier name
+                                                    const displayName = option.name ? option.name : modifier.name;
+                                                    const price = parseFloat(String(option.price));
+                                                    
+                                                    return (
+                                                        <div 
+                                                            key={`${modIndex}-${optIndex}`}
+                                                            onClick={() => handleModifierOptionSelect(modifier.name, option)}
+                                                            className={`flex items-center px-3 py-1 rounded-full cursor-pointer transition-all ${
+                                                                isModifierOptionSelected(modifier.name, option.name)
+                                                                    ? 'bg-red-100 border border-red-300 text-red-800'
+                                                                    : 'bg-gray-100 border border-gray-200 text-gray-800 hover:bg-gray-200'
+                                                            }`}
+                                                        >
+                                                            <span className="text-sm">{displayName}</span>
+                                                            <span className={`text-sm font-medium ml-1 ${price > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                                                                {price > 0 ? `+$${price.toFixed(2)}` : 'Free'}
+                                                            </span>
+                                                            {isModifierOptionSelected(modifier.name, option.name) && (
+                                                                <Check className="w-3 h-3 ml-1 text-red-600" />
+                                                            )}
+                                                        </div>
+                                                    );
+                                                })
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                             <div className="md:w-1/2 mt-4 md:mt-0">
                                 <div className="relative rounded-lg overflow-hidden shadow-lg">
-                                    {/* Dietary Information overlay */}
+                                    {/* Dietary Information icons overlay */}
                                     {product.dietary && Object.values(product.dietary).some(value => value) && (
                                         <div className="absolute top-2 right-2 z-10 flex flex-wrap gap-1 justify-end">
                                             {product.dietary.isVegan && (
-                                                <span className="bg-green-500 text-white px-2 py-1 rounded-full text-xs font-medium">
-                                                    Vegan
-                                                </span>
+                                                <div className="bg-green-500 text-white w-8 h-8 rounded-full flex items-center justify-center">
+                                                    <LuVegan className="w-5 h-5" />
+                                                </div>
                                             )}
                                             {product.dietary.isVegetarian && (
-                                                <span className="bg-green-500 text-white px-2 py-1 rounded-full text-xs font-medium">
-                                                    Vegetarian
-                                                </span>
+                                                <div className="bg-green-500 text-white w-8 h-8 rounded-full flex items-center justify-center">
+                                                    <IoLeafOutline className="w-5 h-5" />
+                                                </div>
                                             )}
                                             {product.dietary.isGlutenFree && (
-                                                <span className="bg-blue-500 text-white px-2 py-1 rounded-full text-xs font-medium">
-                                                    Gluten Free
-                                                </span>
+                                                <div className="bg-blue-500 text-white w-8 h-8 rounded-full flex items-center justify-center">
+                                                    <CiWheat className="w-5 h-5" />
+                                                </div>
                                             )}
                                         </div>
                                     )}
@@ -420,22 +571,52 @@ export default function ProductDetail() {
                                 Product Details
                             </h2>
                             <div className="space-y-4">
-                                {product.category && (
+                                {(product.category || product.subCategory) && (
                                     <div className="border-b border-gray-100 pb-3">
                                         <div className="flex items-center mb-1">
                                             <Tag className="h-4 w-4 mr-2 text-gray-500" />
-                                            <span className="font-medium text-gray-700">Category</span>
+                                            <span className="font-medium text-gray-700">Category & Subcategory</span>
                                         </div>
-                                        <div className="text-gray-900 pl-6">{product.category}</div>
+                                        <div className="grid grid-cols-2 gap-4 text-gray-900 pl-6">
+                                            <div>
+                                                <span className="text-sm text-gray-500">Category:</span>
+                                                <span className="ml-2 font-medium">{product.category || 'N/A'}</span>
+                                            </div>
+                                            <div>
+                                                <span className="text-sm text-gray-500">Subcategory:</span>
+                                                <span className="ml-2 font-medium">{product.subCategory || 'N/A'}</span>
+                                            </div>
+                                        </div>
                                     </div>
                                 )}
-                                {product.subCategory && (
+                                
+                                {/* Dietary Information section */}
+                                {product.dietary && Object.values(product.dietary).some(value => value) && (
                                     <div className="border-b border-gray-100 pb-3">
                                         <div className="flex items-center mb-1">
-                                            <TbCategory2 className="h-4 w-4 mr-2 text-gray-500" />
-                                            <span className="font-medium text-gray-700">Subcategory</span>
+                                            <LuVegan className="h-4 w-4 mr-2 text-green-500" />
+                                            <span className="font-medium text-gray-700">Dietary Information</span>
                                         </div>
-                                        <div className="text-gray-900 pl-6">{product.subCategory}</div>
+                                        <div className="flex flex-wrap gap-2 pl-6">
+                                            {product.dietary.isVegan && (
+                                                <div className="flex items-center bg-green-100 text-green-800 px-3 py-1 rounded-full">
+                                                    <LuVegan className="w-4 h-4 mr-1" />
+                                                    <span className="text-sm font-medium">Vegan</span>
+                                                </div>
+                                            )}
+                                            {product.dietary.isVegetarian && (
+                                                <div className="flex items-center bg-green-100 text-green-800 px-3 py-1 rounded-full">
+                                                    <IoLeafOutline className="w-4 h-4 mr-1" />
+                                                    <span className="text-sm font-medium">Vegetarian</span>
+                                                </div>
+                                            )}
+                                            {product.dietary.isGlutenFree && (
+                                                <div className="flex items-center bg-blue-100 text-blue-800 px-3 py-1 rounded-full">
+                                                    <CiWheat className="w-4 h-4 mr-1" />
+                                                    <span className="text-sm font-medium">Gluten Free</span>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                 )}
                                 {product.supplier && (
@@ -596,6 +777,8 @@ export default function ProductDetail() {
                                 </div>
                             </div>
                         )}
+                        
+                        {/* The modifiers section has been moved up under the price and Add to Cart button */}
 
 
                         {/* Pairings section */}

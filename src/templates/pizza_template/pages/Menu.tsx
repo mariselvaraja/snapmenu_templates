@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { ShoppingCart, Plus, Minus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector, addItem, CartItem, fetchMenuRequest, MenuItem, removeItem, updateItemQuantity } from '../../../common/redux';
+import _ from 'lodash';
 
 // Define types for category and subcategory
 interface CategoryType {
@@ -18,25 +19,16 @@ interface SubCategoryType {
 
 export default function Menu() {
     const [selectedType, setSelectedType] = useState<string>('all');
+    const [selectedLevel2, setSelectedLevel2] = useState<string>('all');
     const [selectedCategory, setSelectedCategory] = useState<string>('all');
     const [sortBy, setSortBy] = useState<string>('featured');
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
     
     // Get menu data and cart items from Redux store
-    const { items, categories: menuCategories, loading, error } = useAppSelector(state => state.menu);
+    const { items, loading, error } = useAppSelector(state => state.menu);
     const { items: cartItems } = useAppSelector(state => state.cart);
     
-    // Create categories and subcategories from menu items
-    const categories: CategoryType[] = [
-        { id: 'all', name: 'All Items', type: 'all' },
-        ...Array.from(new Set(items.map(item => item.category)))
-            .map(category => ({
-                id: category,
-                name: category.charAt(0).toUpperCase() + category.slice(1),
-                type: category
-            }))
-    ];
     
     // Extract subcategories from 'mains' category
     const subCategories: SubCategoryType[] = items
@@ -162,9 +154,17 @@ export default function Menu() {
     }
 
     const filteredItems = items.filter(item => {
+        // Filter by level1 category
+        if (selectedType !== 'all' && item.level1_category !== selectedType) return false;
+        
+        // Filter by level2 category
+        if (selectedLevel2 !== 'all' && item.level2_category !== selectedLevel2) return false;
+        
+        // Keep the original category filtering for backward compatibility
         if (selectedType !== 'all' && item.category !== selectedType) return false;
         if (selectedType === 'mains' && selectedCategory !== 'all' && 
             (!item.tags || !item.tags.includes(selectedCategory))) return false;
+            
         return true;
     });
 
@@ -173,6 +173,62 @@ export default function Menu() {
         if (sortBy === 'price-desc') return b.price - a.price;
         return 0;
     });
+
+    const extractLevel1 = (items: any[]) => {
+       // Filter out items where level1_category is null, undefined, or empty string
+       const validItems = items.filter((item: any) => 
+           item.level1_category != null && 
+           item.level1_category !== undefined && 
+           item.level1_category !== ''
+       );
+       
+       // Extract level1_category values
+       let level1 = validItems.map((item: any) => item.level1_category);
+       
+       // Get unique values
+       level1 = _.uniqBy(level1, (item: any) => item);
+       
+       // Add "All" as the default category at the beginning
+       return ["all", ...level1];
+    }
+
+    const extractLevel2 = (items: any[], selectedLevel1: string) => {
+        // If "all" is selected, show all level2 categories
+        if (selectedLevel1 === 'all') {
+            // Filter out items where level2_category is null, undefined, or empty string
+            const validItems = items.filter((item: any) => 
+                item.level2_category != null && 
+                item.level2_category !== undefined && 
+                item.level2_category !== ''
+            );
+            
+            // Extract level2_category values
+            let level2 = validItems.map((item: any) => item.level2_category);
+            
+            // Get unique values
+            level2 = _.uniqBy(level2, (item: any) => item);
+            
+            // Add "All" as the default category at the beginning
+            return ["all", ...level2];
+        } else {
+            // Filter items by the selected level1_category
+            const filteredByLevel1 = items.filter((item: any) => 
+                item.level1_category === selectedLevel1 &&
+                item.level2_category != null && 
+                item.level2_category !== undefined && 
+                item.level2_category !== ''
+            );
+            
+            // Extract level2_category values from the filtered items
+            let level2 = filteredByLevel1.map((item: any) => item.level2_category);
+            
+            // Get unique values
+            level2 = _.uniqBy(level2, (item: any) => item);
+            
+            // Add "All" as the default category at the beginning
+            return ["all", ...level2];
+        }
+     }
 
     return (
         <div className="py-20">
@@ -190,55 +246,44 @@ export default function Menu() {
                 </motion.div>
 
                 <div className="flex flex-col space-y-4 mb-12">
-                    <div className="flex flex-wrap gap-4">
-                        {categories.map((category: CategoryType) => (
+                    <div className="flex flex-wrap gap-4 uppercase">
+                        {extractLevel1(items).map((category: any) => (
                             <button
-                                key={category.id}
+                                key={category}
                                 onClick={() => {
-                                    setSelectedType(category.type);
+                                    setSelectedType(category);
+                                    setSelectedLevel2('all'); // Reset level2 selection when level1 changes
                                     setSelectedCategory('all');
                                 }}
-                                className={`px-6 py-2 rounded-full transition-colors ${selectedType === category.type ? 'bg-red-500 text-white' : 'bg-gray-100 hover:bg-gray-200'}`}
+                                className={`px-6 py-2 rounded-full transition-colors capitalize ${selectedType === category ? 'bg-red-500 text-white' : 'bg-gray-100 hover:bg-gray-200'}`}
                             >
-                                {category.name}
+                                {category}
                             </button>
                         ))}
                     </div>
-
-                    {selectedType === 'mains' && subCategories.length > 0 && (
-                        <div className="flex flex-wrap gap-4">
-                            {subCategories.map((subCategory: SubCategoryType) => (
-                                <button
-                                    key={subCategory.id}
-                                    onClick={() => setSelectedCategory(subCategory.id)}
-                                    className={`px-6 py-2 rounded-full transition-colors ${selectedCategory === subCategory.id ? 'bg-red-500 text-white' : 'bg-gray-100 hover:bg-gray-200'}`}
-                                >
-                                    {subCategory.name}
-                                </button>
-                            ))}
-                        </div>
-                    )}
-
-                    <div className="flex justify-end">
-                        <select
-                            value={sortBy}
-                            onChange={(e) => setSortBy(e.target.value)}
-                            className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-                        >
-                            <option value="featured">Featured</option>
-                            <option value="price-asc">Price: Low to High</option>
-                            <option value="price-desc">Price: High to Low</option>
-                        </select>
+                    <div className="flex flex-row flex-wrap gap-2 overflow-x-auto">
+                        {extractLevel2(items, selectedType).map((category: any) => (
+                            <button
+                                key={category}
+                                onClick={() => {
+                                    setSelectedLevel2(category);
+                                    setSelectedCategory('all');
+                                }}
+                                className={`px-3 py-1 text-xs rounded-full transition-colors capitalize ${selectedLevel2 === category ? 'bg-red-500 text-white' : 'bg-gray-100 hover:bg-gray-200'}`}
+                            >
+                                {category}
+                            </button>
+                        ))}
                     </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {sortedItems.map((item, index) => (
                         <motion.div
-                            key={item.id}
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.5, delay: index * 0.1 }}
+                            // key={item.id}
+                            // initial={{ opacity: 0, y: 20 }}
+                            // whileInView={{ opacity: 1, y: 0 }}
+                            // transition={{ duration: 0.5, delay: index * 0.1 }}
                             className="bg-white rounded-lg overflow-hidden shadow-lg"
                         >
                             <div className="relative cursor-pointer" onClick={() => navigate(`/product/${item.id.toString()}`)}>

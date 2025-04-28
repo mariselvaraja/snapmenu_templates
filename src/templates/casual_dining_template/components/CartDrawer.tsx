@@ -15,7 +15,21 @@ const CartDrawer: React.FC = () => {
   const drawerOpen = useAppSelector((state) => state.cart.drawerOpen);
 
   const calculateTotal = () => {
-    return cart.reduce((total, item) => total + parseFloat(item.price) * item.quantity, 0).toFixed(2);
+    return cart.reduce((total, item) => {
+      // Calculate base price
+      let itemTotal = parseFloat(item.price) * item.quantity;
+      
+      // Add modifier prices
+      if (item.selectedModifiers && item.selectedModifiers.length > 0) {
+        item.selectedModifiers.forEach(modifier => {
+          modifier.options.forEach(option => {
+            itemTotal += option.price * item.quantity;
+          });
+        });
+      }
+      
+      return total + itemTotal;
+    }, 0).toFixed(2);
   };
   
   // Calculate item count
@@ -100,7 +114,38 @@ const CartDrawer: React.FC = () => {
                       {/* Item Details */}
                       <div className="flex-1">
                         <h3 className="font-semibold text-white">{item.name}</h3>
-                        <p className="text-yellow-400 font-semibold">${item.price}</p>
+                        <p className="text-yellow-400 font-semibold">
+                          ${(() => {
+                            let totalItemPrice = parseFloat(item.price);
+                            
+                            if (item.selectedModifiers && item.selectedModifiers.length > 0) {
+                              item.selectedModifiers.forEach(modifier => {
+                                modifier.options.forEach(option => {
+                                  totalItemPrice += option.price;
+                                });
+                              });
+                            }
+                            
+                            return totalItemPrice.toFixed(2);
+                          })()}
+                        </p>
+                        
+                        {/* Display selected modifiers as badges */}
+                        {item.selectedModifiers && item.selectedModifiers.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-1 mb-2">
+                            {item.selectedModifiers.flatMap(modifier => 
+                              modifier.options.map((option, index) => (
+                                <span 
+                                  key={`${modifier.name}-${option.name}-${index}`} 
+                                  className="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-zinc-800 text-yellow-400"
+                                >
+                                  {option.name || modifier.name}
+                                  {option.price > 0 && <span className="ml-1 font-medium">+${option.price.toFixed(2)}</span>}
+                                </span>
+                              ))
+                            )}
+                          </div>
+                        )}
                         
                         {/* Quantity Controls */}
                         <div className="flex items-center mt-2">

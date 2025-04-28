@@ -9,7 +9,32 @@ export default function CartDrawer() {
   const dispatch = useAppDispatch();
 
   // Calculate cart totals
-  const subtotal = items.reduce((total: number, item: { price: number, quantity: number }) => total + (item.price * item.quantity), 0);
+  const subtotal = items.reduce((total: number, item: { 
+    price: number, 
+    quantity: number,
+    selectedModifiers?: {
+      name: string;
+      options: {
+        name: string;
+        price: number;
+      }[];
+    }[]
+  }) => {
+    // Calculate base price
+    let itemTotal = item.price * item.quantity;
+    
+    // Add modifier prices
+    if (item.selectedModifiers && item.selectedModifiers.length > 0) {
+      item.selectedModifiers.forEach(modifier => {
+        modifier.options.forEach(option => {
+          itemTotal += option.price * item.quantity;
+        });
+      });
+    }
+    
+    return total + itemTotal;
+  }, 0);
+  
   const itemCount = items.reduce((total: number, item: { quantity: number }) => total + item.quantity, 0);
 
   const closeDrawer = () => {
@@ -67,7 +92,20 @@ export default function CartDrawer() {
             <div className="flex-grow overflow-y-auto">
               {items.length > 0 ? (
                 <ul className="divide-y">
-                  {items.map((item: { id: number, name: string, price: number, quantity: number, image: string }) => (
+                  {items.map((item: { 
+                    id: number, 
+                    name: string, 
+                    price: number, 
+                    quantity: number, 
+                    image: string,
+                    selectedModifiers?: {
+                      name: string;
+                      options: {
+                        name: string;
+                        price: number;
+                      }[];
+                    }[]
+                  }) => (
                     <li key={item.id} className="p-4 flex">
                       {item.image ? (
                         <img
@@ -86,7 +124,51 @@ export default function CartDrawer() {
                       )}
                       <div className="flex-1">
                         <h3 className="font-semibold">{item.name}</h3>
-                        <p className="text-gray-600">${item.price.toFixed(2)}</p>
+                        <div className="text-gray-600">
+                          {/* Calculate and display total price including modifiers */}
+                          {(() => {
+                            let totalItemPrice = item.price;
+                            let hasModifiers = false;
+                            
+                            if (item.selectedModifiers && item.selectedModifiers.length > 0) {
+                              item.selectedModifiers.forEach(modifier => {
+                                modifier.options.forEach(option => {
+                                  totalItemPrice += option.price;
+                                  hasModifiers = true;
+                                });
+                              });
+                            }
+                            
+                            return (
+                              <>
+                                <span className="font-medium">${totalItemPrice.toFixed(2)}</span>
+                                {hasModifiers && (
+                                  <span className="text-xs ml-1">
+                                    (Base: ${item.price.toFixed(2)})
+                                  </span>
+                                )}
+                              </>
+                            );
+                          })()}
+                        </div>
+                        
+                        {/* Display selected modifiers as badges */}
+                        {item.selectedModifiers && item.selectedModifiers.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-1 mb-2">
+                            {item.selectedModifiers.flatMap(modifier => 
+                              modifier.options.map((option, index) => (
+                                <span 
+                                  key={`${modifier.name}-${option.name}-${index}`} 
+                                  className="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-red-100 text-red-800"
+                                >
+                                  {option.name || modifier.name}
+                                  {option.price > 0 && <span className="ml-1 font-medium">+${option.price.toFixed(2)}</span>}
+                                </span>
+                              ))
+                            )}
+                          </div>
+                        )}
+                        
                         <div className="flex items-center mt-2">
                           <button 
                             className="w-7 h-7 bg-red-50 rounded-full flex items-center justify-center text-sm"

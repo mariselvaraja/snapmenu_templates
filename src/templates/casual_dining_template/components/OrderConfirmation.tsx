@@ -10,6 +10,13 @@ interface OrderItem {
   price: string;
   quantity: number;
   imageUrl: string;
+  selectedModifiers?: {
+    name: string;
+    options: {
+      name: string;
+      price: number;
+    }[];
+  }[];
 }
 
 interface OrderConfirmationProps {
@@ -130,21 +137,56 @@ const OrderConfirmation: React.FC<OrderConfirmationProps> = ({ orderDetails }) =
                 <div className="p-4">
                   {orderDetails.items.length > 0 ? (
                     orderDetails.items.map((item) => (
-                    <div key={item.id} className="flex items-center py-3 border-b border-zinc-700 last:border-b-0">
-                      <div className="w-16 h-16 mr-4">
-                        <img 
-                          src={item.imageUrl} 
-                          alt={item.name} 
-                          className="w-full h-full object-cover rounded"
-                        />
+                    <div key={item.id} className="py-3 border-b border-zinc-700 last:border-b-0">
+                      <div className="flex items-center">
+                        <div className="w-16 h-16 mr-4">
+                          <img 
+                            src={item.imageUrl} 
+                            alt={item.name} 
+                            className="w-full h-full object-cover rounded"
+                          />
+                        </div>
+                        <div className="flex-grow">
+                          <h5 className="font-semibold text-white">{item.name}</h5>
+                          <p className="text-gray-400">Qty: {item.quantity}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-yellow-400 font-semibold">
+                            ${(() => {
+                              let totalItemPrice = parseFloat(item.price);
+                              
+                              if (item.selectedModifiers && item.selectedModifiers.length > 0) {
+                                item.selectedModifiers.forEach(modifier => {
+                                  modifier.options.forEach(option => {
+                                    totalItemPrice += option.price;
+                                  });
+                                });
+                              }
+                              
+                              return (totalItemPrice * item.quantity).toFixed(2);
+                            })()}
+                          </p>
+                        </div>
                       </div>
-                      <div className="flex-grow">
-                        <h5 className="font-semibold text-white">{item.name}</h5>
-                        <p className="text-gray-400">Qty: {item.quantity}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-yellow-400 font-semibold">${(parseFloat(item.price) * item.quantity).toFixed(2)}</p>
-                      </div>
+                      
+                      {/* Display selected modifiers */}
+                      {item.selectedModifiers && item.selectedModifiers.length > 0 && (
+                        <div className="mt-1 ml-20">
+                          {item.selectedModifiers.flatMap(modifier => 
+                            modifier.options.map((option, index) => (
+                              <div 
+                                key={`${modifier.name}-${option.name}-${index}`}
+                                className="flex justify-between text-xs text-gray-400"
+                              >
+                                <span>{option.name || modifier.name}</span>
+                                {option.price > 0 && (
+                                  <span>+${(option.price * item.quantity).toFixed(2)}</span>
+                                )}
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      )}
                     </div>
                     ))
                   ) : (

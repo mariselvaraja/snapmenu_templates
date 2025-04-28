@@ -6,6 +6,13 @@ export interface CartItem {
   price: number;
   quantity: number;
   image: string;
+  selectedModifiers?: {
+    name: string;
+    options: {
+      name: string;
+      price: number;
+    }[];
+  }[];
 }
 
 interface CartState {

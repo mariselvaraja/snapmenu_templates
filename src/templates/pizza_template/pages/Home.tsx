@@ -108,17 +108,11 @@ export default function Home() {
             </p>
             <div className="flex gap-4 justify-center md:justify-start">
               <Link
-                to="/order"
+                to="/menu"
                 className="inline-flex items-center bg-red-500 text-white px-8 py-3 rounded-full text-lg font-semibold hover:bg-red-600 transition-colors"
               >
                 Order Now <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
-              <button
-                onClick={() => setVideoOpen(true)}
-                className="inline-flex items-center bg-white bg-opacity-20 text-white px-8 py-3 rounded-full text-lg font-semibold hover:bg-opacity-30 transition-colors"
-              >
-                <Play className="mr-2 h-5 w-5" /> Watch Video
-              </button>
             </div>
           </motion.div>
           
@@ -367,7 +361,7 @@ export default function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="bg-red-500 py-20 text-white">
+      {/* <section className="bg-red-500 py-20 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -384,7 +378,7 @@ export default function Home() {
             </Link>
           </motion.div>
         </div>
-      </section>
+      </section> */}
     </div>
   );
 }

@@ -68,6 +68,8 @@ export interface MenuItem {
   allergens?: string[];
   ingredients?: string[];
   pairings?: string[];
+  modifiers_list : [];
+  raw_api_data?: string; // Added field to store the raw API data
 }
 
 export interface MenuCategory {
@@ -95,10 +97,10 @@ export const menuSlice = createSlice({
   initialState,
   reducers: {
     // Synchronous actions
-    setMenuItems: (state, action: PayloadAction<MenuItem[]>) => {
+    setMenuItems: (state, action: PayloadAction<any[]>) => {
       state.items = action.payload;
     },
-    setMenuCategories: (state, action: PayloadAction<MenuCategory[]>) => {
+    setMenuCategories: (state, action: PayloadAction<any[]>) => {
       state.categories = action.payload;
     },
     
@@ -107,7 +109,7 @@ export const menuSlice = createSlice({
       state.loading = true;
       state.error = null;
     },
-    fetchMenuSuccess: (state, action: PayloadAction<{ items: MenuItem[], categories: MenuCategory[] }>) => {
+    fetchMenuSuccess: (state, action: PayloadAction<{ items: any[], categories: any[] }>) => {
       state.items = action.payload.items;
       state.categories = action.payload.categories;
       state.loading = false;

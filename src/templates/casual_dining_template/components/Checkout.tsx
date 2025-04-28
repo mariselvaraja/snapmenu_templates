@@ -12,6 +12,13 @@ interface OrderItem {
   price: string;
   quantity: number;
   imageUrl: string;
+  selectedModifiers?: {
+    name: string;
+    options: {
+      name: string;
+      price: number;
+    }[];
+  }[];
 }
 
 interface FormData {
@@ -53,7 +60,21 @@ const Checkout: React.FC = () => {
   });
   
   // Calculate cart totals
-  const subtotal = cart.reduce((total, item) => total + parseFloat(item.price) * item.quantity, 0);
+  const subtotal = cart.reduce((total, item) => {
+    // Calculate base price
+    let itemTotal = parseFloat(item.price) * item.quantity;
+    
+    // Add modifier prices
+    if (item.selectedModifiers && item.selectedModifiers.length > 0) {
+      item.selectedModifiers.forEach(modifier => {
+        modifier.options.forEach(option => {
+          itemTotal += option.price * item.quantity;
+        });
+      });
+    }
+    
+    return total + itemTotal;
+  }, 0);
   const tax = subtotal * 0.08; // 8% tax
   const total = subtotal + tax;
 
@@ -107,13 +128,32 @@ const Checkout: React.FC = () => {
     try {
       // Create the order data
       const orderData = {
-        items: cart.map(item => ({
-          id: parseInt(item.id) || 0, // Convert string id to number, default to 0 if conversion fails
-          name: item.name,
-          price: parseFloat(item.price),
-          quantity: item.quantity,
-          image: item.imageUrl || '' // Use imageUrl as image
-        })),
+        items: cart.map(item => {
+          // Calculate total item price including modifiers
+          let itemPrice = parseFloat(item.price);
+          let modifiers: { name: string; price: number }[] = [];
+          
+          if (item.selectedModifiers && item.selectedModifiers.length > 0) {
+            item.selectedModifiers.forEach(modifier => {
+              modifier.options.forEach(option => {
+                itemPrice += option.price;
+                modifiers.push({
+                  name: option.name || modifier.name,
+                  price: option.price
+                });
+              });
+            });
+          }
+          
+          return {
+            id: parseInt(item.id) || 0, // Convert string id to number, default to 0 if conversion fails
+            name: item.name,
+            price: itemPrice,
+            quantity: item.quantity,
+            image: item.imageUrl || '', // Use imageUrl as image
+            modifiers: modifiers
+          };
+        }),
         customerInfo: {
           name: formData.name,
           email: formData.email,
@@ -160,7 +200,8 @@ const Checkout: React.FC = () => {
           name: item.name,
           price: item.price,
           quantity: item.quantity,
-          imageUrl: item.imageUrl
+          imageUrl: item.imageUrl,
+          selectedModifiers: item.selectedModifiers
         })),
         subtotal: subtotal.toFixed(2),
         tax: tax.toFixed(2),
@@ -327,27 +368,62 @@ const Checkout: React.FC = () => {
               
               <div className="max-h-60 overflow-y-auto mb-6">
                 {cart.map((item) => (
-                  <div key={item.id} className="flex justify-between items-center py-2 border-b border-zinc-800">
-                    <div className="flex items-center">
-                      {item.imageUrl ? (
-                        <img
-                          src={item.imageUrl}
-                          alt={item.name}
-                          className="w-10 h-10 object-cover rounded-md mr-2"
-                        />
-                      ) : (
-                        <div className="w-10 h-10 bg-yellow-400 bg-opacity-20 flex items-center justify-center rounded-md mr-2">
-                          <span className="text-sm font-bold text-yellow-400">
-                            {item.name.charAt(0)}
-                          </span>
+                  <div key={item.id} className="py-2 border-b border-zinc-800">
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center">
+                        {item.imageUrl ? (
+                          <img
+                            src={item.imageUrl}
+                            alt={item.name}
+                            className="w-10 h-10 object-cover rounded-md mr-2"
+                          />
+                        ) : (
+                          <div className="w-10 h-10 bg-yellow-400 bg-opacity-20 flex items-center justify-center rounded-md mr-2">
+                            <span className="text-sm font-bold text-yellow-400">
+                              {item.name.charAt(0)}
+                            </span>
+                          </div>
+                        )}
+                        <div>
+                          <span className="font-medium">{item.quantity}x</span>
+                          <span className="ml-2">{item.name}</span>
                         </div>
-                      )}
-                      <div>
-                        <span className="font-medium">{item.quantity}x</span>
-                        <span className="ml-2">{item.name}</span>
                       </div>
+                      <span>
+                        ${(() => {
+                          let totalItemPrice = parseFloat(item.price);
+                          
+                          if (item.selectedModifiers && item.selectedModifiers.length > 0) {
+                            item.selectedModifiers.forEach(modifier => {
+                              modifier.options.forEach(option => {
+                                totalItemPrice += option.price;
+                              });
+                            });
+                          }
+                          
+                          return (totalItemPrice * item.quantity).toFixed(2);
+                        })()}
+                      </span>
                     </div>
-                    <span>${(parseFloat(item.price) * item.quantity).toFixed(2)}</span>
+                    
+                    {/* Display selected modifiers */}
+                    {item.selectedModifiers && item.selectedModifiers.length > 0 && (
+                      <div className="mt-1 ml-12">
+                        {item.selectedModifiers.flatMap(modifier => 
+                          modifier.options.map((option, index) => (
+                            <div 
+                              key={`${modifier.name}-${option.name}-${index}`}
+                              className="flex justify-between text-xs text-gray-400"
+                            >
+                              <span>{option.name || modifier.name}</span>
+                              {option.price > 0 && (
+                                <span>+${(option.price * item.quantity).toFixed(2)}</span>
+                              )}
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
