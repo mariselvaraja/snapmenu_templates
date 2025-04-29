@@ -19,8 +19,8 @@ export default function Events() {
   const { rawApiResponse } = useAppSelector(state => state.siteContent);
   
   // Get site content from Redux state
-  const siteContent = rawApiResponse?.data ? 
-    (typeof rawApiResponse.data === 'string' ? JSON.parse(rawApiResponse.data) : rawApiResponse.data) : 
+  const siteContent = rawApiResponse? 
+    (typeof rawApiResponse === 'string' ? JSON.parse(rawApiResponse) : rawApiResponse) : 
     {};
     
   // Check if events data is available
