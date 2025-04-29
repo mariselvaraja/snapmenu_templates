@@ -1,5 +1,5 @@
 import React, { useState, useEffect, createContext, useContext } from 'react';
-import { Provider, useSelector } from 'react-redux';
+import { Provider, useSelector, useDispatch } from 'react-redux';
 import _ from 'lodash';
 import PizzaApp from './pizza_template/App';
 import CasualDiningApp from './casual_dining_template/App';
@@ -7,6 +7,8 @@ import EatflowApp from './eatflow_template/App';
 import CulinaryJourneyApp from './culinary_journey_template/App';
 import TemplateNotFound from './TemplateNotFound';
 import { LocationSelector } from '../components';
+import { fetchSiteContentRequest } from '../common/redux/slices/siteContentSlice';
+import { fetchMenuRequest } from '../common/redux/slices/menuSlice';
 
 // Create a context for template-specific settings
 export const TemplateContext = createContext(null);
@@ -37,6 +39,9 @@ const TemplateContent = () => {
     }
   });
 
+  // Get Redux dispatch function
+  const dispatch = useDispatch();
+  
   // Get loading and error states from Redux store
   const restaurantState = useSelector(state => state.restaurant);
   const menuState = useSelector(state => state.menu);
@@ -78,6 +83,20 @@ const TemplateContent = () => {
     setLocationSelected(true);
     // You can add additional logic here if needed
   };
+
+  // Auto-select restaurant if there's only one in the list
+  useEffect(() => {
+    if (restaurantState.info && restaurantState.info.length === 1) {
+      // Automatically select the only restaurant
+      const singleRestaurant = restaurantState.info[0];
+      sessionStorage.setItem("franchise_id", singleRestaurant.restaurant_id);
+      setLocationSelected(true);
+      
+      // Fetch required data
+      dispatch(fetchSiteContentRequest());
+      dispatch(fetchMenuRequest());
+    }
+  }, [restaurantState.info, dispatch]);
 
   // Check if current URL includes placeindiningorder
   const isPlaceInDiningOrderRoute = window.location.pathname.includes('placeindiningorder');

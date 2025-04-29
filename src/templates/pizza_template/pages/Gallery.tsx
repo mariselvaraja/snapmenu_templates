@@ -18,12 +18,13 @@ export default function Gallery() {
   const { rawApiResponse } = useAppSelector(state => state.siteContent);
   
   // Get site content from Redux state
-  const siteContent = rawApiResponse?.data ? 
-    (typeof rawApiResponse.data === 'string' ? JSON.parse(rawApiResponse.data) : rawApiResponse.data) : 
+  const siteContent = rawApiResponse ? 
+    (typeof rawApiResponse === 'string' ? JSON.parse(rawApiResponse) : rawApiResponse) : 
     {};
     
-  // Check if gallery data is available
+  // Check if gallery data is available and has images
   const isGalleryAvailable = siteContent?.gallery !== undefined;
+  const hasImages = isGalleryAvailable && Array.isArray(siteContent?.gallery?.images) && siteContent?.gallery?.images.length > 0;
   
   // Default gallery data in case API data is not available
   const defaultGallery = {
@@ -57,19 +58,27 @@ export default function Gallery() {
 
   // Transform gallery data from siteContent to match the component's expected format
   useEffect(() => {
-    if (isGalleryAvailable && gallery && gallery.images) {
-      const transformedItems = gallery.images.map((item: any, index: number) => ({
-        id: index + 1,
-        title: item.title,
-        category: item.description.includes("ambiance") ? "Ambiance" : 
-                 item.description.includes("chef") ? "Food" : "Restaurant",
-        type: "image" as const,
-        image: item.image,
-        description: item.description
-      }));
+    if (hasImages) {
+      const transformedItems = gallery.images.map((item: any, index: number) => {
+        // Safely check if description exists and contains certain keywords
+        const hasDescription = typeof item.description === 'string';
+        const isAmbiance = hasDescription && item.description.includes("ambiance");
+        const isChef = hasDescription && item.description.includes("chef");
+        
+        return {
+          id: index + 1,
+          title: item.title || "Gallery Image",
+          category: isAmbiance ? "Ambiance" : isChef ? "Food" : "Restaurant",
+          type: "image" as const,
+          image: item.image,
+          description: item.description || ""
+        };
+      });
       setGalleryItems(transformedItems);
+    } else {
+      setGalleryItems([]);
     }
-  }, [gallery, isGalleryAvailable]);
+  }, [gallery, hasImages]);
 
   return (
     <div className="py-20 bg-gray-50">
@@ -81,9 +90,9 @@ export default function Gallery() {
             transition={{ duration: 0.5 }}
             className="text-center mb-16"
           >
-            <h1 className="text-4xl font-bold mb-4">{gallery.section.title}</h1>
+            <h1 className="text-4xl font-bold mb-4">{gallery.header?.title || gallery.section?.title || "Our Gallery"}</h1>
             <p className="text-xl text-gray-600">
-              {gallery.section.subtitle}
+              {gallery.header?.subtitle || gallery.section?.subtitle || "Explore our restaurant and cuisine through our gallery"}
             </p>
           </motion.div>
         ) : (
@@ -100,8 +109,8 @@ export default function Gallery() {
           </motion.div>
         )}
 
-        {/* Gallery Grid - only show if gallery is available */}
-        {isGalleryAvailable ? (
+        {/* Gallery Grid - only show if gallery is available and has images */}
+        {hasImages && galleryItems.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {galleryItems.map((item, index) => (
               <motion.div
@@ -145,7 +154,19 @@ export default function Gallery() {
               </motion.div>
             ))}
           </div>
-        ) : null}
+        ) : (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="text-center mb-16"
+          >
+            <h1 className="text-4xl font-bold mb-4">Gallery is not found</h1>
+            <p className="text-xl text-gray-600">
+              No gallery images are available at this time. Please check back later.
+            </p>
+          </motion.div>
+        )}
 
         {/* Lightbox */}
         {selectedMedia && (

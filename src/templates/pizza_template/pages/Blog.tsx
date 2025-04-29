@@ -18,64 +18,18 @@ export default function Blog() {
   const { rawApiResponse } = useAppSelector(state => state.siteContent);
   
   // Get site content from Redux state
-  const siteContent = rawApiResponse?.data ? 
-    (typeof rawApiResponse.data === 'string' ? JSON.parse(rawApiResponse.data) : rawApiResponse.data) : 
+  const siteContent = rawApiResponse ? 
+    (typeof rawApiResponse === 'string' ? JSON.parse(rawApiResponse) : rawApiResponse) : 
     {};
   
   // Log the site content to debug
   console.log('Blog component: siteContent', siteContent);
   
-  // Default blog data in case API data is not available
-  const defaultBlog = {
-    header: {
-      title: "Our Blog",
-      description: "Culinary insights, recipes, and stories from our kitchen"
-    },
-    posts: [
-      {
-        id: "1",
-        title: "The Art of Perfect Pizza",
-        subtitle: "Secrets from our master chef",
-        content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, nisl vel ultricies lacinia, nisl nisl aliquam nisl, eu aliquam nisl nisl eu nisl.",
-        image: "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&q=80",
-        videoThumbnail: "",
-        videoUrl: "",
-        chef: "Marco Rossi",
-        date: "2025-04-01",
-        readTime: "5 min"
-      },
-      {
-        id: "2",
-        title: "Seasonal Ingredients: Spring Edition",
-        subtitle: "Fresh flavors for your table",
-        content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, nisl vel ultricies lacinia, nisl nisl aliquam nisl, eu aliquam nisl nisl eu nisl.",
-        image: "https://images.unsplash.com/photo-1566385101042-1a0aa0c1268c?auto=format&fit=crop&q=80",
-        videoThumbnail: "",
-        videoUrl: "",
-        chef: "Sophia Chen",
-        date: "2025-03-15",
-        readTime: "4 min"
-      },
-      {
-        id: "3",
-        title: "Wine Pairing Fundamentals",
-        subtitle: "Elevate your dining experience",
-        content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, nisl vel ultricies lacinia, nisl nisl aliquam nisl, eu aliquam nisl nisl eu nisl.",
-        image: "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?auto=format&fit=crop&q=80",
-        videoThumbnail: "",
-        videoUrl: "",
-        chef: "Jean Dupont",
-        date: "2025-02-28",
-        readTime: "6 min"
-      }
-    ]
-  };
-  
   // Check if blog data is available
   const isBlogAvailable = siteContent?.blog !== undefined;
   
-  // Use API data if available, otherwise use default data for rendering
-  const blog = isBlogAvailable ? siteContent.blog : defaultBlog;
+  // Only use API data for rendering
+  const blog = isBlogAvailable ? siteContent.blog : null;
   
   // Log the blog data being used
   console.log('Blog component: Using blog data', blog);
