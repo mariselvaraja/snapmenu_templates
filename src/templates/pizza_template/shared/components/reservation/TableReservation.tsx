@@ -202,10 +202,10 @@ export default function TableReservation({
             {/* Operating Hours */}
             <div>
               <h3 className="text-lg font-semibold mb-4 text-gray-700">Operating Hours</h3>
-              <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-4">
                 {restaurantInfo.operatingHours.map((item, index) => (
-                  <div key={index} className="flex flex-col border-b border-gray-200 pb-2 last:border-0">
-                    <span className="font-medium">{item.day}</span>
+                  <div key={index} className="flex flex-col border border-gray-200 rounded-md p-3 bg-white">
+                    <span className="font-medium text-gray-800">{item.day}</span>
                     <span className="text-gray-600">{item.hours}</span>
                   </div>
                 ))}

@@ -7,9 +7,10 @@ export default function Reservation() {
   const { rawApiResponse } = useAppSelector(state => state.siteContent);
   
   // Get site content from Redux state
-  const siteContent = rawApiResponse?.data ? 
-    (typeof rawApiResponse.data === 'string' ? JSON.parse(rawApiResponse.data) : rawApiResponse.data) : 
+  const siteContent = rawApiResponse ? 
+    (typeof rawApiResponse === 'string' ? JSON.parse(rawApiResponse) : rawApiResponse) : 
     {};
+  const contact = siteContent?.contact;
   const reservation = siteContent?.reservation || {
     header: {
       title: "Reserve a Table",
@@ -88,6 +89,27 @@ export default function Reservation() {
           initialDate={selectedDate}
           initialTime={selectedTime}
           reservationContent={reservation}
+          restaurantInfo={{
+            name: "Pizza Restaurant",
+            phone: contact?.infoCards?.phone?.numbers && Array.isArray(contact.infoCards.phone.numbers) && contact.infoCards.phone.numbers.length > 0 
+              ? (typeof contact.infoCards.phone.numbers[0] === 'string' 
+                ? contact.infoCards.phone.numbers[0] 
+                : JSON.stringify(contact.infoCards.phone.numbers[0]))
+              : "+1 (555) 123-4567",
+            email: contact?.infoCards?.email?.addresses && Array.isArray(contact.infoCards.email.addresses) && contact.infoCards.email.addresses.length > 0
+              ? contact.infoCards.email.addresses[0]
+              : "info@pizzarestaurant.com",
+            address: `${contact?.infoCards?.address?.street || "123 Main Street"}, ${contact?.infoCards?.address?.city || "Anytown"}${contact?.infoCards?.address?.state ? `, ${contact.infoCards.address.state}` : ""} ${contact?.infoCards?.address?.zip || ""}`,
+            operatingHours: [
+              { day: reservation?.info?.hours?.monday?.label || "Monday", hours: reservation?.info?.hours?.monday?.time || "11:00 AM - 10:00 PM" },
+              { day: reservation?.info?.hours?.tuesday?.label || "Tuesday", hours: reservation?.info?.hours?.tuesday?.time || "11:00 AM - 10:00 PM" },
+              { day: reservation?.info?.hours?.wednesday?.label || "Wednesday", hours: reservation?.info?.hours?.wednesday?.time || "11:00 AM - 10:00 PM" },
+              { day: reservation?.info?.hours?.thursday?.label || "Thursday", hours: reservation?.info?.hours?.thursday?.time || "11:00 AM - 10:00 PM" },
+              { day: reservation?.info?.hours?.friday?.label || "Friday", hours: reservation?.info?.hours?.friday?.time || "11:00 AM - 11:00 PM" },
+              { day: reservation?.info?.hours?.saturday?.label || "Saturday", hours: reservation?.info?.hours?.saturday?.time || "11:00 AM - 11:00 PM" },
+              { day: reservation?.info?.hours?.sunday?.label || "Sunday", hours: reservation?.info?.hours?.sunday?.time || "12:00 PM - 9:00 PM" }
+            ]
+          }}
         />
 
         {/* Additional content can be added here if needed */}
