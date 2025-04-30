@@ -148,7 +148,7 @@ export const cartService = {
     try {
       // Format the order payload as required
       const formattedPayload = {
-        restaurant_id:  sessionStorage.getItem("franchise_id"),
+        restaurant_id:  localStorage.getItem("franchise_id"),
         name: orderData.customerInfo.name,
         phone: orderData.customerInfo.phone,
         email: orderData.customerInfo.email,

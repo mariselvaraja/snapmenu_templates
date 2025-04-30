@@ -39,6 +39,7 @@ const TemplateContent = () => {
     }
   });
 
+  const searchParams = new URLSearchParams(window.location.search);
   // Get Redux dispatch function
   const dispatch = useDispatch();
   
@@ -84,12 +85,33 @@ const TemplateContent = () => {
     // You can add additional logic here if needed
   };
 
+  const isPlaceInDiningOrderRoute = window.location.pathname.includes('placeindiningorder');
   // Auto-select restaurant if there's only one in the list
   useEffect(() => {
+
     if (restaurantState.info && restaurantState.info.length === 1) {
       // Automatically select the only restaurant
       const singleRestaurant = restaurantState.info[0];
-      sessionStorage.setItem("franchise_id", singleRestaurant.restaurant_id);
+      if(isPlaceInDiningOrderRoute)
+      {
+        sessionStorage.removeItem("restaurant_id");
+        sessionStorage.removeItem("franchise_id");
+        sessionStorage.removeItem("table_number");
+        
+        let parent_id = searchParams.get("restaurant");
+        let franchise_id = searchParams.get("franchise");
+        let table_number = searchParams.get("table");
+        
+        sessionStorage.setItem("restaurant_id", parent_id);
+        sessionStorage.setItem("franchise_id", franchise_id);
+        sessionStorage.setItem("table_number", table_number);
+        
+      }
+      else
+      {
+        sessionStorage.setItem("franchise_id", singleRestaurant.restaurant_id);
+      }
+      
       setLocationSelected(true);
       
       // Fetch required data
@@ -99,7 +121,7 @@ const TemplateContent = () => {
   }, [restaurantState.info, dispatch]);
 
   // Check if current URL includes placeindiningorder
-  const isPlaceInDiningOrderRoute = window.location.pathname.includes('placeindiningorder');
+  
 
   // Check if a location has been selected and show location selector when the website finishes loading
   useEffect(() => {
