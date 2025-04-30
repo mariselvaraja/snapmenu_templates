@@ -3,6 +3,7 @@ import { cartSaga } from './sagas/cartSaga';
 import { menuSaga } from './sagas/menuSaga';
 import { siteContentSaga } from './sagas/siteContentSaga';
 import { restaurantSaga } from './sagas/restaurantSaga';
+import { inDiningOrderSaga } from './sagas/inDiningOrderSaga';
 
 export function* rootSaga(): Generator<any, void, any> {
   yield all([
@@ -10,5 +11,6 @@ export function* rootSaga(): Generator<any, void, any> {
     fork(menuSaga),
     fork(siteContentSaga),
     fork(restaurantSaga),
+    fork(inDiningOrderSaga),
   ]);
 }

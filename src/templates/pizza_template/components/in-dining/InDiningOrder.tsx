@@ -7,6 +7,7 @@ import { useDispatch } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 import { addItem, updateItemQuantity, removeItem, toggleDrawer } from '../../../../common/redux/slices/cartSlice';
 import { setSearchQuery } from '../../../../common/redux/slices/searchSlice';
+import { getInDiningOrdersRequest, placeInDiningOrderRequest } from '../../../../common/redux/slices/inDiningOrderSlice';
 import SearchBarComponent from '../SearchBarComponent';
 import InDiningProductDetails from './InDiningProductDetails';
 import InDiningCartDrawer from './InDiningCartDrawer';
@@ -28,6 +29,7 @@ export default function InDiningOrder() {
   
   // Get table number from URL
   const location = useLocation();
+  const dispatch = useDispatch<AppDispatch>();
   
   useEffect(() => {
     // Extract table number from URL query parameter or path parameter
@@ -59,6 +61,11 @@ export default function InDiningOrder() {
     }
   }, [location]);
   
+  // Fetch in-dining orders when component mounts
+  useEffect(() => {
+    dispatch(getInDiningOrdersRequest());
+  }, [dispatch]);
+  
   const cartItems = useSelector((state: RootState) => state.cart.items);
   const menuItems = useSelector((state: RootState) => state.menu.items);
   const menuCategories = useSelector((state: RootState) => state.menu.categories);
@@ -72,8 +79,6 @@ export default function InDiningOrder() {
     : (selectedSubcategory === 'All'
         ? menuItems.filter(item => item.category === selectedCategory)
         : menuItems.filter(item => item.category === selectedCategory && item.level2_category === selectedSubcategory));
-  
-  const dispatch = useDispatch<AppDispatch>();
   
   // Extract unique main categories directly from menu items
   const uniqueCategories = Array.from(
@@ -123,11 +128,40 @@ export default function InDiningOrder() {
     // Show the orders view instead of the order confirmation
     setShowOrders(true);
     
-    // In a real application, you would send the order to a backend service here
+    // Calculate tax amount (5% of total price)
+    const taxAmount = (totalPrice * 0.05).toFixed(2);
+    // Calculate grand total (total price + tax)
+    const grandTotal = (totalPrice * 1.05).toFixed(2);
+    
+    // Transform cart items to the required format
+    const orderedItems = cartItems.map(item => ({
+      name: item.name,
+      quantity: item.quantity,
+      itemPrice: item.price,
+      image: item.image || '',
+      modifiers: item.selectedModifiers || []
+    }));
+    
+    let restaurant_id = sessionStorage.getItem("franchise_id");
+    let restaurant_parent_id = sessionStorage.getItem("restaurant_id");
+    let tableNumber = sessionStorage.getItem("table_number")
+    
+    // Dispatch the placeInDiningOrderRequest action
+    dispatch(placeInDiningOrderRequest({
+      table_id: tableNumber,
+      restaurant_id,
+      restaurant_parent_id,
+      additional_details:'',
+      ordered_items: orderedItems
+    }));
+    
+    // Log for debugging
     console.log('Order placed:', {
-      items: cartItems,
-      orderNumber: randomOrderNumber,
-      timestamp: new Date().toISOString()
+      table_id: tableNumber,
+      restaurant_id,
+      restaurant_parent_id,
+      additional_details:'',
+      ordered_items: orderedItems
     });
   };
 

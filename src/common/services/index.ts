@@ -4,6 +4,7 @@ export { default as restaurantService } from './restaurantService';
 export { default as cartService } from './cartService';
 export { default as searchService } from './searchService';
 export { default as storeAccess } from './storeAccess';
+export { default as inDiningOrderService } from './inDiningOrderService';
 
 // Re-export services from src/services for any missing services
 export { default as menuService } from '../../services/menuService';

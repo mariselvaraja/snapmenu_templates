@@ -45,7 +45,7 @@ export function Navigation() {
   };
 
   // Get navigation links from the site content
-  const navigationLinks = siteContent.navigation?.links || siteContent.navigationBar?.navigation?.links || [];
+  const navigationLinks = siteContent.navigation || siteContent.navigation?.links || siteContent.navigationBar?.navigation?.links || [];
   const brandName = siteContent.brand?.name || siteContent.navigationBar?.brand?.name || 'Restaurant';
 
   return (
