@@ -8,8 +8,8 @@ export default function BlogPost() {
   const { rawApiResponse } = useAppSelector(state => state.siteContent);
   
   // Get site content from Redux state
-  const siteContent = rawApiResponse?.data ? 
-    (typeof rawApiResponse.data === 'string' ? JSON.parse(rawApiResponse.data) : rawApiResponse.data) : 
+  const siteContent = rawApiResponse ? 
+    (typeof rawApiResponse === 'string' ? JSON.parse(rawApiResponse) : rawApiResponse) : 
     {};
   const blog = siteContent?.blog || {
     header: {
@@ -55,6 +55,10 @@ export default function BlogPost() {
       }
     ]
   };
+  
+  // Log the blog data to debug
+  console.log('BlogPost component: blog data', blog);
+  console.log('BlogPost component: looking for post with id', id);
   
   // Find the blog post with the matching ID
   const post = blog.posts.find((post: any) => post.id === id);

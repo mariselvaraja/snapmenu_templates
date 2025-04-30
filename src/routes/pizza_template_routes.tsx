@@ -28,6 +28,7 @@ const PizzaTemplateRoutes = [
   <Route key="menu" path={commonRoutePaths.menu} element={<Menu />} />,
   <Route key="locations" path={commonRoutePaths.locations} element={<Locations />} />,
   <Route key="about" path={commonRoutePaths.about} element={<About />} />,
+  <Route key="our-story" path={commonRoutePaths.ourStory} element={<About />} />,
   <Route key="contact" path={commonRoutePaths.contact} element={<Contact />} />,
   <Route key="order" path={commonRoutePaths.order} element={<Order />} />,
   <Route key="in-dining-order" path={commonRoutePaths.inDiningOrder} element={<InDiningOrder />} />,

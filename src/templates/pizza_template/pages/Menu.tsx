@@ -249,7 +249,8 @@ export default function Menu() {
                 </motion.div>
 
                 <div className="flex flex-col space-y-4 mb-12">
-                    <div className="flex flex-wrap gap-4 uppercase">
+                    {/* Categories in a single row with horizontal overflow on mobile */}
+                    <div className="flex md:flex-wrap overflow-x-auto no-scrollbar gap-4 uppercase pb-2">
                         {extractLevel1(items).map((category: any) => (
                             <button
                                 key={category}
@@ -260,15 +261,15 @@ export default function Menu() {
                                     setSelectedLevel2('all'); // Reset level2 selection when level1 changes
                                     setSelectedCategory('all');
                                 }}
-                                className={`px-6 py-2 rounded-full transition-colors capitalize ${selectedType === category ? 'bg-red-500 text-white' : 'bg-gray-100 hover:bg-gray-200'}`}
+                                className={`px-6 py-2 rounded-full transition-colors capitalize whitespace-nowrap flex-shrink-0 ${selectedType === category ? 'bg-red-500 text-white' : 'bg-gray-100 hover:bg-gray-200'}`}
                             >
                                 {category}
                             </button>
                         ))}
                     </div>
-                    {/* Only show subcategories if a category is selected */}
+                    {/* Only show subcategories if a category is selected and not on mobile */}
                     {selectedType !== 'all' && (
-                        <div className="flex flex-row flex-wrap gap-2 overflow-x-auto">
+                        <div className="hidden md:flex flex-row flex-wrap gap-2 overflow-x-auto">
                             {extractLevel2(items, selectedType).map((category: any) => (
                                 <button
                                     key={category}

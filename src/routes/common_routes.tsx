@@ -22,7 +22,7 @@ export const commonRoutePaths = {
   home: '/',
   menu: '/menu',
   locations: '/locations',
-  about: '/our-story',
+  about: '/about',
   contact: '/contact',
   order: '/order',
   inDiningOrder: '/placeindiningorder',
@@ -36,4 +36,5 @@ export const commonRoutePaths = {
   productDetail: '/product/:productId',
   checkout: '/checkout',
   product: '/product',
+  ourStory: '/our-story',
 };

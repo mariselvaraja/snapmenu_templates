@@ -51,7 +51,7 @@ export default function ProductDetail() {
     // Initialize quantity state with cart quantity if product is in cart, otherwise 1
     const [quantity, setQuantity] = useState(cartItem ? cartItem.quantity : 1);
     
-    // State for selected modifiers
+    // State for selected modifiers and spice level
     const [selectedModifiers, setSelectedModifiers] = useState<{
         name: string;
         options: {
@@ -59,6 +59,9 @@ export default function ProductDetail() {
             price: number | string;
         }[];
     }[]>([]);
+    
+    // State for spice level (1 = mild, 2 = medium, 3 = hot)
+    const [spiceLevel, setSpiceLevel] = useState<number>(2);
     
     // Calculate total price including modifiers
     const calculateTotalPrice = () => {
@@ -175,13 +178,25 @@ export default function ProductDetail() {
             }))
         }));
         
+        // Add spice level as a modifier
+        const spiceLevelNames = ["Mild", "Medium", "Hot"];
+        const spiceLevelModifier = {
+            name: "Spice Level",
+            options: [{ name: spiceLevelNames[spiceLevel - 1], price: 0 }]
+        };
+        
+        const allModifiers = [...normalizedModifiers];
+        if (spiceLevel > 0) {
+            allModifiers.push(spiceLevelModifier);
+        }
+        
         const cartItem: CartItem = {
             id: menuItem.id, // ID is already a number
             name: menuItem.name,
             price: menuItem.price, // Price is already a number
             image: menuItem.image,
             quantity: quantity,
-            selectedModifiers: normalizedModifiers.length > 0 ? normalizedModifiers : undefined
+            selectedModifiers: allModifiers.length > 0 ? allModifiers : undefined
         };
         dispatch(addItem(cartItem));
     };
@@ -492,19 +507,37 @@ export default function ProductDetail() {
                                     </div>
                                     <div className="grid grid-cols-3 gap-1">
                                         <div 
-                                            className="flex items-center justify-center px-2 py-1 rounded cursor-pointer bg-gray-100 border border-gray-200 text-yellow-500 hover:bg-gray-200"
+                                            onClick={() => setSpiceLevel(1)}
+                                            className={`flex items-center justify-center px-2 py-1 rounded cursor-pointer ${
+                                                spiceLevel === 1 
+                                                 ? 'bg-red-200 border border-red-400 text-red-700' 
+                                                : 'bg-gray-100 border border-gray-200 text-red-600 hover:bg-gray-200'
+                                            }`}
                                         >
                                             <span>🌶️</span>
+                                            
                                         </div>
                                         <div 
-                                            className="flex items-center justify-center px-2 py-1 rounded cursor-pointer bg-red-100 border border-red-300 text-red-500"
+                                            onClick={() => setSpiceLevel(2)}
+                                            className={`flex items-center justify-center px-2 py-1 rounded cursor-pointer ${
+                                                spiceLevel === 2 
+                                                ? 'bg-red-200 border border-red-400 text-red-700' 
+                                                : 'bg-gray-100 border border-gray-200 text-red-600 hover:bg-gray-200'
+                                            }`}
                                         >
                                             <span>🌶️🌶️</span>
+                                            
                                         </div>
                                         <div 
-                                            className="flex items-center justify-center px-2 py-1 rounded cursor-pointer bg-gray-100 border border-gray-200 text-red-600 hover:bg-gray-200"
+                                            onClick={() => setSpiceLevel(3)}
+                                            className={`flex items-center justify-center px-2 py-1 rounded cursor-pointer ${
+                                                spiceLevel === 3 
+                                                ? 'bg-red-200 border border-red-400 text-red-700' 
+                                                : 'bg-gray-100 border border-gray-200 text-red-600 hover:bg-gray-200'
+                                            }`}
                                         >
                                             <span>🌶️🌶️🌶️</span>
+                                            
                                         </div>
                                     </div>
                                 </div>
