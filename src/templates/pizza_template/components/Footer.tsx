@@ -15,12 +15,26 @@ export default function Footer() {
     {};
   const navigationBar = siteContent?.navigationBar;
   const brand = navigationBar?.brand || { name: 'Pizza Planet' };
-  const navigation = navigationBar?.navigation || { links: [] };
+  const navigation = navigationBar?.navigation || [];
   const footer = siteContent?.footer;
   const contact = siteContent?.contact;
 
+  // Handle both navigation formats: navigation: [] or navigation: { links: [] }
+  // Ensure navigationLinks is always an array
+  let navigationLinks = [];
+  
+  if (Array.isArray(navigation)) {
+    navigationLinks = navigation;
+  } else if (navigation && Array.isArray(navigation.links)) {
+    navigationLinks = navigation.links;
+  }
+
+  if (Array.isArray(siteContent.navigation)) {
+    navigationLinks = siteContent.navigation;
+  } 
+
   // Extract navigation links for Quick Links section
-  const quickLinks = navigation?.links?.filter((link: any) => link.isEnabled) || [];
+  const quickLinks = navigationLinks.filter((link: any) => link && link.isEnabled) || [];
 
   
   return (

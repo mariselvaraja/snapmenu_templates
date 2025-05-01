@@ -21,10 +21,15 @@ export default function Navbar() {
   const { brand } = navigationBar;
   
   // Handle both navigation formats: navigation: [] or navigation: { links: [] }
-  const navigationLinks = Array.isArray(navigationBar.navigation) 
-    ? navigationBar.navigation 
-    : navigationBar.navigation?.links || [];
-    
+  // Ensure navigationLinks is always an array
+  let navigationLinks = [];
+  
+  if (Array.isArray(navigationBar.navigation)) {
+    navigationLinks = navigationBar.navigation;
+  } else if (navigationBar.navigation && Array.isArray(navigationBar.navigation.links)) {
+    navigationLinks = navigationBar.navigation.links;
+  }
+  
   const cartItems = useAppSelector((state) => state.cart.items);
   const isSearchModalOpen = useAppSelector((state) => state.search.isModalOpen);
   const dispatch = useAppDispatch();
@@ -49,7 +54,7 @@ export default function Navbar() {
 
           <div className="hidden md:block">
             <div className="ml-10 flex items-center space-x-8">
-              {navigationLinks.filter((link: any) => link.isEnabled).map((link: any, index: number) => (
+              {navigationLinks.filter((link: any) => link && link.isEnabled).map((link: any, index: number) => (
                 <Link
                   key={index}
                   to={link.path}
@@ -92,7 +97,7 @@ export default function Navbar() {
       {isOpen && (
         <div className="md:hidden">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-            {navigationLinks.filter((link: any) => link.isEnabled).map((link: any, index: number) => (
+            {navigationLinks.filter((link: any) => link && link.isEnabled).map((link: any, index: number) => (
               <Link
                 key={index}
                 to={link.path}
