@@ -24,7 +24,7 @@ export default function Events() {
     {};
     
   // Check if events data is available
-  const isEventsAvailable = siteContent?.event !== undefined;
+  const isEventsAvailable = siteContent?.events !== undefined;
   
   // Default events data in case API data is not available
   const defaultEvents = {
@@ -53,25 +53,28 @@ export default function Events() {
   };
   
   // Use API data if available, otherwise use default data for rendering
-  const events = isEventsAvailable ? siteContent.event : defaultEvents;
+  const events = isEventsAvailable ? siteContent.events : defaultEvents;
+  
+  // Check if events items array exists and has items
+  const hasEventItems = events.items && events.items.length > 0;
   
   // Transform events data from siteContent to include additional properties
-  const eventItems: EventItem[] = isEventsAvailable ? events.items.map((item: any, index: number) => ({
+  const eventItems: EventItem[] = (isEventsAvailable && hasEventItems) ? events.items.map((item: any, index: number) => ({
     id: index + 1,
     title: item.title,
-    date: item.date,
-    time: item.time,
-    location: item.location,
-    capacity: 20 + (index * 5), // Example capacity (not in siteContent)
-    price: `$${49.99 + (index * 10)}`, // Example price (not in siteContent)
-    image: item.image,
-    description: item.description
+    date: item.date || "TBD",
+    time: item.time || "TBD",
+    location: item.location || "Main Restaurant",
+    capacity: item.capacity || 20 + (index * 5), // Use API capacity or fallback
+    price: item.price || `$${49.99 + (index * 10)}`, // Use API price or fallback
+    image: item.image || "https://images.unsplash.com/photo-1605478371310-a9f1e96b4ff4?auto=format&fit=crop&q=80",
+    description: item.description || "Join us for this special event"
   })) : [];
   
   return (
     <div className="py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {isEventsAvailable ? (
+        {hasEventItems ? (
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -79,9 +82,11 @@ export default function Events() {
             className="text-center mb-16"
           >
             <h1 className="text-4xl font-bold mb-4">{events.section.title}</h1>
-            <p className="text-xl text-gray-600">
-              {events.section.subtitle}
-            </p>
+            {events.section.subtitle && (
+              <p className="text-xl text-gray-600">
+                {events.section.subtitle}
+              </p>
+            )}
           </motion.div>
         ) : (
           <motion.div
@@ -90,14 +95,14 @@ export default function Events() {
             transition={{ duration: 0.5 }}
             className="text-center mb-16"
           >
-            <h1 className="text-4xl font-bold mb-4">Events is not Available</h1>
+            <h1 className="text-4xl font-bold mb-4">Events are not Available</h1>
             <p className="text-xl text-gray-600">
               Our events content is currently unavailable. Please check back later.
             </p>
           </motion.div>
         )}
 
-        {isEventsAvailable ? (
+        {hasEventItems ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {eventItems.map((event, index) => (
               <motion.div

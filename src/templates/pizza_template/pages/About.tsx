@@ -30,8 +30,18 @@ export default function About() {
     {};
   const story = siteContent?.story;
   
-  // Check if story data is available
+  // Extract API data for the sections
+  const mission = siteContent?.mission || {};
+  const journey = siteContent?.journey || {};
+  const customerSays = siteContent?.customerSays || {};
+  const visitUs = siteContent?.visitUs || {};
+  
+  // Check if data is available
   const isStoryAvailable = story && story.hero;
+  const isMissionAvailable = mission && mission.title && mission.description && mission.images && mission.images.length > 0;
+  const isJourneyAvailable = journey && journey.title && journey.description;
+  const isCustomerSaysAvailable = customerSays && customerSays.name && customerSays.profession && customerSays.description;
+  const isVisitUsAvailable = visitUs && visitUs.title && visitUs.description;
   
   // Example timeline data (would come from API in production)
   const timelineEvents: TimelineEvent[] = [
@@ -198,7 +208,7 @@ export default function About() {
         )}
 
         {/* Our Mission Section */}
-        {isStoryAvailable && (
+        {isMissionAvailable && (
           <motion.div 
             className="mb-24 flex flex-col md:flex-row items-center gap-12"
             initial={{ opacity: 0 }}
@@ -212,7 +222,7 @@ export default function About() {
                 whileInView={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.5 }}
               >
-                Our Mission
+                {mission.title}
                 <div className="absolute -bottom-2 left-0 w-1/2 h-1 bg-red-500"></div>
               </motion.h2>
               <motion.p 
@@ -221,15 +231,7 @@ export default function About() {
                 whileInView={{ opacity: 1 }}
                 transition={{ duration: 0.5, delay: 0.2 }}
               >
-                At our core, we believe that great pizza brings people together. Our mission is to create memorable dining experiences through authentic flavors, quality ingredients, and warm hospitality.
-              </motion.p>
-              <motion.p 
-                className="text-lg text-gray-600 leading-relaxed"
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                transition={{ duration: 0.5, delay: 0.3 }}
-              >
-                Every pizza we serve is crafted with passion and tradition, honoring our Italian heritage while embracing innovative techniques and local ingredients.
+                {mission.description}
               </motion.p>
             </div>
             <motion.div 
@@ -238,34 +240,18 @@ export default function About() {
               whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5, delay: 0.4 }}
             >
-              <div className="aspect-square rounded-lg overflow-hidden shadow-lg">
-                <img 
-                  src="https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&q=80" 
-                  alt="Pizza making" 
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="aspect-square rounded-lg overflow-hidden shadow-lg mt-8">
-                <img 
-                  src="https://images.unsplash.com/photo-1590947132387-155cc02f3212?auto=format&fit=crop&q=80" 
-                  alt="Restaurant interior" 
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="aspect-square rounded-lg overflow-hidden shadow-lg">
-                <img 
-                  src="https://images.unsplash.com/photo-1579751626657-72bc17010498?auto=format&fit=crop&q=80" 
-                  alt="Cooking pizza" 
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="aspect-square rounded-lg overflow-hidden shadow-lg mt-8">
-                <img 
-                  src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&q=80" 
-                  alt="Restaurant customers" 
-                  className="w-full h-full object-cover"
-                />
-              </div>
+              {mission.images && mission.images.slice(0, 4).map((image: string, index: number) => (
+                <div 
+                  key={index} 
+                  className={`aspect-square rounded-lg overflow-hidden shadow-lg ${index % 2 !== 0 ? 'mt-8' : ''}`}
+                >
+                  <img 
+                    src={image} 
+                    alt={`Mission image ${index + 1}`} 
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              ))}
             </motion.div>
           </motion.div>
         )}
@@ -343,68 +329,69 @@ export default function About() {
           </motion.div>
         )}
         
-        {/* Timeline Section */}
-        <motion.div 
-          className="mb-24"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          transition={{ duration: 0.5 }}
-        >
-          <div className="text-center mb-12">
-            <motion.h2 
-              className="text-3xl font-bold mb-4"
-              initial={{ opacity: 0, y: -10 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-            >
-              Our Journey
-            </motion.h2>
-            <motion.div 
-              className="w-24 h-1 bg-red-500 mx-auto mb-6"
-              initial={{ width: 0 }}
-              whileInView={{ width: 96 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-            />
-            <motion.p 
-              className="text-lg text-gray-600 max-w-2xl mx-auto"
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-            >
-              From humble beginnings to where we are today, our passion for great pizza has never wavered.
-            </motion.p>
-          </div>
-        </motion.div>
+        {/* Journey Section */}
+        {isJourneyAvailable && (
+          <motion.div 
+            className="mb-24"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
+          >
+            <div className="text-center mb-12">
+              <motion.h2 
+                className="text-3xl font-bold mb-4"
+                initial={{ opacity: 0, y: -10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+              >
+                {journey.title}
+              </motion.h2>
+              <motion.div 
+                className="w-24 h-1 bg-red-500 mx-auto mb-6"
+                initial={{ width: 0 }}
+                whileInView={{ width: 96 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+              />
+              <motion.p 
+                className="text-lg text-gray-600 max-w-2xl mx-auto"
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+              >
+                {journey.description}
+              </motion.p>
+            </div>
+          </motion.div>
+        )}
         
-        {/* Testimonials Section */}
-        <motion.div 
-          className="mb-24 bg-gray-50 py-16 px-8 rounded-2xl"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          transition={{ duration: 0.5 }}
-        >
-          <div className="text-center mb-12">
-            <motion.h2 
-              className="text-3xl font-bold mb-4"
-              initial={{ opacity: 0, y: -10 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-            >
-              What Our Customers Say
-            </motion.h2>
-            <motion.div 
-              className="w-24 h-1 bg-red-500 mx-auto mb-6"
-              initial={{ width: 0 }}
-              whileInView={{ width: 96 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-            />
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {testimonials.map((testimonial, index) => (
+        {/* Customer Says Section */}
+        {isCustomerSaysAvailable && (
+          <motion.div 
+            className="mb-24 bg-gray-50 py-16 px-8 rounded-2xl"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
+          >
+            <div className="text-center mb-12">
+              <motion.h2 
+                className="text-3xl font-bold mb-4"
+                initial={{ opacity: 0, y: -10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+              >
+                What Our Customers Say
+              </motion.h2>
+              <motion.div 
+                className="w-24 h-1 bg-red-500 mx-auto mb-6"
+                initial={{ width: 0 }}
+                whileInView={{ width: 96 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+              />
+            </div>
+            
+            <div className="max-w-3xl mx-auto">
               <motion.div
-                key={index}
-                custom={index}
+                custom={0}
                 variants={fadeIn}
                 initial="hidden"
                 whileInView="visible"
@@ -413,38 +400,40 @@ export default function About() {
               >
                 <Quote className="h-12 w-12 text-red-100 absolute top-4 left-4" />
                 <div className="relative z-10">
-                  <p className="text-lg text-gray-700 italic mb-6 leading-relaxed">"{testimonial.quote}"</p>
+                  <p className="text-lg text-gray-700 italic mb-6 leading-relaxed">"{customerSays.description}"</p>
                   <div className="flex items-center">
                     <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
                       <Star className="h-6 w-6 text-red-500" />
                     </div>
                     <div className="ml-4">
-                      <p className="font-bold">{testimonial.author}</p>
-                      <p className="text-gray-500 text-sm">{testimonial.role}</p>
+                      <p className="font-bold">{customerSays.name}</p>
+                      <p className="text-gray-500 text-sm">{customerSays.profession}</p>
                     </div>
                   </div>
                 </div>
               </motion.div>
-            ))}
-          </div>
-        </motion.div>
+            </div>
+          </motion.div>
+        )}
         
  
         
         {/* Visit Us Section */}
-        <motion.div 
-          className="bg-red-500 text-white rounded-xl p-8 text-center"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <h2 className="text-2xl font-bold mb-4">Come Visit Us Today</h2>
-          <p className="mb-6 max-w-2xl mx-auto">Experience our warm hospitality and delicious food in person. We'd love to welcome you to our restaurant.</p>
-          <div className="flex items-center justify-center">
-            <MapPin className="h-5 w-5 mr-2" />
-            <span>123 Pizza Street, New York, NY 10001</span>
-          </div>
-        </motion.div>
+        {isVisitUsAvailable && (
+          <motion.div 
+            className="bg-red-500 text-white rounded-xl p-8 text-center"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <h2 className="text-2xl font-bold mb-4">{visitUs.title}</h2>
+            <p className="mb-6 max-w-2xl mx-auto">{visitUs.description}</p>
+            <div className="flex items-center justify-center">
+              <MapPin className="h-5 w-5 mr-2" />
+              <span>{siteContent?.contact?.address || "Visit us at our location"}</span>
+            </div>
+          </motion.div>
+        )}
       </div>
     </div>
   );

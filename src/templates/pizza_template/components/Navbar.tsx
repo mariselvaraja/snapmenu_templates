@@ -16,9 +16,15 @@ export default function Navbar() {
   // Get site content from Redux state
   const siteContent = rawApiResponse ? 
     (typeof rawApiResponse === 'string' ? JSON.parse(rawApiResponse) : rawApiResponse) : 
-    { navigationBar: { brand: { logo: {} }, navigation: { links: [] } } };
-  const navigationBar = siteContent?.navigationBar || { brand: { logo: {} }, navigation: { links: [] } };
-  const { brand, navigation } = navigationBar;
+    { navigationBar: { brand: { logo: {} }, navigation: [] } };
+  const navigationBar = siteContent?.navigationBar || { brand: { logo: {} }, navigation: [] };
+  const { brand } = navigationBar;
+  
+  // Handle both navigation formats: navigation: [] or navigation: { links: [] }
+  const navigationLinks = Array.isArray(navigationBar.navigation) 
+    ? navigationBar.navigation 
+    : navigationBar.navigation?.links || [];
+    
   const cartItems = useAppSelector((state) => state.cart.items);
   const isSearchModalOpen = useAppSelector((state) => state.search.isModalOpen);
   const dispatch = useAppDispatch();
@@ -43,7 +49,7 @@ export default function Navbar() {
 
           <div className="hidden md:block">
             <div className="ml-10 flex items-center space-x-8">
-              {navigation?.links?.filter((link: any) => link.isEnabled).map((link: any, index: number) => (
+              {navigationLinks.filter((link: any) => link.isEnabled).map((link: any, index: number) => (
                 <Link
                   key={index}
                   to={link.path}
@@ -86,7 +92,7 @@ export default function Navbar() {
       {isOpen && (
         <div className="md:hidden">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-            {navigation?.links?.filter((link: any) => link.isEnabled).map((link: any, index: number) => (
+            {navigationLinks.filter((link: any) => link.isEnabled).map((link: any, index: number) => (
               <Link
                 key={index}
                 to={link.path}
