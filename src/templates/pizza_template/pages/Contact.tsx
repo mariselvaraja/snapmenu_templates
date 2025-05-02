@@ -21,9 +21,9 @@ export default function Contact() {
           transition={{ duration: 0.5 }}
           className="text-center mb-16"
         >
-          <h1 className="text-4xl font-bold mb-4">{contact.header.title}</h1>
+          <h1 className="text-4xl font-bold mb-4">{contact?.header?.title || "Contact Us"}</h1>
           <p className="text-xl text-gray-600">
-            {contact.header.subtitle}
+            {contact?.header?.subtitle || "Get in touch with us"}
           </p>
         </motion.div>
 
@@ -35,49 +35,49 @@ export default function Contact() {
             transition={{ duration: 0.5 }}
             className="bg-white rounded-lg shadow-lg p-8"
           >
-            <h2 className="text-2xl font-semibold mb-6">{contact.form.title}</h2>
+            <h2 className="text-2xl font-semibold mb-6">{contact?.form?.title || "Send us a message"}</h2>
             <form className="space-y-6">
               <div>
                 <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                  {contact.form.labels.firstName}
+                  {contact?.form?.labels?.firstName || "Name"}
                 </label>
                 <input
                   type="text"
                   id="name"
-                  placeholder={contact.form.placeholders.firstName}
+                  placeholder={contact?.form?.placeholders?.firstName || "Enter your name"}
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-red-500 focus:border-red-500"
                 />
               </div>
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                  {contact.form.labels.email}
+                  {contact?.form?.labels?.email || "Email"}
                 </label>
                 <input
                   type="email"
                   id="email"
-                  placeholder={contact.form.placeholders.email}
+                  placeholder={contact?.form?.placeholders?.email || "Enter your email"}
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-red-500 focus:border-red-500"
                 />
               </div>
               <div>
                 <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-                  {contact.form.labels.phone}
+                  {contact?.form?.labels?.phone || "Phone"}
                 </label>
                 <input
                   type="tel"
                   id="phone"
-                  placeholder={contact.form.placeholders.phone}
+                  placeholder={contact?.form?.placeholders?.phone || "Enter your phone number"}
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-red-500 focus:border-red-500"
                 />
               </div>
               <div>
                 <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">
-                  {contact.form.labels.message}
+                  {contact?.form?.labels?.message || "Message"}
                 </label>
                 <textarea
                   id="message"
                   rows={4}
-                  placeholder={contact.form.placeholders.message}
+                  placeholder={contact?.form?.placeholders?.message || "Enter your message"}
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-red-500 focus:border-red-500"
                 ></textarea>
               </div>
@@ -85,7 +85,7 @@ export default function Contact() {
                 type="submit"
                 className="w-full bg-red-500 text-white py-3 px-6 rounded-full font-semibold hover:bg-red-600 transition-colors"
               >
-                {contact.form.labels.submitButton}
+                {contact?.form?.labels?.submitButton || "Submit"}
               </button>
             </form>
           </motion.div>
@@ -103,31 +103,35 @@ export default function Contact() {
                 <div className="flex items-start">
                   <MapPin className="h-6 w-6 text-red-500 mr-4 mt-1" />
                   <div>
-                    <p>{contact.infoCards.address.street}</p>
-                    <p>{contact.infoCards.address.city}{contact.infoCards.address.state ? `, ${contact.infoCards.address.state}` : ''}{contact.infoCards.address.zip ? ` ${contact.infoCards.address.zip}` : ''}</p>
+                    <p>{contact?.infoCards?.address?.street || "123 Pizza Street"}</p>
+                    <p>
+                      {contact?.infoCards?.address?.city || "Pizza City"}
+                      {contact?.infoCards?.address?.state ? `, ${contact?.infoCards?.address?.state}` : ''}
+                      {contact?.infoCards?.address?.zip ? ` ${contact?.infoCards?.address?.zip}` : ''}
+                    </p>
                   </div>
                 </div>
                 
                 <div className="flex items-center">
                   <Clock className="h-6 w-6 text-red-500 mr-4" />
                   <div>
-                    <p>{contact.infoCards.hours.weekday}</p>
-                    <p>{contact.infoCards.hours.weekend}</p>
-                    {contact.infoCards.hours.note && <p className="text-sm text-gray-500">{contact.infoCards.hours.note}</p>}
+                    <p>{contact?.infoCards?.hours?.weekday || "Monday - Friday: 11:00 AM - 10:00 PM"}</p>
+                    <p>{contact?.infoCards?.hours?.weekend || "Saturday - Sunday: 12:00 PM - 11:00 PM"}</p>
+                    {contact?.infoCards?.hours?.note && <p className="text-sm text-gray-500">{contact?.infoCards?.hours?.note}</p>}
                   </div>
                 </div>
                 
                 {/* Phone Numbers */}
-                {contact.infoCards.phone.numbers && Array.isArray(contact.infoCards.phone.numbers) && contact.infoCards.phone.numbers.length > 0 ? (
+                {contact?.infoCards?.phone?.numbers && Array.isArray(contact?.infoCards?.phone?.numbers) && contact?.infoCards?.phone?.numbers.length > 0 ? (
                   <div className="flex items-center">
                     <FaPhoneAlt className="h-5 w-5 text-red-500 mr-4" />
                     <div>
-                      {contact.infoCards.phone.numbers.map((phoneNumber: any, index: number) => (
+                      {contact?.infoCards?.phone?.numbers.map((phoneNumber: any, index: number) => (
                         <p key={`phone-${index}`}>
                           {typeof phoneNumber === 'string' ? phoneNumber : (typeof phoneNumber === 'object' ? JSON.stringify(phoneNumber) : "(555) 123-4567")}
                         </p>
                       ))}
-                      {contact.infoCards.phone.hours && <p className="text-sm text-gray-500">{contact.infoCards.phone.hours}</p>}
+                      {contact?.infoCards?.phone?.hours && <p className="text-sm text-gray-500">{contact?.infoCards?.phone?.hours}</p>}
                     </div>
                   </div>
                 ) : (
@@ -138,16 +142,16 @@ export default function Contact() {
                 )}
                 
                 {/* Email Addresses */}
-                {contact.infoCards.email.addresses && Array.isArray(contact.infoCards.email.addresses) && contact.infoCards.email.addresses.length > 0 ? (
+                {contact?.infoCards?.email?.addresses && Array.isArray(contact?.infoCards?.email?.addresses) && contact?.infoCards?.email?.addresses.length > 0 ? (
                   <div className="flex items-center">
                     <FaEnvelope className="h-5 w-5 text-red-500 mr-4" />
                     <div>
-                      {contact.infoCards.email.addresses.map((emailAddress: any, index: number) => (
+                      {contact?.infoCards?.email?.addresses.map((emailAddress: any, index: number) => (
                         <p key={`email-${index}`}>
                           {emailAddress || "info@pizzaplanet.com"}
                         </p>
                       ))}
-                      {contact.infoCards.email.support && <p className="text-sm text-gray-500">{contact.infoCards.email.support}</p>}
+                      {contact?.infoCards?.email?.support && <p className="text-sm text-gray-500">{contact?.infoCards?.email?.support}</p>}
                     </div>
                   </div>
                 ) : (

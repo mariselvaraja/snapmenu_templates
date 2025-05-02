@@ -39,10 +39,9 @@ export default function TableReservation({
   onBookingComplete,
   initialDate,
   initialTime, 
-  reservationContent,
   restaurantInfo = {
     name: "Pizza Restaurant",
-    phone: "+1 (555) 123-4567",
+    phone: "+1 (555) 123-4569",
     email: "info@pizzarestaurant.com",
     address: "123 Main Street, Anytown, USA",
     operatingHours: [
@@ -106,7 +105,7 @@ export default function TableReservation({
                 {/* Name Field */}
                 <div>
                   <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                    Name
+                    Names
                   </label>
                   <input
                     type="text"
