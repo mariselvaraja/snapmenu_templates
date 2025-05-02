@@ -26,7 +26,9 @@ interface BillComponentProps {
   tableNumber: string | null;
 }
 
-const BillComponent: React.FC<BillComponentProps> = ({ onClose, order, tableNumber }) => {
+const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
+
+  const tableNumber = sessionStorage.getItem("table_number");
   const restaurant = useSelector((state: RootState) => state.restaurant.info);
   
   // Get site content from Redux state for brand name and contact info
@@ -61,16 +63,17 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order, tableNumb
     }
   };
   
-  // Function to format date
+  // Function to format date in the exact format: YYYY-MM-DD HH-MM-SS
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+    
+    return `${year}-${month}-${day} ${hours}-${minutes}-${seconds}`;
   };
 
   // Function to handle bill download
@@ -88,61 +91,99 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order, tableNumb
     printWindow.document.write(`
       <html>
         <head>
-          <title>Bill - ${brand?.name || 'Restaurant'}</title>
+          <title>Bill</title>
           <style>
             body {
-              font-family: Arial, sans-serif;
+              font-family: monospace;
               padding: 20px;
-              max-width: 800px;
+              max-width: 400px;
               margin: 0 auto;
             }
             .header {
               text-align: center;
               margin-bottom: 20px;
             }
-            .logo {
+            .table-name {
               font-size: 24px;
               font-weight: bold;
               margin-bottom: 5px;
+              text-align: center;
             }
             .bill-info {
               display: flex;
               justify-content: space-between;
               margin-bottom: 20px;
-              border-bottom: 1px solid #eee;
+              border-bottom: 1px dashed #000;
               padding-bottom: 10px;
             }
-            .items {
-              width: 100%;
-              border-collapse: collapse;
-              margin-bottom: 20px;
+            .items-header {
+              display: flex;
+              justify-content: space-between;
+              border-bottom: 1px dashed #000;
+              padding-bottom: 5px;
+              margin-bottom: 10px;
             }
-            .items th, .items td {
-              border-bottom: 1px solid #eee;
-              padding: 10px;
-              text-align: left;
-            }
-            .items th {
-              background-color: #f9f9f9;
+            .item-row {
+              display: flex;
+              justify-content: space-between;
+              margin-bottom: 5px;
             }
             .total-row {
+              display: flex;
+              justify-content: space-between;
               font-weight: bold;
+              border-top: 1px dashed #000;
+              padding-top: 10px;
+              margin-top: 10px;
             }
-            .footer {
+            .thank-you {
               text-align: center;
               margin-top: 30px;
-              font-size: 14px;
-              color: #666;
+            }
+            .divider {
+              border-bottom: 1px dashed #000;
+              margin: 20px 0;
             }
           </style>
         </head>
         <body>
-          ${printContent.innerHTML}
-          <div class="footer">
-            <p>Thank you for dining with us!</p>
-            <p>${contact?.infoCards?.phone?.numbers?.[0] || ''} | ${contact?.infoCards?.email?.addresses?.[0] || ''}</p>
-            <p>${brand?.name || 'Restaurant'}</p>
+          <div class="table-name">${tableNumber ? `${tableNumber} seater table No1` : 'No Table'}</div>
+          
+          <div class="bill-info">
+            <div>Order #: ${order.id}</div>
+            <div>${formatDate(order.date)}</div>
           </div>
+          
+          <div class="divider"></div>
+          
+          <div class="items-header">
+            <div>Item</div>
+            <div style="display: flex;">
+              <div style="width: 60px; text-align: center;">Qty</div>
+              <div style="width: 80px; text-align: right;">Price</div>
+            </div>
+          </div>
+          
+          ${order.items.map(item => `
+            <div class="item-row">
+              <div>${item.name}</div>
+              <div style="display: flex;">
+                <div style="width: 60px; text-align: center;">${item.quantity}x</div>
+                <div style="width: 80px; text-align: right;">$${item.price.toFixed(2)}</div>
+              </div>
+            </div>
+          `).join('')}
+          
+          <div class="divider"></div>
+          
+          <div class="total-row">
+            <div>TOTAL</div>
+            <div>$${order.total.toFixed(2)}</div>
+          </div>
+          
+          <div class="divider"></div>
+          
+          <div class="thank-you">Thank you!</div>
         </body>
       </html>
     `);
@@ -199,79 +240,52 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order, tableNumb
         
         {/* Bill Content */}
         <div className="p-4" id="bill-content">
-          {/* Restaurant Info */}
+          {/* Table Name */}
           <div className="text-center mb-6">
-            <h1 className="text-xl font-bold">{brand?.name || 'Restaurant Name'}</h1>
-            <p className="text-sm text-gray-600">
-              {contact?.infoCards?.address?.street || ''}{contact?.infoCards?.address?.city ? `, ${contact.infoCards.address.city}` : ''}
-              {contact?.infoCards?.address?.state ? `, ${contact.infoCards.address.state}` : ''}
-              {contact?.infoCards?.address?.zip ? ` ${contact.infoCards.address.zip}` : ''}
-            </p>
-            {contact?.infoCards?.phone?.numbers && contact.infoCards.phone.numbers.length > 0 && (
-              <div className="flex items-center justify-center text-sm text-gray-600 mt-1">
-                <Phone className="h-3 w-3 mr-1" />
-                <span>{contact.infoCards.phone.numbers[0]}</span>
-              </div>
-            )}
-            {contact?.infoCards?.email?.addresses && contact.infoCards.email.addresses.length > 0 && (
-              <div className="flex items-center justify-center text-sm text-gray-600 mt-1">
-                <Mail className="h-3 w-3 mr-1" />
-                <span>{contact.infoCards.email.addresses[0]}</span>
-              </div>
-            )}
+            <h1 className="text-2xl font-bold">{tableNumber ? `${tableNumber} seater table No1` : 'No Table'}</h1>
           </div>
           
           {/* Bill Info */}
-          <div className="flex justify-between text-sm mb-6 border-b border-gray-200 pb-4">
-            <div>
+          <div className="text-sm mb-6 border-b border-gray-200 pb-4">
+            <div className="flex justify-between">
               <p><span className="font-medium">Order #:</span> {order.id}</p>
-              <p><span className="font-medium">Date:</span> {formatDate(order.date)}</p>
-            </div>
-            <div>
-              <p><span className="font-medium">Table:</span> {tableNumber ? `#${tableNumber}` : 'No Table'}</p>
-              <p><span className="font-medium">Status:</span> {order.status}</p>
+              <p>{formatDate(order.date)}</p>
             </div>
           </div>
           
           {/* Order Items */}
           <div className="mb-6">
-            <h3 className="font-medium mb-3">Order Items</h3>
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="text-left py-2 px-3">Item</th>
-                  <th className="text-center py-2 px-3">Qty</th>
-                  <th className="text-right py-2 px-3">Price</th>
-                  <th className="text-right py-2 px-3">Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                {order.items.map((item, index) => (
-                  <tr key={index} className="border-b border-gray-100">
-                    <td className="py-2 px-3">{item.name}</td>
-                    <td className="py-2 px-3 text-center">{item.quantity}</td>
-                    <td className="py-2 px-3 text-right">${item.price.toFixed(2)}</td>
-                    <td className="py-2 px-3 text-right">${(item.price * item.quantity).toFixed(2)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <div className="border-b border-gray-200 pb-2 mb-2">
+              <div className="flex justify-between">
+                <span className="font-medium">Item</span>
+                <div className="flex">
+                  <span className="font-medium w-16 text-center">Qty</span>
+                  <span className="font-medium w-20 text-right">Price</span>
+                </div>
+              </div>
+            </div>
+            
+            {order.items.map((item, index) => (
+              <div key={index} className="flex justify-between py-2">
+                <span>{item.name}</span>
+                <div className="flex">
+                  <span className="w-16 text-center">{item.quantity}x</span>
+                  <span className="w-20 text-right">${item.price.toFixed(2)}</span>
+                </div>
+              </div>
+            ))}
+            
+            <div className="border-t border-gray-200 pt-4 mt-4">
+              <div className="flex justify-between font-bold">
+                <span>TOTAL</span>
+                <span>${order.total.toFixed(2)}</span>
+              </div>
+            </div>
           </div>
           
-          {/* Bill Summary */}
-          <div className="border-t border-gray-200 pt-4">
-            <div className="flex justify-between mb-2">
-              <span>Subtotal</span>
-              <span>${(order.total / 1.1).toFixed(2)}</span>
-            </div>
-            <div className="flex justify-between mb-2">
-              <span>Tax (10%)</span>
-              <span>${(order.total - (order.total / 1.1)).toFixed(2)}</span>
-            </div>
-            <div className="flex justify-between font-bold text-lg mt-2 pt-2 border-t border-gray-200">
-              <span>Total</span>
-              <span>${order.total.toFixed(2)}</span>
-            </div>
+          {/* Thank you message */}
+          <div className="text-center mt-6 text-gray-600">
+            <p>Thank you!</p>
           </div>
         </div>
         

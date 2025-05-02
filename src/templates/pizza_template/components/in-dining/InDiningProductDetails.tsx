@@ -23,7 +23,7 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
   
   // Get table number from URL
   const location = useLocation();
-  const [tableNumber, setTableNumber] = useState<string | null>(null);
+  const tableNumber = sessionStorage.getItem("table_number");
   
   useEffect(() => {
     // Extract table number from URL query parameter or path parameter
@@ -41,13 +41,7 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
     const tableFromPath = !isNaN(Number(lastSegment)) ? lastSegment : null;
     
     // Use table from query parameter first, then fall back to path parameter
-    if (tableFromQuery && !isNaN(Number(tableFromQuery))) {
-      setTableNumber(tableFromQuery);
-    } else if (tableFromPath) {
-      setTableNumber(tableFromPath);
-    } else {
-      setTableNumber(null);
-    }
+ 
   }, [location]);
 
   if (!product) return null;
