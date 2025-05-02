@@ -30,6 +30,9 @@ export interface BookingData {
   date: string;
   time: string;
   name: string;
+  phone: string;
+  email: string;
+  specialRequest: string;
 }
 
 export default function TableReservation({ 
@@ -53,6 +56,9 @@ export default function TableReservation({
   const [selectedTime, setSelectedTime] = useState(initialTime || '');
   const [name, setName] = useState('');
   const [partySize, setPartySize] = useState(2);
+  const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
+  const [specialRequest, setSpecialRequest] = useState('');
 
   // Available party sizes
   const partySizes = [1, 2, 3, 4, 5, 6, 7, 8, 10, 12];
@@ -67,7 +73,10 @@ export default function TableReservation({
       partySize,
       date: selectedDate,
       time: selectedTime,
-      name
+      name,
+      phone,
+      email,
+      specialRequest
     };
     
     if (onBookingComplete) {
@@ -92,40 +101,43 @@ export default function TableReservation({
             <h2 className="text-2xl font-bold mb-6 text-gray-800 border-b pb-2">Make a Reservation</h2>
             
             <form onSubmit={handleBooking} className="space-y-6">
-              {/* Name Field */}
-              <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                  Name
-                </label>
-                <input
-                  type="text"
-                  id="name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-                  placeholder="Enter your name"
-                  required
-                />
-              </div>
-              
-              {/* Party Size Field */}
-              <div>
-                <label htmlFor="partySize" className="block text-sm font-medium text-gray-700 mb-1">
-                  <Users className="inline-block mr-1 h-4 w-4" /> Party Size
-                </label>
-                <select
-                  id="partySize"
-                  value={partySize}
-                  onChange={(e) => setPartySize(Number(e.target.value))}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-                  required
-                >
-                  {partySizes.map(size => (
-                    <option key={size} value={size}>
-                      {size} {size === 1 ? 'person' : 'people'}
-                    </option>
-                  ))}
-                </select>
+              {/* Name and Party Size - 2 columns */}
+              <div className="grid grid-cols-2 gap-4">
+                {/* Name Field */}
+                <div>
+                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                    Name
+                  </label>
+                  <input
+                    type="text"
+                    id="name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                    placeholder="Enter your name"
+                    required
+                  />
+                </div>
+                
+                {/* Party Size Field */}
+                <div>
+                  <label htmlFor="partySize" className="block text-sm font-medium text-gray-700 mb-1">
+                    <Users className="inline-block mr-1 h-4 w-4" /> Party Size
+                  </label>
+                  <select
+                    id="partySize"
+                    value={partySize}
+                    onChange={(e) => setPartySize(Number(e.target.value))}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                    required
+                  >
+                    {partySizes.map(size => (
+                      <option key={size} value={size}>
+                        {size} {size === 1 ? 'person' : 'people'}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
               
               {/* Date Field */}
@@ -164,6 +176,56 @@ export default function TableReservation({
                     </button>
                   ))}
                 </div>
+              </div>
+              
+              {/* Phone and Email - 2 columns */}
+              <div className="grid grid-cols-2 gap-4">
+                {/* Phone Number Field */}
+                <div>
+                  <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+                    <Phone className="inline-block mr-1 h-4 w-4" /> Phone Number
+                  </label>
+                  <input
+                    type="tel"
+                    id="phone"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                    placeholder="Enter your phone number"
+                    required
+                  />
+                </div>
+                
+                {/* Email Field */}
+                <div>
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                    <Mail className="inline-block mr-1 h-4 w-4" /> Email
+                  </label>
+                  <input
+                    type="email"
+                    id="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                    placeholder="Enter your email address"
+                    required
+                  />
+                </div>
+              </div>
+              
+              {/* Special Request Field */}
+              <div>
+                <label htmlFor="specialRequest" className="block text-sm font-medium text-gray-700 mb-1">
+                  Special Request
+                </label>
+                <textarea
+                  id="specialRequest"
+                  value={specialRequest}
+                  onChange={(e) => setSpecialRequest(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                  placeholder="Any special requests or notes"
+                  rows={3}
+                />
               </div>
               
               {/* Submit Button */}

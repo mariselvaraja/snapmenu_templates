@@ -118,9 +118,9 @@ export default function Events() {
                     alt={event.title}
                     className="w-full h-full object-cover"
                   />
-                  <div className="absolute top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-full">
+                  {/* <div className="absolute top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-full">
                     {event.price}
-                  </div>
+                  </div> */}
                 </div>
                 <div className="p-6">
                   <h3 className="text-xl font-semibold mb-4">{event.title}</h3>
@@ -143,14 +143,14 @@ export default function Events() {
                       <MapPin className="h-5 w-5 mr-2" />
                       <span>{event.location}</span>
                     </div>
-                    <div className="flex items-center text-gray-600">
+                    {/* <div className="flex items-center text-gray-600">
                       <Users className="h-5 w-5 mr-2" />
                       <span>Capacity: {event.capacity} people</span>
-                    </div>
+                    </div> */}
                   </div>
-                  <button className="w-full mt-6 bg-red-500 text-white py-2 rounded-full hover:bg-red-600 transition-colors">
+                  {/* <button className="w-full mt-6 bg-red-500 text-white py-2 rounded-full hover:bg-red-600 transition-colors">
                     Book Now
-                  </button>
+                  </button> */}
                 </div>
               </motion.div>
             ))}

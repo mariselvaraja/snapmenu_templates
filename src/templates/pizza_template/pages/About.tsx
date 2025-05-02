@@ -188,7 +188,7 @@ export default function About() {
         </motion.div>
 
         {/* Mission Section */}
-        <motion.div 
+        {/* <motion.div 
           className="mb-20"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
@@ -222,9 +222,9 @@ export default function About() {
                 {mission.description}
               </p>
             </motion.div>
-            
-            {/* Core Values */}
-            <div className="mt-16">
+          </div>
+        </motion.div> */}
+                    {/* <div className="mt-16">
               <h3 className="text-2xl font-bold text-center mb-10">Our Core Values</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                 {coreValues.map((value: any, index: number) => (
@@ -245,12 +245,9 @@ export default function About() {
                   </motion.div>
                 ))}
               </div>
-            </div>
-          </div>
-        </motion.div>
-        
+            </div> */}
         {/* Journey Section */}
-        <motion.div 
+        {/* <motion.div 
           className="mb-20"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
@@ -283,16 +280,15 @@ export default function About() {
               >
                 {journey.description}
               </motion.p>
-              
-              {/* Journey Timeline - Only show if we have journey data */}
+           
               {isJourneyAvailable && (
                 <div className="relative">
-                  {/* Timeline line */}
+                  
                   <div className="absolute left-1/2 transform -translate-x-1/2 h-full w-1 bg-red-200"></div>
                   
-                  {/* Timeline events */}
+               
                   <div className="space-y-16">
-                    {/* Use timeline events from API if available, otherwise use fallback data */}
+                 
                     {(story?.timeline || [
                       { year: "2005", title: "Our Beginning", description: "The first restaurant opened its doors, introducing authentic flavors." },
                       { year: "2010", title: "Expansion", description: "Growing popularity led to our expansion across multiple locations." },
@@ -308,12 +304,12 @@ export default function About() {
                       viewport={{ once: true }}
                       variants={slideIn}
                     >
-                      {/* Year circle */}
+                      
                       <div className="absolute left-1/2 transform -translate-x-1/2 -translate-y-4 w-8 h-8 rounded-full bg-red-500 flex items-center justify-center">
                         <Clock className="h-4 w-4 text-white" />
                       </div>
                       
-                      {/* Content */}
+                      
                       <div className={`w-5/12 ${index % 2 === 0 ? 'ml-auto pl-8' : 'mr-auto pr-8 text-right'}`}>
                         <div className="bg-gray-50 p-6 rounded-lg shadow-md">
                           <span className="inline-block px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm font-medium mb-2">
@@ -331,9 +327,9 @@ export default function About() {
             </div>
           </div>
         </motion.div>
-        
+         */}
         {/* Testimonial Section */}
-        <motion.div 
+        {/* <motion.div 
           className="mb-20"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
@@ -362,10 +358,10 @@ export default function About() {
               </motion.div>
             </div>
           </div>
-        </motion.div>
+        </motion.div> */}
         
         {/* Visit Us Section */}
-        <motion.div
+        {/* <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           transition={{ duration: 0.8 }}
@@ -409,7 +405,7 @@ export default function About() {
               Find a Location
             </motion.button>
           </div>
-        </motion.div>
+        </motion.div> */}
       </div>
     </div>
   );

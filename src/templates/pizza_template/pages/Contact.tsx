@@ -1,86 +1,17 @@
 import { motion } from 'framer-motion';
-import { Mail, Phone, MapPin, Clock } from 'lucide-react';
+import { MapPin, Clock } from 'lucide-react';
+import { FaEnvelope, FaPhoneAlt } from 'react-icons/fa';
 import { useAppSelector } from '../../../common/redux';
 
 export default function Contact() {
   const { rawApiResponse } = useAppSelector(state => state.siteContent);
   
   // Get site content from Redux state
-  const siteContent = rawApiResponse?.data ? 
-    (typeof rawApiResponse.data === 'string' ? JSON.parse(rawApiResponse.data) : rawApiResponse.data) : 
+  const siteContent = rawApiResponse ? 
+    (typeof rawApiResponse === 'string' ? JSON.parse(rawApiResponse) : rawApiResponse) : 
     {};
-  const contact = siteContent?.contact || {
-    header: {
-      title: "Contact Us",
-      subtitle: "We'd love to hear from you"
-    },
-    infoCards: {
-      phone: {
-        title: "Phone",
-        numbers: ["(212) 555-1234"],
-        hours: "Available 7 days a week, 9am-10pm"
-      },
-      email: {
-        title: "Email",
-        addresses: ["info@chrisrestaurant.com"],
-        support: "We'll respond as soon as possible"
-      },
-      address: {
-        title: "Location",
-        street: "123 Main Street",
-        city: "New York",
-        state: "NY",
-        zip: "10001",
-        label: "Downtown"
-      },
-      hours: {
-        title: "Hours",
-        weekday: "Mon-Thu: 5pm-10pm",
-        weekend: "Fri-Sat: 5pm-11pm",
-        note: "Closed on major holidays"
-      }
-    },
-    form: {
-      title: "Send Us a Message",
-      description: "Have a question or feedback? Fill out the form below and we'll get back to you.",
-      labels: {
-        firstName: "First Name",
-        lastName: "Last Name",
-        email: "Email",
-        phone: "Phone",
-        subject: "Subject",
-        message: "Message",
-        submitButton: "Send Message"
-      },
-      placeholders: {
-        firstName: "Your first name",
-        lastName: "Your last name",
-        email: "your@email.com",
-        phone: "(123) 456-7890",
-        subject: "What is this regarding?",
-        message: "Your message here..."
-      }
-    },
-    callToAction: {
-      call: {
-        title: "Call Us",
-        phone: "(212) 555-1234"
-      },
-      email: {
-        title: "Email Us",
-        address: "info@chrisrestaurant.com"
-      },
-      visit: {
-        title: "Visit Us",
-        address: "123 Main St, New York, NY 10001"
-      }
-    },
-    location: {
-      title: "Find Us",
-      description: "Located in the heart of downtown",
-      mapEnabled: true
-    }
-  };
+  const contact = siteContent?.contact;
+
   return (
     <div className="py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -167,49 +98,64 @@ export default function Contact() {
             className="space-y-8"
           >
             <div>
-              <h2 className="text-2xl font-semibold mb-6">{contact.infoCards.phone.title}</h2>
+              <h2 className="text-2xl font-semibold mb-6">Contact Information</h2>
               <div className="space-y-4">
-                <div className="flex items-center">
-                  <Phone className="h-6 w-6 text-red-500 mr-4" />
-                  <span>{contact.infoCards.phone.numbers[0]}</span>
+                <div className="flex items-start">
+                  <MapPin className="h-6 w-6 text-red-500 mr-4 mt-1" />
+                  <div>
+                    <p>{contact.infoCards.address.street}</p>
+                    <p>{contact.infoCards.address.city}{contact.infoCards.address.state ? `, ${contact.infoCards.address.state}` : ''}{contact.infoCards.address.zip ? ` ${contact.infoCards.address.zip}` : ''}</p>
+                  </div>
                 </div>
-                <div className="flex items-center">
-                  <Mail className="h-6 w-6 text-red-500 mr-4" />
-                  <span>{contact.infoCards.email.addresses[0]}</span>
-                </div>
-                <div className="flex items-center">
-                  <MapPin className="h-6 w-6 text-red-500 mr-4" />
-                  <span>{contact.infoCards.address.street}, {contact.infoCards.address.city}</span>
-                </div>
+                
                 <div className="flex items-center">
                   <Clock className="h-6 w-6 text-red-500 mr-4" />
-                  <span>{contact.infoCards.hours.weekday}</span>
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <h2 className="text-2xl font-semibold mb-6">FAQ</h2>
-              <div className="space-y-4">
-                {[
-                  {
-                    question: "Do you offer delivery?",
-                    answer: "Yes, we deliver to all locations within our delivery zones."
-                  },
-                  {
-                    question: "What are your busiest hours?",
-                    answer: "We're typically busiest during lunch (12-2pm) and dinner (6-8pm)."
-                  },
-                  {
-                    question: "Do you cater for events?",
-                    answer: "Yes! Contact us for special event and catering inquiries."
-                  }
-                ].map((faq, index) => (
-                  <div key={index} className="bg-gray-50 p-4 rounded-lg">
-                    <h3 className="font-semibold mb-2">{faq.question}</h3>
-                    <p className="text-gray-600">{faq.answer}</p>
+                  <div>
+                    <p>{contact.infoCards.hours.weekday}</p>
+                    <p>{contact.infoCards.hours.weekend}</p>
+                    {contact.infoCards.hours.note && <p className="text-sm text-gray-500">{contact.infoCards.hours.note}</p>}
                   </div>
-                ))}
+                </div>
+                
+                {/* Phone Numbers */}
+                {contact.infoCards.phone.numbers && Array.isArray(contact.infoCards.phone.numbers) && contact.infoCards.phone.numbers.length > 0 ? (
+                  <div className="flex items-center">
+                    <FaPhoneAlt className="h-5 w-5 text-red-500 mr-4" />
+                    <div>
+                      {contact.infoCards.phone.numbers.map((phoneNumber: any, index: number) => (
+                        <p key={`phone-${index}`}>
+                          {typeof phoneNumber === 'string' ? phoneNumber : (typeof phoneNumber === 'object' ? JSON.stringify(phoneNumber) : "(555) 123-4567")}
+                        </p>
+                      ))}
+                      {contact.infoCards.phone.hours && <p className="text-sm text-gray-500">{contact.infoCards.phone.hours}</p>}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center">
+                    <FaPhoneAlt className="h-5 w-5 text-red-500 mr-4" />
+                    <span>(555) 123-4567</span>
+                  </div>
+                )}
+                
+                {/* Email Addresses */}
+                {contact.infoCards.email.addresses && Array.isArray(contact.infoCards.email.addresses) && contact.infoCards.email.addresses.length > 0 ? (
+                  <div className="flex items-center">
+                    <FaEnvelope className="h-5 w-5 text-red-500 mr-4" />
+                    <div>
+                      {contact.infoCards.email.addresses.map((emailAddress: any, index: number) => (
+                        <p key={`email-${index}`}>
+                          {emailAddress || "info@pizzaplanet.com"}
+                        </p>
+                      ))}
+                      {contact.infoCards.email.support && <p className="text-sm text-gray-500">{contact.infoCards.email.support}</p>}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center">
+                    <FaEnvelope className="h-5 w-5 text-red-500 mr-4" />
+                    <span>info@pizzaplanet.com</span>
+                  </div>
+                )}
               </div>
             </div>
           </motion.div>
