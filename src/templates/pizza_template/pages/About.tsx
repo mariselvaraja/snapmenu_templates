@@ -1,25 +1,31 @@
 import { motion } from 'framer-motion';
-import { UtensilsCrossed, Heart, Users, Clock, Award, Star, Quote, ChefHat, MapPin } from 'lucide-react';
+import { Heart, Users, Clock, Award, Star, Quote, ChefHat, MapPin, Utensils } from 'lucide-react';
 import { useAppSelector } from '../../../common/redux';
 
-// Define interfaces for story content
-interface StoryValue {
-  icon: string;
-  title: string;
-  description: string;
-}
+// Animation variants
+const fadeIn = {
+  hidden: { opacity: 0, y: 20 },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: {
+      delay: i * 0.1,
+      duration: 0.5
+    }
+  })
+};
 
-interface TimelineEvent {
-  year: string;
-  title: string;
-  description: string;
-}
-
-interface TeamMember {
-  name: string;
-  role: string;
-  image: string;
-}
+const slideIn = {
+  hidden: { opacity: 0, x: -30 },
+  visible: (i: number) => ({
+    opacity: 1,
+    x: 0,
+    transition: {
+      delay: i * 0.1,
+      duration: 0.6
+    }
+  })
+};
 
 export default function About() {
   const { rawApiResponse } = useAppSelector(state => state.siteContent);
@@ -28,318 +34,232 @@ export default function About() {
   const siteContent = rawApiResponse ? 
     (typeof rawApiResponse === 'string' ? JSON.parse(rawApiResponse) : rawApiResponse) : 
     {};
-  const story = siteContent?.story;
   
-  // Extract API data for the sections
-  const mission = siteContent?.mission || {};
-  const journey = siteContent?.journey || {};
-  const customerSays = siteContent?.customerSays || {};
-  const visitUs = siteContent?.visitUs || {};
+  // Extract data for the sections
+  const story = siteContent?.story || {};
+  const hero = story?.hero || {};
+  const mission = story?.mission || {};
+  const journey = story?.journey || {};
+  const customerSays = story?.customerSays || {};
+  const visitUs = story?.visitUs || {};
   
   // Check if data is available
-  const isStoryAvailable = story && story.hero;
-  const isMissionAvailable = mission && mission.title && mission.description && mission.images && mission.images.length > 0;
+  const isStoryAvailable = story && story.hero && story.hero.image;
+  const isMissionAvailable = mission && mission.title && mission.description;
   const isJourneyAvailable = journey && journey.title && journey.description;
-  const isCustomerSaysAvailable = customerSays && customerSays.name && customerSays.profession && customerSays.description;
+  const isCustomerSaysAvailable = customerSays && customerSays.name && customerSays.description;
   const isVisitUsAvailable = visitUs && visitUs.title && visitUs.description;
   
-  // Example timeline data (would come from API in production)
-  const timelineEvents: TimelineEvent[] = [
-    {
-      year: "2010",
-      title: "Our Beginning",
-      description: "We opened our first small pizzeria with just three tables and a dream."
-    },
-    {
-      year: "2015",
-      title: "Expansion",
-      description: "After gaining popularity, we moved to a larger location and expanded our menu."
-    },
-    {
-      year: "2020",
-      title: "Award Winning",
-      description: "Our dedication to quality earned us the 'Best Pizza in Town' award."
-    },
-    {
-      year: "2025",
-      title: "Today",
-      description: "We continue our tradition of excellence with multiple locations across the city."
-    }
-  ];
+  // Format the hero description by replacing \r\n with proper paragraph breaks
+  const formattedHeroDescription = hero.description ? 
+    hero.description.split('\r\n\r\n').filter((para: string) => para.trim() !== '') : 
+    [];
   
-  // Example testimonials data (would come from API in production)
-  const testimonials = [
-    {
-      quote: "The best pizza I've ever had! The crust is perfect and the ingredients are always fresh.",
-      author: "Maria S.",
-      role: "Food Blogger"
-    },
-    {
-      quote: "This place has become our family's Friday night tradition. The staff treats us like family.",
-      author: "James T.",
-      role: "Local Customer"
-    }
-  ];
+  // Use values from API if available, otherwise use fallback values
+  const values = story?.values || [];
   
-  // Example team data (would come from API in production)
-  const teamMembers: TeamMember[] = [
-    {
-      name: "Marco Rossi",
-      role: "Head Chef",
-      image: "https://images.unsplash.com/photo-1583394838336-acd977736f90?auto=format&fit=crop&q=80"
-    },
-    {
-      name: "Sofia Bianchi",
-      role: "Pizzaiolo",
-      image: "https://images.unsplash.com/photo-1577219491135-ce391730fb2c?auto=format&fit=crop&q=80"
-    },
-    {
-      name: "Antonio Russo",
-      role: "Restaurant Manager",
-      image: "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80"
-    }
-  ];
-  
-  // Animation variants
-  const fadeIn = {
-    hidden: { opacity: 0, y: 20 },
-    visible: (i: number) => ({
-      opacity: 1,
-      y: 0,
-      transition: {
-        delay: i * 0.1,
-        duration: 0.5
+  // Map icons to values or use fallback values if the API data is empty
+  const coreValues = values.length > 0 ? 
+    values.map((value: any) => ({
+      icon: getIconForValue(value.icon || value.title),
+      title: value.title,
+      description: value.description
+    })) : 
+    [
+      {
+        icon: <Award className="h-10 w-10 text-red-500" />,
+        title: "Excellence",
+        description: "We strive for excellence in every dish we prepare, ensuring the highest quality and authentic flavors."
+      },
+      {
+        icon: <Heart className="h-10 w-10 text-red-500" />,
+        title: "Passion",
+        description: "Our passion for traditional cuisine drives us to preserve authentic recipes while innovating for modern tastes."
+      },
+      {
+        icon: <Users className="h-10 w-10 text-red-500" />,
+        title: "Community",
+        description: "We believe in bringing people together through the shared experience of exceptional food."
+      },
+      {
+        icon: <Utensils className="h-10 w-10 text-red-500" />,
+        title: "Tradition",
+        description: "Honoring culinary traditions while creating memorable dining experiences for our guests."
       }
-    })
-  };
+    ];
+  
+  // Helper function to get icon based on value name or icon string
+  function getIconForValue(iconName: string): JSX.Element {
+    const iconMap: Record<string, JSX.Element> = {
+      'excellence': <Award className="h-10 w-10 text-red-500" />,
+      'award': <Award className="h-10 w-10 text-red-500" />,
+      'passion': <Heart className="h-10 w-10 text-red-500" />,
+      'heart': <Heart className="h-10 w-10 text-red-500" />,
+      'community': <Users className="h-10 w-10 text-red-500" />,
+      'users': <Users className="h-10 w-10 text-red-500" />,
+      'tradition': <Utensils className="h-10 w-10 text-red-500" />,
+      'utensils': <Utensils className="h-10 w-10 text-red-500" />,
+      'chef': <ChefHat className="h-10 w-10 text-red-500" />,
+      'star': <Star className="h-10 w-10 text-red-500" />
+    };
+    
+    // Convert to lowercase and check if we have a matching icon
+    const key = iconName?.toLowerCase() || '';
+    return iconMap[key] || <Award className="h-10 w-10 text-red-500" />;
+  }
   
   return (
     <div className="py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Hero Section with Title within Image */}
-        {isStoryAvailable && story.hero.image && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            transition={{ duration: 0.8 }}
-            className="mb-20"
-          >
-            <div className="bg-white rounded-2xl overflow-hidden shadow-xl">
-              {/* Image Section with Title Overlay */}
-              <div className="relative">
-                <div className="h-80 md:h-96 overflow-hidden">
-                  <motion.img
-                    src={story.hero.image}
-                    alt="Restaurant story"
-                    className="w-full h-full object-cover"
-                    initial={{ scale: 1.1 }}
-                    whileInView={{ scale: 1 }}
-                    transition={{ duration: 1.5 }}
-                  />
-                  
-                  {/* Overlay with title */}
-                  <div className="absolute inset-0 bg-gradient-to-b from-black/60 to-transparent flex flex-col items-center justify-center text-center p-8">
-                    <motion.h1 
-                      className="text-4xl md:text-5xl font-bold text-white mb-4 drop-shadow-lg"
-                      initial={{ opacity: 0, y: -20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.5, delay: 0.2 }}
-                    >
-                      {story.hero.title}
-                    </motion.h1>
-                    <motion.div 
-                      className="w-24 h-1 bg-red-500 mb-6"
-                      initial={{ width: 0 }}
-                      whileInView={{ width: 96 }}
-                      transition={{ duration: 0.5, delay: 0.3 }}
-                    />
-                  </div>
-                  
-                  {/* Decorative elements */}
-                  <div className="absolute top-4 left-4 w-20 h-20 border-l-4 border-t-4 border-white opacity-70"></div>
-                  <div className="absolute bottom-4 right-4 w-20 h-20 border-r-4 border-b-4 border-white opacity-70"></div>
-                </div>
-              </div>
-              
-              {/* Description Section */}
-              <div className="p-8 md:p-12">
-                <motion.div 
-                  className="flex items-start mb-8"
-                  initial={{ opacity: 0 }}
-                  whileInView={{ opacity: 1 }}
-                  transition={{ duration: 0.5, delay: 0.4 }}
-                >
-                  <div className="border-l-4 border-red-500 pl-4">
-                    <p className="text-lg text-gray-700 italic leading-relaxed">
-                      {story.hero.description}
-                    </p>
-                  </div>
-                </motion.div>
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          transition={{ duration: 0.8 }}
+          className="mb-20"
+        >
+          <div className="bg-white rounded-2xl overflow-hidden shadow-xl">
+            {/* Image Section with Title Overlay */}
+            <div className="relative">
+              <div className="h-80 md:h-96 overflow-hidden">
+                <motion.img
+                  src={hero.image}
+                  alt="Restaurant story"
+                  className="w-full h-full object-cover"
+                  initial={{ scale: 1.1 }}
+                  whileInView={{ scale: 1 }}
+                  transition={{ duration: 1.5 }}
+                />
                 
-                <motion.div
-                  className="flex justify-center"
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.6 }}
-                >
-                  <div className="inline-flex items-center px-4 py-2 bg-red-500 text-white rounded-full text-sm font-medium">
-                    <Heart className="h-4 w-4 mr-2" />
-                    <span>Crafted with passion since 2010</span>
-                  </div>
-                </motion.div>
+                {/* Overlay with title */}
+                <div className="absolute inset-0 bg-gradient-to-b from-black/60 to-transparent flex flex-col items-center justify-center text-center p-8">
+                  <motion.h1 
+                    className="text-4xl md:text-5xl font-bold text-white mb-4 drop-shadow-lg"
+                    initial={{ opacity: 0, y: -20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.2 }}
+                  >
+                    {hero.title}
+                  </motion.h1>
+                  <motion.div 
+                    className="w-24 h-1 bg-red-500 mb-6"
+                    initial={{ width: 0 }}
+                    whileInView={{ width: 96 }}
+                    transition={{ duration: 0.5, delay: 0.3 }}
+                  />
+                </div>
+                
+                {/* Decorative elements */}
+                <div className="absolute top-4 left-4 w-20 h-20 border-l-4 border-t-4 border-white opacity-70"></div>
+                <div className="absolute bottom-4 right-4 w-20 h-20 border-r-4 border-b-4 border-white opacity-70"></div>
               </div>
             </div>
-          </motion.div>
-        )}
-
-        {!isStoryAvailable && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="text-center mb-20 py-16 bg-gray-50 rounded-2xl"
-          >
-            <h1 className="text-4xl font-bold mb-4">Our Story</h1>
-            <div className="w-24 h-1 bg-red-500 mx-auto mb-6"></div>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Our story content is currently unavailable. Please check back later.
-            </p>
-          </motion.div>
-        )}
-
-        {/* Our Mission Section */}
-        {isMissionAvailable && (
-          <motion.div 
-            className="mb-24 flex flex-col md:flex-row items-center gap-12"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            transition={{ duration: 0.8 }}
-          >
-            <div className="md:w-1/2">
-              <motion.h2 
-                className="text-3xl font-bold mb-4 relative inline-block"
-                initial={{ opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5 }}
-              >
-                {mission.title}
-                <div className="absolute -bottom-2 left-0 w-1/2 h-1 bg-red-500"></div>
-              </motion.h2>
-              <motion.p 
-                className="text-lg text-gray-600 mb-6 leading-relaxed"
+            
+            {/* Description Section */}
+            <div className="p-8 md:p-12">
+              <motion.div 
+                className="flex items-start mb-8"
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 1 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
+                transition={{ duration: 0.5, delay: 0.4 }}
               >
-                {mission.description}
-              </motion.p>
-            </div>
-            <motion.div 
-              className="md:w-1/2 grid grid-cols-2 gap-4"
-              initial={{ opacity: 0, x: 20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
-            >
-              {mission.images && mission.images.slice(0, 4).map((image: string, index: number) => (
-                <div 
-                  key={index} 
-                  className={`aspect-square rounded-lg overflow-hidden shadow-lg ${index % 2 !== 0 ? 'mt-8' : ''}`}
-                >
-                  <img 
-                    src={image} 
-                    alt={`Mission image ${index + 1}`} 
-                    className="w-full h-full object-cover"
-                  />
+                <div className="border-l-4 border-red-500 pl-4">
+                  {formattedHeroDescription.map((paragraph: string, index: number) => (
+                    <p key={index} className="text-lg text-gray-700 leading-relaxed mb-4">
+                      {paragraph}
+                    </p>
+                  ))}
                 </div>
-              ))}
-            </motion.div>
-          </motion.div>
-        )}
-        
-        {/* Values Section - with improved styling */}
-        {isStoryAvailable && story.values && story.values.length > 0 && (
-          <motion.div 
-            className="mb-24"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
-          >
+              </motion.div>
+              
+              <motion.div
+                className="flex justify-center"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.6 }}
+              >
+                <div className="inline-flex items-center px-4 py-2 bg-red-500 text-white rounded-full text-sm font-medium">
+                  <Heart className="h-4 w-4 mr-2" />
+                  <span>Crafted with passion and tradition</span>
+                </div>
+              </motion.div>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Mission Section */}
+        <motion.div 
+          className="mb-20"
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          transition={{ duration: 0.8 }}
+        >
+          <div className="bg-gray-50 rounded-2xl p-8 md:p-12 shadow-lg">
             <div className="text-center mb-12">
               <motion.h2 
-                className="text-3xl font-bold mb-4"
+                className="text-3xl md:text-4xl font-bold mb-4"
                 initial={{ opacity: 0, y: -10 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
               >
-                Our Values
+                {mission.title}
               </motion.h2>
               <motion.div 
                 className="w-24 h-1 bg-red-500 mx-auto mb-6"
                 initial={{ width: 0 }}
                 whileInView={{ width: 96 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
+                transition={{ duration: 0.5, delay: 0.1 }}
               />
-              <motion.p 
-                className="text-lg text-gray-600 max-w-2xl mx-auto"
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                transition={{ duration: 0.5, delay: 0.3 }}
-              >
-                These core principles guide everything we do, from sourcing ingredients to serving our customers.
-              </motion.p>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {story.values.map((value: StoryValue, index: number) => {
-                // Map icon string to actual icon component
-                let IconComponent;
-                switch(value.icon) {
-                  case 'UtensilsCrossed':
-                    IconComponent = UtensilsCrossed;
-                    break;
-                  case 'Heart':
-                    IconComponent = Heart;
-                    break;
-                  case 'Users':
-                    IconComponent = Users;
-                    break;
-                  default:
-                    IconComponent = UtensilsCrossed; // Default icon
-                }
-                
-                return (
+            <motion.div
+              className="max-w-3xl mx-auto text-center"
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+            >
+              <p className="text-xl text-gray-700 leading-relaxed">
+                {mission.description}
+              </p>
+            </motion.div>
+            
+            {/* Core Values */}
+            <div className="mt-16">
+              <h3 className="text-2xl font-bold text-center mb-10">Our Core Values</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                {coreValues.map((value: any, index: number) => (
                   <motion.div
-                    key={value.title}
+                    key={index}
+                    className="bg-white p-6 rounded-xl shadow-md text-center"
                     custom={index}
-                    variants={fadeIn}
                     initial="hidden"
                     whileInView="visible"
                     viewport={{ once: true }}
-                    className="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow border-t-4 border-red-500"
+                    variants={fadeIn}
                   >
-                    <div className="bg-red-50 p-4 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
-                      <IconComponent className="h-8 w-8 text-red-500" />
+                    <div className="flex justify-center mb-4">
+                      {value.icon}
                     </div>
-                    <h3 className="text-xl font-bold mb-4 text-center">{value.title}</h3>
-                    <p className="text-gray-600 text-center leading-relaxed">{value.description}</p>
+                    <h4 className="text-xl font-bold mb-2">{value.title}</h4>
+                    <p className="text-gray-600">{value.description}</p>
                   </motion.div>
-                );
-              })}
+                ))}
+              </div>
             </div>
-          </motion.div>
-        )}
+          </div>
+        </motion.div>
         
         {/* Journey Section */}
-        {isJourneyAvailable && (
-          <motion.div 
-            className="mb-24"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
-          >
+        <motion.div 
+          className="mb-20"
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          transition={{ duration: 0.8 }}
+        >
+          <div className="bg-white rounded-2xl p-8 md:p-12 shadow-lg">
             <div className="text-center mb-12">
               <motion.h2 
-                className="text-3xl font-bold mb-4"
+                className="text-3xl md:text-4xl font-bold mb-4"
                 initial={{ opacity: 0, y: -10 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
@@ -350,90 +270,146 @@ export default function About() {
                 className="w-24 h-1 bg-red-500 mx-auto mb-6"
                 initial={{ width: 0 }}
                 whileInView={{ width: 96 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-              />
-              <motion.p 
-                className="text-lg text-gray-600 max-w-2xl mx-auto"
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                transition={{ duration: 0.5, delay: 0.3 }}
-              >
-                {journey.description}
-              </motion.p>
-            </div>
-          </motion.div>
-        )}
-        
-        {/* Customer Says Section */}
-        {isCustomerSaysAvailable && (
-          <motion.div 
-            className="mb-24 bg-gray-50 py-16 px-8 rounded-2xl"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
-          >
-            <div className="text-center mb-12">
-              <motion.h2 
-                className="text-3xl font-bold mb-4"
-                initial={{ opacity: 0, y: -10 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-              >
-                What Our Customers Say
-              </motion.h2>
-              <motion.div 
-                className="w-24 h-1 bg-red-500 mx-auto mb-6"
-                initial={{ width: 0 }}
-                whileInView={{ width: 96 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
+                transition={{ duration: 0.5, delay: 0.1 }}
               />
             </div>
             
             <div className="max-w-3xl mx-auto">
-              <motion.div
-                custom={0}
-                variants={fadeIn}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-                className="bg-white p-8 rounded-xl shadow-md relative"
+              <motion.p 
+                className="text-xl text-gray-700 leading-relaxed text-center mb-12"
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
               >
-                <Quote className="h-12 w-12 text-red-100 absolute top-4 left-4" />
-                <div className="relative z-10">
-                  <p className="text-lg text-gray-700 italic mb-6 leading-relaxed">"{customerSays.description}"</p>
-                  <div className="flex items-center">
-                    <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
-                      <Star className="h-6 w-6 text-red-500" />
-                    </div>
-                    <div className="ml-4">
-                      <p className="font-bold">{customerSays.name}</p>
-                      <p className="text-gray-500 text-sm">{customerSays.profession}</p>
-                    </div>
-                  </div>
+                {journey.description}
+              </motion.p>
+              
+              {/* Journey Timeline - Only show if we have journey data */}
+              {isJourneyAvailable && (
+                <div className="relative">
+                  {/* Timeline line */}
+                  <div className="absolute left-1/2 transform -translate-x-1/2 h-full w-1 bg-red-200"></div>
+                  
+                  {/* Timeline events */}
+                  <div className="space-y-16">
+                    {/* Use timeline events from API if available, otherwise use fallback data */}
+                    {(story?.timeline || [
+                      { year: "2005", title: "Our Beginning", description: "The first restaurant opened its doors, introducing authentic flavors." },
+                      { year: "2010", title: "Expansion", description: "Growing popularity led to our expansion across multiple locations." },
+                      { year: "2015", title: "Award Winning", description: "Our commitment to quality earned us recognition as one of the best restaurants." },
+                      { year: "2023", title: "Today", description: "We continue to honor tradition while innovating for our guests." }
+                    ]).map((event: any, index: number) => (
+                    <motion.div 
+                      key={index}
+                      className="relative"
+                      custom={index}
+                      initial="hidden"
+                      whileInView="visible"
+                      viewport={{ once: true }}
+                      variants={slideIn}
+                    >
+                      {/* Year circle */}
+                      <div className="absolute left-1/2 transform -translate-x-1/2 -translate-y-4 w-8 h-8 rounded-full bg-red-500 flex items-center justify-center">
+                        <Clock className="h-4 w-4 text-white" />
+                      </div>
+                      
+                      {/* Content */}
+                      <div className={`w-5/12 ${index % 2 === 0 ? 'ml-auto pl-8' : 'mr-auto pr-8 text-right'}`}>
+                        <div className="bg-gray-50 p-6 rounded-lg shadow-md">
+                          <span className="inline-block px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm font-medium mb-2">
+                            {event.year}
+                          </span>
+                          <h4 className="text-xl font-bold mb-2">{event.title}</h4>
+                          <p className="text-gray-600">{event.description}</p>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
                 </div>
+              </div>
+              )}
+            </div>
+          </div>
+        </motion.div>
+        
+        {/* Testimonial Section */}
+        <motion.div 
+          className="mb-20"
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          transition={{ duration: 0.8 }}
+        >
+          <div className="bg-gray-900 text-white rounded-2xl p-8 md:p-12 shadow-lg">
+            <div className="max-w-4xl mx-auto text-center">
+              <Quote className="h-12 w-12 text-red-500 mx-auto mb-6 opacity-50" />
+              
+              <motion.p 
+                className="text-2xl md:text-3xl font-light italic mb-8 leading-relaxed"
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+              >
+                "{customerSays.description}"
+              </motion.p>
+              
+              <motion.div
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+              >
+                <p className="text-xl font-bold">{customerSays.name}</p>
+                <p className="text-gray-400">{customerSays.profession}</p>
               </motion.div>
             </div>
-          </motion.div>
-        )}
-        
- 
+          </div>
+        </motion.div>
         
         {/* Visit Us Section */}
-        {isVisitUsAvailable && (
-          <motion.div 
-            className="bg-red-500 text-white rounded-xl p-8 text-center"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <h2 className="text-2xl font-bold mb-4">{visitUs.title}</h2>
-            <p className="mb-6 max-w-2xl mx-auto">{visitUs.description}</p>
-            <div className="flex items-center justify-center">
-              <MapPin className="h-5 w-5 mr-2" />
-              <span>{siteContent?.contact?.address || "Visit us at our location"}</span>
-            </div>
-          </motion.div>
-        )}
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          transition={{ duration: 0.8 }}
+        >
+          <div className="bg-red-50 rounded-2xl p-8 md:p-12 shadow-lg text-center">
+            <MapPin className="h-12 w-12 text-red-500 mx-auto mb-6" />
+            
+            <motion.h2 
+              className="text-3xl md:text-4xl font-bold mb-4"
+              initial={{ opacity: 0, y: -10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              {visitUs.title}
+            </motion.h2>
+            
+            <motion.div 
+              className="w-24 h-1 bg-red-500 mx-auto mb-6"
+              initial={{ width: 0 }}
+              whileInView={{ width: 96 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+            />
+            
+            <motion.p 
+              className="text-xl text-gray-700 leading-relaxed max-w-3xl mx-auto mb-8"
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+            >
+              {visitUs.description}
+            </motion.p>
+            
+            <motion.button
+              className="px-8 py-3 bg-red-500 text-white rounded-full font-medium hover:bg-red-600 transition-colors"
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              Find a Location
+            </motion.button>
+          </div>
+        </motion.div>
       </div>
     </div>
   );

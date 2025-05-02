@@ -48,7 +48,7 @@ export default function Home() {
   const heroData = navigationBar?.hero;
   const experienceCard: ExperienceCard = navigationBar?.experience || {};
   const popularItems: any = siteContent?.popularItems || {};
-  const offers: any = siteContent?.offers || {};
+  const offers: any = siteContent?.offers?.offers || [];
   
   
   // Fallback banner data if heroData or heroData.banners is not available
@@ -324,7 +324,7 @@ export default function Home() {
                 {popularItems.products.length > 3 ? (
                   // Carousel layout for more than 3 products
                   <div className="relative">
-                    <div className="overflow-x-auto pb-4 hide-scrollbar">
+                    <div className="overflow-x-auto overflow-y-hidden pb-4 hide-scrollbar">
                       <div className="flex space-x-6 px-2">
                         {popularItems.products.map((skuId: string, index: number) => {
                           // Find menu item with matching SKU ID
@@ -361,47 +361,47 @@ export default function Home() {
             {offers.length > 1 ? (
               // Carousel layout for multiple offers
               <div className="relative">
-                <div className="overflow-x-auto pb-4 hide-scrollbar">
+                <div className="overflow-x-auto overflow-y-hidden pb-4 hide-scrollbar">
                   <div className="flex space-x-6 px-2">
                     {offers.map((offer: any, index: number) => (
                       <div key={index} className="flex-shrink-0 w-full max-w-4xl">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-                          {/* Left side - Offer content */}
-                          <motion.div
-                            initial={{ opacity: 0, x: -20 }}
-                            whileInView={{ opacity: 1, x: 0 }}
-                            transition={{ duration: 0.5 }}
-                          >
-                            <h2 className="text-4xl font-bold mb-6">Special Offer</h2>
-                            <p className="text-xl text-gray-600 mb-8">
-                              {offer.content || "Check out our special offer!"}
-                            </p>
-                            <div className="space-y-4">
-                              <div className="flex items-center">
-                                <FaClock className="h-6 w-6 text-red-500 mr-4" />
-                                <span>Limited Time Only</span>
-                              </div>
-                              <div className="flex items-center">
-                                <FaPercent className="h-6 w-6 text-red-500 mr-4" />
-                                <span>Exclusive Deal</span>
-                              </div>
-                            </div>
-                          </motion.div>
-                          
-                          {/* Right side - Product or banner */}
-                          <motion.div
-                            initial={{ opacity: 0, x: 20 }}
-                            whileInView={{ opacity: 1, x: 0 }}
-                            transition={{ duration: 0.5 }}
-                            className="bg-white rounded-lg overflow-hidden shadow-lg"
-                          >
-                            {offer.product_sku && menuItems ? (
-                              // Try to find the product with matching SKU
-                              (() => {
-                                const menuItem = menuItems.find(item => item.sku_id === offer.product_sku);
-                                if (menuItem) {
-                                  // Product found - show product
-                                  return (
+                        {offer.product_sku && menuItems ? (
+                          // Try to find the product with matching SKU
+                          (() => {
+                            const menuItem = menuItems.find(item => item.sku_id === offer.product_sku);
+                            if (menuItem) {
+                              // Product found - show product
+                              return (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                                  {/* Left side - Offer content */}
+                                  <motion.div
+                                    initial={{ opacity: 0, x: -20 }}
+                                    whileInView={{ opacity: 1, x: 0 }}
+                                    transition={{ duration: 0.5 }}
+                                  >
+                                    <h2 className="text-4xl font-bold mb-6">Special Offer</h2>
+                                    <p className="text-xl text-gray-600 mb-8">
+                                      {offer.content || "Check out our special offer!"}
+                                    </p>
+                                    <div className="space-y-4">
+                                      <div className="flex items-center">
+                                        <FaClock className="h-6 w-6 text-red-500 mr-4" />
+                                        <span>Limited Time Only</span>
+                                      </div>
+                                      <div className="flex items-center">
+                                        <FaPercent className="h-6 w-6 text-red-500 mr-4" />
+                                        <span>Exclusive Deal</span>
+                                      </div>
+                                    </div>
+                                  </motion.div>
+                                  
+                                  {/* Right side - Product */}
+                                  <motion.div
+                                    initial={{ opacity: 0, x: 20 }}
+                                    whileInView={{ opacity: 1, x: 0 }}
+                                    transition={{ duration: 0.5 }}
+                                    className="bg-white rounded-lg overflow-hidden shadow-lg"
+                                  >
                                     <div className="h-full flex flex-col">
                                       <div className="relative h-64">
                                         {menuItem.image ? (
@@ -440,32 +440,114 @@ export default function Home() {
                                         </button>
                                       </div>
                                     </div>
-                                  );
-                                } else {
-                                  // Product not found - show banner image
-                                  return (
-                                    <div className="h-full">
-                                      <img
-                                        src={offer.image}
-                                        alt="Special Offer"
-                                        className="w-full h-full object-cover"
-                                      />
-                                    </div>
-                                  );
-                                }
-                              })()
-                            ) : (
-                              // No product SKU or no menu items - show banner image
-                              <div className="h-full">
-                                <img
-                                  src={offer.image}
-                                  alt="Special Offer"
-                                  className="w-full h-full object-cover"
-                                />
-                              </div>
-                            )}
-                          </motion.div>
-                        </div>
+                                  </motion.div>
+                                </div>
+                              );
+                            } else if (offer.image) {
+                              // Product not found but offer has image - show banner image with overlay content
+                              return (
+                                <div className="relative rounded-lg overflow-hidden shadow-lg h-96">
+                                  <img
+                                    src={offer.image}
+                                    alt="Special Offer"
+                                    className="w-full h-full object-cover"
+                                  />
+                                  <div className="absolute inset-0 bg-black bg-opacity-60 flex flex-col justify-center p-8">
+                                    <motion.div
+                                      initial={{ opacity: 0, y: 20 }}
+                                      whileInView={{ opacity: 1, y: 0 }}
+                                      transition={{ duration: 0.5 }}
+                                      className="text-white"
+                                    >
+                                      <h2 className="text-4xl font-bold mb-6">Special Offer</h2>
+                                      <p className="text-xl mb-8">
+                                        {offer.content || "Check out our special offer!"}
+                                      </p>
+                                      <div className="space-y-4">
+                                        <div className="flex items-center">
+                                          <FaClock className="h-6 w-6 text-red-400 mr-4" />
+                                          <span>Limited Time Only</span>
+                                        </div>
+                                        <div className="flex items-center">
+                                          <FaPercent className="h-6 w-6 text-red-400 mr-4" />
+                                          <span>Exclusive Deal</span>
+                                        </div>
+                                      </div>
+                                    </motion.div>
+                                  </div>
+                                </div>
+                              );
+                            } else {
+                              // No product and no image - show default layout
+                              return (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                                  <motion.div
+                                    initial={{ opacity: 0, x: -20 }}
+                                    whileInView={{ opacity: 1, x: 0 }}
+                                    transition={{ duration: 0.5 }}
+                                  >
+                                    <h2 className="text-4xl font-bold mb-6">Special Offer</h2>
+                                    <p className="text-xl text-gray-600 mb-8">
+                                      {offer.content || "Check out our special offer!"}
+                                    </p>
+                                  </motion.div>
+                                  <div className="bg-gray-100 h-64 rounded-lg flex items-center justify-center">
+                                    <FaPercent className="h-16 w-16 text-red-500" />
+                                  </div>
+                                </div>
+                              );
+                            }
+                          })()
+                        ) : offer.image ? (
+                          // No product SKU but has image - show banner image with overlay content
+                          <div className="relative rounded-lg overflow-hidden shadow-lg h-96">
+                            <img
+                              src={offer.image}
+                              alt="Special Offer"
+                              className="w-full h-full object-cover"
+                            />
+                            <div className="absolute inset-0 bg-black bg-opacity-60 flex flex-col justify-center p-8">
+                              <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.5 }}
+                                className="text-white"
+                              >
+                                <h2 className="text-4xl font-bold mb-6">Special Offer</h2>
+                                <p className="text-xl mb-8">
+                                  {offer.content || "Check out our special offer!"}
+                                </p>
+                                <div className="space-y-4">
+                                  <div className="flex items-center">
+                                    <FaClock className="h-6 w-6 text-red-400 mr-4" />
+                                    <span>Limited Time Only</span>
+                                  </div>
+                                  <div className="flex items-center">
+                                    <FaPercent className="h-6 w-6 text-red-400 mr-4" />
+                                    <span>Exclusive Deal</span>
+                                  </div>
+                                </div>
+                              </motion.div>
+                            </div>
+                          </div>
+                        ) : (
+                          // No product SKU and no image - show default layout
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                            <motion.div
+                              initial={{ opacity: 0, x: -20 }}
+                              whileInView={{ opacity: 1, x: 0 }}
+                              transition={{ duration: 0.5 }}
+                            >
+                              <h2 className="text-4xl font-bold mb-6">Special Offer</h2>
+                              <p className="text-xl text-gray-600 mb-8">
+                                {offer.content || "Check out our special offer!"}
+                              </p>
+                            </motion.div>
+                            <div className="bg-gray-100 h-64 rounded-lg flex items-center justify-center">
+                              <FaPercent className="h-16 w-16 text-red-500" />
+                            </div>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -473,33 +555,44 @@ export default function Home() {
               </div>
             ) : (
               // Single offer layout
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-                {/* Left side - Offer content */}
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.5 }}
-                >
-                  <h2 className="text-4xl font-bold mb-6">Special Offer</h2>
-                  <p className="text-xl text-gray-600 mb-8">
-                    {offers[0].content || "Check out our special offer!"}
-                  </p>
-                </motion.div>
-                
-                {/* Right side - Product or banner */}
-                <motion.div
-                  initial={{ opacity: 0, x: 20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.5 }}
-                  className="bg-white rounded-lg overflow-hidden shadow-lg"
-                >
-                  {offers[0].product_sku && menuItems ? (
-                    // Try to find the product with matching SKU
-                    (() => {
-                      const menuItem = menuItems.find(item => item.sku_id === offers[0].product_sku);
-                      if (menuItem) {
-                        // Product found - show product
-                        return (
+              (() => {
+                const offer = offers[0];
+                if (offer.product_sku && menuItems) {
+                  // Try to find the product with matching SKU
+                  const menuItem = menuItems.find(item => item.sku_id === offer.product_sku);
+                  if (menuItem) {
+                    // Product found - show product
+                    return (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                        {/* Left side - Offer content */}
+                        <motion.div
+                          initial={{ opacity: 0, x: -20 }}
+                          whileInView={{ opacity: 1, x: 0 }}
+                          transition={{ duration: 0.5 }}
+                        >
+                          <h2 className="text-4xl font-bold mb-6">Special Offer</h2>
+                          <p className="text-xl text-gray-600 mb-8">
+                            {offer.content || "Check out our special offer!"}
+                          </p>
+                          <div className="space-y-4">
+                            <div className="flex items-center">
+                              <FaClock className="h-6 w-6 text-red-500 mr-4" />
+                              <span>Limited Time Only</span>
+                            </div>
+                            <div className="flex items-center">
+                              <FaPercent className="h-6 w-6 text-red-500 mr-4" />
+                              <span>Exclusive Deal</span>
+                            </div>
+                          </div>
+                        </motion.div>
+                        
+                        {/* Right side - Product */}
+                        <motion.div
+                          initial={{ opacity: 0, x: 20 }}
+                          whileInView={{ opacity: 1, x: 0 }}
+                          transition={{ duration: 0.5 }}
+                          className="bg-white rounded-lg overflow-hidden shadow-lg"
+                        >
                           <div className="h-full flex flex-col">
                             <div className="relative h-64">
                               {menuItem.image ? (
@@ -538,32 +631,118 @@ export default function Home() {
                               </button>
                             </div>
                           </div>
-                        );
-                      } else {
-                        // Product not found - show banner image
-                        return (
-                          <div className="h-full">
-                            <img
-                              src={offers[0].image}
-                              alt="Special Offer"
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                        );
-                      }
-                    })()
-                  ) : (
-                    // No product SKU or no menu items - show banner image
-                    <div className="h-full">
+                        </motion.div>
+                      </div>
+                    );
+                  } else if (offer.image) {
+                    // Product not found but offer has image - show banner image with overlay content
+                    return (
+                      <div className="relative rounded-lg overflow-hidden shadow-lg h-96 mx-auto max-w-4xl">
+                        <img
+                          src={offer.image}
+                          alt="Special Offer"
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-black bg-opacity-60 flex flex-col justify-center p-8">
+                          <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.5 }}
+                            className="text-white"
+                          >
+                            <h2 className="text-4xl font-bold mb-6">Special Offer</h2>
+                            <p className="text-xl mb-8">
+                              {offer.content || "Check out our special offer!"}
+                            </p>
+                            <div className="space-y-4">
+                              <div className="flex items-center">
+                                <FaClock className="h-6 w-6 text-red-400 mr-4" />
+                                <span>Limited Time Only</span>
+                              </div>
+                              <div className="flex items-center">
+                                <FaPercent className="h-6 w-6 text-red-400 mr-4" />
+                                <span>Exclusive Deal</span>
+                              </div>
+                            </div>
+                          </motion.div>
+                        </div>
+                      </div>
+                    );
+                  } else {
+                    // No product and no image - show default layout
+                    return (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                        <motion.div
+                          initial={{ opacity: 0, x: -20 }}
+                          whileInView={{ opacity: 1, x: 0 }}
+                          transition={{ duration: 0.5 }}
+                        >
+                          <h2 className="text-4xl font-bold mb-6">Special Offer</h2>
+                          <p className="text-xl text-gray-600 mb-8">
+                            {offer.content || "Check out our special offer!"}
+                          </p>
+                        </motion.div>
+                        <div className="bg-gray-100 h-64 rounded-lg flex items-center justify-center">
+                          <FaPercent className="h-16 w-16 text-red-500" />
+                        </div>
+                      </div>
+                    );
+                  }
+                } else if (offer.image) {
+                  // No product SKU but has image - show banner image with overlay content
+                  return (
+                    <div className="relative rounded-lg overflow-hidden shadow-lg h-96 mx-auto max-w-4xl">
                       <img
-                        src={offers[0].image}
+                        src={offer.image}
                         alt="Special Offer"
                         className="w-full h-full object-cover"
                       />
+                      <div className="absolute inset-0 bg-black bg-opacity-60 flex flex-col justify-center p-8">
+                        <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          whileInView={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.5 }}
+                          className="text-white"
+                        >
+                          <h2 className="text-4xl font-bold mb-6">Special Offer</h2>
+                          <p className="text-xl mb-8">
+                            {offer.content || "Check out our special offer!"}
+                          </p>
+                          <div className="space-y-4">
+                            <div className="flex items-center">
+                              <FaClock className="h-6 w-6 text-red-400 mr-4" />
+                              <span>Limited Time Only</span>
+                            </div>
+                            <div className="flex items-center">
+                              <FaPercent className="h-6 w-6 text-red-400 mr-4" />
+                              <span>Exclusive Deal</span>
+                            </div>
+                          </div>
+                        </motion.div>
+                      </div>
                     </div>
-                  )}
-                </motion.div>
-              </div>
+                  );
+                } else {
+                  // No product SKU and no image - show default layout
+                  return (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                      <motion.div
+                        initial={{ opacity: 0, x: -20 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.5 }}
+                      >
+                        <h2 className="text-4xl font-bold mb-6">Special Offer</h2>
+                        <p className="text-xl text-gray-600 mb-8">
+                          {offer.content || "Check out our special offer!"}
+                        </p>
+                      </motion.div>
+                      <div className="bg-gray-100 h-64 rounded-lg flex items-center justify-center">
+                        <FaPercent className="h-16 w-16 text-red-500" />
+                      </div>
+                    </div>
+                  );
+                }
+              })()
             )}
           </div>
         </section>
