@@ -181,7 +181,7 @@ export default function TableReservation({
             <h2 className="text-2xl font-bold mb-6 text-gray-800 border-b pb-2">Restaurant Information</h2>
             
             {/* Contact Information */}
-            <div className="mb-8">
+            {/* <div className="mb-8">
               <h3 className="text-lg font-semibold mb-4 text-gray-700">Contact Us</h3>
               <div className="space-y-3">
                 <div className="flex items-start">
@@ -197,7 +197,7 @@ export default function TableReservation({
                   <span>{restaurantInfo.address}</span>
                 </div>
               </div>
-            </div>
+            </div> */}
             
             {/* Operating Hours */}
             <div>
@@ -213,13 +213,13 @@ export default function TableReservation({
             </div>
             
             {/* Additional Information */}
-            <div className="mt-8 p-4 bg-yellow-50 rounded-md border border-yellow-100">
+            {/* <div className="mt-8 p-4 bg-yellow-50 rounded-md border border-yellow-100">
               <h4 className="font-medium text-yellow-800 mb-2">Reservation Policy</h4>
               <p className="text-sm text-yellow-700">
                 Reservations are held for 15 minutes past the scheduled time. For parties of 8 or more, 
                 please call us directly. A credit card may be required for larger reservations.
               </p>
-            </div>
+            </div> */}
           </div>
         </div>
       </motion.div>
