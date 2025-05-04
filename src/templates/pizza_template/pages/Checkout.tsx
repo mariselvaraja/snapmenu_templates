@@ -168,7 +168,8 @@ export default function Checkout() {
       let restaurant_id = sessionStorage.getItem("franchise_id");
       
       // Call the placeOrder API endpoint
-      const response = await cartService.placeOrder(orderData,restaurant_id);
+      let response = await cartService.placeOrder(orderData,restaurant_id);
+      response = JSON.parse(response)
       console.log('Order placed successfullys:', response);
       
       // Set the response first
@@ -240,7 +241,7 @@ export default function Checkout() {
           {/* Payment Popup */}
           {showPaymentPopup && (
             <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
-              <div className="relative w-full max-w-4xl h-[80vh] bg-white rounded-lg shadow-xl">
+              <div className="relative w-full  h-[100vh] bg-white rounded-lg shadow-xl">
                 <div className="absolute top-2 right-2 z-10">
                   <button 
                     onClick={closePaymentPopup}
