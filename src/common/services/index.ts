@@ -9,3 +9,6 @@ export { default as inDiningOrderService } from './inDiningOrderService';
 // Re-export services from src/services for any missing services
 export { default as menuService } from '../../services/menuService';
 export { default as siteContentService } from '../../services/siteContentService';
+export { default as tableAvailabilityService } from './tableAvailabilityService';
+
+

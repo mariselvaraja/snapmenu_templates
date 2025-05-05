@@ -18,6 +18,7 @@ const RESTAURANT_DETAILS_API_PATH_PYTHON = import.meta.env.VITE_RESTAURANT_DETAI
 const GET_IN_DINING_ORDERS_PATH = import.meta.env.VITE_GET_IN_DINING_ORDERS || "/getDiningOrder";
 const PLACE_IN_DINING_ORDER_PATH = import.meta.env.VITE_PLACE_IN_DINING_ORDER || "/makeDiningOrders";
 const UPDATE_IN_DINING_ORDERS_PATH = import.meta.env.VITE_UPDATE_IN_DINING_ORDERS || "/updateDiningDetails";
+const GET_TABLE_AVAILABILITY_PATH = import.meta.env.VITE_GET_TABLE_AVAILABILITY || "/getAvailableTableCount";
 
 // Function to get domain from URL
 const getDomainFromUrl = () => {
@@ -29,7 +30,7 @@ const getDomainFromUrl = () => {
         if (domainParts.length > 2) {
             return domainParts.slice(0, -2).join('.');
         }
-        return "ct.biryani"; // No subdomain present, use tonyspizza as default
+        return "ctbiryani"; // No subdomain present, use tonyspizza as default
 };
 
 // Endpoint configuration object
@@ -60,6 +61,11 @@ export const endpoints = {
     place: `${API_BASE_URL}${PLACE_IN_DINING_ORDER_PATH}`,
     update: `${API_BASE_URL}${UPDATE_IN_DINING_ORDERS_PATH}`,
   },
+
+  tableOrder:{
+    availability:`${API_BASE_URL}${GET_TABLE_AVAILABILITY_PATH}`,
+  }
+
 };
 
 // Environment configuration

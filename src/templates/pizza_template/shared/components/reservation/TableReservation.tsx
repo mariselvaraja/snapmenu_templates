@@ -1,6 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Phone, Mail, MapPin, Calendar, Clock, Users } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchTableAvailablityRequest } from '../../../../../common/redux/slices/tableAvailabilitySlice'
+import { RootState } from '../../../../../common/redux/rootReducer';
+import _ from 'lodash';
 
 interface TableReservationProps {
   onBookingComplete?: (bookingData: BookingData) => void;
@@ -51,6 +55,7 @@ export default function TableReservation({
     ]
   }
 }: TableReservationProps) {
+  const dispatch = useDispatch();
   const [selectedDate, setSelectedDate] = useState(initialDate || ''); 
   const [selectedTime, setSelectedTime] = useState(initialTime || '');
   const [name, setName] = useState('');
@@ -58,12 +63,41 @@ export default function TableReservation({
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [specialRequest, setSpecialRequest] = useState('');
+  const { items, loading, error } = useSelector((state: RootState) => state.tableAvailability);
+  const [timeSlots, setTimeSlots] = useState([])
+
+   useEffect(() => {
+      dispatch(fetchTableAvailablityRequest());
+    }, [dispatch]);
+
+   // Log restaurant info for debugging
+  useEffect(() => {
+    if (items) {
+      console.log("available items"+ items)
+      setTimeSlots(formatStartTimesToEST(items))
+    }
+  }, [items]);
+  
+  const formatStartTimesToEST = (data: any): string[] =>  {
+    const formatter = new Intl.DateTimeFormat('en-IN', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true,
+      timeZone: 'Asia/Kolkata'
+    });
+  
+    return _.map(data, item => {
+      const date = new Date(item.start_time.replace(' ', 'T'));
+      return formatter.format(date);
+    });
+  }
+
 
   // Available party sizes
   const partySizes = [1, 2, 3, 4, 5, 6, 7, 8, 10, 12];
   
   // Time slots for the time selector
-  const timeSlots = ['11:00', '12:00', '13:00', '17:00', '18:00', '19:00', '20:00', '21:00'];
+  //const timeSlots = ['11:00', '12:00', '13:00', '17:00', '18:00', '19:00', '20:00', '21:00'];
 
   const handleBooking = (e: React.FormEvent<HTMLFormElement>): void => {
     e.preventDefault();
