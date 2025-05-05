@@ -30,6 +30,7 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
 
   const tableNumber = sessionStorage.getItem("table_number");
   const restaurant = useSelector((state: RootState) => state.restaurant.info);
+  let tablename = sessionStorage.getItem('Tablename');
   
   // Get site content from Redux state for brand name and contact info
   const { rawApiResponse } = useAppSelector(state => state.siteContent);
@@ -147,7 +148,7 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
           </style>
         </head>
         <body>
-          <div class="table-name">${tableNumber ? `${tableNumber} seater table No1` : 'No Table'}</div>
+          <div class="table-name">${tablename}</div>
           
           <div class="bill-info">
             <div>Order #: ${order.id}</div>
@@ -242,7 +243,7 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
         <div className="p-4" id="bill-content">
           {/* Table Name */}
           <div className="text-center mb-6">
-            <h1 className="text-2xl font-bold">{tableNumber ? `${tableNumber} seater table No1` : 'No Table'}</h1>
+            <h1 className="text-2xl font-bold">{tablename}</h1>
           </div>
           
           {/* Bill Info */}

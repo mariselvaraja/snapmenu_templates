@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Phone, Mail, MapPin, Calendar, Clock, Users } from 'lucide-react';
+import { Phone, Mail, MapPin, Calendar, Clock, Users, Check, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchTableAvailablityRequest } from '../../../../../common/redux/slices/tableAvailabilitySlice'
 import { RootState } from '../../../../../common/redux/rootReducer';
 import _ from 'lodash';
+import { makeReservationRequest, resetReservationState } from '@/common/redux/slices/makeReservationSlice';
 
 interface TableReservationProps {
   onBookingComplete?: (bookingData: BookingData) => void;
@@ -63,17 +64,30 @@ export default function TableReservation({
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [specialRequest, setSpecialRequest] = useState('');
-  const { items, loading, error } = useSelector((state: RootState) => state.tableAvailability);
-  const [timeSlots, setTimeSlots] = useState([])
+  const { items, loading: tableLoading, error: tableError } = useSelector((state: RootState) => state.tableAvailability);
+  const { loading: reservationLoading, success: reservationSuccess, reservationData } = useSelector((state: RootState) => state.makeReservation);
+  const [timeSlots, setTimeSlots] = useState<string[]>([]);
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
 
-   useEffect(() => {
-      dispatch(fetchTableAvailablityRequest());
-    }, [dispatch]);
+  useEffect(() => {
+    dispatch(fetchTableAvailablityRequest());
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (reservationSuccess && reservationData) {
+      setShowSuccessPopup(true);
+      // Hide popup after 3 seconds
+      const timer = setTimeout(() => {
+        setShowSuccessPopup(false);
+        dispatch(resetReservationState());
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [reservationSuccess, reservationData, dispatch]);
 
    // Log restaurant info for debugging
   useEffect(() => {
     if (items) {
-      console.log("available items"+ items)
       setTimeSlots(formatStartTimesToEST(items))
     }
   }, [items]);
@@ -102,22 +116,53 @@ export default function TableReservation({
   const handleBooking = (e: React.FormEvent<HTMLFormElement>): void => {
     e.preventDefault();
     
-    const bookingData: BookingData = {
-      partySize,
-      date: selectedDate,
-      time: selectedTime,
-      name,
-      phone,
-      email,
-      specialRequest
+    function getStartAndEndTime(dateStr:any, timeStr:any) {
+      const [time, meridian] = timeStr.split(' ');
+      let [hours, minutes] = time.split(':').map(Number);
+    
+      // Convert to 24-hour format
+      if (meridian.toLowerCase() === 'pm' && hours !== 12) {
+        hours += 12;
+      } else if (meridian.toLowerCase() === 'am' && hours === 12) {
+        hours = 0;
+      }
+    
+      // Create Date object using local time
+      const [year, month, day] = dateStr.split('-').map(Number);
+      const start = new Date(year, month - 1, day, hours, minutes);
+      const end = new Date(start.getTime() + 60 * 60 * 1000); // Add 1 hour
+    
+      // Format as YYYY-MM-DD HH:mm:ss
+      const format = (d:any) => {
+        const pad = (n:any) => String(n).padStart(2, '0');
+        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+      };
+    
+      return {
+        startTime: format(start),
+        endTime: format(end),
+      };
+    }
+
+    let restaurant_id = sessionStorage.getItem('restaurant_id');
+    let restaurant_parent_id = sessionStorage.getItem('franchise_id');
+    
+    let date = getStartAndEndTime(selectedDate, selectedTime)
+    // Create the payload with the required format
+    const reservationPayload = {
+      restaurant_id,
+      restaurant_parent_id,
+      party_size: partySize,
+      customer_name: name,
+      phone: phone,
+      email: email,
+      reservation_start_time: date.startTime,
+      reservation_end_time: date.endTime
     };
     
-    if (onBookingComplete) {
-      onBookingComplete(bookingData);
-    } else {
-      // Default behavior if no callback is provided
-      alert(`Reservation for ${name}, party of ${partySize} on ${selectedDate} at ${selectedTime}`);
-    }
+
+    dispatch(makeReservationRequest(reservationPayload))
+
   };
 
   return (
@@ -264,9 +309,19 @@ export default function TableReservation({
               {/* Submit Button */}
               <button
                 type="submit"
-                className="w-full bg-red-500 text-white py-3 px-4 rounded-md font-semibold hover:bg-red-600 transition-colors shadow-sm hover:shadow-md mt-6"
+                disabled={reservationLoading}
+                className={`w-full ${
+                  reservationLoading ? 'bg-red-400' : 'bg-red-500 hover:bg-red-600'
+                } text-white py-3 px-4 rounded-md font-semibold transition-colors shadow-sm hover:shadow-md mt-6 flex items-center justify-center`}
               >
-                Reserve Table
+                {reservationLoading ? (
+                  <>
+                    <Loader2 className="animate-spin mr-2 h-5 w-5" />
+                    Processing...
+                  </>
+                ) : (
+                  'Reserve Table'
+                )}
               </button>
             </form>
           </div>
@@ -317,6 +372,19 @@ export default function TableReservation({
             </div> */}
           </div>
         </div>
+
+        {/* Success Popup */}
+        {showSuccessPopup && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="fixed top-4 right-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded shadow-md flex items-center z-50"
+          >
+            <Check className="h-5 w-5 mr-2 text-green-500" />
+            <span>{reservationData?.message || "Table Booked"}</span>
+          </motion.div>
+        )}
       </motion.div>
     </div>
   );

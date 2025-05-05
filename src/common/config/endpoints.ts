@@ -19,6 +19,8 @@ const GET_IN_DINING_ORDERS_PATH = import.meta.env.VITE_GET_IN_DINING_ORDERS || "
 const PLACE_IN_DINING_ORDER_PATH = import.meta.env.VITE_PLACE_IN_DINING_ORDER || "/makeDiningOrders";
 const UPDATE_IN_DINING_ORDERS_PATH = import.meta.env.VITE_UPDATE_IN_DINING_ORDERS || "/updateDiningDetails";
 const GET_TABLE_AVAILABILITY_PATH = import.meta.env.VITE_GET_TABLE_AVAILABILITY || "/getAvailableTableCount";
+const MAKE_RESERVATION_PATH = import.meta.env.VITE_MAKE_RESERVATION || "/makeReservation";
+const GET_TABLE_STATUS_PATH = import.meta.env.VITE_GET_TABLE_STATUS || "/getRestaurantTables";
 
 // Function to get domain from URL
 const getDomainFromUrl = () => {
@@ -64,6 +66,8 @@ export const endpoints = {
 
   tableOrder:{
     availability:`${API_BASE_URL}${GET_TABLE_AVAILABILITY_PATH}`,
+    makeReservation: `${API_BASE_URL}${MAKE_RESERVATION_PATH}`,
+    status: `${API_BASE_URL}${GET_TABLE_STATUS_PATH}`,
   }
 
 };

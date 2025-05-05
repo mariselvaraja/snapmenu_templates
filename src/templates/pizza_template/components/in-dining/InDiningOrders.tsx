@@ -21,6 +21,7 @@ interface InDiningOrdersProps {
 const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber }) => {
   const [showNotification, setShowNotification] = useState(!!newOrderNumber);
   const [showBill, setShowBill] = useState(false);
+  let tablename = sessionStorage.getItem('Tablename');
   
   // Auto-close notification after 10 seconds
   useEffect(() => {
@@ -157,7 +158,7 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
             <div>
               <h2 className="text-lg font-semibold text-white">Your Orders</h2>
               <p className="text-xs text-gray-300">
-                Table Number: {tableNumber ? `#${tableNumber}` : 'No Table'}
+                Table Number: {tablename}
               </p>
             </div>
           </div>

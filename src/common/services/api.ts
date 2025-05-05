@@ -132,7 +132,7 @@ export const api = {
   /**
    * Makes a GET request to the specified URL
    */
-  get: <T>(url: string, options: RequestInit = {}): Promise<ApiResponse<T>> => {
+  get: <T>(url: string, options: RequestInit = {}, query: Record<string, any> = {}): Promise<ApiResponse<T>> => {
     // Get restaurant_id from Redux store if available
     
     const restaurantId = sessionStorage.getItem("franchise_id");
@@ -144,8 +144,27 @@ export const api = {
       ...(restaurantId && { restaurantid: restaurantId }),
     };
     
-    return request<T>(url, { 
-      ...options, 
+    // Handle query parameters
+    let finalUrl = url;
+    const queryParams = new URLSearchParams();
+    
+    // Add query parameters if they exist
+    if (Object.keys(query).length > 0) {
+      Object.entries(query).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          queryParams.append(key, String(value));
+        }
+      });
+      
+      // Append query string to URL (handling existing query parameters)
+      const queryString = queryParams.toString();
+      if (queryString) {
+        finalUrl += (url.includes('?') ? '&' : '?') + queryString;
+      }
+    }
+    
+    return request<T>(finalUrl, { 
+      ...options,
       headers: mergedHeaders, 
       method: 'GET' 
     });

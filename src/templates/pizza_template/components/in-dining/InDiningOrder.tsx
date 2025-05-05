@@ -13,6 +13,7 @@ import InDiningProductDetails from './InDiningProductDetails';
 import InDiningCartDrawer from './InDiningCartDrawer';
 import InDiningOrders from './InDiningOrders';
   import FilterDrawer from './FilterDrawer';
+import { fetchTableStatusRequest } from '@/common/redux/slices/tableStatusSlice';
 
 export default function InDiningOrder() {
   const [orderPlaced, setOrderPlaced] = useState<boolean>(false);
@@ -26,11 +27,23 @@ export default function InDiningOrder() {
   const [showOrders, setShowOrders] = useState<boolean>(false);
   const [tableNumber, setTableNumber] = useState<string | null>(null);
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState<boolean>(false);
+  const [tableName, setTableName] = useState('')
   
   // Get table number from URL
   const location = useLocation();
   const dispatch = useDispatch<AppDispatch>();
-  
+  const tableStatus = useSelector((state:any)=>state.tableStatus?.tables);
+
+  const searchParams = new URLSearchParams(location.search);
+  const tableFromQuery = searchParams.get('table');
+
+  useEffect(()=>{
+    let tabledata = tableStatus?.find((table:any)=>table.table_id == tableFromQuery);
+      console.log("tableFromQuerys", tableFromQuery)
+      sessionStorage.setItem('Tablename', tabledata?.table_name)
+      setTableName(tabledata?.table_name)
+  },[tableFromQuery, tableStatus])
+
   useEffect(() => {
     // Extract table number from URL query parameter or path parameter
     // Examples: 
@@ -38,8 +51,7 @@ export default function InDiningOrder() {
     // - Path parameter: /placeindiningorder/12
     
     // First check for query parameter
-    const searchParams = new URLSearchParams(location.search);
-    const tableFromQuery = searchParams.get('table');
+
     
     // Then check for path parameter
     const pathSegments = location.pathname.split('/');
@@ -50,6 +62,8 @@ export default function InDiningOrder() {
     console.log("Search Params:", location.search);
     console.log("Table from Query:", tableFromQuery);
     console.log("Table from Path:", tableFromPath);
+    
+    dispatch(fetchTableStatusRequest(tableFromQuery))
     
     // Use table from query parameter first, then fall back to path parameter
     if (tableFromQuery && !isNaN(Number(tableFromQuery))) {
@@ -144,11 +158,13 @@ export default function InDiningOrder() {
     
     let restaurant_id = sessionStorage.getItem("franchise_id");
     let restaurant_parent_id = sessionStorage.getItem("restaurant_id");
-    let tableNumber = sessionStorage.getItem("table_number")
+    
+    // Use the tableNumber from component state instead of sessionStorage
+    // This ensures consistency with the table number displayed in the UI
     
     // Dispatch the placeInDiningOrderRequest action
     dispatch(placeInDiningOrderRequest({
-      table_id: tableNumber,
+      table_id: tableNumber, // Use the state variable instead of sessionStorage
       restaurant_id,
       restaurant_parent_id,
       additional_details:'',
@@ -206,7 +222,7 @@ export default function InDiningOrder() {
               <div>
                 <h1 className="text-xl font-bold text-white">Pizza Palace</h1>
                 <p className="text-xs text-gray-300">
-                  Table Number: {tableNumber ? `#${tableNumber}` : 'No Table'}
+                  Table Number: {tableName}
                 </p>
               </div>
             </div>

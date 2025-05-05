@@ -17,6 +17,12 @@ const InDiningCartDrawer: React.FC<InDiningCartDrawerProps> = ({ onPlaceOrder })
   // Get table number from URL
   const location = useLocation();
   const [tableNumber, setTableNumber] = useState<string | null>(null);
+  let tablename = sessionStorage.getItem('Tablename');
+  useEffect(()=>{
+    
+    console.log("tablename", tablename)
+    setTableNumber(tablename)
+  },[])
   
   useEffect(() => {
     // Extract table number from URL query parameter or path parameter
@@ -77,7 +83,7 @@ const InDiningCartDrawer: React.FC<InDiningCartDrawerProps> = ({ onPlaceOrder })
                 <div>
                   <h2 className="text-xl font-semibold">Your Order</h2>
                   <p className="text-xs text-gray-500">
-                    Table Number: {tableNumber ? `#${tableNumber}` : 'No Table'}
+                    Table Number: {tablename}
                   </p>
                 </div>
                 <button

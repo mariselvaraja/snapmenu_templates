@@ -23,8 +23,11 @@ export default function InDiningOrder() {
   const [tableNumber, setTableNumber] = useState<string | null>(null);
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState<boolean>(false);
   
+
   // Get table number from URL
   const location = useLocation();
+
+
   
   useEffect(() => {
     // Extract table number from URL query parameter or path parameter
@@ -47,7 +50,7 @@ export default function InDiningOrder() {
     console.log("Table from Path:", tableFromPath);
     
     // Use table from query parameter first, then fall back to path parameter
-    if (tableFromQuery && !isNaN(Number(tableFromQuery))) {
+    if (tableFromQuery) {
       setTableNumber(tableFromQuery);
     } else if (tableFromPath) {
       setTableNumber(tableFromPath);
