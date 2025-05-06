@@ -13,6 +13,7 @@ import {
 } from '../slices/inDiningOrderSlice';
 import { RootState } from '../rootReducer';
 import { inDiningOrderService } from '../../services/inDiningOrderService';
+import { getOrderHistoryRequest } from '../slices/orderHistorySlice';
 
 // Worker Sagas
 function* getInDiningOrdersSaga(): Generator<any, void, any> {
@@ -29,6 +30,8 @@ function* placeInDiningOrderSaga(action: ReturnType<typeof placeInDiningOrderReq
     const orderData = action.payload;
     const placedOrder = yield call(inDiningOrderService.placeInDiningOrder,orderData);
     yield put(placeInDiningOrderSuccess(placedOrder));
+    //GET INDINING ORDER
+    yield put(getOrderHistoryRequest(orderData.table_id));
   } catch (error) {
     yield put(placeInDiningOrderFailure(error instanceof Error ? error.message : 'An unknown error occurred'));
   }

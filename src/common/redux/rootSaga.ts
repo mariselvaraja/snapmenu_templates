@@ -7,6 +7,7 @@ import { inDiningOrderSaga } from './sagas/inDiningOrderSaga';
 import { tableAvailabilitySaga } from './sagas/tableAvailabilitySaga';
 import { makeReservationSaga } from './sagas/makeReservationSaga';
 import { tableStatusSaga } from './sagas/tableStatusSaga';
+import { orderHistorySaga } from './sagas/orderHistorySaga';
 
 export function* rootSaga(): Generator<any, void, any> {
   yield all([
@@ -17,6 +18,7 @@ export function* rootSaga(): Generator<any, void, any> {
     fork(inDiningOrderSaga),
     fork(tableAvailabilitySaga),
     fork(makeReservationSaga),
-    fork(tableStatusSaga)
+    fork(tableStatusSaga),
+    fork(orderHistorySaga)
   ]);
 }

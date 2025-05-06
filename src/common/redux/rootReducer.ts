@@ -8,6 +8,7 @@ import inDiningOrderReducer from './slices/inDiningOrderSlice';
 import tableAvailabilityReducer from './slices/tableAvailabilitySlice';
 import makeReservationReducer from './slices/makeReservationSlice';
 import tableStatusReducer from './slices/tableStatusSlice';
+import orderHistoryReducer from './slices/orderHistorySlice';
 
 const rootReducer = combineReducers({
   cart: cartReducer,
@@ -18,7 +19,8 @@ const rootReducer = combineReducers({
   inDiningOrder: inDiningOrderReducer,
   tableAvailability: tableAvailabilityReducer,
   makeReservation: makeReservationReducer,
-  tableStatus: tableStatusReducer
+  tableStatus: tableStatusReducer,
+  orderHistory: orderHistoryReducer
 });
 
 export type RootState = ReturnType<typeof rootReducer>;

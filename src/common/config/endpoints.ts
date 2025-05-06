@@ -16,6 +16,7 @@ const SITE_CONTENT_API_PATH = import.meta.env.VITE_SITE_CONTENT_VIEW_API_PATH
 const PLACE_ORDER_API_PATH = import.meta.env.VITE_PLACE_ORDER_API_PATH
 const RESTAURANT_DETAILS_API_PATH_PYTHON = import.meta.env.VITE_RESTAURANT_DETAILS_API_PATH_PYTHON;
 const GET_IN_DINING_ORDERS_PATH = import.meta.env.VITE_GET_IN_DINING_ORDERS || "/getDiningOrder";
+const GET_INDINING_ORDERS_HISTORY_PATH = import.meta.env.VITE_GET_INDINING_ORDERS || "/getDiningOrder";
 const PLACE_IN_DINING_ORDER_PATH = import.meta.env.VITE_PLACE_IN_DINING_ORDER || "/makeDiningOrders";
 const UPDATE_IN_DINING_ORDERS_PATH = import.meta.env.VITE_UPDATE_IN_DINING_ORDERS || "/updateDiningDetails";
 const GET_TABLE_AVAILABILITY_PATH = import.meta.env.VITE_GET_TABLE_AVAILABILITY || "/getAvailableTableCount";
@@ -60,6 +61,7 @@ export const endpoints = {
   // In-dining order endpoints
   inDiningOrder: {
     get: `${API_BASE_URL}${GET_IN_DINING_ORDERS_PATH}`,
+    getHistory: `${API_BASE_URL}${GET_INDINING_ORDERS_HISTORY_PATH}`,
     place: `${API_BASE_URL}${PLACE_IN_DINING_ORDER_PATH}`,
     update: `${API_BASE_URL}${UPDATE_IN_DINING_ORDERS_PATH}`,
   },

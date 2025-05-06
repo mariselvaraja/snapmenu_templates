@@ -2,15 +2,47 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Utensils, ClipboardList, ArrowLeft, Calendar, Clock, Users, ChevronDown, ChevronUp, X } from 'lucide-react';
 import BillComponent from './BillComponent';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 import { RootState } from '../../../../common/store';
+import { InDiningOrder } from '../../../../common/redux/slices/inDiningOrderSlice';
+import { getOrderHistoryRequest } from '../../../../common/redux/slices/orderHistorySlice';
+
+// Extended interface to handle both API response formats
+interface ExtendedInDiningOrder extends Partial<InDiningOrder> {
+  dining_id?: number;
+  ordered_items?: Array<{
+    name: string;
+    quantity: number;
+    itemPrice: number;
+    image: string;
+    modifiers?: Array<{
+      name: string;
+      options: Array<{
+        name: string;
+        price: number;
+      }>;
+    }>;
+    spiceLevel?: string;
+  }>;
+  created_date?: string;
+  dining_status?: string;
+  total_amount?: string;
+}
 
 interface OrderItem {
   name: string;
   quantity: number;
   price: number;
   image?: string;
+  modifiers?: {
+    name: string;
+    options: {
+      name: string;
+      price: number;
+    }[];
+  }[];
+  spiceLevel?: string | null;
 }
 
 interface InDiningOrdersProps {
@@ -79,44 +111,64 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
     };
   }, [hideUrlBar]);
   
-  // Define the order interface
+  // Get orders from Redux store
+  const dispatch = useDispatch();
+  
+  const orderHistoryState = useSelector((state: RootState) => state.orderHistory);
+  const historyLoading = orderHistoryState.loading;
+  const historyError = orderHistoryState.error;
+  const orderHistory = orderHistoryState.orders;
+  
+  console.log("Iitems", orderHistory)
+  // Transform orderHistory to match the expected Order interface
+  const orders = orderHistory ? orderHistory.map((orderData:any) => {
+    // Cast to ExtendedInDiningOrder to handle both data formats
+    const order = orderData as ExtendedInDiningOrder;
+    
+    // Check if the order has ordered_items (from the sample data structure)
+    const items = order.ordered_items 
+      ? order.ordered_items.map(item => ({
+          name: item.name,
+          quantity: item.quantity,
+          price: item.itemPrice || 0,
+          image: item.image || '',
+          modifiers: item.modifiers || [],
+          spiceLevel: item.spiceLevel || null
+        }))
+      : order.items || []; // Fallback to order.items if ordered_items doesn't exist
+
+      
+    
+    return {
+      id: order.id || (order.dining_id ? order.dining_id.toString() : '') || '',
+      date: order.createdAt || order.created_date || new Date().toISOString(),
+      status: order.status || order.dining_status || 'pending',
+      total: order.totalAmount || (order.total_amount ? parseFloat(order.total_amount) : 0) || 0,
+      items: items
+    };
+  }) : [];
+  
+  // Define the order interface to match the component's expectations
   interface Order {
     id: string;
     date: string;
     status: string;
     total: number;
-    items: OrderItem[];
+    items: OrderItem[] | any[]; // Allow any[] to handle both OrderItem[] and InDiningOrderItem[]
   }
-
-  // Mock orders data - in a real app, this would come from a backend
-  const mockOrders: Order[] = [];
-
-  // If there's a new order number, add it to the top of the list
-  const orders = newOrderNumber 
-    ? [
-        {
-          id: newOrderNumber,
-          date: new Date().toISOString(),
-          status: 'Preparing',
-          total: useSelector((state: RootState) => 
-            state.cart.items.reduce((total, item) => total + item.price * item.quantity, 0) * 1.1
-          ),
-          items: useSelector((state: RootState) => 
-            state.cart.items.map(item => ({
-              name: item.name,
-              quantity: item.quantity,
-              price: item.price,
-              image: item.image || ''
-            }))
-          )
-        },
-        ...mockOrders
-      ]
-    : mockOrders;
 
   // Get table number from URL
   const location = useLocation();
   const [tableNumber, setTableNumber] = useState<string | null>(null);
+
+  const searchParams = new URLSearchParams(location.search);
+  const tableFromQuery = searchParams.get('table');
+
+  useEffect(() => {
+    if (tableFromQuery) {
+      dispatch(getOrderHistoryRequest(tableFromQuery));
+    }
+  }, [tableNumber, tableFromQuery, dispatch]);
   
   useEffect(() => {
     // Extract table number from URL query parameter or path parameter
@@ -125,8 +177,7 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
     // - Path parameter: /placeindiningorder/12
     
     // First check for query parameter
-    const searchParams = new URLSearchParams(location.search);
-    const tableFromQuery = searchParams.get('table');
+
     
     // Then check for path parameter
     const pathSegments = location.pathname.split('/');
@@ -142,6 +193,9 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
       setTableNumber(null);
     }
   }, [location]);
+
+  // Fetch order history when tableNumber changes
+
 
   return (
     <div className="fixed inset-0 bg-white z-50 overflow-y-auto">
@@ -167,7 +221,7 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
       
 
       {/* New Order Notification */}
-      {newOrderNumber && showNotification && (
+      {/* {newOrderNumber && showNotification && (
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -193,11 +247,19 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
             </div>
           </div>
         </motion.div>
-      )}
+      )} */}
 
       {/* Orders List */}
       <div className="p-4">
-        {orders.length === 0 ? (
+        {historyLoading ? (
+          <div className="text-center py-12">
+            <p className="text-gray-500">Loading order history...</p>
+          </div>
+        ) : historyError ? (
+          <div className="text-center py-12">
+            <p className="text-red-500">Error loading orders: {historyError}</p>
+          </div>
+        ) : orders.length === 0 ? (
           <div className="text-center py-12 flex flex-col items-center">
             <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mb-4">
               <ClipboardList className="h-10 w-10 text-red-300" />
@@ -207,7 +269,7 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
           </div>
         ) : (
           <div>
-            {/* Orders as Cards */}
+            
             <div className="space-y-4">
               {orders.map((order: Order, orderIndex: number) => (
                 <div key={orderIndex} className="bg-white overflow-hidden">
@@ -217,7 +279,7 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
                   {/* Order Items */}
                   <div className="p-4">
                     <div className="space-y-4">
-                      {order.items.map((item: OrderItem, index: number) => (
+                      {order.items && order.items.map((item: OrderItem, index: number) => (
                         <div key={index} className="flex items-center justify-between border-b border-gray-100 pb-3">
                           {/* Product Info */}
                           <div className="flex items-center">
@@ -238,6 +300,27 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
                                 </span>
                                 <span>Qty: {item.quantity}</span>
                               </div>
+                              
+                              {/* Spice Level */}
+                              {item.spiceLevel && (
+                                <div className="text-xs text-gray-500 mt-1">
+                                  <span className="font-medium">Spice Level:</span> {item.spiceLevel}
+                                </div>
+                              )}
+                              
+                              {/* Modifiers */}
+                              {item.modifiers && item.modifiers.length > 0 && (
+                                <div className="text-xs text-gray-500 mt-1">
+                                  <span className="font-medium">Modifiers:</span>
+                                  <ul className="ml-2 mt-0.5">
+                                    {item.modifiers.map((modifier, modIndex) => (
+                                      <li key={modIndex}>
+                                        {modifier.name}: {modifier.options.map(opt => opt.name).join(', ')}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
                             </div>
                           </div>
                           
@@ -261,7 +344,9 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
         <div>
           <div className="text-sm text-gray-600">Total Amount</div>
           <div className="text-xl font-bold text-red-500">
-            ${orders.length > 0 ? orders[0].total.toFixed(2) : '0.00'}
+            ${orders.length > 0 
+              ? orders.reduce((sum, order) => sum + (order.total || 0), 0).toFixed(2) 
+              : '0.00'}
           </div>
         </div>
         <div className="flex space-x-3">
@@ -283,7 +368,7 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
       {showBill && orders.length > 0 && (
         <BillComponent 
           onClose={() => setShowBill(false)} 
-          order={orders[0]} 
+          order={orders} 
           tableNumber={tableNumber}
         />
       )}

@@ -7,6 +7,11 @@ export interface GetInDiningOrdersResponse {
   orders: InDiningOrder[];
 }
 
+export interface GetInDiningOrderHistoryRequest {
+  table_id: string;
+  type: string;
+}
+
 export interface PlaceInDiningOrderRequest {
   table_id: string;
   items: InDiningOrderItem[];
@@ -33,6 +38,27 @@ export const inDiningOrderService = {
       return (result);
     } catch (error) {
       console.error('Error fetching in-dining orders:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Get in-dining order history for a specific table
+   */
+  getInDiningOrderHistory: async (tableId: string): Promise<any> => {
+    try {
+      const response = await api.get<GetInDiningOrdersResponse>(
+        endpoints.inDiningOrder.getHistory,
+        {},
+        { table_id: tableId }
+      );
+      let result:any = response.data;
+
+      
+      console.log("history response", result);
+      return (result);
+    } catch (error) {
+      console.error(`Error fetching in-dining order history for table ${tableId}:`, error);
       throw error;
     }
   },

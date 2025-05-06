@@ -13,41 +13,10 @@ interface InDiningCartDrawerProps {
 const InDiningCartDrawer: React.FC<InDiningCartDrawerProps> = ({ onPlaceOrder }) => {
   const dispatch = useDispatch<AppDispatch>();
   const { drawerOpen, items } = useSelector((state: RootState) => state.cart);
-  
-  // Get table number from URL
-  const location = useLocation();
-  const [tableNumber, setTableNumber] = useState<string | null>(null);
+
+
   let tablename = sessionStorage.getItem('Tablename');
-  useEffect(()=>{
-    
-    console.log("tablename", tablename)
-    setTableNumber(tablename)
-  },[])
-  
-  useEffect(() => {
-    // Extract table number from URL query parameter or path parameter
-    // Examples: 
-    // - Query parameter: /placeindiningorder?table=12
-    // - Path parameter: /placeindiningorder/12
-    
-    // First check for query parameter
-    const searchParams = new URLSearchParams(location.search);
-    const tableFromQuery = searchParams.get('table');
-    
-    // Then check for path parameter
-    const pathSegments = location.pathname.split('/');
-    const lastSegment = pathSegments[pathSegments.length - 1];
-    const tableFromPath = !isNaN(Number(lastSegment)) ? lastSegment : null;
-    
-    // Use table from query parameter first, then fall back to path parameter
-    if (tableFromQuery && !isNaN(Number(tableFromQuery))) {
-      setTableNumber(tableFromQuery);
-    } else if (tableFromPath) {
-      setTableNumber(tableFromPath);
-    } else {
-      setTableNumber(null);
-    }
-  }, [location]);
+
   
   // Calculate total price
   const totalPrice = items.reduce(
@@ -132,6 +101,29 @@ const InDiningCartDrawer: React.FC<InDiningCartDrawerProps> = ({ onPlaceOrder })
                           </button>
                         </div>
                         <p className="text-red-500 font-medium">${item.price.toFixed(2)}</p>
+                        
+                        {/* Display Selected Modifiers and Spice Level */}
+                        {item.selectedModifiers && item.selectedModifiers.length > 0 && (
+                          <div className="mt-1 mb-2">
+                            {item.selectedModifiers.map((modifier: any, idx: number) => (
+                              <div key={idx} className="text-xs text-gray-600">
+                                {modifier.name === "Spice Level" ? (
+                                  <div className="flex items-center">
+                                    <span className="font-medium mr-1">Spice:</span>
+                                    {modifier.options.map((option: any, optIdx: number) => (
+                                      <span key={optIdx} className="text-red-500 font-medium">{option.name}</span>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <div>
+                                    <span className="font-medium">{modifier.name}:</span>
+                                    <span> {modifier.options.map((opt: any) => opt.name).join(', ')}</span>
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
                         
                         {/* Quantity Controls */}
                         <div className="flex items-center mt-2">

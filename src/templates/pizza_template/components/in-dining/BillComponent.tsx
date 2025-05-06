@@ -10,6 +10,14 @@ interface OrderItem {
   quantity: number;
   price: number;
   image?: string;
+  modifiers?: {
+    name: string;
+    options: {
+      name: string;
+      price: number;
+    }[];
+  }[];
+  spiceLevel?: string | null;
 }
 
 interface Order {
@@ -22,11 +30,16 @@ interface Order {
 
 interface BillComponentProps {
   onClose: () => void;
-  order: Order;
+  order: Order[] | Order;
   tableNumber: string | null;
 }
 
 const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
+  // Convert single order to array if needed
+  const orders = Array.isArray(order) ? order : [order];
+  
+  // Calculate total amount from all orders
+  const totalAmount = orders.reduce((sum, order) => sum + (order.total || 0), 0);
 
   const tableNumber = sessionStorage.getItem("table_number");
   const restaurant = useSelector((state: RootState) => state.restaurant.info);
@@ -64,17 +77,37 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
     }
   };
   
-  // Function to format date in the exact format: YYYY-MM-DD HH-MM-SS
+  // Function to format date in Month-day-year format
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    const seconds = String(date.getSeconds()).padStart(2, '0');
-    
-    return `${year}-${month}-${day} ${hours}-${minutes}-${seconds}`;
+    try {
+      const date = new Date(dateString);
+      
+      // Check if date is valid
+      if (isNaN(date.getTime())) {
+        // If date is invalid, use current date
+        const currentDate = new Date();
+        return currentDate.toLocaleDateString('en-US', {
+          month: 'long',
+          day: 'numeric',
+          year: 'numeric'
+        });
+      }
+      
+      // Format date as Month day, year (e.g., "May 6, 2025")
+      return date.toLocaleDateString('en-US', {
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric'
+      });
+    } catch (error) {
+      // If there's any error, return current date
+      const currentDate = new Date();
+      return currentDate.toLocaleDateString('en-US', {
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric'
+      });
+    }
   };
 
   // Function to handle bill download
@@ -151,8 +184,8 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
           <div class="table-name">${tablename}</div>
           
           <div class="bill-info">
-            <div>Order #: ${order.id}</div>
-            <div>${formatDate(order.date)}</div>
+            <div>Order #: ${orders.length > 0 ? orders[0].id : 'N/A'}</div>
+            <div>${orders.length > 0 ? formatDate(orders[0].date) : new Date().toISOString()}</div>
           </div>
           
           <div class="divider"></div>
@@ -165,21 +198,42 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
             </div>
           </div>
           
-          ${order.items.map(item => `
-            <div class="item-row">
-              <div>${item.name}</div>
-              <div style="display: flex;">
-                <div style="width: 60px; text-align: center;">${item.quantity}x</div>
-                <div style="width: 80px; text-align: right;">$${item.price.toFixed(2)}</div>
+          ${orders.map(order => 
+            order.items && order.items.map((item: OrderItem) => `
+              <div style="margin-bottom: 15px; border-bottom: 1px dashed #ccc; padding-bottom: 10px;">
+                <div class="item-row">
+                  <div><strong>${item.name}</strong></div>
+                  <div style="display: flex;">
+                    <div style="width: 60px; text-align: center;">${item.quantity}x</div>
+                    <div style="width: 80px; text-align: right;">$${item.price.toFixed(2)}</div>
+                  </div>
+                </div>
+                
+                ${item.spiceLevel ? `
+                  <div style="font-size: 12px; margin-top: 5px;">
+                    <strong>Spice Level:</strong> ${item.spiceLevel}
+                  </div>
+                ` : ''}
+                
+                ${item.modifiers && item.modifiers.length > 0 ? `
+                  <div style="font-size: 12px; margin-top: 5px;">
+                    <strong>Modifiers:</strong>
+                    <ul style="margin: 2px 0 0 15px; padding: 0;">
+                      ${item.modifiers.map((modifier: any) => `
+                        <li>${modifier.name}: ${modifier.options.map((opt: any) => opt.name).join(', ')}</li>
+                      `).join('')}
+                    </ul>
+                  </div>
+                ` : ''}
               </div>
-            </div>
-          `).join('')}
+            `).join('')
+          ).join('')}
           
           <div class="divider"></div>
           
           <div class="total-row">
             <div>TOTAL</div>
-            <div>$${order.total.toFixed(2)}</div>
+            <div>$${totalAmount.toFixed(2)}</div>
           </div>
           
           <div class="divider"></div>
@@ -249,8 +303,8 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
           {/* Bill Info */}
           <div className="text-sm mb-6 border-b border-gray-200 pb-4">
             <div className="flex justify-between">
-              <p><span className="font-medium">Order #:</span> {order.id}</p>
-              <p>{formatDate(order.date)}</p>
+              <p><span className="font-medium">Order #:</span> {orders.length > 0 ? orders[0].id : 'N/A'}</p>
+              <p>{orders.length > 0 ? formatDate(orders[0].date) : formatDate(new Date().toISOString())}</p>
             </div>
           </div>
           
@@ -266,20 +320,45 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
               </div>
             </div>
             
-            {order.items.map((item, index) => (
-              <div key={index} className="flex justify-between py-2">
-                <span>{item.name}</span>
-                <div className="flex">
-                  <span className="w-16 text-center">{item.quantity}x</span>
-                  <span className="w-20 text-right">${item.price.toFixed(2)}</span>
+            {orders.map((order, orderIndex) => (
+              order.items && order.items.map((item: OrderItem, index: number) => (
+                <div key={`${orderIndex}-${index}`} className="py-2 border-b border-gray-100 last:border-b-0">
+                  <div className="flex justify-between">
+                    <span className="font-medium">{item.name}</span>
+                    <div className="flex">
+                      <span className="w-16 text-center">{item.quantity}x</span>
+                      <span className="w-20 text-right">${item.price.toFixed(2)}</span>
+                    </div>
+                  </div>
+                  
+                  {/* Spice Level */}
+                  {item.spiceLevel && (
+                    <div className="text-xs text-gray-500 mt-1">
+                      <span className="font-medium">Spice Level:</span> {item.spiceLevel}
+                    </div>
+                  )}
+                  
+                  {/* Modifiers */}
+                  {item.modifiers && item.modifiers.length > 0 && (
+                    <div className="text-xs text-gray-500 mt-1">
+                      <span className="font-medium">Modifiers:</span>
+                      <ul className="ml-2 mt-0.5">
+                        {item.modifiers.map((modifier, modIndex) => (
+                          <li key={modIndex}>
+                            {modifier.name}: {modifier.options.map(opt => opt.name).join(', ')}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </div>
-              </div>
+              ))
             ))}
             
             <div className="border-t border-gray-200 pt-4 mt-4">
               <div className="flex justify-between font-bold">
                 <span>TOTAL</span>
-                <span>${order.total.toFixed(2)}</span>
+                <span>${totalAmount.toFixed(2)}</span>
               </div>
             </div>
           </div>

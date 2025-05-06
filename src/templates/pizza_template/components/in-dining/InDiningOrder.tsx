@@ -1,19 +1,20 @@
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
-import { Utensils, Trash2, Plus, X, Minus, Search, UtensilsCrossed, Pizza, ArrowLeft, ShoppingCart, ClipboardList, Filter } from 'lucide-react';
+import { Utensils, Trash2, Plus, X, Minus, Search, UtensilsCrossed, Pizza, ArrowLeft, ShoppingCart, ClipboardList, Filter, Check } from 'lucide-react';
+import { FaPepperHot } from "react-icons/fa";
 import { useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../../../../common/store';
 import { useDispatch } from 'react-redux';
 import { useLocation } from 'react-router-dom';
-import { addItem, updateItemQuantity, removeItem, toggleDrawer } from '../../../../common/redux/slices/cartSlice';
+import { addItem, removeItem, toggleDrawer } from '../../../../common/redux/slices/cartSlice';
 import { setSearchQuery } from '../../../../common/redux/slices/searchSlice';
 import { getInDiningOrdersRequest, placeInDiningOrderRequest } from '../../../../common/redux/slices/inDiningOrderSlice';
 import SearchBarComponent from '../SearchBarComponent';
 import InDiningProductDetails from './InDiningProductDetails';
 import InDiningCartDrawer from './InDiningCartDrawer';
 import InDiningOrders from './InDiningOrders';
-  import FilterDrawer from './FilterDrawer';
 import { fetchTableStatusRequest } from '@/common/redux/slices/tableStatusSlice';
+import { useAppSelector } from '@/redux';
 
 export default function InDiningOrder() {
   const [orderPlaced, setOrderPlaced] = useState<boolean>(false);
@@ -25,18 +26,31 @@ export default function InDiningOrder() {
   const [selectedSubcategory, setSelectedSubcategory] = useState<string>('All');
   const [isSearchActive, setIsSearchActive] = useState<boolean>(false);
   const [showOrders, setShowOrders] = useState<boolean>(false);
-  const [tableNumber, setTableNumber] = useState<string | null>(null);
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState<boolean>(false);
-  const [tableName, setTableName] = useState('')
+  const [tableName, setTableName] = useState('');
+  const [showModifiersPopup, setShowModifiersPopup] = useState<boolean>(false);
+  const [selectedModifierOptions, setSelectedModifierOptions] = useState<any[]>([]);
+  const [spiceLevel, setSpiceLevel] = useState<string | null>('Medium');
+  const [productForModifiers, setProductForModifiers] = useState<any>(null);
   
   // Get table number from URL
   const location = useLocation();
   const dispatch = useDispatch<AppDispatch>();
   const tableStatus = useSelector((state:any)=>state.tableStatus?.tables);
 
+  const { rawApiResponse } = useAppSelector(state => state.siteContent);
+  
+  // Get site content from Redux state
+  const siteContent = rawApiResponse ? 
+    (typeof rawApiResponse === 'string' ? JSON.parse(rawApiResponse) : rawApiResponse) : 
+    { navigationBar: { brand: { logo: {} }, navigation: [] } };
+  const navigationBar = siteContent?.navigationBar || { brand: { logo: {} }, navigation: [] };
+  const { brand } = navigationBar;
+
   const searchParams = new URLSearchParams(location.search);
   const tableFromQuery = searchParams.get('table');
 
+  
   useEffect(()=>{
     let tabledata = tableStatus?.find((table:any)=>table.table_id == tableFromQuery);
       console.log("tableFromQuerys", tableFromQuery)
@@ -45,34 +59,9 @@ export default function InDiningOrder() {
   },[tableFromQuery, tableStatus])
 
   useEffect(() => {
-    // Extract table number from URL query parameter or path parameter
-    // Examples: 
-    // - Query parameter: /placeindiningorder?table=12
-    // - Path parameter: /placeindiningorder/12
-    
-    // First check for query parameter
 
-    
-    // Then check for path parameter
-    const pathSegments = location.pathname.split('/');
-    const lastSegment = pathSegments[pathSegments.length - 1];
-    const tableFromPath = !isNaN(Number(lastSegment)) ? lastSegment : null;
-    
-    console.log("URL:", location.pathname + location.search);
-    console.log("Search Params:", location.search);
-    console.log("Table from Query:", tableFromQuery);
-    console.log("Table from Path:", tableFromPath);
-    
     dispatch(fetchTableStatusRequest(tableFromQuery))
-    
-    // Use table from query parameter first, then fall back to path parameter
-    if (tableFromQuery && !isNaN(Number(tableFromQuery))) {
-      setTableNumber(tableFromQuery);
-    } else if (tableFromPath) {
-      setTableNumber(tableFromPath);
-    } else {
-      setTableNumber(null);
-    }
+
   }, [location]);
   
   // Fetch in-dining orders when component mounts
@@ -131,6 +120,8 @@ export default function InDiningOrder() {
     setSelectedProduct(null);
     setQuantity(1);
   };
+
+
   
   const handlePlaceOrder = () => {
     if (cartItems.length === 0) return;
@@ -148,13 +139,19 @@ export default function InDiningOrder() {
     const grandTotal = (totalPrice * 1.05).toFixed(2);
     
     // Transform cart items to the required format
-    const orderedItems = cartItems.map(item => ({
-      name: item.name,
-      quantity: item.quantity,
-      itemPrice: item.price,
-      image: item.image || '',
-      modifiers: item.selectedModifiers || []
-    }));
+    const orderedItems = cartItems.map(item => {
+      // Extract spice level from selectedModifiers if it exists
+      const spiceLevel = item.selectedModifiers?.find(mod => mod.name === "Spice Level")?.options[0]?.name || "Medium";
+      
+      return {
+        name: item.name,
+        quantity: item.quantity,
+        itemPrice: item.price,
+        image: item.image || '',
+        modifiers: item.selectedModifiers || [],
+        spiceLevel: spiceLevel // Include spice level explicitly
+      };
+    });
     
     let restaurant_id = sessionStorage.getItem("franchise_id");
     let restaurant_parent_id = sessionStorage.getItem("restaurant_id");
@@ -164,21 +161,12 @@ export default function InDiningOrder() {
     
     // Dispatch the placeInDiningOrderRequest action
     dispatch(placeInDiningOrderRequest({
-      table_id: tableNumber, // Use the state variable instead of sessionStorage
+      table_id: tableFromQuery, // Use the state variable instead of sessionStorage
       restaurant_id,
       restaurant_parent_id,
       additional_details:'',
       ordered_items: orderedItems
     }));
-    
-    // Log for debugging
-    console.log('Order placed:', {
-      table_id: tableNumber,
-      restaurant_id,
-      restaurant_parent_id,
-      additional_details:'',
-      ordered_items: orderedItems
-    });
   };
 
   const resetOrder = () => {
@@ -187,6 +175,98 @@ export default function InDiningOrder() {
     cartItems.forEach(item => {
       dispatch(removeItem(item.id));
     });
+  };
+  
+  // Handle adding item with modifiers to cart
+  const handleAddToCart = () => {
+    if (!productForModifiers) return;
+    
+    // Group selected options by modifier name
+    const modifierGroups = selectedModifierOptions.reduce((groups: any, option: any) => {
+      const modifierName = option.modifierName;
+      if (!groups[modifierName]) {
+        groups[modifierName] = {
+          name: modifierName,
+          options: []
+        };
+      }
+      groups[modifierName].options.push({
+        name: option.name,
+        price: option.price || 0
+      });
+      return groups;
+    }, {});
+    
+    const itemToAdd = {
+      id: productForModifiers.id,
+      name: productForModifiers.name,
+      price: productForModifiers.price,
+      quantity: 1,
+      image: productForModifiers.image || '',
+      selectedModifiers: Object.values(modifierGroups) as { 
+        name: string; 
+        options: { name: string; price: number; }[] 
+      }[]
+    };
+    
+    // Add spice level as a modifier if selected
+    if (spiceLevel) {
+      itemToAdd.selectedModifiers.push({
+        name: "Spice Level",
+        options: [
+          {
+            name: spiceLevel,
+            price: 0
+          }
+        ]
+      });
+    }
+    
+    dispatch(addItem(itemToAdd));
+    setShowModifiersPopup(false);
+    setSelectedModifierOptions([]);
+    setSpiceLevel(null);
+    setProductForModifiers(null);
+  };
+  
+  // Toggle option selection
+  const toggleOption = (modifier: any, option: any) => {
+    const optionKey = `${modifier.name}-${option.name}`;
+    const optionIndex = selectedModifierOptions.findIndex(
+      opt => opt.modifierName === modifier.name && opt.name === option.name
+    );
+    
+    if (optionIndex >= 0) {
+      // Remove option if already selected
+      const newOptions = [...selectedModifierOptions];
+      newOptions.splice(optionIndex, 1);
+      setSelectedModifierOptions(newOptions);
+    } else {
+      // Add option if not selected
+      setSelectedModifierOptions([
+        ...selectedModifierOptions, 
+        { 
+          modifierName: modifier.name, 
+          name: option.name,
+          price: option.price || 0
+        }
+      ]);
+    }
+  };
+  
+  // Check if an option is selected
+  const isOptionSelected = (modifier: any, option: any) => {
+    return selectedModifierOptions.some(
+      opt => opt.modifierName === modifier.name && opt.name === option.name
+    );
+  };
+  
+  // Open modifiers popup for a product
+  const openModifiersPopup = (product: any) => {
+    setProductForModifiers(product);
+    setSelectedModifierOptions([]);
+    setSpiceLevel('Medium'); // Set default spice level to Medium
+    setShowModifiersPopup(true);
   };
 
   // Show orders view if showOrders is true
@@ -218,9 +298,9 @@ export default function InDiningOrder() {
           <div className="flex justify-between items-center h-16">
             {/* Restaurant Name with Icon and Table Number */}
             <div className="flex-shrink-0 flex items-center">
-              <UtensilsCrossed className="h-6 w-6 text-red-500 mr-2" />
-              <div>
-                <h1 className="text-xl font-bold text-white">Pizza Palace</h1>
+              <img src={brand.logo.icon} alt={brand.logo.text || 'Restaurant'} className="h-8 w-auto" />
+              <div className='ml-5'>
+                <h1 className="text-xl font-bold text-white">{brand?.logo?.text}</h1>
                 <p className="text-xs text-gray-300">
                   Table Number: {tableName}
                 </p>
@@ -573,13 +653,7 @@ export default function InDiningOrder() {
                     <div className="flex justify-between items-center mt-auto">
                       <p className="text-lg font-bold text-red-500">${item.price.toFixed(2)}</p>
                       <button 
-                        onClick={() => dispatch(addItem({
-                          id: item.id,
-                          name: item.name,
-                          price: item.price,
-                          quantity: 1,
-                          image: item.image || ''
-                        }))}
+                        onClick={() => openModifiersPopup(item)}
                         className="flex items-center gap-2 bg-red-500 text-white px-4 sm:px-6 py-2 rounded-full hover:bg-red-600 transition-colors text-sm sm:text-base"
                       >
                         Add <Plus/>
@@ -606,6 +680,149 @@ export default function InDiningOrder() {
       {/* Cart Drawer Component */}
       <InDiningCartDrawer onPlaceOrder={handlePlaceOrder} />
       
+      {/* Modifiers Popup */}
+      {showModifiersPopup && productForModifiers && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-[60] flex items-center justify-center">
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 50 }}
+            className="bg-white rounded-lg max-w-md w-full max-h-[80vh] overflow-y-auto"
+          >
+            <div className="p-4 border-b border-gray-200 flex justify-between items-center">
+              <h3 className="text-lg font-semibold">Select Options for {productForModifiers.name}</h3>
+              <button 
+                onClick={() => setShowModifiersPopup(false)}
+                className="p-1 rounded-full hover:bg-gray-100"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            
+            <div className="p-4">
+              {/* Spice Level Selection - Moved to top */}
+              <div className="mb-6">
+                <h4 className="text-sm font-semibold text-gray-500 uppercase mb-3 flex items-center">
+                  <FaPepperHot className="h-5 w-5 text-red-500 mr-2" /> Spice Level
+                </h4>
+                <div className="flex flex-wrap gap-2 mb-4">
+                  <button
+                    onClick={() => setSpiceLevel('Mild')}
+                    className={`flex items-center px-4 py-2 rounded-full border ${
+                      spiceLevel === 'Mild' 
+                        ? 'border-red-500 bg-red-50 text-red-500' 
+                        : 'border-gray-300 text-gray-700'
+                    }`}
+                  >
+                    <FaPepperHot className="h-4 w-4 mr-2 text-yellow-500" />
+                    Mild
+                    {spiceLevel === 'Mild' && <Check className="h-4 w-4 ml-2" />}
+                  </button>
+                  <button
+                    onClick={() => setSpiceLevel('Medium')}
+                    className={`flex items-center px-4 py-2 rounded-full border ${
+                      spiceLevel === 'Medium' 
+                        ? 'border-red-500 bg-red-50 text-red-500' 
+                        : 'border-gray-300 text-gray-700'
+                    }`}
+                  >
+                    <div className="flex mr-2">
+                      <FaPepperHot className="h-4 w-4 text-orange-500" />
+                      <FaPepperHot className="h-4 w-4 -ml-1 text-orange-500" />
+                    </div>
+                    Medium
+                    {spiceLevel === 'Medium' && <Check className="h-4 w-4 ml-2" />}
+                  </button>
+                  <button
+                    onClick={() => setSpiceLevel('Hot')}
+                    className={`flex items-center px-4 py-2 rounded-full border ${
+                      spiceLevel === 'Hot' 
+                        ? 'border-red-500 bg-red-50 text-red-500' 
+                        : 'border-gray-300 text-gray-700'
+                    }`}
+                  >
+                    <div className="flex mr-2">
+                      <FaPepperHot className="h-4 w-4 text-red-500" />
+                      <FaPepperHot className="h-4 w-4 -ml-1 text-red-500" />
+                      <FaPepperHot className="h-4 w-4 -ml-1 text-red-500" />
+                    </div>
+                    Hot
+                    {spiceLevel === 'Hot' && <Check className="h-4 w-4 ml-2" />}
+                  </button>
+                </div>
+              </div>
+              
+              {/* Modifiers List */}
+              <div className="space-y-4 mb-6">
+                <h4 className="text-sm font-semibold text-gray-500 uppercase mb-3">Additional Options</h4>
+                
+                {/* Get unique modifiers by name */}
+                {(() => {
+                  // Create a map to store unique modifiers by name
+                  const uniqueModifiers = new Map();
+                  
+                  // If modifiers_list exists, add each modifier to the map with name as key
+                  if (productForModifiers.modifiers_list && productForModifiers.modifiers_list.length > 0) {
+                    productForModifiers.modifiers_list.forEach((modifier: any) => {
+                      if (!uniqueModifiers.has(modifier.name)) {
+                        uniqueModifiers.set(modifier.name, modifier);
+                      }
+                    });
+                  }
+                  
+                  // Convert map values back to array
+                  const modifiersArray = Array.from(uniqueModifiers.values());
+                  
+                  if (modifiersArray.length > 0) {
+                    return modifiersArray.map((modifier: any, index: number) => (
+                    <div key={index} className="border border-gray-200 rounded-lg p-3">
+                      <h4 className="font-medium mb-2">{modifier.name}</h4>
+                      <div className="mt-2 pl-2 space-y-2 max-h-40 overflow-y-auto pr-2">
+                        {modifier.options.map((option: any, optIndex: number) => (
+                          <div key={optIndex} className="flex items-center justify-between">
+                            <div className="flex items-center">
+                              <button
+                                onClick={() => toggleOption(modifier, option)}
+                                className={`w-5 h-5 rounded-md mr-2 flex items-center justify-center ${
+                                  isOptionSelected(modifier, option) 
+                                    ? 'bg-red-500 text-white' 
+                                    : 'border border-gray-300'
+                                }`}
+                              >
+                                {isOptionSelected(modifier, option) && <Check className="h-3 w-3" />}
+                              </button>
+                              <span className="text-sm text-gray-700">{option.name}</span>
+                            </div>
+                            <span className="text-sm text-gray-600">
+                              {option.price > 0 ? `+$${option.price.toFixed(2)}` : '$0.00'}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    ));
+                  } else {
+                    return (
+                      <div className="text-center text-gray-500 py-4">
+                        <p>No additional options available for this item</p>
+                      </div>
+                    );
+                  }
+                })()}
+              </div>
+              
+              <div className="mt-4">
+                <button
+                  onClick={handleAddToCart}
+                  className="w-full bg-red-500 text-white py-3 rounded-full hover:bg-red-600 transition-colors font-medium"
+                >
+                  Add to Cart
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
       
     </div>
   );

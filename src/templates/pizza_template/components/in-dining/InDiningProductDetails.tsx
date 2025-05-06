@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { X, Plus, Minus, ArrowLeft, Heart, ShoppingCart } from 'lucide-react';
+import { X, Plus, Minus, ArrowLeft, Heart, ShoppingCart, Check } from 'lucide-react';
+import { FaPepperHot } from "react-icons/fa";
 import { useDispatch, useSelector } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 import { AppDispatch, RootState } from '../../../../common/store';
@@ -18,12 +19,102 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
   menuItems
 }) => {
   const [quantity, setQuantity] = useState<number>(1);
+  const [showModifiersPopup, setShowModifiersPopup] = useState<boolean>(false);
+  const [selectedModifierOptions, setSelectedModifierOptions] = useState<any[]>([]);
+  const [spiceLevel, setSpiceLevel] = useState<string | null>('Medium');
   const dispatch = useDispatch<AppDispatch>();
   const cartItems = useSelector((state: RootState) => state.cart.items);
   
   // Get table number from URL
   const location = useLocation();
   const tableNumber = sessionStorage.getItem("table_number");
+
+  
+  // Handle adding item with modifiers to cart
+  const handleAddToCart = () => {
+    // Group selected options by modifier name
+    const modifierGroups = selectedModifierOptions.reduce((groups: any, option: any) => {
+      const modifierName = option.modifierName;
+      if (!groups[modifierName]) {
+        groups[modifierName] = {
+          name: modifierName,
+          options: []
+        };
+      }
+      groups[modifierName].options.push({
+        name: option.name,
+        price: option.price || 0
+      });
+      return groups;
+    }, {});
+    
+    const itemToAdd = {
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      quantity: quantity,
+      image: product.image || '',
+      selectedModifiers: Object.values(modifierGroups) as { 
+        name: string; 
+        options: { name: string; price: number; }[] 
+      }[]
+    };
+    
+    // Add spice level as a modifier if selected
+    if (spiceLevel) {
+      itemToAdd.selectedModifiers.push({
+        name: "Spice Level",
+        options: [
+          {
+            name: spiceLevel,
+            price: 0
+          }
+        ]
+      });
+    }
+    
+    dispatch(addItem(itemToAdd));
+    onClose();
+  };
+  
+  // Toggle option selection
+  const toggleOption = (modifier: any, option: any) => {
+    const optionKey = `${modifier.name}-${option.name}`;
+    const optionIndex = selectedModifierOptions.findIndex(
+      opt => opt.modifierName === modifier.name && opt.name === option.name
+    );
+    
+    if (optionIndex >= 0) {
+      // Remove option if already selected
+      const newOptions = [...selectedModifierOptions];
+      newOptions.splice(optionIndex, 1);
+      setSelectedModifierOptions(newOptions);
+    } else {
+      // Add option if not selected
+      setSelectedModifierOptions([
+        ...selectedModifierOptions, 
+        { 
+          modifierName: modifier.name, 
+          name: option.name,
+          price: option.price || 0
+        }
+      ]);
+    }
+  };
+  
+  // Check if an option is selected
+  const isOptionSelected = (modifier: any, option: any) => {
+    return selectedModifierOptions.some(
+      opt => opt.modifierName === modifier.name && opt.name === option.name
+    );
+  };
+  
+  // Reset spice level to Medium when showing modifiers popup
+  useEffect(() => {
+    if (showModifiersPopup) {
+      setSpiceLevel('Medium');
+    }
+  }, [showModifiersPopup]);
   
   useEffect(() => {
     // Extract table number from URL query parameter or path parameter
@@ -269,19 +360,62 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
                 </div>
                 
                 <button
-                  onClick={() => {
-                    dispatch(addItem({
-                      id: product.id,
-                      name: product.name,
-                      price: product.price,
-                      quantity: quantity,
-                      image: product.image || ''
-                    }));
-                    onClose();
-                  }}
+                  onClick={() => setShowModifiersPopup(true)}
                   className="bg-red-500 text-white px-6 py-2 rounded-full hover:bg-red-600 transition-colors font-medium"
                 >
                   Add to Order
+                </button>
+              </div>
+            </div>
+            
+            {/* Spice Level Selection */}
+            <div className="p-6 border-t border-gray-100">
+              <h3 className="text-sm font-semibold text-gray-500 uppercase mb-3 flex items-center">
+                <FaPepperHot className="h-5 w-5 text-red-500 mr-2" /> Spice Level
+              </h3>
+              <div className="flex space-x-4 mb-4">
+                <button
+                  onClick={() => setSpiceLevel('Mild')}
+                  className={`flex items-center px-4 py-2 rounded-full border ${
+                    spiceLevel === 'Mild' 
+                      ? 'border-red-500 bg-red-50 text-red-500' 
+                      : 'border-gray-300 text-gray-700'
+                  }`}
+                >
+                  <FaPepperHot className="h-4 w-4 mr-2 text-yellow-500" />
+                  Mild
+                  {spiceLevel === 'Mild' && <Check className="h-4 w-4 ml-2" />}
+                </button>
+                <button
+                  onClick={() => setSpiceLevel('Medium')}
+                  className={`flex items-center px-4 py-2 rounded-full border ${
+                    spiceLevel === 'Medium' 
+                      ? 'border-red-500 bg-red-50 text-red-500' 
+                      : 'border-gray-300 text-gray-700'
+                  }`}
+                >
+                  <div className="flex mr-2">
+                    <FaPepperHot className="h-4 w-4 text-orange-500" />
+                    <FaPepperHot className="h-4 w-4 -ml-1 text-orange-500" />
+                  </div>
+                  Medium
+                  {spiceLevel === 'Medium' && <Check className="h-4 w-4 ml-2" />}
+                </button>
+                <button
+                  onClick={() => setSpiceLevel('Hot')}
+                  className={`flex items-center px-4 py-2 rounded-full border ${
+                    spiceLevel === 'Hot' 
+                      ? 'border-red-500 bg-red-50 text-red-500' 
+                      : 'border-gray-300 text-gray-700'
+                  }`}
+                >
+                  <div className="flex mr-2">
+                    <FaPepperHot className="h-4 w-4 text-red-500" />
+                    <FaPepperHot className="h-4 w-4 -ml-1 text-red-500" />
+                    <FaPepperHot className="h-4 w-4 -ml-1 text-red-500" />
+                  </div>
+                  Hot
+                  {spiceLevel === 'Hot' && <Check className="h-4 w-4 ml-2" />}
                 </button>
               </div>
             </div>
@@ -393,22 +527,157 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
           
           {/* Full-Width Add Button */}
           <button
-            onClick={() => {
-              dispatch(addItem({
-                id: product.id,
-                name: product.name,
-                price: product.price,
-                quantity: quantity,
-                image: product.image || ''
-              }));
-              onClose();
-            }}
+            onClick={() => setShowModifiersPopup(true)}
             className="w-full bg-red-500 text-white py-3 rounded-full hover:bg-red-600 transition-colors font-medium"
           >
             Add to Order
           </button>
         </div>
       </motion.div>
+      
+      {/* Modifiers Popup */}
+      {showModifiersPopup && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-[60] flex items-center justify-center">
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 50 }}
+            className="bg-white rounded-lg max-w-md w-full max-h-[80vh] overflow-y-auto"
+          >
+            <div className="p-4 border-b border-gray-200 flex justify-between items-center">
+              <h3 className="text-lg font-semibold">Select Options for {product.name}</h3>
+              <button 
+                onClick={() => setShowModifiersPopup(false)}
+                className="p-1 rounded-full hover:bg-gray-100"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            
+            <div className="p-4">
+              {/* Spice Level Selection - Moved to top */}
+              <div className="mb-6">
+                <h4 className="text-sm font-semibold text-gray-500 uppercase mb-3 flex items-center">
+                  <FaPepperHot className="h-5 w-5 text-red-500 mr-2" /> Spice Level
+                </h4>
+                <div className="flex flex-wrap gap-2 mb-4">
+                  <button
+                    onClick={() => setSpiceLevel('Mild')}
+                    className={`flex items-center px-4 py-2 rounded-full border ${
+                      spiceLevel === 'Mild' 
+                        ? 'border-red-500 bg-red-50 text-red-500' 
+                        : 'border-gray-300 text-gray-700'
+                    }`}
+                  >
+                    <FaPepperHot className="h-4 w-4 mr-2 text-yellow-500" />
+                    Mild
+                    {spiceLevel === 'Mild' && <Check className="h-4 w-4 ml-2" />}
+                  </button>
+                  <button
+                    onClick={() => setSpiceLevel('Medium')}
+                    className={`flex items-center px-4 py-2 rounded-full border ${
+                      spiceLevel === 'Medium' 
+                        ? 'border-red-500 bg-red-50 text-red-500' 
+                        : 'border-gray-300 text-gray-700'
+                    }`}
+                  >
+                    <div className="flex mr-2">
+                      <FaPepperHot className="h-4 w-4 text-orange-500" />
+                      <FaPepperHot className="h-4 w-4 -ml-1 text-orange-500" />
+                    </div>
+                    Medium
+                    {spiceLevel === 'Medium' && <Check className="h-4 w-4 ml-2" />}
+                  </button>
+                  <button
+                    onClick={() => setSpiceLevel('Hot')}
+                    className={`flex items-center px-4 py-2 rounded-full border ${
+                      spiceLevel === 'Hot' 
+                        ? 'border-red-500 bg-red-50 text-red-500' 
+                        : 'border-gray-300 text-gray-700'
+                    }`}
+                  >
+                    <div className="flex mr-2">
+                      <FaPepperHot className="h-4 w-4 text-red-500" />
+                      <FaPepperHot className="h-4 w-4 -ml-1 text-red-500" />
+                      <FaPepperHot className="h-4 w-4 -ml-1 text-red-500" />
+                    </div>
+                    Hot
+                    {spiceLevel === 'Hot' && <Check className="h-4 w-4 ml-2" />}
+                  </button>
+                </div>
+              </div>
+              
+              {/* Modifiers List */}
+              <div className="space-y-4 mb-6">
+                <h4 className="text-sm font-semibold text-gray-500 uppercase mb-3">Additional Options</h4>
+                
+                {/* Get unique modifiers by name */}
+                {(() => {
+                  // Create a map to store unique modifiers by name
+                  const uniqueModifiers = new Map();
+                  
+                  // If modifiers_list exists, add each modifier to the map with name as key
+                  if (product.modifiers_list && product.modifiers_list.length > 0) {
+                    product.modifiers_list.forEach((modifier: any) => {
+                      if (!uniqueModifiers.has(modifier.name)) {
+                        uniqueModifiers.set(modifier.name, modifier);
+                      }
+                    });
+                  }
+                  
+                  // Convert map values back to array
+                  const modifiersArray = Array.from(uniqueModifiers.values());
+                  
+                  if (modifiersArray.length > 0) {
+                    return modifiersArray.map((modifier: any, index: number) => (
+                    <div key={index} className="border border-gray-200 rounded-lg p-3">
+                      <h4 className="font-medium mb-2">{modifier.name}</h4>
+                      <div className="mt-2 pl-2 space-y-2 max-h-40 overflow-y-auto pr-2">
+                        {modifier.options.map((option: any, optIndex: number) => (
+                          <div key={optIndex} className="flex items-center justify-between">
+                            <div className="flex items-center">
+                              <button
+                                onClick={() => toggleOption(modifier, option)}
+                                className={`w-5 h-5 rounded-md mr-2 flex items-center justify-center ${
+                                  isOptionSelected(modifier, option) 
+                                    ? 'bg-red-500 text-white' 
+                                    : 'border border-gray-300'
+                                }`}
+                              >
+                                {isOptionSelected(modifier, option) && <Check className="h-3 w-3" />}
+                              </button>
+                              <span className="text-sm text-gray-700">{option.name}</span>
+                            </div>
+                            <span className="text-sm text-gray-600">
+                              {option.price > 0 ? `+$${option.price.toFixed(2)}` : '$0.00'}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    ));
+                  } else {
+                    return (
+                      <div className="text-center text-gray-500 py-4">
+                        <p>No additional options available for this item</p>
+                      </div>
+                    );
+                  }
+                })()}
+              </div>
+              
+              <div className="mt-6">
+                <button
+                  onClick={handleAddToCart}
+                  className="w-full bg-red-500 text-white py-3 rounded-full hover:bg-red-600 transition-colors font-medium"
+                >
+                  Add to Cart
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 };

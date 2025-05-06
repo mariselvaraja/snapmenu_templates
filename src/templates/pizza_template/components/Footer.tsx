@@ -19,6 +19,8 @@ export default function Footer() {
   const footer = siteContent?.footer;
   const contact = siteContent?.contact;
 
+  console.log("footer", footer)
+
   // Handle both navigation formats: navigation: [] or navigation: { links: [] }
   // Ensure navigationLinks is always an array
   let navigationLinks = [];
