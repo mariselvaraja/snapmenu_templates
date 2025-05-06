@@ -44,7 +44,7 @@ export default function Footer() {
   );
 
   return (
-    <footer className="relative bg-gradient-to-b from-gray-900 to-black text-white py-16 overflow-hidden">
+    <footer className="relative bg-gradient-to-b from-gray-900 to-black text-white  overflow-hidden">
       {/* Decorative pizza slices */}
       <div className="absolute top-0 left-0 w-24 h-24 opacity-10">
         <Pizza className="w-full h-full text-red-500" />
