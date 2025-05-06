@@ -85,6 +85,10 @@ const TemplateContent = () => {
     // You can add additional logic here if needed
   };
 
+  let parent_id = searchParams.get("restaurant");
+  let franchise_id = searchParams.get("franchise");
+  let table_number = searchParams.get("table");
+
   const isPlaceInDiningOrderRoute = window.location.pathname.includes('placeindiningorder');
   // Auto-select restaurant if there's only one in the list
   useEffect(() => {
@@ -98,9 +102,7 @@ const TemplateContent = () => {
         sessionStorage.removeItem("franchise_id");
         sessionStorage.removeItem("table_number");
         
-        let parent_id = searchParams.get("restaurant");
-        let franchise_id = searchParams.get("franchise");
-        let table_number = searchParams.get("table");
+      
         
         sessionStorage.setItem("restaurant_id", parent_id);
         sessionStorage.setItem("franchise_id", franchise_id);
@@ -109,6 +111,7 @@ const TemplateContent = () => {
       }
       else
       {
+        sessionStorage.setItem("restaurant_id", singleRestaurant.restaurant_parent_id);
         sessionStorage.setItem("franchise_id", singleRestaurant.restaurant_id);
       }
       

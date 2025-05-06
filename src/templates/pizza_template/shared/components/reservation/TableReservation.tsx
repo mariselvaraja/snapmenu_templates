@@ -121,9 +121,9 @@ export default function TableReservation({
       let [hours, minutes] = time.split(':').map(Number);
     
       // Convert to 24-hour format
-      if (meridian.toLowerCase() === 'pm' && hours !== 12) {
+      if (meridian?.toLowerCase() === 'pm' && hours !== 12) {
         hours += 12;
-      } else if (meridian.toLowerCase() === 'am' && hours === 12) {
+      } else if (meridian?.toLowerCase() === 'am' && hours === 12) {
         hours = 0;
       }
     
@@ -144,8 +144,10 @@ export default function TableReservation({
       };
     }
 
-    let restaurant_id = sessionStorage.getItem('restaurant_id');
-    let restaurant_parent_id = sessionStorage.getItem('franchise_id');
+    
+
+    let restaurant_id = sessionStorage.getItem('franchise_id');
+    let restaurant_parent_id = sessionStorage.getItem('restaurant_id');
     
     let date = getStartAndEndTime(selectedDate, selectedTime)
     // Create the payload with the required format
