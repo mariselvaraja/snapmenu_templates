@@ -77,7 +77,7 @@ export const siteContentSlice = createSlice({
   initialState,
   reducers: {
     // Synchronous actions
-    setSiteContent: (state, action: PayloadAction<SiteContent>) => {
+    setSiteContent: (state, action: PayloadAction<any>) => {
       state.content = action.payload;
     },
     
@@ -86,12 +86,12 @@ export const siteContentSlice = createSlice({
       state.loading = true;
       state.error = null;
     },
-    fetchSiteContentSuccess: (state, action: PayloadAction<{transformedData: SiteContent, rawApiResponse: any}>) => {
+    fetchSiteContentSuccess: (state, action: PayloadAction<{transformedData: any, rawApiResponse: any}>) => {
       state.content = action.payload.transformedData;
       state.rawApiResponse = action.payload.rawApiResponse;
       state.loading = false;
     },
-    fetchSiteContentFailure: (state, action: PayloadAction<string>) => {
+    fetchSiteContentFailure: (state, action: PayloadAction<any>) => {
       state.loading = false;
       state.error = action.payload;
     },
