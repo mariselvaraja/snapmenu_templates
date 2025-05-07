@@ -27,7 +27,7 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
   
   // Get table number from URL
   const location = useLocation();
-  const tableNumber = sessionStorage.getItem("table_number");
+  const tableNumber =  sessionStorage.getItem('Tablename');
 
   
   // Handle adding item with modifiers to cart

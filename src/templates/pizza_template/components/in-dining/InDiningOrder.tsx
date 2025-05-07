@@ -71,7 +71,6 @@ export default function InDiningOrder() {
   
   const cartItems = useSelector((state: RootState) => state.cart.items);
   const menuItems = useSelector((state: RootState) => state.menu.items);
-  const menuCategories = useSelector((state: RootState) => state.menu.categories);
   const loading = useSelector((state: RootState) => state.menu.loading);
   
   // Filter menu items by selected category and subcategory
@@ -122,6 +121,22 @@ export default function InDiningOrder() {
   };
 
 
+  const getItemPrice = (item:any)=>{
+    let price = 0;
+    if((item?.price) && ((item?.price != "$0")))
+    {
+      if(item.price.includes('$'))
+      {
+        return Number(item?.price.replace('$', '')).toFixed(2);
+      }
+      else
+      {
+        return item?.price.toFixed(2).toFixed(2);
+      }
+    }
+    return price?.toFixed(2);
+  }
+
   
   const handlePlaceOrder = () => {
     if (cartItems.length === 0) return;
@@ -142,13 +157,13 @@ export default function InDiningOrder() {
     const orderedItems = cartItems.map(item => {
       // Extract spice level from selectedModifiers if it exists
       const spiceLevel = item.selectedModifiers?.find(mod => mod.name === "Spice Level")?.options[0]?.name || "Medium";
-      
+      const modifiers = item.selectedModifiers?.filter(mod => mod.name != "Spice Level")
       return {
         name: item.name,
         quantity: item.quantity,
         itemPrice: item.price,
         image: item.image || '',
-        modifiers: item.selectedModifiers || [],
+        modifiers: modifiers || [],
         spiceLevel: spiceLevel // Include spice level explicitly
       };
     });
@@ -794,7 +809,7 @@ export default function InDiningOrder() {
                               <span className="text-sm text-gray-700">{option.name}</span>
                             </div>
                             <span className="text-sm text-gray-600">
-                              {option.price > 0 ? `+$${option.price.toFixed(2)}` : '$0.00'}
+                              ${getItemPrice(option)}
                             </span>
                           </div>
                         ))}
