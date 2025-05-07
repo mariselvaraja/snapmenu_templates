@@ -725,24 +725,7 @@ export default function ProductDetail() {
                                         <div className="text-gray-900 pl-6">{product.bar_code}</div>
                                     </div>
                                 )}
-                                {product.appearance && (
-                                    <div className="border-b border-gray-100 pb-3">
-                                        <div className="flex items-center mb-1">
-                                            <Info className="h-4 w-4 mr-2 text-gray-500" />
-                                            <span className="font-medium text-gray-700">Appearance</span>
-                                        </div>
-                                        <div className="text-gray-900 pl-6">{product.appearance}</div>
-                                    </div>
-                                )}
-                                {product.serving && (
-                                    <div className="border-b border-gray-100 pb-3">
-                                        <div className="flex items-center mb-1">
-                                            <Utensils className="h-4 w-4 mr-2 text-gray-500" />
-                                            <span className="font-medium text-gray-700">Serving</span>
-                                        </div>
-                                        <div className="text-gray-900 pl-6">{product.serving}</div>
-                                    </div>
-                                )}
+                   
                                 {product.flavors && (
                                     <div className="border-b border-gray-100 pb-3">
                                         <div className="flex items-center mb-1">
@@ -752,20 +735,12 @@ export default function ProductDetail() {
                                         <div className="text-gray-900 pl-6">{product.flavors}</div>
                                     </div>
                                 )}
-                                {product.variations && (
-                                    <div className="border-b border-gray-100 pb-3">
-                                        <div className="flex items-center mb-1">
-                                            <Box className="h-4 w-4 mr-2 text-gray-500" />
-                                            <span className="font-medium text-gray-700">Variations</span>
-                                        </div>
-                                        <div className="text-gray-900 pl-6">{product.variations}</div>
-                                    </div>
-                                )}
+              
                                 {product.comment && (
                                     <div className="border-b border-gray-100 pb-3">
                                         <div className="flex items-center mb-1">
                                             <Info className="h-4 w-4 mr-2 text-gray-500" />
-                                            <span className="font-medium text-gray-700">Comments</span>
+                                            <span className="font-medium text-gray-700">Chef Notes</span>
                                         </div>
                                         <div className="text-gray-900 pl-6">{product.comment}</div>
                                     </div>

@@ -263,7 +263,7 @@ export default function InDiningOrder() {
         { 
           modifierName: modifier.name, 
           name: option.name,
-          price: option.price || 0
+          modifier_price: option.price || 0
         }
       ]);
     }
@@ -709,6 +709,7 @@ export default function InDiningOrder() {
               <button 
                 onClick={() => setShowModifiersPopup(false)}
                 className="p-1 rounded-full hover:bg-gray-100"
+                aria-label="Cancel"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -730,7 +731,7 @@ export default function InDiningOrder() {
                     }`}
                   >
                     <FaPepperHot className="h-4 w-4 mr-2 text-yellow-500" />
-                    Mild
+                    {/* Mild */}
                     {spiceLevel === 'Mild' && <Check className="h-4 w-4 ml-2" />}
                   </button>
                   <button
@@ -745,7 +746,7 @@ export default function InDiningOrder() {
                       <FaPepperHot className="h-4 w-4 text-orange-500" />
                       <FaPepperHot className="h-4 w-4 -ml-1 text-orange-500" />
                     </div>
-                    Medium
+                    {/* Medium */}
                     {spiceLevel === 'Medium' && <Check className="h-4 w-4 ml-2" />}
                   </button>
                   <button
@@ -761,7 +762,7 @@ export default function InDiningOrder() {
                       <FaPepperHot className="h-4 w-4 -ml-1 text-red-500" />
                       <FaPepperHot className="h-4 w-4 -ml-1 text-red-500" />
                     </div>
-                    Hot
+                    {/* Hot */}
                     {spiceLevel === 'Hot' && <Check className="h-4 w-4 ml-2" />}
                   </button>
                 </div>

@@ -245,21 +245,6 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
               
               <p className="text-gray-600 mb-6">{product.description}</p>
 
-              {/* Category */}
-              {product.category && (
-                <div className="mb-4">
-                  <h3 className="text-sm font-semibold text-gray-500 uppercase mb-1">Category</h3>
-                  <p className="text-gray-700">{product.category}</p>
-                </div>
-              )}
-              
-              {/* Subcategory */}
-              {product.subCategory && (
-                <div className="mb-4">
-                  <h3 className="text-sm font-semibold text-gray-500 uppercase mb-1">Subcategory</h3>
-                  <p className="text-gray-700">{product.subCategory}</p>
-                </div>
-              )}
 
               {/* Ingredients */}
               {product.ingredients && product.ingredients.length > 0 && (
@@ -383,7 +368,7 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
                   }`}
                 >
                   <FaPepperHot className="h-4 w-4 mr-2 text-yellow-500" />
-                  Mild
+                  
                   {spiceLevel === 'Mild' && <Check className="h-4 w-4 ml-2" />}
                 </button>
                 <button
@@ -398,7 +383,7 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
                     <FaPepperHot className="h-4 w-4 text-orange-500" />
                     <FaPepperHot className="h-4 w-4 -ml-1 text-orange-500" />
                   </div>
-                  Medium
+                  
                   {spiceLevel === 'Medium' && <Check className="h-4 w-4 ml-2" />}
                 </button>
                 <button
@@ -414,7 +399,7 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
                     <FaPepperHot className="h-4 w-4 -ml-1 text-red-500" />
                     <FaPepperHot className="h-4 w-4 -ml-1 text-red-500" />
                   </div>
-                  Hot
+                  
                   {spiceLevel === 'Hot' && <Check className="h-4 w-4 ml-2" />}
                 </button>
               </div>
@@ -549,6 +534,7 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
               <button 
                 onClick={() => setShowModifiersPopup(false)}
                 className="p-1 rounded-full hover:bg-gray-100"
+                aria-label="Cancel"
               >
                 <X className="h-5 w-5" />
               </button>

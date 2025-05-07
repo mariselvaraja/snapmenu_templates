@@ -21,6 +21,7 @@ interface ExtendedInDiningOrder extends Partial<InDiningOrder> {
       options: Array<{
         name: string;
         price: number;
+        modified_price?: number;
       }>;
     }>;
     spiceLevel?: string;
@@ -40,6 +41,7 @@ interface OrderItem {
     options: {
       name: string;
       price: number;
+      modified_price?: number;
     }[];
   }[];
   spiceLevel?: string | null;
@@ -315,7 +317,9 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
                                   <ul className="ml-2 mt-0.5">
                                     {item.modifiers.map((modifier, modIndex) => (
                                       <li key={modIndex}>
-                                        {modifier.name}: {modifier.options.map(opt => opt.name).join(', ')}
+                                        {modifier.name}: {modifier.options.map(opt => 
+                                          `${opt.name} ${opt.modified_price ? `($${opt.modified_price})` : opt.price ? `($${opt.price})` : ''}`
+                                        ).join(', ')}
                                       </li>
                                     ))}
                                   </ul>
