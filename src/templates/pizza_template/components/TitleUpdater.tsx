@@ -23,7 +23,7 @@ export default function TitleUpdater() {
   const { navigationBar = { brand: { name: 'Loading', logo: {} } }, blog = { posts: [] } } = siteContent;
   const location = useLocation();
   const params = useParams();
-  const restaurantName = navigationBar?.brand?.name || 'Loading';
+  const restaurantName = siteContent?.homepage?.brand?.name || 'Loading';
   
   // Get menu items from Redux store for product detail pages
   const menuItems = useAppSelector(state => state.menu.items);
@@ -66,7 +66,7 @@ export default function TitleUpdater() {
   // Update favicon based on restaurant logo
   useEffect(() => {
     // Get the logo icon from the navigationBar
-    const logoIcon = navigationBar?.brand?.logo?.icon;
+    const logoIcon = siteContent?.homepage?.brand?.logo?.icon;
     
     if (logoIcon) {
       // Check if favicon link element already exists
