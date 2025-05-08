@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { ArrowRight, ShoppingCart, Award, Play, Heart } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { 
   FaWineGlass, FaUtensils, FaClock, FaCoffee, FaGlassMartini, 
   FaHamburger, FaPizzaSlice, FaConciergeBell, FaChair, FaFire, FaBreadSlice,
@@ -36,6 +36,7 @@ type IconComponent = React.ComponentType<React.SVGAttributes<SVGElement>>;
 export default function Home() {
   const [videoOpen, setVideoOpen] = useState(false);
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
+  const [currentPopularItemIndex, setCurrentPopularItemIndex] = useState(0);
   const dispatch = useAppDispatch();
   const { items: menuItems, loading: menuLoading } = useAppSelector(state => state.menu);
   const { rawApiResponse } = useAppSelector(state => state.siteContent);
@@ -293,19 +294,69 @@ export default function Home() {
             ) : (
               <>
                 {popularItems.products.length > 3 ? (
-                  // Carousel layout for more than 3 products
+                  // Elegant carousel layout for more than 3 products
                   <div className="relative">
-                    <div className="overflow-x-auto overflow-y-hidden pb-4 hide-scrollbar">
-                      <div className="flex space-x-6 px-2">
+                    <div className="overflow-hidden">
+                      <motion.div 
+                        className="flex space-x-6 px-2"
+                        animate={{ 
+                          x: `-${currentPopularItemIndex * 100}%` 
+                        }}
+                        transition={{ 
+                          type: "spring", 
+                          stiffness: 300, 
+                          damping: 30 
+                        }}
+                      >
                         {popularItems.products.map((skuId: string, index: number) => {
                           // Find menu item with matching SKU ID
                           const menuItem = menuItems.find(item => item.sku_id === skuId);
                           if (!menuItem) return null;
                           
-                          return renderMenuItemCard(menuItem, index, true);
+                          return (
+                            <div key={index} className="w-full md:w-1/3 flex-shrink-0">
+                              {renderMenuItemCard(menuItem, index, true)}
+                            </div>
+                          );
                         })}
-                      </div>
+                      </motion.div>
                     </div>
+                    
+                    {/* Carousel Navigation */}
+                    <div className="flex justify-center mt-8 space-x-2">
+                      {Array.from({ length: Math.ceil(popularItems.products.length / 3) }).map((_, index) => (
+                        <button
+                          key={index}
+                          onClick={() => setCurrentPopularItemIndex(index)}
+                          className={`w-3 h-3 rounded-full ${
+                            currentPopularItemIndex === index ? 'bg-red-500' : 'bg-gray-300'
+                          }`}
+                          aria-label={`Go to slide ${index + 1}`}
+                        />
+                      ))}
+                    </div>
+                    
+                    {/* Carousel Controls */}
+                    {popularItems.products.length > 3 && (
+                      <>
+                        <button
+                          onClick={() => setCurrentPopularItemIndex(prev => Math.max(0, prev - 1))}
+                          className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 bg-white rounded-full p-2 shadow-lg z-10 hover:bg-gray-100 transition-colors"
+                          aria-label="Previous items"
+                          disabled={currentPopularItemIndex === 0}
+                        >
+                          <ArrowRight className="h-6 w-6 transform rotate-180 text-red-500" />
+                        </button>
+                        <button
+                          onClick={() => setCurrentPopularItemIndex(prev => Math.min(Math.ceil(popularItems.products.length / 3) - 1, prev + 1))}
+                          className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 bg-white rounded-full p-2 shadow-lg z-10 hover:bg-gray-100 transition-colors"
+                          aria-label="Next items"
+                          disabled={currentPopularItemIndex === Math.ceil(popularItems.products.length / 3) - 1}
+                        >
+                          <ArrowRight className="h-6 w-6 text-red-500" />
+                        </button>
+                      </>
+                    )}
                   </div>
                 ) : (
                   // Grid layout for 3 or fewer products
