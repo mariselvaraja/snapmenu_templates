@@ -2,8 +2,12 @@ import { Facebook, Instagram, Twitter, Utensils, Pizza } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAppSelector } from '../../../redux';
 import { FaEnvelope, FaPhone, FaPhoneAlt, FaMapMarkerAlt } from 'react-icons/fa';
+import { useState } from 'react';
+import { PolicyModal } from '../shared/components/ui';
 
 export default function Footer() {
+  // State for policy modals
+  const [activePolicy, setActivePolicy] = useState<'privacy' | 'terms' | 'cookie' | null>(null);
   const { rawApiResponse } = useAppSelector(state => state.siteContent);
   
   // Get site content from Redux state
@@ -11,11 +15,11 @@ export default function Footer() {
     (typeof rawApiResponse === 'string' ? JSON.parse(rawApiResponse) : rawApiResponse) : 
     {};
   const navigationBar = siteContent?.navigationBar;
-  const brand = navigationBar?.brand;
   const navigation = navigationBar?.navigation;
   const footer = siteContent?.footer;
   const contact = siteContent?.contact;
 
+  console.log(" contact", contact)
   // Use only API data
   const footerData = footer;
   
@@ -62,34 +66,7 @@ export default function Footer() {
         <div className="w-full h-px bg-gradient-to-r from-transparent via-red-500/30 to-transparent mb-16"></div>
         
         {/* Main sections grid - Link Groups only */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-          {/* Link Groups - Excluding Restaurant and Services */}
-          {footerData?.linkGroups && footerData.linkGroups
-            .filter((group: any) => group.title !== "Restaurant" && group.title !== "Services")
-            .map((group: any, groupIndex: number) => (
-              <div key={`group-${groupIndex}`} className="backdrop-blur-sm bg-black/20 rounded-lg p-6 shadow-xl border border-gray-800/30 transform transition-all duration-300 hover:shadow-red-900/10 hover:-translate-y-1 h-full flex flex-col">
-                <h3 className="text-xl font-bold mb-6 text-white border-b border-red-500/30 pb-2 flex items-center">
-                  <PizzaSlice />
-                  <span className="ml-2">{group.title}</span>
-                </h3>
-                <ul className="space-y-3 flex-grow">
-                  {group.links && group.links.map((link: any, linkIndex: number) => (
-                    <li key={`link-${groupIndex}-${linkIndex}`}>
-                      <a 
-                        href={link.href} 
-                        className="text-gray-300 hover:text-white transition-all duration-300 hover:translate-x-1 inline-block group"
-                      >
-                        <span className="inline-flex items-center">
-                          <span className="w-0 h-0.5 bg-red-500 mr-0 group-hover:w-2 group-hover:mr-2 transition-all duration-300"></span>
-                          {link.label}
-                        </span>
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-        </div>
+    
 
         {/* Contact, Quick Links, and Follow Us in a single row */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
@@ -100,70 +77,30 @@ export default function Footer() {
               <span className="ml-2">Contact Us</span>
             </h3>
             <ul className="space-y-4 flex-grow">
-              {footerData?.contactInfo?.address && (
+              {contact?.address && (
                 <li className="text-gray-300 flex items-start gap-3 group">
                   <FaMapMarkerAlt className="text-red-500 group-hover:text-red-400 transition-colors mt-1 flex-shrink-0" /> 
-                  <span className="group-hover:text-white transition-colors">{footerData.contactInfo.address}</span>
+                  <span className="group-hover:text-white transition-colors">{contact.address}</span>
                 </li>
               )}
               
-              {footerData?.contactInfo?.phone && (
+              {contact?.phone && (
                 <li className="text-gray-300 flex items-center gap-3 group">
                   <FaPhoneAlt className="text-red-500 group-hover:text-red-400 transition-colors flex-shrink-0" /> 
-                  <span className="group-hover:text-white transition-colors">{footerData.contactInfo.phone}</span>
+                  <span className="group-hover:text-white transition-colors">{contact.phone}</span>
                 </li>
               )}
               
-              {footerData?.contactInfo?.email && (
+              {contact?.email && (
                 <li className="text-gray-300 flex items-center gap-3 group">
                   <FaEnvelope className="text-red-500 group-hover:text-red-400 transition-colors flex-shrink-0" /> 
-                  <span className="group-hover:text-white transition-colors">{footerData.contactInfo.email}</span>
+                  <span className="group-hover:text-white transition-colors">{contact.email}</span>
                 </li>
               )}
               
-              {/* Fallback to contact from API if contactInfo is not available */}
-              {!footerData?.contactInfo && contact?.infoCards?.address?.street && (
-                <>
-                  <li className="text-gray-300 flex items-start gap-3 group">
-                    <FaMapMarkerAlt className="text-red-500 group-hover:text-red-400 transition-colors mt-1 flex-shrink-0" />
-                    <span className="group-hover:text-white transition-colors">
-                      {contact.infoCards.address.street}
-                    </span>
-                  </li>
-                  {contact.infoCards.address.city && (
-                    <li className="text-gray-300 flex items-start gap-3 group">
-                      <span className="text-red-500 opacity-0 w-4 flex-shrink-0"></span>
-                      <span className="group-hover:text-white transition-colors">
-                        {contact.infoCards.address.city}
-                        {contact.infoCards.address.state ? `, ${contact.infoCards.address.state}` : ''}
-                        {contact.infoCards.address.zip ? ` ${contact.infoCards.address.zip}` : ''}
-                      </span>
-                    </li>
-                  )}
-                </>
-              )}
-              
-              {!footerData?.contactInfo && contact?.infoCards?.phone?.numbers && Array.isArray(contact.infoCards.phone.numbers) && contact.infoCards.phone.numbers.length > 0 && (
-                contact.infoCards.phone.numbers.map((phoneNumber: any, index: number) => (
-                  <li key={`phone-${index}`} className="text-gray-300 flex items-center gap-3 group">
-                    <FaPhoneAlt className="text-red-500 group-hover:text-red-400 transition-colors flex-shrink-0" /> 
-                    <span className="group-hover:text-white transition-colors">
-                      {typeof phoneNumber === 'string' ? phoneNumber : (typeof phoneNumber === 'object' ? JSON.stringify(phoneNumber) : '')}
-                    </span>
-                  </li>
-                ))
-              )}
-              
-              {!footerData?.contactInfo && contact?.infoCards?.email?.addresses && Array.isArray(contact.infoCards.email.addresses) && contact.infoCards.email.addresses.length > 0 && (
-                contact.infoCards.email.addresses.map((emailAddress: any, index: number) => (
-                  <li key={`email-${index}`} className="text-gray-300 flex items-center gap-3 group">
-                    <FaEnvelope className="text-red-500 group-hover:text-red-400 transition-colors flex-shrink-0" /> 
-                    <span className="group-hover:text-white transition-colors">
-                      {emailAddress}
-                    </span>
-                  </li>
-                ))
-              )}
+      
+      
+  
             </ul>
           </div>
 
@@ -227,49 +164,34 @@ export default function Footer() {
           )}
         </div>
 
-        {/* Privacy Links */}
-        {footerData?.privacyDetails && (
-          <div className="flex flex-wrap justify-center items-center gap-8 mb-10 max-w-4xl mx-auto">
-            {footerData.privacyDetails.privacyPolicy && (
-              <a href={footerData.privacyDetails.privacyPolicy} className="text-gray-400 hover:text-white text-sm transition-colors duration-300 hover:underline underline-offset-4">
-                Privacy Policy
-              </a>
-            )}
-            {footerData.privacyDetails.termsOfService && (
-              <a href={footerData.privacyDetails.termsOfService} className="text-gray-400 hover:text-white text-sm transition-colors duration-300 hover:underline underline-offset-4">
-                Terms of Service
-              </a>
-            )}
-            {footerData.privacyDetails.cookiePolicy && (
-              <a href={footerData.privacyDetails.cookiePolicy} className="text-gray-400 hover:text-white text-sm transition-colors duration-300 hover:underline underline-offset-4">
-                Cookie Policy
-              </a>
-            )}
-          </div>
-        )}
+        {/* Policy Links */}
+        <div className="flex flex-wrap justify-center items-center gap-8 mb-10 max-w-4xl mx-auto">
+          {footerData?.privacyPolicy && (
+            <button 
+              onClick={() => setActivePolicy('privacy')}
+              className="text-gray-400 hover:text-white text-sm transition-colors duration-300 hover:underline underline-offset-4"
+            >
+              Privacy Policy
+            </button>
+          )}
+          {footerData?.termsConditions && (
+            <button 
+              onClick={() => setActivePolicy('terms')}
+              className="text-gray-400 hover:text-white text-sm transition-colors duration-300 hover:underline underline-offset-4"
+            >
+              Terms & Conditions
+            </button>
+          )}
+          {footerData?.cookiePolicy && (
+            <button 
+              onClick={() => setActivePolicy('cookie')}
+              className="text-gray-400 hover:text-white text-sm transition-colors duration-300 hover:underline underline-offset-4"
+            >
+              Cookie Policy
+            </button>
+          )}
+        </div>
 
-        {/* Terms & Conditions */}
-        {footerData?.termsConditions && (
-          <div className="text-center mb-10 max-w-2xl mx-auto">
-            <h3 className="text-xl font-bold mb-4 flex items-center justify-center">
-              <PizzaSlice />
-              <span className="ml-2">Terms & Conditions</span>
-            </h3>
-            {footerData.termsConditions.documentLink && (
-              <a 
-                href={footerData.termsConditions.documentLink} 
-                className="text-gray-400 hover:text-white transition-colors duration-300 inline-block hover:underline underline-offset-4"
-              >
-                View Full Document
-              </a>
-            )}
-            {footerData.termsConditions.lastUpdated && (
-              <p className="text-gray-600 text-xs mt-2">
-                Last updated: {footerData.termsConditions.lastUpdated}
-              </p>
-            )}
-          </div>
-        )}
 
         {/* Copyright Section with horizontal line */}
         <div className="border-t border-gray-800/50 pt-8 text-center max-w-4xl mx-auto">
@@ -283,6 +205,47 @@ export default function Footer() {
           <div className="w-full h-px bg-gradient-to-r from-transparent via-red-500/30 to-transparent mt-8"></div>
         </div>
       </div>
+      {/* Policy Modals */}
+      {activePolicy && (
+        <PolicyModal
+          isOpen={activePolicy !== null}
+          onClose={() => setActivePolicy(null)}
+          policy={getPolicyContent(activePolicy, footerData)}
+        />
+      )}
     </footer>
   );
+}
+
+// Add the policy modals at the end of the component
+function getPolicyContent(type: 'privacy' | 'terms' | 'cookie', footerData: any) {
+  if (type === 'privacy' && footerData?.privacyPolicy) {
+    return {
+      title: footerData.privacyPolicy.title || 'Privacy Policy',
+      subtitle: footerData.privacyPolicy.subtitle || 'How we collect and use your information',
+      content: footerData.privacyPolicy.content || '<p>Privacy policy content not available.</p>'
+    };
+  }
+  
+  if (type === 'terms' && footerData?.termsConditions) {
+    return {
+      title: footerData.termsConditions.title || 'Terms & Conditions',
+      subtitle: footerData.termsConditions.subtitle || 'Legal terms and conditions for using our services',
+      content: footerData.termsConditions.content || '<p>Terms and conditions content not available.</p>'
+    };
+  }
+  
+  if (type === 'cookie' && footerData?.cookiePolicy) {
+    return {
+      title: footerData.cookiePolicy.title || 'Cookie Policy',
+      subtitle: footerData.cookiePolicy.subtitle || 'How we use cookies on our website',
+      content: footerData.cookiePolicy.content || '<p>Cookie policy content not available.</p>'
+    };
+  }
+  
+  return {
+    title: 'Policy',
+    subtitle: '',
+    content: '<p>Content not available.</p>'
+  };
 }

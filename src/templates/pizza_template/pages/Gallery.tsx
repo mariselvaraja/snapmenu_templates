@@ -26,33 +26,10 @@ export default function Gallery() {
   const isGalleryAvailable = siteContent?.gallery !== undefined;
   const hasImages = isGalleryAvailable && Array.isArray(siteContent?.gallery?.images) && siteContent?.gallery?.images.length > 0;
   
-  // Default gallery data in case API data is not available
-  const defaultGallery = {
-    section: {
-      title: "Our Gallery",
-      subtitle: "Explore our restaurant and cuisine through our gallery"
-    },
-    images: [
-      {
-        image: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&q=80",
-        title: "Restaurant Interior",
-        description: "The elegant ambiance of our main dining area"
-      },
-      {
-        image: "https://images.unsplash.com/photo-1577106263724-2c8e03bfe9cf?auto=format&fit=crop&q=80",
-        title: "Signature Dish",
-        description: "Our chef's special creation"
-      },
-      {
-        image: "https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&q=80",
-        title: "Private Dining",
-        description: "Exclusive space for special occasions"
-      }
-    ]
-  };
+
   
   // Use API data if available, otherwise use default data for rendering
-  const gallery = isGalleryAvailable ? siteContent.gallery : defaultGallery;
+  const gallery = isGalleryAvailable ? siteContent.gallery : [];
   const [galleryItems, setGalleryItems] = useState<MediaItem[]>([]);
   const [selectedMedia, setSelectedMedia] = useState<MediaItem | null>(null);
 

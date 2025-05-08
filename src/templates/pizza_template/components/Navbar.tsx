@@ -17,8 +17,8 @@ export default function Navbar() {
   const siteContent = rawApiResponse ? 
     (typeof rawApiResponse === 'string' ? JSON.parse(rawApiResponse) : rawApiResponse) : 
     { navigationBar: { brand: { logo: {} }, navigation: [] } };
-  const navigationBar = siteContent?.navigationBar || { brand: { logo: {} }, navigation: [] };
-  const { brand } = navigationBar;
+  const navigationBar = siteContent;
+  const { brand } = siteContent.homepage  || { brand: { logo: {} }, navigation: [] };
   
   // Handle both navigation formats: navigation: [] or navigation: { links: [] }
   // Ensure navigationLinks is always an array

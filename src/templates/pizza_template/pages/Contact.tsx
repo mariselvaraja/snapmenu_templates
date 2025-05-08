@@ -21,9 +21,9 @@ export default function Contact() {
           transition={{ duration: 0.5 }}
           className="text-center mb-16"
         >
-          <h1 className="text-4xl font-bold mb-4">{contact?.header?.title || "Contact Us"}</h1>
+          <h1 className="text-4xl font-bold mb-4">{contact?.title}</h1>
           <p className="text-xl text-gray-600">
-            {contact?.header?.subtitle || "Get in touch with us"}
+            {contact?.subtitle}
           </p>
         </motion.div>
 
@@ -103,61 +103,36 @@ export default function Contact() {
                 <div className="flex items-start">
                   <MapPin className="h-6 w-6 text-red-500 mr-4 mt-1" />
                   <div>
-                    <p>{contact?.infoCards?.address?.street || "123 Pizza Street"}</p>
-                    <p>
-                      {contact?.infoCards?.address?.city || "Pizza City"}
-                      {contact?.infoCards?.address?.state ? `, ${contact?.infoCards?.address?.state}` : ''}
-                      {contact?.infoCards?.address?.zip ? ` ${contact?.infoCards?.address?.zip}` : ''}
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center">
-                  <Clock className="h-6 w-6 text-red-500 mr-4" />
-                  <div>
-                    <p>{contact?.infoCards?.hours?.weekday || "Monday - Friday: 11:00 AM - 10:00 PM"}</p>
-                    <p>{contact?.infoCards?.hours?.weekend || "Saturday - Sunday: 12:00 PM - 11:00 PM"}</p>
-                    {contact?.infoCards?.hours?.note && <p className="text-sm text-gray-500">{contact?.infoCards?.hours?.note}</p>}
+                    <p>{contact?.address}</p>
                   </div>
                 </div>
                 
                 {/* Phone Numbers */}
-                {contact?.infoCards?.phone?.numbers && Array.isArray(contact?.infoCards?.phone?.numbers) && contact?.infoCards?.phone?.numbers.length > 0 ? (
+                {contact?.phone ? (
                   <div className="flex items-center">
                     <FaPhoneAlt className="h-5 w-5 text-red-500 mr-4" />
                     <div>
-                      {contact?.infoCards?.phone?.numbers.map((phoneNumber: any, index: number) => (
-                        <p key={`phone-${index}`}>
-                          {typeof phoneNumber === 'string' ? phoneNumber : (typeof phoneNumber === 'object' ? JSON.stringify(phoneNumber) : "(555) 123-4567")}
-                        </p>
-                      ))}
-                      {contact?.infoCards?.phone?.hours && <p className="text-sm text-gray-500">{contact?.infoCards?.phone?.hours}</p>}
+                    
+                      {contact?.phone && <p className="text-sm">{contact?.phone}</p>}
                     </div>
                   </div>
                 ) : (
                   <div className="flex items-center">
-                    <FaPhoneAlt className="h-5 w-5 text-red-500 mr-4" />
-                    <span>(555) 123-4567</span>
+                    
                   </div>
                 )}
                 
                 {/* Email Addresses */}
-                {contact?.infoCards?.email?.addresses && Array.isArray(contact?.infoCards?.email?.addresses) && contact?.infoCards?.email?.addresses.length > 0 ? (
+                {contact?.email? (
                   <div className="flex items-center">
                     <FaEnvelope className="h-5 w-5 text-red-500 mr-4" />
                     <div>
-                      {contact?.infoCards?.email?.addresses.map((emailAddress: any, index: number) => (
-                        <p key={`email-${index}`}>
-                          {emailAddress || "info@pizzaplanet.com"}
-                        </p>
-                      ))}
-                      {contact?.infoCards?.email?.support && <p className="text-sm text-gray-500">{contact?.infoCards?.email?.support}</p>}
+                    {contact?.email && <p className="text-sm">{contact?.email}</p>}
                     </div>
                   </div>
                 ) : (
                   <div className="flex items-center">
-                    <FaEnvelope className="h-5 w-5 text-red-500 mr-4" />
-                    <span>info@pizzaplanet.com</span>
+                    
                   </div>
                 )}
               </div>

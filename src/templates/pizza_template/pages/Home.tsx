@@ -44,34 +44,16 @@ export default function Home() {
   const siteContent = rawApiResponse ? 
     (typeof rawApiResponse === 'string' ? JSON.parse(rawApiResponse) : rawApiResponse) : 
     {};
-  const navigationBar = siteContent?.navigationBar;
-  const heroData = navigationBar?.hero;
-  const experienceCard: ExperienceCard = navigationBar?.experience || {};
-  const popularItems: any = siteContent?.popularItems || {};
-  const offers: any = siteContent?.offers?.offers || [];
+  const homepage = siteContent.homepage;
+  const heroData = homepage?.hero;
+  const experienceCard: ExperienceCard = homepage?.experience || {};
+  const popularItems: any = homepage?.popularItems || {};
+  const offers: any = homepage?.offers?.offers || [];
   
-  
-  // Fallback banner data if heroData or heroData.banners is not available
-  const fallbackBanners = [
-    {
-      image: "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&q=80",
-      title: "Authentic Italian Pizza",
-      subtitle: "Made with fresh ingredients and traditional recipes"
-    },
-    {
-      image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&q=80",
-      title: "Handcrafted to Perfection",
-      subtitle: "Every pizza is made with love and attention to detail"
-    },
-    {
-      image: "https://images.unsplash.com/photo-1571407970349-bc81e7e96d47?auto=format&fit=crop&q=80",
-      title: "Fast & Fresh Delivery",
-      subtitle: "Hot and delicious pizza delivered to your doorstep"
-    }
-  ];
+
   
   // Use heroData.banners if available, otherwise use fallbackBanners
-  const banners = heroData?.banners?.length > 0 ? heroData.banners : fallbackBanners;
+  const banners = heroData?.banners?.length > 0 ? heroData.banners : [];
   
   // Auto-rotate carousel
   useEffect(() => {
@@ -84,17 +66,6 @@ export default function Home() {
     return () => clearInterval(interval);
   }, [banners.length]);
   
-  const goToNextSlide = () => {
-    setCurrentBannerIndex((prevIndex) => 
-      (prevIndex + 1) % banners.length
-    );
-  };
-  
-  const goToPrevSlide = () => {
-    setCurrentBannerIndex((prevIndex) => 
-      (prevIndex - 1 + banners.length) % banners.length
-    );
-  };
   
   const currentBanner = banners[currentBannerIndex];
 
@@ -747,26 +718,6 @@ export default function Home() {
           </div>
         </section>
       )}
-
-      {/* CTA Section */}
-      {/* <section className="bg-red-500 py-20 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <h2 className="text-4xl font-bold mb-6">Ready to Order?</h2>
-            <p className="text-xl mb-8">Get your favorite pizza delivered to your doorstep!</p>
-            <Link
-              to="/order"
-              className="inline-flex items-center bg-white text-red-500 px-8 py-3 rounded-full text-lg font-semibold hover:bg-gray-100 transition-colors"
-            >
-              Order Now <ArrowRight className="ml-2 h-5 w-5" />
-            </Link>
-          </motion.div>
-        </div>
-      </section> */}
     </div>
   );
 }

@@ -1,0 +1,62 @@
+{
+  "footer": {
+    "social": {
+      "links": [
+        {
+          "platform": "Instagram",
+          "icon": "Instagram",
+          "href": "https://instagram.com",
+          "ariaLabel": "Follow us on Instagram"
+        },
+        {
+          "platform": "Facebook",
+          "icon": "Facebook",
+          "href": "https://facebook.com",
+          "ariaLabel": "Follow us on Facebook"
+        },
+        {
+          "platform": "Twitter",
+          "icon": "Twitter",
+          "href": "https://twitter.com",
+          "ariaLabel": "Follow us on Twitter"
+        }
+      ]
+    },
+    "copyright": {
+      "text": "© 2025 Snapmenus. All rights reserved."
+    },
+    "quickLinks": [
+      {
+        "label": "Home",
+        "href": "/"
+      },
+      {
+        "label": "Menu",
+        "href": "/menu"
+      },
+      {
+        "label": "About Us",
+        "href": "/about"
+      },
+      {
+        "label": "Contact",
+        "href": "/contact"
+      }
+    ],
+    "privacyPolicy": {
+      "title": "Privacy Policy",
+      "subtitle": "How we collect and use your information",
+      "content": "<h2 class='text-xl font-bold mb-4'>Privacy Policy</h2><p class='mb-4'>This Privacy Policy describes how your personal information is collected, used, and shared when you visit our website.</p><h3 class='text-lg font-bold mb-2'>Personal Information We Collect</h3><p class='mb-4'>When you visit the Site, we automatically collect certain information about your device, including information about your web browser, IP address, time zone, and some of the cookies that are installed on your device.</p><h3 class='text-lg font-bold mb-2'>How We Use Your Personal Information</h3><p class='mb-4'>We use the information that we collect generally to fulfill any orders placed through the Site (including processing your payment information, arranging for shipping, and providing you with invoices and/or order confirmations).</p>"
+    },
+    "termsConditions": {
+      "title": "Terms & Conditions",
+      "subtitle": "Legal terms and conditions for using our services",
+      "content": "<h2 class='text-xl font-bold mb-4'>Terms and Conditions</h2><p class='mb-4'>These terms and conditions outline the rules and regulations for the use of our Website.</p><h3 class='text-lg font-bold mb-2'>License</h3><p class='mb-4'>Unless otherwise stated, we own the intellectual property rights for all material on the Website. All intellectual property rights are reserved.</p><h3 class='text-lg font-bold mb-2'>Restrictions</h3><p class='mb-4'>You are specifically restricted from all of the following:</p><ul class='list-disc pl-5 mb-4'><li>publishing any Website material in any other media;</li><li>selling, sublicensing and/or otherwise commercializing any Website material;</li><li>publicly performing and/or showing any Website material;</li></ul>"
+    },
+    "cookiePolicy": {
+      "title": "Cookie Policy",
+      "subtitle": "How we use cookies on our website",
+      "content": "<h2 class='text-xl font-bold mb-4'>Cookie Policy</h2><p class='mb-4'>This Cookie Policy explains how we use cookies and similar technologies to recognize you when you visit our website.</p><h3 class='text-lg font-bold mb-2'>What are cookies?</h3><p class='mb-4'>Cookies are small data files that are placed on your computer or mobile device when you visit a website. Cookies are widely used by website owners in order to make their websites work, or to work more efficiently, as well as to provide reporting information.</p><h3 class='text-lg font-bold mb-2'>How do we use cookies?</h3><p class='mb-4'>We use cookies for the following purposes:</p><ul class='list-disc pl-5 mb-4'><li>To enable certain functions of the Website</li><li>To provide analytics</li><li>To store your preferences</li></ul>"
+    }
+  }
+}
