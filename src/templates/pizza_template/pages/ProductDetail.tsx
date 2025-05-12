@@ -37,7 +37,7 @@ export default function ProductDetail() {
     const { items: cartItems } = useAppSelector(state => state.cart);
     
     // Check if this product is in the cart
-    const cartItem = cartItems.find(item => item.id === product?.id);
+    const cartItem = cartItems.find((item:any) => item.id === product?.id);
     
     // State for selected modifiers and spice level
     const [selectedModifiers, setSelectedModifiers] = useState<SelectedModifier[]>([]);
@@ -49,9 +49,9 @@ export default function ProductDetail() {
     useEffect(() => {
         if (cartItem && cartItem.selectedModifiers) {
             // Convert cart item modifiers to the format expected by the component
-            const convertedModifiers = cartItem.selectedModifiers.map(modifier => ({
+            const convertedModifiers = cartItem.selectedModifiers.map((modifier:any) => ({
                 name: modifier.name,
-                options: modifier.options.map(option => ({
+                options: modifier.options.map((option:any) => ({
                     name: option.name,
                     price: option.price
                 }))
@@ -60,7 +60,7 @@ export default function ProductDetail() {
             setSelectedModifiers(convertedModifiers);
             
             // Set spice level if it exists in the cart item
-            const spiceLevelModifier = cartItem.selectedModifiers.find(mod => mod.name === 'Spice Level');
+            const spiceLevelModifier = cartItem.selectedModifiers.find((mod:any) => mod.name === 'Spice Level');
             if (spiceLevelModifier && spiceLevelModifier.options.length > 0) {
                 const spiceLevelName = spiceLevelModifier.options[0].name;
                 if (spiceLevelName === 'Mild') setSpiceLevel(1);

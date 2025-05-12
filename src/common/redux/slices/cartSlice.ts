@@ -3,7 +3,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 export interface CartItem {
   id: number;
   name: string;
-  price: number;
+  price: any;
   quantity: number;
   image: string;
   selectedModifiers?: {
@@ -16,7 +16,7 @@ export interface CartItem {
 }
 
 interface CartState {
-  items: CartItem[];
+  items: any;
   loading: boolean;
   error: string | null;
   drawerOpen: boolean;
@@ -36,9 +36,9 @@ export const cartSlice = createSlice({
   initialState,
   reducers: {
     // Synchronous actions
-    addItem: (state, action: PayloadAction<CartItem>) => {
+    addItem: (state, action: PayloadAction<any>) => {
       const newItem = action.payload;
-      const existingItem = state.items.find(item => item.id === newItem.id);
+      const existingItem = state.items.find((item:any) => item.id === newItem.id);
 
       if (existingItem) {
         existingItem.quantity += newItem.quantity;
@@ -49,11 +49,11 @@ export const cartSlice = createSlice({
       state.drawerOpen = true;
     },
     removeItem: (state, action: PayloadAction<number>) => {
-      state.items = state.items.filter(item => item.id !== action.payload);
+      state.items = state.items.filter((item:any) => item.id !== action.payload);
     },
     updateItemQuantity: (state, action: PayloadAction<{ id: number; quantity: number }>) => {
       const { id, quantity } = action.payload;
-      const itemToUpdate = state.items.find(item => item.id === id);
+      const itemToUpdate = state.items.find((item:any) => item.id === id);
       if (itemToUpdate) {
         itemToUpdate.quantity = quantity;
       }
