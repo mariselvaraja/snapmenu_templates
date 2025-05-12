@@ -1,21 +1,15 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ShoppingCart, Minus, Plus } from 'lucide-react';
 import { LuVegan } from 'react-icons/lu';
 import { IoLeafOutline } from 'react-icons/io5';
 import { CiWheat } from 'react-icons/ci';
-import { MenuItem } from '../../../../common/redux';
+import { ShoppingCart, Plus, Minus } from 'lucide-react';
+import { MenuItem, useAppSelector, useAppDispatch, updateItemQuantity, removeItem } from '../../../../common/redux';
 import { SelectedModifier } from './types';
-import SpiceLevelSelector from './SpiceLevelSelector';
 import ModifiersList from './ModifiersList';
 
 interface ProductHeaderProps {
     product: MenuItem;
-    quantity: number;
-    handleIncrement: () => void;
-    handleDecrement: () => void;
-    handleAddToCart: (product: MenuItem) => void;
-    cartItem: any;
     calculateTotalPrice: () => number;
     selectedModifiers: SelectedModifier[];
     spiceLevel: number;
@@ -23,6 +17,7 @@ interface ProductHeaderProps {
     modifiersList: any[];
     handleModifierOptionSelect: (modifierName: string, option: any) => void;
     isModifierOptionSelected: (modifierName: string, optionName: string) => boolean;
+    handleAddToCart: () => void;
     validationErrors?: {
         [key: string]: boolean;
     };
@@ -30,20 +25,22 @@ interface ProductHeaderProps {
 
 const ProductHeader: React.FC<ProductHeaderProps> = ({
     product,
-    quantity,
-    handleIncrement,
-    handleDecrement,
-    handleAddToCart,
-    cartItem,
     calculateTotalPrice,
-    selectedModifiers,
     spiceLevel,
     setSpiceLevel,
     modifiersList,
     handleModifierOptionSelect,
     isModifierOptionSelected,
+    handleAddToCart,
     validationErrors = {}
 }) => {
+    const dispatch = useAppDispatch();
+    
+    // Get cart items from Redux store
+    const { items: cartItems } = useAppSelector(state => state.cart);
+    
+    // Check if this product is in the cart
+    const cartItem = cartItems.find(item => item.id === product.id);
     return (
         <div className="flex flex-col md:flex-row justify-between items-start mb-4">
             <div className="md:pr-8 md:w-1/2">
@@ -63,18 +60,13 @@ const ProductHeader: React.FC<ProductHeaderProps> = ({
                 <div className="flex items-center justify-between mt-4 mb-4">
                     <div>
                         <div className="text-2xl font-bold text-red-500">${calculateTotalPrice().toFixed(2)}</div>
-                        {/* {selectedModifiers.length > 0 && (
-                            <div className="text-sm text-gray-500">
-                                Base: ${product.price} + Add-ons: ${(calculateTotalPrice() - product.price * quantity).toFixed(2)}
-                            </div>
-                        )} */}
                     </div>
                     
-                    {/* Add button or quantity controls */}
-                    {!cartItem || cartItem.quantity <= 0 ? (
+                    {/* Add to Cart button or Quantity Controls */}
+                    {!cartItem ? (
                         <button
+                            onClick={handleAddToCart}
                             className="inline-flex items-center bg-red-500 text-white px-5 py-2 rounded-full hover:bg-red-600 transition-colors text-base font-medium"
-                            onClick={() => handleAddToCart(product)}
                         >
                             <ShoppingCart className="h-5 w-5 mr-2" />
                             Add to Cart
@@ -83,14 +75,25 @@ const ProductHeader: React.FC<ProductHeaderProps> = ({
                         <div className="inline-flex items-center bg-gray-100 rounded-full px-2 py-1">
                             <button
                                 className="w-8 h-8 flex items-center justify-center bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-full transition-colors"
-                                onClick={handleDecrement}
+                                onClick={() => {
+                                    const newQuantity = cartItem.quantity - 1;
+                                    if (newQuantity > 0) {
+                                        dispatch(updateItemQuantity({ id: product.id, quantity: newQuantity }));
+                                    } else {
+                                        dispatch(removeItem(product.id));
+                                    }
+                                }}
                             >
                                 <Minus className="w-3 h-3" />
                             </button>
-                            <span className="mx-3 text-base font-semibold">{quantity}</span>
+                            <span className="mx-3 text-base font-semibold">
+                                {cartItem.quantity}
+                            </span>
                             <button
                                 className="w-8 h-8 flex items-center justify-center bg-red-500 hover:bg-red-600 text-white rounded-full transition-colors"
-                                onClick={handleIncrement}
+                                onClick={() => {
+                                    dispatch(updateItemQuantity({ id: product.id, quantity: cartItem.quantity + 1 }));
+                                }}
                             >
                                 <Plus className="w-3 h-3" />
                             </button>

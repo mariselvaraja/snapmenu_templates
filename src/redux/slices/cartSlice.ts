@@ -1,11 +1,18 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 export interface CartItem {
-  id: number;
+  pk_id: number;
   name: string;
   price: number;
   quantity: number;
   image: string;
+  selectedModifiers?: {
+    name: string;
+    options: {
+      name: string;
+      price: number;
+    }[];
+  }[];
 }
 
 interface CartState {
@@ -31,7 +38,7 @@ export const cartSlice = createSlice({
     // Synchronous actions
     addItem: (state, action: PayloadAction<CartItem>) => {
       const newItem = action.payload;
-      const existingItem = state.items.find(item => item.id === newItem.id);
+      const existingItem = state.items.find(item => item.pk_id === newItem.pk_id);
 
       if (existingItem) {
         existingItem.quantity += newItem.quantity;
@@ -42,11 +49,11 @@ export const cartSlice = createSlice({
       state.drawerOpen = true;
     },
     removeItem: (state, action: PayloadAction<number>) => {
-      state.items = state.items.filter(item => item.id !== action.payload);
+      state.items = state.items.filter(item => item.pk_id !== action.payload);
     },
     updateItemQuantity: (state, action: PayloadAction<{ id: number; quantity: number }>) => {
       const { id, quantity } = action.payload;
-      const itemToUpdate = state.items.find(item => item.id === id);
+      const itemToUpdate = state.items.find(item => item.pk_id === id);
       if (itemToUpdate) {
         itemToUpdate.quantity = quantity;
       }
