@@ -108,15 +108,21 @@ export default function ProductDetail() {
         // Make sure product exists
         if (product) {
             // Create cart item with selected modifiers
-            // Convert any string prices to numbers for the cart
+            // Convert any string prices to numbers for the cart and ensure they are valid numbers
             const normalizedModifiers = selectedModifiers.map(modifier => ({
                 name: modifier.name,
-                options: modifier.options.map(option => ({
-                    name: option.name,
-                    price: typeof option.price === 'string' 
-                        ? parseFloat(option.price.replace(/[^\d.-]/g, '')) || 0
-                        : option.price
-                }))
+                options: modifier.options.map(option => {
+                    let price = 0;
+                    if (typeof option.price === 'string') {
+                        price = parseFloat(option.price.replace(/[^\d.-]/g, '')) || 0;
+                    } else if (typeof option.price === 'number' && !isNaN(option.price)) {
+                        price = option.price;
+                    }
+                    return {
+                        name: option.name,
+                        price: price
+                    };
+                })
             }));
 
             // Add spice level as a modifier if it's set
@@ -139,10 +145,15 @@ export default function ProductDetail() {
                 }
             }
 
+            // Ensure product price is a valid number
+            const productPrice = typeof product.price === 'number' && !isNaN(product.price) 
+                ? product.price 
+                : 0;
+
             const cartItem: CartItem = {
                 id: product.id,
                 name: product.name,
-                price: product.price,
+                price: productPrice,
                 image: product.image || '',
                 quantity: 1,
                 selectedModifiers: normalizedModifiers
@@ -180,18 +191,27 @@ export default function ProductDetail() {
     
     // Calculate total price including modifiers
     const calculateTotalPrice = () => {
-        let basePrice = product?.price || 0;
+        // Ensure basePrice is a number
+        let basePrice = typeof product?.price === 'number' ? product.price : 0;
         let modifiersPrice = 0;
         
         // Add up all selected modifier prices
         selectedModifiers.forEach(modifier => {
             modifier.options.forEach((option: {price: string | number}) => {
-                const optionPrice = typeof option.price === 'string' ? parseFloat(option.price) || 0 : option.price;
+                // Convert string prices to numbers, handle NaN cases
+                let optionPrice = 0;
+                if (typeof option.price === 'string') {
+                    optionPrice = parseFloat(option.price.replace(/[^\d.-]/g, '')) || 0;
+                } else if (typeof option.price === 'number' && !isNaN(option.price)) {
+                    optionPrice = option.price;
+                }
                 modifiersPrice += optionPrice;
             });
         });
         
-        return basePrice + modifiersPrice;
+        const total = basePrice + modifiersPrice;
+        // Ensure we return a valid number
+        return isNaN(total) ? 0 : total;
     };
     
     // Parse modifiers from product data

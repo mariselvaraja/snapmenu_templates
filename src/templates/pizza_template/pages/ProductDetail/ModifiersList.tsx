@@ -178,7 +178,13 @@ const ModifiersList: React.FC<ModifiersListProps> = ({
                                         {displayName}
                                     </div>
                                     {option.price !== undefined && parseFloat(String(option.price)) > 0 && (
-                                        <div className="text-sm text-gray-600 ml-auto">(+${typeof option.price === 'number' ? option.price?.toFixed(2) : option.price})</div>
+                                        <div className="text-sm text-gray-600 ml-auto">
+                                            (+${typeof option.price === 'number' && !isNaN(option.price) 
+                                                ? option.price.toFixed(2) 
+                                                : typeof option.price === 'string' 
+                                                    ? (parseFloat(option.price) || 0).toFixed(2)
+                                                    : '0.00'})
+                                        </div>
                                     )}
                                 </button>
                             );
@@ -232,7 +238,13 @@ const ModifiersList: React.FC<ModifiersListProps> = ({
                                                 {displayName}
                                             </div>
                                             {option.price !== undefined && parseFloat(String(option.price)) > 0 && (
-                                                <div className="text-sm text-gray-600 ml-auto">(+${typeof option.price === 'number' ? option.price?.toFixed(2) : option.price})</div>
+                                                <div className="text-sm text-gray-600 ml-auto">
+                                                    (+${typeof option.price === 'number' && !isNaN(option.price) 
+                                                        ? option.price.toFixed(2) 
+                                                        : typeof option.price === 'string' 
+                                                            ? (parseFloat(option.price) || 0).toFixed(2)
+                                                            : '0.00'})
+                                                </div>
                                             )}
                                         </button>
                                     );
