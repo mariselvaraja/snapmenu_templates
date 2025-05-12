@@ -10,24 +10,36 @@ export default function CartDrawer() {
 
   // Calculate cart totals
   const subtotal = items.reduce((total: number, item: { 
-    price: number, 
-    quantity: number,
+    price: number | string, 
+    quantity: number | string,
     selectedModifiers?: {
       name: string;
       options: {
         name: string;
-        price: number;
+        price: number | string;
       }[];
     }[]
   }) => {
+    // Ensure price is a number
+    const itemPrice = typeof item.price === 'number' ? item.price : 
+      parseFloat(String(item.price).replace(/[^\d.-]/g, '')) || 0;
+    
+    // Ensure quantity is a number
+    const quantity = typeof item.quantity === 'number' ? item.quantity : 
+      parseInt(String(item.quantity)) || 1;
+    
     // Calculate base price
-    let itemTotal = item.price * item.quantity;
+    let itemTotal = itemPrice * quantity;
     
     // Add modifier prices
     if (item.selectedModifiers && item.selectedModifiers.length > 0) {
       item.selectedModifiers.forEach(modifier => {
         modifier.options.forEach(option => {
-          itemTotal += option.price * item.quantity;
+          // Ensure option price is a number
+          const optionPrice = typeof option.price === 'number' ? option.price : 
+            parseFloat(String(option.price).replace(/[^\d.-]/g, '')) || 0;
+          
+          itemTotal += optionPrice * quantity;
         });
       });
     }
@@ -35,7 +47,12 @@ export default function CartDrawer() {
     return total + itemTotal;
   }, 0);
   
-  const itemCount = items.reduce((total: number, item: { quantity: number }) => total + item.quantity, 0);
+  const itemCount = items.reduce((total: number, item: { quantity: number | string }) => {
+    // Ensure quantity is a number
+    const quantity = typeof item.quantity === 'number' ? item.quantity : 
+      parseInt(String(item.quantity)) || 1;
+    return total + quantity;
+  }, 0);
 
   const closeDrawer = () => {
     dispatch(toggleDrawer(false));
@@ -126,20 +143,36 @@ export default function CartDrawer() {
                         <div className="flex justify-between items-center">
                           <h3 className="font-semibold">{item.name}</h3>
                           <div className="text-gray-600">
-                            {/* Calculate and display total price including modifiers */}
+                            {/* Calculate and display total price including modifiers and quantity */}
                             {(() => {
-                              let totalItemPrice = item.price;
+                              // Ensure price is a number
+                              let baseItemPrice = typeof item.price === 'number' ? item.price : 
+                                parseFloat(String(item.price).replace(/[^\d.-]/g, '')) || 0;
                               
                               if (item.selectedModifiers && item.selectedModifiers.length > 0) {
                                 item.selectedModifiers.forEach(modifier => {
                                   modifier.options.forEach(option => {
-                                    totalItemPrice += option.price;
+                                    // Ensure option price is a number
+                                    const optionPrice = typeof option.price === 'number' ? option.price : 
+                                      parseFloat(String(option.price).replace(/[^\d.-]/g, '')) || 0;
+                                    baseItemPrice += optionPrice;
                                   });
                                 });
                               }
                               
+                              // Ensure quantity is a number
+                              const quantity = typeof item.quantity === 'number' ? item.quantity : 
+                                parseInt(String(item.quantity)) || 1;
+                              
+                              // Multiply by quantity for total price
+                              const totalItemPrice = baseItemPrice * quantity;
+                              
+                              // Ensure we have a valid number before using toFixed
+                              const formattedPrice = !isNaN(totalItemPrice) ? 
+                                totalItemPrice.toFixed(2) : "0.00";
+                              
                               return (
-                                <span className="font-medium">${totalItemPrice?.toFixed(2)}</span>
+                                <span className="font-medium">${formattedPrice}</span>
                               );
                             })()}
                           </div>
@@ -157,7 +190,13 @@ export default function CartDrawer() {
                                     className="flex justify-between items-center py-0.5"
                                   >
                                     <span>{option.name || modifier.name}</span>
-                                    {option.price > 0 && <span className="font-medium">${option.price?.toFixed(2)}</span>}
+                                    {option.price > 0 && (
+                                      <span className="font-medium">
+                                        ${typeof option.price === 'number' ? 
+                                          option.price.toFixed(2) : 
+                                          (parseFloat(String(option.price).replace(/[^\d.-]/g, '')) || 0).toFixed(2)}
+                                      </span>
+                                    )}
                                   </div>
                                 ))
                               : []
@@ -184,21 +223,6 @@ export default function CartDrawer() {
                                           {chiliCount === 3 && '🌶️🌶️🌶️'}
                                         </span>
                                       </span>
-                                      <div className="flex items-center">
-                                        <button 
-                                          className="w-6 h-6 bg-red-50 rounded-full flex items-center justify-center text-xs"
-                                          onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
-                                        >
-                                          -
-                                        </button>
-                                        <span className="mx-1 text-sm">{item.quantity}</span>
-                                        <button 
-                                          className="w-6 h-6 bg-red-50 rounded-full flex items-center justify-center text-xs"
-                                          onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
-                                        >
-                                          +
-                                        </button>
-                                      </div>
                                     </div>
                                   );
                                 })
@@ -207,24 +231,41 @@ export default function CartDrawer() {
                           </div>
                         )}
                         
-                        {/* Quantity controls moved to spice level row */}
-                        {!item.selectedModifiers?.some(modifier => modifier.name === "Spice Level") && (
-                          <div className="flex items-center mt-2">
-                            <button 
-                              className="w-7 h-7 bg-red-50 rounded-full flex items-center justify-center text-sm"
-                              onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
-                            >
-                              -
-                            </button>
-                            <span className="mx-2 text-sm">{item.quantity}</span>
-                            <button 
-                              className="w-7 h-7 bg-red-50 rounded-full flex items-center justify-center text-sm"
-                              onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
-                            >
-                              +
-                            </button>
-                          </div>
-                        )}
+                        {/* Quantity controls for all items */}
+                        <div className="flex items-center mt-2">
+                          <button 
+                            className="w-7 h-7 bg-red-50 rounded-full flex items-center justify-center text-sm"
+                            onClick={() => {
+                              // Ensure quantity is a number
+                              const quantity = typeof item.quantity === 'number' ? item.quantity : 
+                                parseInt(String(item.quantity)) || 1;
+                              handleQuantityChange(item.id, quantity - 1);
+                            }}
+                          >
+                            -
+                          </button>
+                          <span className="mx-2 text-sm">
+                            {typeof item.quantity === 'number' ? item.quantity : 
+                              parseInt(String(item.quantity)) || 1}
+                          </span>
+                          <button 
+                            className="w-7 h-7 bg-red-50 rounded-full flex items-center justify-center text-sm"
+                            onClick={() => {
+                              // Ensure quantity is a number
+                              const quantity = typeof item.quantity === 'number' ? item.quantity : 
+                                parseInt(String(item.quantity)) || 1;
+                              handleQuantityChange(item.id, quantity + 1);
+                            }}
+                          >
+                            +
+                          </button>
+                          <button 
+                            className="ml-auto p-1 text-gray-400 hover:text-red-500"
+                            onClick={() => handleRemoveItem(item.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
                       </div>
                     </li>
                   ))}
@@ -248,7 +289,7 @@ export default function CartDrawer() {
               <div className="border-t p-4">
                 <div className="flex justify-between mb-4">
                   <span className="font-semibold">Total</span>
-                  <span className="font-semibold">${subtotal?.toFixed(2)}</span>
+                  <span className="font-semibold">${!isNaN(subtotal) ? subtotal.toFixed(2) : "0.00"}</span>
                 </div>
                
                 <div className="space-y-2">
