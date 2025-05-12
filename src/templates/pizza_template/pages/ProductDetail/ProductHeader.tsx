@@ -40,7 +40,7 @@ const ProductHeader: React.FC<ProductHeaderProps> = ({
     const { items: cartItems } = useAppSelector(state => state.cart);
     
     // Check if this product is in the cart
-    const cartItem = cartItems.find(item => item.id === product.id);
+    const cartItem = cartItems.find((item:any) => item.id === product.id);
     return (
         <div className="flex flex-col md:flex-row justify-between items-start mb-4">
             <div className="md:pr-8 md:w-1/2">
