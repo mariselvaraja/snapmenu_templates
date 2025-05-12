@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { ShoppingCart, Plus, Minus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector, addItem, CartItem, fetchMenuRequest, MenuItem, removeItem, updateItemQuantity } from '../../../common/redux';
+import ModifierModal from '../components/ModifierModal';
 import _ from 'lodash';
 import { LuVegan } from 'react-icons/lu';
 import { IoLeafOutline } from 'react-icons/io5';
@@ -25,6 +26,8 @@ export default function Menu() {
     const [selectedLevel2, setSelectedLevel2] = useState<string>('all');
     const [selectedCategory, setSelectedCategory] = useState<string>('all');
     const [sortBy, setSortBy] = useState<string>('featured');
+    const [isModifierModalOpen, setIsModifierModalOpen] = useState(false);
+    const [selectedMenuItem, setSelectedMenuItem] = useState<MenuItem | null>(null);
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
     
@@ -43,25 +46,11 @@ export default function Menu() {
             name: tag.charAt(0).toUpperCase() + tag.slice(1)
         }));
     
-    // Menu data is now fetched directly in App.jsx
-    // useEffect(() => {
-    //     // Only fetch if items are empty and not already loading
-    //     if (items.length === 0 && !loading) {
-    //         console.log('Menu page: Fetching menu data');
-    //         dispatch(fetchMenuRequest());
-    //     }
-    // }, [dispatch, items.length, loading]);
 
     const handleAddToCart = (menuItem: MenuItem) => {
-        const cartItem: CartItem = {
-            id: menuItem.id, // ID is already a number
-            name: menuItem.name,
-            price: menuItem.price, // Price is already a number
-            image: menuItem.image,
-            quantity: 1, // Initial quantity is 1
-        };
-        console.log("handleAddToCart called with menuItem:", menuItem);
-        dispatch(addItem(cartItem));
+        // Open the modifier modal and set the selected menu item
+        setSelectedMenuItem(menuItem);
+        setIsModifierModalOpen(true);
     };
 
     // Handle loading and error states
@@ -236,6 +225,12 @@ export default function Menu() {
     return (
         <div className="py-20">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                {/* Modifier Modal */}
+                <ModifierModal 
+                    isOpen={isModifierModalOpen}
+                    onClose={() => setIsModifierModalOpen(false)}
+                    menuItem={selectedMenuItem}
+                />
                 <motion.div
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}

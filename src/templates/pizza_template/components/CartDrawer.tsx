@@ -75,7 +75,7 @@ export default function CartDrawer() {
             className="fixed top-0 right-0 h-full w-full sm:w-96 bg-white shadow-xl z-50 flex flex-col"
           >
             {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b">
+            <div className="flex items-center justify-between border-b p-4">
               <h2 className="text-xl font-bold flex items-center">
                 <ShoppingBag className="h-5 w-5 mr-2 text-red-500" />
                 Your Cart {itemCount > 0 && `(${itemCount})`}
@@ -123,73 +123,108 @@ export default function CartDrawer() {
                         </div>
                       )}
                       <div className="flex-1">
-                        <h3 className="font-semibold">{item.name}</h3>
-                        <div className="text-gray-600">
-                          {/* Calculate and display total price including modifiers */}
-                          {(() => {
-                            let totalItemPrice = item.price;
-                            let hasModifiers = false;
-                            
-                            if (item.selectedModifiers && item.selectedModifiers.length > 0) {
-                              item.selectedModifiers.forEach(modifier => {
-                                modifier.options.forEach(option => {
-                                  totalItemPrice += option.price;
-                                  hasModifiers = true;
+                        <div className="flex justify-between items-center">
+                          <h3 className="font-semibold">{item.name}</h3>
+                          <div className="text-gray-600">
+                            {/* Calculate and display total price including modifiers */}
+                            {(() => {
+                              let totalItemPrice = item.price;
+                              
+                              if (item.selectedModifiers && item.selectedModifiers.length > 0) {
+                                item.selectedModifiers.forEach(modifier => {
+                                  modifier.options.forEach(option => {
+                                    totalItemPrice += option.price;
+                                  });
                                 });
-                              });
-                            }
-                            
-                            return (
-                              <>
+                              }
+                              
+                              return (
                                 <span className="font-medium">${totalItemPrice.toFixed(2)}</span>
-                                {hasModifiers && (
-                                  <span className="text-xs ml-1">
-                                    (Base: ${item.price.toFixed(2)})
-                                  </span>
-                                )}
-                              </>
-                            );
-                          })()}
+                              );
+                            })()}
+                          </div>
                         </div>
                         
-                        {/* Display selected modifiers as badges */}
+                        {/* Display selected modifiers one by one with name on left and price on right */}
                         {item.selectedModifiers && item.selectedModifiers.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mt-1 mb-2">
+                          <div className="mt-1 mb-2 text-xs text-gray-600">
+                            {/* First display all non-spice level modifiers */}
                             {item.selectedModifiers.flatMap(modifier => 
-                              modifier.options.map((option, index) => (
-                                <span 
-                                  key={`${modifier.name}-${option.name}-${index}`} 
-                                  className="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-red-100 text-red-800"
-                                >
-                                  {option.name || modifier.name}
-                                  {option.price > 0 && <span className="ml-1 font-medium">+${option.price.toFixed(2)}</span>}
-                                </span>
-                              ))
+                              modifier.name !== "Spice Level" ? 
+                                modifier.options.map((option, index) => (
+                                  <div 
+                                    key={`${modifier.name}-${option.name}-${index}`} 
+                                    className="flex justify-between items-center py-0.5"
+                                  >
+                                    <span>{option.name || modifier.name}</span>
+                                    {option.price > 0 && <span className="font-medium">${option.price.toFixed(2)}</span>}
+                                  </div>
+                                ))
+                              : []
+                            )}
+                            
+                            {/* Then display spice level modifiers at the end */}
+                            {item.selectedModifiers.flatMap(modifier => 
+                              modifier.name === "Spice Level" ? 
+                                modifier.options.map((option, index) => {
+                                  let chiliCount = 1; // Default to 1
+                                  if (option.name === "Medium") chiliCount = 2;
+                                  if (option.name === "Hot") chiliCount = 3;
+                                  
+                                  return (
+                                    <div 
+                                      key={`${modifier.name}-${option.name}-${index}`} 
+                                      className="flex justify-between items-center py-0.5"
+                                    >
+                                      <span className="flex items-center">
+                                        {/* Spice Level:  */}
+                                        <span className="ml-1 text-red-500">
+                                          {chiliCount === 1 && '🌶️'}
+                                          {chiliCount === 2 && '🌶️🌶️'}
+                                          {chiliCount === 3 && '🌶️🌶️🌶️'}
+                                        </span>
+                                      </span>
+                                      <div className="flex items-center">
+                                        <button 
+                                          className="w-6 h-6 bg-red-50 rounded-full flex items-center justify-center text-xs"
+                                          onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
+                                        >
+                                          -
+                                        </button>
+                                        <span className="mx-1 text-sm">{item.quantity}</span>
+                                        <button 
+                                          className="w-6 h-6 bg-red-50 rounded-full flex items-center justify-center text-xs"
+                                          onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
+                                        >
+                                          +
+                                        </button>
+                                      </div>
+                                    </div>
+                                  );
+                                })
+                              : []
                             )}
                           </div>
                         )}
                         
-                        <div className="flex items-center mt-2">
-                          <button 
-                            className="w-7 h-7 bg-red-50 rounded-full flex items-center justify-center text-sm"
-                            onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
-                          >
-                            -
-                          </button>
-                          <span className="mx-2 text-sm">{item.quantity}</span>
-                          <button 
-                            className="w-7 h-7 bg-red-50 rounded-full flex items-center justify-center text-sm"
-                            onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
-                          >
-                            +
-                          </button>
-                          <button 
-                            className="ml-auto text-red-500 hover:text-red-600 transition-colors"
-                            onClick={() => handleRemoveItem(item.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        </div>
+                        {/* Quantity controls moved to spice level row */}
+                        {!item.selectedModifiers?.some(modifier => modifier.name === "Spice Level") && (
+                          <div className="flex items-center mt-2">
+                            <button 
+                              className="w-7 h-7 bg-red-50 rounded-full flex items-center justify-center text-sm"
+                              onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
+                            >
+                              -
+                            </button>
+                            <span className="mx-2 text-sm">{item.quantity}</span>
+                            <button 
+                              className="w-7 h-7 bg-red-50 rounded-full flex items-center justify-center text-sm"
+                              onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
+                            >
+                              +
+                            </button>
+                          </div>
+                        )}
                       </div>
                     </li>
                   ))}
@@ -212,12 +247,10 @@ export default function CartDrawer() {
             {items.length > 0 && (
               <div className="border-t p-4">
                 <div className="flex justify-between mb-4">
-                  <span className="font-semibold">Subtotal</span>
+                  <span className="font-semibold">Total</span>
                   <span className="font-semibold">${subtotal.toFixed(2)}</span>
                 </div>
-                <p className="text-xs text-gray-500 mb-4">
-                  Shipping and taxes calculated at checkout
-                </p>
+               
                 <div className="space-y-2">
                   <Link
                     to="/cart"

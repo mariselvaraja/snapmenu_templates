@@ -1,12 +1,18 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Trash2, ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Pencil } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAppSelector, useAppDispatch, removeItem, updateItemQuantity } from '../../../common/redux';
+import { useAppSelector, useAppDispatch, removeItem, updateItemQuantity, addItem } from '../../../common/redux';
+import ModifierModal from '../components/ModifierModal';
 
 export default function Cart() {
   const cartItems = useAppSelector((state) => state.cart.items);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  
+  // State for modifier modal
+  const [isModifierModalOpen, setIsModifierModalOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<any>(null);
 
   // Calculate cart totals
   const subtotal = cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
@@ -25,8 +31,44 @@ export default function Cart() {
     }
   };
   
+  // Open modifier modal for editing
+  const handleEditItem = (item: any) => {
+    setEditingItem({
+      ...item,
+      modifiers_list: [] // This would normally come from your menu data
+    });
+    setIsModifierModalOpen(true);
+  };
+  
+  // Close modifier modal
+  const handleCloseModifierModal = () => {
+    setIsModifierModalOpen(false);
+    setEditingItem(null);
+  };
+  
+  // Handle updating item with new modifiers
+  const handleUpdateItem = (updatedItem: any) => {
+    if (editingItem) {
+      // First remove the old item
+      dispatch(removeItem(editingItem.id));
+      
+      // Then add the updated item with the same quantity
+      // We need to set the quantity explicitly to avoid incrementing it
+      const updatedCartItem = {
+        ...updatedItem,
+        quantity: editingItem.quantity
+      };
+      
+      // Use setTimeout to ensure the remove action completes first
+      setTimeout(() => {
+        dispatch(addItem(updatedCartItem));
+      }, 0);
+    }
+    handleCloseModifierModal();
+  };
+  
   return (
-    <div className="py-20">
+    <div className="py-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -75,34 +117,114 @@ export default function Cart() {
                         </div>
                       )}
                       <div className="flex-1">
-                        <h3 className="text-lg font-semibold">{item.name}</h3>
-                        <p className="text-gray-600">${item.price.toFixed(2)}</p>
-                        <div className="flex items-center mt-2">
-                          <button 
-                            className="w-8 h-8 bg-red-50 rounded-full flex items-center justify-center"
-                            onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
-                          >
-                            -
-                          </button>
-                          <span className="mx-3">{item.quantity}</span>
-                          <button 
-                            className="w-8 h-8 bg-red-50 rounded-full flex items-center justify-center"
-                            onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
-                          >
-                            +
-                          </button>
+                        <div className="flex items-center justify-between">
+                          <h3 className="text-lg font-semibold">{item.name}</h3>
+                          <p className="text-lg font-semibold">
+                            ${(item.price * item.quantity).toFixed(2)}
+                          </p>
                         </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-lg font-semibold">
-                          ${(item.price * item.quantity).toFixed(2)}
-                        </p>
-                        <button 
-                          className="text-red-500 hover:text-red-600 transition-colors mt-2"
-                          onClick={() => handleRemoveItem(item.id)}
-                        >
-                          <Trash2 className="h-5 w-5" />
-                        </button>
+                        
+                        {/* Display selected modifiers one by one with name on left and price on right */}
+                        {item.selectedModifiers && item.selectedModifiers.length > 0 && (
+                          <div className="mt-1 mb-2 text-xs text-gray-600">
+                            {/* First display all non-spice level modifiers */}
+                            {item.selectedModifiers.flatMap(modifier => 
+                              modifier.name !== "Spice Level" ? 
+                                modifier.options.map((option, index) => (
+                                  <div 
+                                    key={`${modifier.name}-${option.name}-${index}`} 
+                                    className="flex justify-between items-center py-0.5"
+                                  >
+                                    <span>{option.name || modifier.name}</span>
+                                    {option.price > 0 && <span className="font-medium">${option.price.toFixed(2)}</span>}
+                                  </div>
+                                ))
+                              : []
+                            )}
+                            
+                            {/* Then display spice level modifiers at the end */}
+                            {item.selectedModifiers.flatMap(modifier => 
+                              modifier.name === "Spice Level" ? 
+                                modifier.options.map((option, index) => {
+                                  let chiliCount = 1; // Default to 1
+                                  if (option.name === "Medium") chiliCount = 2;
+                                  if (option.name === "Hot") chiliCount = 3;
+                                  
+                                  return (
+                                    <div 
+                                      key={`${modifier.name}-${option.name}-${index}`} 
+                                      className="flex justify-between items-center py-0.5"
+                                    >
+                                      <span className="flex items-center">
+                                        {/* Spice Level:  */}
+                                        <span className="ml-1 text-red-500">
+                                          {chiliCount === 1 && '🌶️'}
+                                          {chiliCount === 2 && '🌶️🌶️'}
+                                          {chiliCount === 3 && '🌶️🌶️🌶️'}
+                                        </span>
+                                      </span>
+                                      <div className="flex items-center">
+                                        <button 
+                                          className="w-6 h-6 bg-red-50 rounded-full flex items-center justify-center text-sm"
+                                          onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
+                                        >
+                                          -
+                                        </button>
+                                        <span className="mx-2 text-sm">{item.quantity}</span>
+                                        <button 
+                                          className="w-6 h-6 bg-red-50 rounded-full flex items-center justify-center text-sm"
+                                          onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
+                                        >
+                                          +
+                                        </button>
+                                      </div>
+                                    </div>
+                                  );
+                                })
+                              : []
+                            )}
+                          </div>
+                        )}
+                        {/* Add quantity controls if there's no spice level */}
+                        {!item.selectedModifiers?.some(modifier => modifier.name === "Spice Level") && (
+                          <div className="flex justify-between items-center mt-2">
+                            <button 
+                              className="text-red-500 hover:text-red-600 transition-colors text-xs flex items-center"
+                              onClick={() => handleEditItem(item)}
+                            >
+                              <Pencil className="h-3 w-3 mr-1" />
+                              Edit
+                            </button>
+                            <div className="flex items-center">
+                              <button 
+                                className="w-6 h-6 bg-red-50 rounded-full flex items-center justify-center text-sm"
+                                onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
+                              >
+                                -
+                              </button>
+                              <span className="mx-2 text-sm">{item.quantity}</span>
+                              <button 
+                                className="w-6 h-6 bg-red-50 rounded-full flex items-center justify-center text-sm"
+                                onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
+                              >
+                                +
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {/* Add edit button if there is a spice level (since quantity controls are already shown) */}
+                        {item.selectedModifiers?.some(modifier => modifier.name === "Spice Level") && (
+                          <div className="flex justify-end mt-2">
+                            <button 
+                              className="text-red-500 hover:text-red-600 transition-colors text-xs flex items-center"
+                              onClick={() => handleEditItem(item)}
+                            >
+                              <Pencil className="h-3 w-3 mr-1" />
+                              Edit
+                            </button>
+                          </div>
+                        )}
                       </div>
                     </li>
                   ))}
@@ -167,6 +289,22 @@ export default function Cart() {
           </motion.div>
         )}
       </div>
+      
+      {/* Modifier Modal for editing items */}
+      {isModifierModalOpen && (
+        <ModifierModal 
+          isOpen={isModifierModalOpen}
+          onClose={(updatedItem) => {
+            // If an updated item was returned, update it in the cart
+            if (updatedItem && editingItem) {
+              handleUpdateItem(updatedItem);
+            } else {
+              handleCloseModifierModal();
+            }
+          }}
+          menuItem={editingItem}
+        />
+      )}
     </div>
   );
 }

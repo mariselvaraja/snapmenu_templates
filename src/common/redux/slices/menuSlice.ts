@@ -46,6 +46,8 @@ export interface MenuItem {
   variations?: string;
   allergy_info?: string;
   best_combo?: string;
+  best_combo_ids?: string;
+  best_name?: string;
   is_deleted?: string;
   tags?: string[];
   available: boolean;
