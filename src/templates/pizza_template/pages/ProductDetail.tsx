@@ -209,6 +209,10 @@ export default function ProductDetail() {
 
     // Handle modifier option selection
     const handleModifierOptionSelect = (modifierName: string, option: ModifierOption): void => {
+        // Check if this modifier is multi-select
+        const modifier = modifiersList.find(mod => mod.name === modifierName);
+        const isMultiSelect = modifier?.is_multi_select?.toLowerCase() === 'yes';
+        
         setSelectedModifiers(prev => {
             // Check if this modifier is already in the selected list
             const modifierIndex = prev.findIndex(mod => mod.name === modifierName);
@@ -218,31 +222,46 @@ export default function ProductDetail() {
                 const optionIndex = prev[modifierIndex].options.findIndex((opt: {name: string}) => opt.name === option.name);
                 
                 if (optionIndex >= 0) {
-                    // Option is already selected, remove it
-                    const newOptions = [...prev[modifierIndex].options];
-                    newOptions.splice(optionIndex, 1);
-                    
-                    // If no options left, remove the whole modifier
-                    if (newOptions.length === 0) {
-                        const newModifiers = [...prev];
-                        newModifiers.splice(modifierIndex, 1);
-                        return newModifiers;
+                    // Option is already selected, remove it (only for multi-select modifiers)
+                    if (isMultiSelect) {
+                        const newOptions = [...prev[modifierIndex].options];
+                        newOptions.splice(optionIndex, 1);
+                        
+                        // If no options left, remove the whole modifier
+                        if (newOptions.length === 0) {
+                            const newModifiers = [...prev];
+                            newModifiers.splice(modifierIndex, 1);
+                            return newModifiers;
+                        } else {
+                            // Update options for this modifier
+                            const newModifiers = [...prev];
+                            newModifiers[modifierIndex] = {
+                                ...newModifiers[modifierIndex],
+                                options: newOptions
+                            };
+                            return newModifiers;
+                        }
                     } else {
-                        // Update options for this modifier
-                        const newModifiers = [...prev];
-                        newModifiers[modifierIndex] = {
-                            ...newModifiers[modifierIndex],
-                            options: newOptions
-                        };
-                        return newModifiers;
+                        // For radio buttons, clicking an already selected option does nothing
+                        return prev;
                     }
                 } else {
                     // Option not selected, add it
                     const newModifiers = [...prev];
-                    newModifiers[modifierIndex] = {
-                        ...newModifiers[modifierIndex],
-                        options: [...newModifiers[modifierIndex].options, { name: option.name, price: option.price } as any]
-                    };
+                    
+                    // For radio buttons (non-multi-select), replace all options with the new one
+                    if (!isMultiSelect) {
+                        newModifiers[modifierIndex] = {
+                            ...newModifiers[modifierIndex],
+                            options: [{ name: option.name, price: option.price }]
+                        };
+                    } else {
+                        // For checkboxes (multi-select), add the new option to existing ones
+                        newModifiers[modifierIndex] = {
+                            ...newModifiers[modifierIndex],
+                            options: [...newModifiers[modifierIndex].options, { name: option.name, price: option.price } as any]
+                        };
+                    }
                     
                     // Clear validation error for this modifier if it exists
                     if (validationErrors[modifierName]) {
