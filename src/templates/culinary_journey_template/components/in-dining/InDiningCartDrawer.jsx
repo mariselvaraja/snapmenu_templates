@@ -167,7 +167,7 @@ const InDiningCartDrawer = ({ onPlaceOrder }) => {
                             <Trash2 size={18} />
                           </button>
                         </div>
-                        <p className="text-orange-600 font-medium">${item.price.toFixed(2)}</p>
+                        <p className="text-orange-600 font-medium">${item.price?.toFixed(2)}</p>
                         
                         {/* Item Options */}
                         {item.options && Object.keys(item.options).length > 0 && (
@@ -210,15 +210,15 @@ const InDiningCartDrawer = ({ onPlaceOrder }) => {
               <div className="space-y-2 mb-4">
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Subtotal</span>
-                  <span className="font-medium">${subtotal.toFixed(2)}</span>
+                  <span className="font-medium">${subtotal?.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Tax (10%)</span>
-                  <span className="font-medium">${tax.toFixed(2)}</span>
+                  <span className="font-medium">${tax?.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between font-bold text-lg pt-2 border-t border-gray-100">
                   <span>Total</span>
-                  <span>${total.toFixed(2)}</span>
+                  <span>${total?.toFixed(2)}</span>
                 </div>
               </div>
               

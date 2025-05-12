@@ -127,14 +127,14 @@ export default function InDiningOrder() {
     {
       if(item.price.includes('$'))
       {
-        return Number(item?.price.replace('$', '')).toFixed(2);
+        return Number(item?.price.replace('$', ''))?.toFixed(2);
       }
       else
       {
-        return item?.price.toFixed(2).toFixed(2);
+        return item?.price?.toFixed(2)?.toFixed(2);
       }
     }
-    return price?.toFixed(2);
+    return price??.toFixed(2);
   }
 
   
@@ -149,9 +149,9 @@ export default function InDiningOrder() {
     setShowOrders(true);
     
     // Calculate tax amount (5% of total price)
-    const taxAmount = (totalPrice * 0.05).toFixed(2);
+    const taxAmount = (totalPrice * 0.05)?.toFixed(2);
     // Calculate grand total (total price + tax)
-    const grandTotal = (totalPrice * 1.05).toFixed(2);
+    const grandTotal = (totalPrice * 1.05)?.toFixed(2);
     
     // Transform cart items to the required format
     const orderedItems = cartItems.map(item => {
@@ -666,7 +666,7 @@ export default function InDiningOrder() {
                     
                     {/* Price on bottom left and Add to Order on bottom right */}
                     <div className="flex justify-between items-center mt-auto">
-                      <p className="text-lg font-bold text-red-500">${item.price.toFixed(2)}</p>
+                      <p className="text-lg font-bold text-red-500">${item.price?.toFixed(2)}</p>
                       <button 
                         onClick={() => openModifiersPopup(item)}
                         className="flex items-center gap-2 bg-red-500 text-white px-4 sm:px-6 py-2 rounded-full hover:bg-red-600 transition-colors text-sm sm:text-base"

@@ -273,7 +273,7 @@ const SearchBarComponent = ({ onClose }) => {
 
   // Format price to display with currency symbol
   const formatPrice = (price) => {
-    return `$${price.toFixed(2)}`;
+    return `$${price?.toFixed(2)}`;
   };
 
   // Render highlighted text

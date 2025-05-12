@@ -22,23 +22,23 @@ export const orderService = {
         ordered_items: orderData.items.map(item => {
           // Ensure price is a number and convert to string with 2 decimal places
           const itemPrice = typeof item.price === 'number' 
-            ? item.price.toFixed(2) 
-            : parseFloat(item.price.toString().replace(/[^\d.-]/g, '')).toFixed(2);
+            ? item.price?.toFixed(2) 
+            : parseFloat(item.price.toString().replace(/[^\d.-]/g, ''))?.toFixed(2);
           
           // Calculate total item price
-          const totalItemPrice = (parseFloat(itemPrice) * item.quantity).toFixed(2);
+          const totalItemPrice = (parseFloat(itemPrice) * item.quantity)?.toFixed(2);
           
           // Handle modifiers if they exist
           const modifiers = item.customizations ? item.customizations.map(mod => ({
             modifier_name: mod.name,
             modifier_price: typeof mod.price === 'number' 
-              ? mod.price.toFixed(2) 
-              : parseFloat(mod.price.toString().replace(/[^\d.-]/g, '')).toFixed(2)
+              ? mod.price?.toFixed(2) 
+              : parseFloat(mod.price.toString().replace(/[^\d.-]/g, ''))?.toFixed(2)
           })) : [];
           
           // Calculate total modifier price
           const modifierPrice = modifiers.reduce((total, mod) => 
-            total + parseFloat(mod.modifier_price), 0).toFixed(2);
+            total + parseFloat(mod.modifier_price), 0)?.toFixed(2);
           
           return {
             name: item.name,
@@ -50,8 +50,8 @@ export const orderService = {
           };
         }),
         grand_total: typeof orderData.totalAmount === 'number' 
-          ? orderData.totalAmount.toFixed(2) 
-          : parseFloat(orderData.totalAmount.toString().replace(/[^\d.-]/g, '')).toFixed(2)
+          ? orderData.totalAmount?.toFixed(2) 
+          : parseFloat(orderData.totalAmount.toString().replace(/[^\d.-]/g, ''))?.toFixed(2)
       };
 
       // Make the API call

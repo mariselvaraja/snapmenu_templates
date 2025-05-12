@@ -90,7 +90,7 @@ export function Checkout() {
       "phone": formData.phone,
       "email": formData.email,
       "ordered_items": ordered_items,
-      "grand_total": total.toFixed(2),
+      "grand_total": total?.toFixed(2),
       "special_requests": formData.specialRequests.trim() || "",
       "order_type": "manual"
     };
@@ -315,7 +315,7 @@ export function Checkout() {
                         <span className="ml-2">{item.name}</span>
                       </div>
                     </div>
-                    <span>${(Number(item.price) * item.quantity).toFixed(2)}</span>
+                    <span>${(Number(item.price) * item.quantity)?.toFixed(2)}</span>
                   </div>
                 ))}
               </div>
@@ -323,15 +323,15 @@ export function Checkout() {
               <div className="space-y-4">
                 <div className="flex justify-between">
                   <span>Subtotal</span>
-                  <span>${subtotal.toFixed(2)}</span>
+                  <span>${subtotal?.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Tax</span>
-                  <span>${tax.toFixed(2)}</span>
+                  <span>${tax?.toFixed(2)}</span>
                 </div>
                 <div className="border-t pt-4 flex justify-between font-semibold text-lg">
                   <span>Total</span>
-                  <span>${total.toFixed(2)}</span>
+                  <span>${total?.toFixed(2)}</span>
                 </div>
               </div>
               

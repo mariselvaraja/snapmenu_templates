@@ -101,7 +101,7 @@ export function AnalyticsDashboard() {
     },
     {
       title: 'Avg. Party Size',
-      value: keyMetrics.averagePartySize ? keyMetrics.averagePartySize.toFixed(1) : '0',
+      value: keyMetrics.averagePartySize ? keyMetrics.averagePartySize?.toFixed(1) : '0',
       icon: Users,
       trend: '+2%',
       color: 'text-teal-500'

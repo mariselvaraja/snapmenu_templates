@@ -169,7 +169,7 @@ const InDiningProductDetails = ({ product, onClose, menuItems }) => {
             {/* Product Details - Left Side */}
             <div className="p-6">
               <h2 className="text-2xl font-bold text-gray-800 mb-2">{product.name}</h2>
-              <p className="text-xl font-bold text-green-500 mb-2">${product.price.toFixed(2)}</p>
+              <p className="text-xl font-bold text-green-500 mb-2">${product.price?.toFixed(2)}</p>
               
               {/* Dietary Information Badges */}
               {product.dietary && (
@@ -297,7 +297,7 @@ const InDiningProductDetails = ({ product, onClose, menuItems }) => {
               <div className="hidden md:flex justify-between items-center mt-6">
                 <div className="flex items-center">
                   <p className="font-bold text-xl text-green-500 mr-4">
-                    ${(product.price * quantity).toFixed(2)}
+                    ${(product.price * quantity)?.toFixed(2)}
                   </p>
                   
                   <div className="flex items-center">
@@ -401,7 +401,7 @@ const InDiningProductDetails = ({ product, onClose, menuItems }) => {
                         </div>
                         <div className="p-2">
                           <h4 className="font-medium text-sm">{item.name}</h4>
-                          <p className="text-green-500 text-xs">${typeof item.price === 'number' ? item.price.toFixed(2) : item.price}</p>
+                          <p className="text-green-500 text-xs">${typeof item.price === 'number' ? item.price?.toFixed(2) : item.price}</p>
                         </div>
                       </div>
                     ));
@@ -419,7 +419,7 @@ const InDiningProductDetails = ({ product, onClose, menuItems }) => {
           <div className="flex justify-between items-center mb-3">
             {/* Price on LHS */}
             <p className="font-bold text-xl text-green-500">
-              ${(product.price * quantity).toFixed(2)}
+              ${(product.price * quantity)?.toFixed(2)}
             </p>
             
             {/* Quantity Controls on RHS */}

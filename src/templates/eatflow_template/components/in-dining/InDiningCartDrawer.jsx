@@ -120,7 +120,7 @@ const InDiningCartDrawer = ({ onPlaceOrder }) => {
                             <Trash2 size={18} />
                           </button>
                         </div>
-                        <p className="text-green-500 font-medium">${item.price.toFixed(2)}</p>
+                        <p className="text-green-500 font-medium">${item.price?.toFixed(2)}</p>
                         
                         {/* Quantity Controls */}
                         <div className="flex items-center mt-2">
@@ -150,7 +150,7 @@ const InDiningCartDrawer = ({ onPlaceOrder }) => {
               {/* Total */}
               <div className="flex justify-between text-lg font-bold mb-4">
                 <span>Total</span>
-                <span>${(totalPrice * 1.1).toFixed(2)}</span>
+                <span>${(totalPrice * 1.1)?.toFixed(2)}</span>
               </div>
               
               {/* Place Order Button - No Checkout Button for In-Dining */}

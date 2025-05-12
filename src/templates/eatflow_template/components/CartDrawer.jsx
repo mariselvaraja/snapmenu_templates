@@ -122,15 +122,15 @@ export function CartDrawer({ isOpen, onClose }) {
               <div className="border-t p-4">
                 <div className="flex justify-between mb-2">
                   <span className="text-gray-600">Subtotal</span>
-                  <span className="font-semibold">${calculateTotal().toFixed(2)}</span>
+                  <span className="font-semibold">${calculateTotal()?.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between mb-2">
                   <span className="text-gray-600">Tax (8%)</span>
-                  <span className="font-semibold">${(calculateTotal() * 0.08).toFixed(2)}</span>
+                  <span className="font-semibold">${(calculateTotal() * 0.08)?.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between mb-4">
                   <span className="font-semibold">Total</span>
-                  <span className="font-bold text-green-600">${(calculateTotal() * 1.08).toFixed(2)}</span>
+                  <span className="font-bold text-green-600">${(calculateTotal() * 1.08)?.toFixed(2)}</span>
                 </div>
                 <p className="text-xs text-gray-500 mb-4">
                   Shipping and taxes calculated at checkout

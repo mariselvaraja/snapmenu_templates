@@ -331,7 +331,7 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
 
   // Format price to display with currency symbol
   const formatPrice = (price: number): string => {
-    return `$${price.toFixed(2)}`;
+    return `$${price?.toFixed(2)}`;
   };
 
   // Render highlighted text

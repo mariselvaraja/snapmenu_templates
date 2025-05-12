@@ -60,7 +60,7 @@ export function formatPrice(price) {
   const numericPrice = parseFloat(price.toString().replace(/[^0-9.]/g, ''));
   
   // Format with dollar sign and two decimal places
-  return `$${numericPrice.toFixed(2)}`;
+  return `$${numericPrice?.toFixed(2)}`;
 }
 
 export function calculateItemPrice(price, quantity = 1) {

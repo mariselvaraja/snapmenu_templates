@@ -230,7 +230,7 @@ const InDiningOrders = ({ onClose, newOrderNumber }) => {
                           
                           {/* Price */}
                           <div className="font-medium text-sm">
-                            ${(item.price * item.quantity).toFixed(2)}
+                            ${(item.price * item.quantity)?.toFixed(2)}
                           </div>
                         </div>
                       ))}
@@ -248,7 +248,7 @@ const InDiningOrders = ({ onClose, newOrderNumber }) => {
         <div>
           <div className="text-sm text-gray-600">Total Amount</div>
           <div className="text-xl font-bold text-orange-600">
-            ${orders.length > 0 ? orders[0].total.toFixed(2) : '0.00'}
+            ${orders.length > 0 ? orders[0].total?.toFixed(2) : '0.00'}
           </div>
         </div>
         <div className="flex space-x-3">

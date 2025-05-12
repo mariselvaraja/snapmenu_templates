@@ -59,7 +59,7 @@ const ProductHeader: React.FC<ProductHeaderProps> = ({
                 
                 <div className="flex items-center justify-between mt-4 mb-4">
                     <div>
-                        <div className="text-2xl font-bold text-red-500">${calculateTotalPrice().toFixed(2)}</div>
+                        <div className="text-2xl font-bold text-red-500">${calculateTotalPrice()?.toFixed(2)}</div>
                     </div>
                     
                     {/* Add to Cart button or Quantity Controls */}

@@ -13,6 +13,6 @@ export function formatPrice(amount) {
   }
 
   // Log the price formatting for debugging
-  console.log('Formatting price:', amount, '(type:', typeof amount, ') to:', `$${price.toFixed(2)}`);
-  return `$${price.toFixed(2)}`;
+  console.log('Formatting price:', amount, '(type:', typeof amount, ') to:', `$${price?.toFixed(2)}`);
+  return `$${price?.toFixed(2)}`;
 }

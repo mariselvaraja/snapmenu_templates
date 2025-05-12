@@ -102,7 +102,7 @@ export default function Order() {
                     <div>
                       <h3 className="text-xl font-semibold mb-2">{item.name}</h3>
                       <p className="text-gray-600 mb-4">{item.description}</p>
-                      <p className="text-lg font-bold text-red-500">${item.price.toFixed(2)}</p>
+                      <p className="text-lg font-bold text-red-500">${item.price?.toFixed(2)}</p>
                     </div>
                     <button 
                       onClick={() => dispatch(addItem({
@@ -149,7 +149,7 @@ export default function Order() {
                           )}
                           <div>
                             <h3 className="font-semibold">{item.name}</h3>
-                            <p className="text-gray-600 text-sm">${item.price.toFixed(2)}</p>
+                            <p className="text-gray-600 text-sm">${item.price?.toFixed(2)}</p>
                           </div>
                         </div>
                         <div className="text-right">
@@ -195,15 +195,15 @@ export default function Order() {
               <div className="border-t pt-4">
                 <div className="flex justify-between mb-2">
                   <span>Subtotal</span>
-                  <span>${cartItems && cartItems.reduce((total, item) => total + (item.price * item.quantity), 0).toFixed(2)}</span>
+                  <span>${cartItems && cartItems.reduce((total, item) => total + (item.price * item.quantity), 0)?.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between mb-2">
                   <span>Tax</span>
-                  <span>${cartItems && (cartItems.reduce((total, item) => total + (item.price * item.quantity), 0) * 0.08).toFixed(2)}</span>
+                  <span>${cartItems && (cartItems.reduce((total, item) => total + (item.price * item.quantity), 0) * 0.08)?.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between font-bold text-lg">
                   <span>Total</span>
-                  <span>${cartItems && (cartItems.reduce((total, item) => total + (item.price * item.quantity), 0) * 1.08).toFixed(2)}</span>
+                  <span>${cartItems && (cartItems.reduce((total, item) => total + (item.price * item.quantity), 0) * 1.08)?.toFixed(2)}</span>
                 </div>
               </div>
               <button

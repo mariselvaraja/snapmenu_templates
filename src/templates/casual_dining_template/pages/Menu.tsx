@@ -374,7 +374,7 @@ export function Menu() {
                   {item.description}
                 </p>
                 <div className="flex items-center justify-between">
-                  <span className="text-lg font-bold text-yellow-400">${typeof item.price === 'string' ? item.price : item.price.toFixed(2)}</span>
+                  <span className="text-lg font-bold text-yellow-400">${typeof item.price === 'string' ? item.price : item.price?.toFixed(2)}</span>
                   
                   {/* Add button or quantity controls */}
                   {!cart.find(cartItem => cartItem.id === item.id.toString() && Number(cartItem.quantity) > 0) ? (

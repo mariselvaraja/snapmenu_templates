@@ -95,7 +95,7 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order, tableNumb
                   <span className="font-medium">{item.quantity}x </span>
                   {item.name}
                 </div>
-                <div className="font-medium">${(item.price * item.quantity).toFixed(2)}</div>
+                <div className="font-medium">${(item.price * item.quantity)?.toFixed(2)}</div>
               </div>
             ))}
           </div>
@@ -107,15 +107,15 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order, tableNumb
           <div className="space-y-2 mb-6">
             <div className="flex justify-between">
               <span>Subtotal</span>
-              <span>${subtotal.toFixed(2)}</span>
+              <span>${subtotal?.toFixed(2)}</span>
             </div>
             <div className="flex justify-between">
               <span>Tax (10%)</span>
-              <span>${tax.toFixed(2)}</span>
+              <span>${tax?.toFixed(2)}</span>
             </div>
             <div className="flex justify-between font-bold text-lg">
               <span>Total</span>
-              <span>${total.toFixed(2)}</span>
+              <span>${total?.toFixed(2)}</span>
             </div>
           </div>
           

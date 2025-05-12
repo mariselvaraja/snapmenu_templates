@@ -139,7 +139,7 @@ export default function CartDrawer() {
                               }
                               
                               return (
-                                <span className="font-medium">${totalItemPrice.toFixed(2)}</span>
+                                <span className="font-medium">${totalItemPrice?.toFixed(2)}</span>
                               );
                             })()}
                           </div>
@@ -157,7 +157,7 @@ export default function CartDrawer() {
                                     className="flex justify-between items-center py-0.5"
                                   >
                                     <span>{option.name || modifier.name}</span>
-                                    {option.price > 0 && <span className="font-medium">${option.price.toFixed(2)}</span>}
+                                    {option.price > 0 && <span className="font-medium">${option.price?.toFixed(2)}</span>}
                                   </div>
                                 ))
                               : []
@@ -248,7 +248,7 @@ export default function CartDrawer() {
               <div className="border-t p-4">
                 <div className="flex justify-between mb-4">
                   <span className="font-semibold">Total</span>
-                  <span className="font-semibold">${subtotal.toFixed(2)}</span>
+                  <span className="font-semibold">${subtotal?.toFixed(2)}</span>
                 </div>
                
                 <div className="space-y-2">

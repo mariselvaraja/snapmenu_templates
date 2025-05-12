@@ -83,7 +83,7 @@ export function Cart() {
                       </div>
                       <div className="text-right">
                         <p className="text-lg font-semibold">
-                          ${((parseFloat(item.price) || 0) * (item.quantity || 1)).toFixed(2)}
+                          ${((parseFloat(item.price) || 0) * (item.quantity || 1))?.toFixed(2)}
                         </p>
                         <button 
                           className="text-red-500 hover:text-red-600 transition-colors mt-2"
@@ -109,15 +109,15 @@ export function Cart() {
                 <div className="space-y-4">
                   <div className="flex justify-between">
                     <span>Subtotal</span>
-                    <span>${subtotal.toFixed(2)}</span>
+                    <span>${subtotal?.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Tax (8%)</span>
-                    <span>${tax.toFixed(2)}</span>
+                    <span>${tax?.toFixed(2)}</span>
                   </div>
                   <div className="border-t pt-4 flex justify-between font-semibold text-lg">
                     <span>Total</span>
-                    <span>${total.toFixed(2)}</span>
+                    <span>${total?.toFixed(2)}</span>
                   </div>
                 </div>
                 <button 

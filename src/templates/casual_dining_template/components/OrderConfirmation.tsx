@@ -163,7 +163,7 @@ const OrderConfirmation: React.FC<OrderConfirmationProps> = ({ orderDetails }) =
                                 });
                               }
                               
-                              return (totalItemPrice * item.quantity).toFixed(2);
+                              return (totalItemPrice * item.quantity)?.toFixed(2);
                             })()}
                           </p>
                         </div>
@@ -180,7 +180,7 @@ const OrderConfirmation: React.FC<OrderConfirmationProps> = ({ orderDetails }) =
                               >
                                 <span>{option.name || modifier.name}</span>
                                 {option.price > 0 && (
-                                  <span>+${(option.price * item.quantity).toFixed(2)}</span>
+                                  <span>+${(option.price * item.quantity)?.toFixed(2)}</span>
                                 )}
                               </div>
                             ))

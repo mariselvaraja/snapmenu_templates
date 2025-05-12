@@ -29,7 +29,7 @@ const CartDrawer: React.FC = () => {
       }
       
       return total + itemTotal;
-    }, 0).toFixed(2);
+    }, 0)?.toFixed(2);
   };
   
   // Calculate item count
@@ -126,7 +126,7 @@ const CartDrawer: React.FC = () => {
                               });
                             }
                             
-                            return totalItemPrice.toFixed(2);
+                            return totalItemPrice?.toFixed(2);
                           })()}
                         </p>
                         
@@ -140,7 +140,7 @@ const CartDrawer: React.FC = () => {
                                   className="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-zinc-800 text-yellow-400"
                                 >
                                   {option.name || modifier.name}
-                                  {option.price > 0 && <span className="ml-1 font-medium">+${option.price.toFixed(2)}</span>}
+                                  {option.price > 0 && <span className="ml-1 font-medium">+${option.price?.toFixed(2)}</span>}
                                 </span>
                               ))
                             )}

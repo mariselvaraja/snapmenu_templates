@@ -21,7 +21,7 @@ const MenuItem = ({ item }) => {
     addToCart({
       id: item.id,
       name: item.name,
-      price: typeof item.price === 'number' ? item.price.toFixed(2) : item.price.toString(),
+      price: typeof item.price === 'number' ? item.price?.toFixed(2) : item.price.toString(),
       imageUrl: item.image,
     });
   };
@@ -78,7 +78,7 @@ const MenuItem = ({ item }) => {
           >
             {item.name}
           </h3>
-          <span className="text-lg font-bold text-green-600">${typeof item.price === 'number' ? item.price.toFixed(2) : item.price}</span>
+          <span className="text-lg font-bold text-green-600">${typeof item.price === 'number' ? item.price?.toFixed(2) : item.price}</span>
         </div>
         <p 
           className="text-gray-600 mb-4 line-clamp-2 cursor-pointer hover:text-gray-800 transition"

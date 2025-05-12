@@ -100,7 +100,7 @@ function ProductDetails() {
       addToCart({
         id: product.id,
         name: product.name,
-        price: typeof product.price === 'number' ? product.price.toFixed(2) : product.price.toString(),
+        price: typeof product.price === 'number' ? product.price?.toFixed(2) : product.price.toString(),
         imageUrl: product.image,
       });
       
@@ -300,7 +300,7 @@ function ProductDetails() {
                       )}
                       <div>
                         <h3 className="font-medium text-sm">{item.name}</h3>
-                        <p className="text-yellow-400 text-xs">${typeof item.price === 'number' ? item.price.toFixed(2) : item.price}</p>
+                        <p className="text-yellow-400 text-xs">${typeof item.price === 'number' ? item.price?.toFixed(2) : item.price}</p>
                       </div>
                     </div>
                   </div>
@@ -340,7 +340,7 @@ function ProductDetails() {
                 <p className="text-gray-300 mb-6">{product.description}</p>
                 
                 <div className="flex items-center justify-between mb-6">
-                  <div className="text-2xl font-bold text-yellow-400">${typeof product.price === 'number' ? product.price.toFixed(2) : product.price}</div>
+                  <div className="text-2xl font-bold text-yellow-400">${typeof product.price === 'number' ? product.price?.toFixed(2) : product.price}</div>
                   
                   {/* Dietary Information Badges */}
                   <div className="flex flex-wrap gap-2">

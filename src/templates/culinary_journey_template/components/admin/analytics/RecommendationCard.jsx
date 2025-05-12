@@ -51,15 +51,15 @@ export function RecommendationCard({ title, message, priority, metric, details, 
             </div>
             <div className="flex justify-between">
               <span className="text-sm text-gray-600">Total Revenue</span>
-              <span className="text-sm font-medium">${item.revenue.toFixed(2)}</span>
+              <span className="text-sm font-medium">${item.revenue?.toFixed(2)}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-sm text-gray-600">Average Order Size</span>
-              <span className="text-sm font-medium">{item.averageOrderSize.toFixed(1)}</span>
+              <span className="text-sm font-medium">{item.averageOrderSize?.toFixed(1)}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-sm text-gray-600">Average Price</span>
-              <span className="text-sm font-medium">${item.averagePrice.toFixed(2)}</span>
+              <span className="text-sm font-medium">${item.averagePrice?.toFixed(2)}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-sm text-gray-600">Order Count</span>

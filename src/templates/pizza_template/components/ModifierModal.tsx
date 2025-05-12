@@ -386,7 +386,7 @@ export default function ModifierModal({ isOpen, onClose, menuItem }: ModifierMod
                             </div>
                           </div>
                           {typeof option.price === 'number' && option.price > 0 && (
-                            <div className="text-sm text-gray-600 ml-auto">+{option.price.toFixed(2)}</div>
+                            <div className="text-sm text-gray-600 ml-auto">+{option.price?.toFixed(2)}</div>
                           )}
                         </button>
                       ))}
@@ -435,7 +435,7 @@ export default function ModifierModal({ isOpen, onClose, menuItem }: ModifierMod
                               {option.name}
                             </div>
                             { option.price !== undefined && (
-                              <div className="text-sm text-gray-600 ml-auto">(+{typeof option.price === 'number' ? "$"+option.price.toFixed(2) : option.price})</div>
+                              <div className="text-sm text-gray-600 ml-auto">(+{typeof option.price === 'number' ? "$"+option.price?.toFixed(2) : option.price})</div>
                             )}
                           </button>
                         ))}
@@ -496,7 +496,7 @@ export default function ModifierModal({ isOpen, onClose, menuItem }: ModifierMod
                             </div>
                           </div>
                           {typeof option.price === 'number' && option.price > 0 && (
-                            <div className="text-sm text-gray-600 ml-auto">+{option.price.toFixed(2)}</div>
+                            <div className="text-sm text-gray-600 ml-auto">+{option.price?.toFixed(2)}</div>
                           )}
                         </button>
                       ))}
@@ -541,7 +541,7 @@ export default function ModifierModal({ isOpen, onClose, menuItem }: ModifierMod
                             {option.name}
                           </div>
                           { option.price !== undefined && (
-                            <div className="text-sm text-gray-600 ml-auto">(+{typeof option.price === 'number' ? "$"+option.price.toFixed(2) : option.price})</div>
+                            <div className="text-sm text-gray-600 ml-auto">(+{typeof option.price === 'number' ? "$"+option.price?.toFixed(2) : option.price})</div>
                           )}
                         </button>
                       ))}
@@ -556,7 +556,7 @@ export default function ModifierModal({ isOpen, onClose, menuItem }: ModifierMod
                   onClick={handleAddToCart}
                   className="w-full bg-red-500 text-white py-3 rounded-full font-semibold hover:bg-red-600 transition-colors"
                 >
-                  {menuItem.selectedModifiers ? 'Update Item' : 'Add to Cart'} - ${(menuItem.price + calculateAdditionalPrice()).toFixed(2)}
+                  {menuItem.selectedModifiers ? 'Update Item' : 'Add to Cart'} - ${(menuItem.price + calculateAdditionalPrice())?.toFixed(2)}
                 </button>
               </div>
             </div>

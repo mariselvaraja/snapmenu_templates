@@ -205,7 +205,7 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
                   <div><strong>${item.name}</strong></div>
                   <div style="display: flex;">
                     <div style="width: 60px; text-align: center;">${item.quantity}x</div>
-                    <div style="width: 80px; text-align: right;">$${item.price.toFixed(2)}</div>
+                    <div style="width: 80px; text-align: right;">$${item.price?.toFixed(2)}</div>
                   </div>
                 </div>
                 
@@ -233,7 +233,7 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
           
           <div class="total-row">
             <div>TOTAL</div>
-            <div>$${totalAmount.toFixed(2)}</div>
+            <div>$${totalAmount?.toFixed(2)}</div>
           </div>
           
           <div class="divider"></div>
@@ -327,7 +327,7 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
                     <span className="font-medium">{item.name}</span>
                     <div className="flex">
                       <span className="w-16 text-center">{item.quantity}x</span>
-                      <span className="w-20 text-right">${item.price.toFixed(2)}</span>
+                      <span className="w-20 text-right">${item.price?.toFixed(2)}</span>
                     </div>
                   </div>
                   
@@ -358,7 +358,7 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
             <div className="border-t border-gray-200 pt-4 mt-4">
               <div className="flex justify-between font-bold">
                 <span>TOTAL</span>
-                <span>${totalAmount.toFixed(2)}</span>
+                <span>${totalAmount?.toFixed(2)}</span>
               </div>
             </div>
           </div>

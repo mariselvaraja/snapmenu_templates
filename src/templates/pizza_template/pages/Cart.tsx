@@ -120,7 +120,7 @@ export default function Cart() {
                         <div className="flex items-center justify-between">
                           <h3 className="text-lg font-semibold">{item.name}</h3>
                           <p className="text-lg font-semibold">
-                            ${(item.price * item.quantity).toFixed(2)}
+                            ${(item.price * item.quantity)?.toFixed(2)}
                           </p>
                         </div>
                         
@@ -136,7 +136,7 @@ export default function Cart() {
                                     className="flex justify-between items-center py-0.5"
                                   >
                                     <span>{option.name || modifier.name}</span>
-                                    {option.price > 0 && <span className="font-medium">${option.price.toFixed(2)}</span>}
+                                    {option.price > 0 && <span className="font-medium">${option.price?.toFixed(2)}</span>}
                                   </div>
                                 ))
                               : []
@@ -243,15 +243,15 @@ export default function Cart() {
                 <div className="space-y-4">
                   <div className="flex justify-between">
                     <span>Subtotal</span>
-                    <span>${subtotal.toFixed(2)}</span>
+                    <span>${subtotal?.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Tax</span>
-                    <span>${tax.toFixed(2)}</span>
+                    <span>${tax?.toFixed(2)}</span>
                   </div>
                   <div className="border-t pt-4 flex justify-between font-semibold text-lg">
                     <span>Total</span>
-                    <span>${total.toFixed(2)}</span>
+                    <span>${total?.toFixed(2)}</span>
                   </div>
                 </div>
                 <button 

@@ -7,7 +7,7 @@ import { searchService, SearchState } from '../../../../../services';
 
 // Format price to display with currency symbol
 const formatPrice = (price: number): string => {
-  return `$${price.toFixed(2)}`;
+  return `$${price?.toFixed(2)}`;
 };
 
 interface SearchModalProps {

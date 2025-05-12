@@ -178,7 +178,7 @@ const ModifiersList: React.FC<ModifiersListProps> = ({
                                         {displayName}
                                     </div>
                                     {option.price !== undefined && parseFloat(String(option.price)) > 0 && (
-                                        <div className="text-sm text-gray-600 ml-auto">(+${typeof option.price === 'number' ? option.price.toFixed(2) : option.price})</div>
+                                        <div className="text-sm text-gray-600 ml-auto">(+${typeof option.price === 'number' ? option.price?.toFixed(2) : option.price})</div>
                                     )}
                                 </button>
                             );
@@ -232,7 +232,7 @@ const ModifiersList: React.FC<ModifiersListProps> = ({
                                                 {displayName}
                                             </div>
                                             {option.price !== undefined && parseFloat(String(option.price)) > 0 && (
-                                                <div className="text-sm text-gray-600 ml-auto">(+${typeof option.price === 'number' ? option.price.toFixed(2) : option.price})</div>
+                                                <div className="text-sm text-gray-600 ml-auto">(+${typeof option.price === 'number' ? option.price?.toFixed(2) : option.price})</div>
                                             )}
                                         </button>
                                     );

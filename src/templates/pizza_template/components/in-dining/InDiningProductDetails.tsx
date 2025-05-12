@@ -220,7 +220,7 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
             {/* Product Details - Left Side */}
             <div className="p-6">
               <h2 className="text-2xl font-bold text-gray-800 mb-2">{product.name}</h2>
-              <p className="text-xl font-bold text-red-500 mb-2">${product.price.toFixed(2)}</p>
+              <p className="text-xl font-bold text-red-500 mb-2">${product.price?.toFixed(2)}</p>
               
               {/* Dietary Information Badges */}
               {product.dietary && (
@@ -324,7 +324,7 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
               <div className="hidden md:flex justify-between items-center mt-6">
                 <div className="flex items-center">
                   <p className="font-bold text-xl text-red-500 mr-4">
-                    ${(product.price * quantity).toFixed(2)}
+                    ${(product.price * quantity)?.toFixed(2)}
                   </p>
                   
                   <div className="flex items-center">
@@ -471,7 +471,7 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
                         </div>
                         <div className="p-2">
                           <h4 className="font-medium text-sm">{item.name}</h4>
-                          <p className="text-red-500 text-xs">${typeof item.price === 'number' ? item.price.toFixed(2) : item.price}</p>
+                          <p className="text-red-500 text-xs">${typeof item.price === 'number' ? item.price?.toFixed(2) : item.price}</p>
                         </div>
                       </div>
                     ));
@@ -489,7 +489,7 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
           <div className="flex justify-between items-center mb-3">
             {/* Price on LHS */}
             <p className="font-bold text-xl text-red-500">
-              ${(product.price * quantity).toFixed(2)}
+              ${(product.price * quantity)?.toFixed(2)}
             </p>
             
             {/* Quantity Controls on RHS */}
@@ -635,7 +635,7 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
                               <span className="text-sm text-gray-700">{option.name}</span>
                             </div>
                             <span className="text-sm text-gray-600">
-                              {option.price > 0 ? `+$${option.price.toFixed(2)}` : '$0.00'}
+                              {option.price > 0 ? `+$${option.price?.toFixed(2)}` : '$0.00'}
                             </span>
                           </div>
                         ))}

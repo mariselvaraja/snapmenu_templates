@@ -73,7 +73,7 @@ export const analyticsService = {
           ? safeReservations.reduce((sum, res) => sum + res.party_size, 0) / safeReservations.length
           : 0,
         tableUtilization: safeReservations.length > 0
-          ? (safeReservations.filter(res => res.table).length / safeReservations.length * 100).toFixed(1)
+          ? (safeReservations.filter(res => res.table).length / safeReservations.length * 100)?.toFixed(1)
           : 0,
 
         // Dining Room Management
@@ -265,11 +265,11 @@ export const analyticsService = {
         insights.push({
           type: 'revenue',
           priority: 'high',
-          message: `Total revenue for the period: $${metrics.totalRevenue.toFixed(2)}`,
+          message: `Total revenue for the period: $${metrics.totalRevenue?.toFixed(2)}`,
           metric: metrics.totalRevenue,
           details: {
-            'Total Revenue': `$${metrics.totalRevenue.toFixed(2)}`,
-            'Average Order Value': `$${metrics.averageOrderValue.toFixed(2)}`,
+            'Total Revenue': `$${metrics.totalRevenue?.toFixed(2)}`,
+            'Average Order Value': `$${metrics.averageOrderValue?.toFixed(2)}`,
             'Total Orders': metrics.totalOrders,
             'Orders by Type': Object.entries(metrics.ordersByType)
               .map(([type, count]) => `${type}: ${count}`)
@@ -359,7 +359,7 @@ export const analyticsService = {
           details: {
             'Peak Hour': `${hour12}:00 ${ampm}`,
             'Reservations at Peak': peakReservationHour[1],
-            'Average Party Size': metrics.averagePartySize.toFixed(1),
+            'Average Party Size': metrics.averagePartySize?.toFixed(1),
             'Table Utilization': `${metrics.tableUtilization}%`,
             'Distribution Around Peak': hourlyDetails
           },

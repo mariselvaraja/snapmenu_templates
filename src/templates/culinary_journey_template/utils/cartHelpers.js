@@ -22,5 +22,5 @@ export function calculateCartTotal(items) {
 }
 
 export function formatCartTotal(total) {
-  return `$${total.toFixed(2)}`;
+  return `$${total?.toFixed(2)}`;
 }

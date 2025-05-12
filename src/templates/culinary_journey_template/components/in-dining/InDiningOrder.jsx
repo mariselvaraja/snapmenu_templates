@@ -539,7 +539,7 @@ export default function InDiningOrder() {
                     
                     {/* Price on bottom left and Add to Order on bottom right */}
                     <div className="flex justify-between items-center mt-auto">
-                      <p className="text-lg font-bold text-orange-600">${item.price.toFixed(2)}</p>
+                      <p className="text-lg font-bold text-orange-600">${item.price?.toFixed(2)}</p>
                       <button 
                         onClick={() => dispatch(addItem({
                           id: item.id,

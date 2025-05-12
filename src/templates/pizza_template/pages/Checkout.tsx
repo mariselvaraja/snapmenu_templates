@@ -107,7 +107,7 @@ export default function Checkout() {
     const orderedItems: OrderedItem[] = cartItems.map(item => ({
       name: item.name,
       quantity: item.quantity,
-      itemPrice: item.price.toFixed(2),
+      itemPrice: item.price?.toFixed(2),
       modifiers: [
         // Example modifiers - in a real app, these would come from user selections
         {
@@ -120,7 +120,7 @@ export default function Checkout() {
         }
       ],
       modifier_price: "0.00",
-      total_item_price: (item.price * item.quantity).toFixed(2)
+      total_item_price: (item.price * item.quantity)?.toFixed(2)
     }));
 
     return {
@@ -131,7 +131,7 @@ export default function Checkout() {
       special_requests: formData.specialRequests.trim() || null,
       order_type: "manual", // Hardcoded as requested
       ordered_items: orderedItems,
-      grand_total: total.toFixed(2)
+      grand_total: total?.toFixed(2)
     };
   };
 
@@ -439,7 +439,7 @@ export default function Checkout() {
                         <span className="ml-2">{item.name}</span>
                       </div>
                     </div>
-                    <span>${(item.price * item.quantity).toFixed(2)}</span>
+                    <span>${(item.price * item.quantity)?.toFixed(2)}</span>
                   </div>
                 ))}
               </div>
@@ -447,15 +447,15 @@ export default function Checkout() {
               <div className="space-y-4">
                 <div className="flex justify-between">
                   <span>Subtotal</span>
-                  <span>${subtotal.toFixed(2)}</span>
+                  <span>${subtotal?.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Tax</span>
-                  <span>${tax.toFixed(2)}</span>
+                  <span>${tax?.toFixed(2)}</span>
                 </div>
                 <div className="border-t pt-4 flex justify-between font-semibold text-lg">
                   <span>Total</span>
-                  <span>${total.toFixed(2)}</span>
+                  <span>${total?.toFixed(2)}</span>
                 </div>
               </div>
               

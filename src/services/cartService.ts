@@ -157,12 +157,12 @@ export const cartService = {
         ordered_items: orderData.items.map(item => ({
           name: item.name,
           quantity: item.quantity,
-          itemPrice: item.price.toFixed(2),
+          itemPrice: item.price?.toFixed(2),
           modifiers: [],
           modifier_price: null,
-          total_item_price: (item.price * item.quantity).toFixed(2)
+          total_item_price: (item.price * item.quantity)?.toFixed(2)
         })),
-        grand_total: orderData.items.reduce((sum, item) => sum + (item.price * item.quantity), 0).toFixed(2)
+        grand_total: orderData.items.reduce((sum, item) => sum + (item.price * item.quantity), 0)?.toFixed(2)
       };
       
       console.log('Formatted payload:', formattedPayload);
