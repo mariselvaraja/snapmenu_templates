@@ -7,9 +7,10 @@ import {
 import { tableAvailabilityService } from '../../services/tableAvailabilityService';
 
 // Worker Saga
-function* fetchtableAvailabilitySaga(): Generator<any, void, any> {
+function* fetchtableAvailabilitySaga(action:any): Generator<any, void, any> {
   try {
-    const tableAvailabilityData = yield call(tableAvailabilityService.getTableAvailability);
+    let date = action.payload.date;
+    const tableAvailabilityData = yield call(tableAvailabilityService.getTableAvailability, date);
 
     yield put(fetchTableAvailablitySuccess(tableAvailabilityData));
   } catch (error) {

@@ -32,7 +32,7 @@ export const tableAvailablitySlice = createSlice({
   initialState,
   reducers: {
     // Async action triggers for table availability
-    fetchTableAvailablityRequest: (state) => {
+    fetchTableAvailablityRequest: (state, action) => {
       state.loading = true;
       state.error = null;
     },

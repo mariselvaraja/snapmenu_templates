@@ -13,11 +13,11 @@ export const tableAvailabilityService = {
   /**
    * Fetches table availability information
    */
-  getTableAvailability: async (): Promise<any> => {
+  getTableAvailability: async (date:any): Promise<any> => {
     console.log('Fetching table availability from API');
     
     try {
-      const response = await api.get<any>(endpoints.tableOrder.availability);
+      const response = await api.get<any>(endpoints.tableOrder.availability+"?date="+date);
       return response.data;
     } catch (error) {
       console.error('Error fetching table availability:', error);

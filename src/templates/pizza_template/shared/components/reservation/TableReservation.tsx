@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Phone, Mail, MapPin, Calendar, Clock, Users, Check, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useDispatch, useSelector } from 'react-redux';
@@ -69,9 +69,11 @@ export default function TableReservation({
   const [timeSlots, setTimeSlots] = useState<string[]>([]);
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
 
+  const todayRef = useRef(new Date(new Date().toLocaleString('en-US', { timeZone: 'America/New_York' })));
+
   useEffect(() => {
-    dispatch(fetchTableAvailablityRequest());
-  }, [dispatch]);
+    dispatch(fetchTableAvailablityRequest({date : selectedDate}));
+  }, [selectedDate]);
 
   useEffect(() => {
     if (reservationSuccess && reservationData) {
@@ -92,19 +94,48 @@ export default function TableReservation({
     }
   }, [items]);
   
-  const formatStartTimesToEST = (data: any): string[] =>  {
-    const formatter = new Intl.DateTimeFormat('en-IN', {
+  // const formatStartTimesToEST = (data: any): string[] =>  {
+  //   const formatter = new Intl.DateTimeFormat('en-IN', {
+  //     hour: '2-digit',
+  //     minute: '2-digit',
+  //     hour12: true,
+  //     // timeZone: todayRef.current.getTimezoneOffset() === 300 ? 'America/New_York' : 'America/New_York'
+  //   });
+  
+  //   return _.map(data, item => {
+  //     const date = new Date(item.start_time.replace(' ', 'T'));
+  //     return formatter.format(date);
+  //   });
+  // }
+
+
+  const formatStartTimesToEST = (data: any[]): string[] => {
+    const now = new Date();
+    const nyNow = new Date(
+      now.toLocaleString("en-US", { timeZone: "America/New_York" })
+    );
+  
+    const formatter = new Intl.DateTimeFormat('en-US', {
       hour: '2-digit',
       minute: '2-digit',
       hour12: true,
-      timeZone: 'Asia/Kolkata'
+      // timeZone: 'America/New_York' 
     });
   
-    return _.map(data, item => {
-      const date = new Date(item.start_time.replace(' ', 'T'));
-      return formatter.format(date);
-    });
-  }
+    return _.chain(data)
+      .filter(item => {
+        const startDate = new Date(item.start_time.replace(' ', 'T'));
+        const startNY = new Date(
+          startDate.toLocaleString("en-US", { timeZone: 'America/New_York' })
+        );
+        return startNY > nyNow;
+      })
+      .map(item => {
+        const date = new Date(item.start_time.replace(' ', 'T'));
+        return formatter.format(date);
+      })
+      .value();
+  };
 
 
   // Available party sizes
