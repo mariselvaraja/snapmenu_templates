@@ -86,7 +86,7 @@ const ModifiersList: React.FC<ModifiersListProps> = ({
     
     // Initialize with only the first modifier expanded
     useEffect(() => {
-        if (modifiersList.length === 0) return;
+       
         
         const requiredMods = modifiersList.filter(modifier => isModifierRequired(modifier));
         const optionalMods = modifiersList.filter(modifier => !isModifierRequired(modifier));
@@ -113,9 +113,7 @@ const ModifiersList: React.FC<ModifiersListProps> = ({
         }));
     };
 
-    if (modifiersList.length === 0) {
-        return null;
-    }
+
 
     // Sort modifiers - required first, then non-required
     const requiredModifiers = modifiersList.filter(modifier => isModifierRequired(modifier));
