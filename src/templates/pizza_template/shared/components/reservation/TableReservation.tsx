@@ -69,7 +69,6 @@ export default function TableReservation({
   const [timeSlots, setTimeSlots] = useState<string[]>([]);
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
 
-  const todayRef = useRef(new Date(new Date().toLocaleString('en-US', { timeZone: 'America/New_York' })));
 
   useEffect(() => {
     dispatch(fetchTableAvailablityRequest({date : selectedDate}));
