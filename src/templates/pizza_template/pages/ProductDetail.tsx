@@ -399,15 +399,6 @@ export default function ProductDetail() {
 
                         {/* Product Details section */}
                         <ProductDetailsSection product={product} />
-
-                        {/* Nutritional information section */}
-                        <NutritionalInfo product={product} />
-
-                        {/* Ingredients section */}
-                        <IngredientsSection product={product} />
-
-                        {/* Allergens section */}
-                        <AllergensSection product={product} />
                     </div>
                 </div>
             </div>

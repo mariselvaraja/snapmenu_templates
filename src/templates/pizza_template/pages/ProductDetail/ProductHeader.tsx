@@ -7,6 +7,9 @@ import { ShoppingCart, Plus, Minus } from 'lucide-react';
 import { MenuItem, useAppSelector, useAppDispatch, updateItemQuantity, removeItem } from '../../../../common/redux';
 import { SelectedModifier } from './types';
 import ModifiersList from './ModifiersList';
+import NutritionalInfo from './NutritionalInfo';
+import IngredientsSection from './IngredientsSection';
+import AllergensSection from './AllergensSection';
 
 interface ProductHeaderProps {
     product: MenuItem;
@@ -138,6 +141,18 @@ const ProductHeader: React.FC<ProductHeaderProps> = ({
                             </span>
                         </div>
                     )}
+                </div>
+                
+                <div className='mt-5'>
+                
+                {/* Nutritional information section */}
+                <NutritionalInfo product={product} />
+
+                {/* Ingredients section */}
+                <IngredientsSection product={product} />
+
+                {/* Allergens section */}
+                <AllergensSection product={product} />
                 </div>
             </div>
         </div>
