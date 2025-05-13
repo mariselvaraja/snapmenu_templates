@@ -72,7 +72,7 @@ const ProductHeader: React.FC<ProductHeaderProps> = ({
                     {formatToDollar(product.price)}
                 </div>
                 
-                <div className='max-h-[400px] overflow-y-auto'>
+                <div className='max-h-[400px] overflow-y-auto thin-scrollbar'>
                 {/* Modifiers List with Spice Level */}
                 <ModifiersList 
                     modifiersList={modifiersList}
