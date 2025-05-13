@@ -93,20 +93,6 @@ export default function TableReservation({
     }
   }, [items]);
   
-  // const formatStartTimesToEST = (data: any): string[] =>  {
-  //   const formatter = new Intl.DateTimeFormat('en-IN', {
-  //     hour: '2-digit',
-  //     minute: '2-digit',
-  //     hour12: true,
-  //     // timeZone: todayRef.current.getTimezoneOffset() === 300 ? 'America/New_York' : 'America/New_York'
-  //   });
-  
-  //   return _.map(data, item => {
-  //     const date = new Date(item.start_time.replace(' ', 'T'));
-  //     return formatter.format(date);
-  //   });
-  // }
-
 
   const formatStartTimesToEST = (data: any[]): string[] => {
     const now = new Date();
@@ -118,7 +104,7 @@ export default function TableReservation({
       hour: '2-digit',
       minute: '2-digit',
       hour12: true,
-      // timeZone: 'America/New_York' 
+      timeZone: 'America/New_York' 
     });
   
     return _.chain(data)
