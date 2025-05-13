@@ -88,17 +88,17 @@ const ModifiersList: React.FC<ModifiersListProps> = ({
     useEffect(() => {
        
         
-        const requiredMods = modifiersList.filter(modifier => isModifierRequired(modifier));
-        const optionalMods = modifiersList.filter(modifier => !isModifierRequired(modifier));
+        const requiredMods = modifiersList?.filter(modifier => isModifierRequired(modifier));
+        const optionalMods = modifiersList?.filter(modifier => !isModifierRequired(modifier));
         
         const initialExpandedState: {[key: string]: boolean} = {};
         
         // Expand the first required modifier if available
-        if (requiredMods.length > 0) {
+        if (requiredMods?.length > 0) {
             initialExpandedState[`required-0`] = true;
         }
         // If no required modifiers, expand the first optional modifier if available
-        else if (optionalMods.length > 0) {
+        else if (optionalMods?.length > 0) {
             initialExpandedState[`optional-0`] = true;
         }
         
@@ -116,8 +116,8 @@ const ModifiersList: React.FC<ModifiersListProps> = ({
 
 
     // Sort modifiers - required first, then non-required
-    const requiredModifiers = modifiersList.filter(modifier => isModifierRequired(modifier));
-    const optionalModifiers = modifiersList.filter(modifier => !isModifierRequired(modifier));
+    const requiredModifiers = modifiersList?.filter(modifier => isModifierRequired(modifier));
+    const optionalModifiers = modifiersList?.filter(modifier => !isModifierRequired(modifier));
     
     return (
         <div className="mb-4">
@@ -172,7 +172,7 @@ const ModifiersList: React.FC<ModifiersListProps> = ({
             )}
 
             {/* Required Modifiers */}
-            {requiredModifiers.map((modifier, modIndex) => (
+            {requiredModifiers?.map((modifier, modIndex) => (
                 <div key={`required-${modIndex}`} className="mb-6 border rounded-lg overflow-hidden">
                     <div 
                         className="flex justify-between items-center p-3 bg-gray-50 cursor-pointer"
@@ -240,7 +240,7 @@ const ModifiersList: React.FC<ModifiersListProps> = ({
             ))}
 
             {/* Optional Modifiers */}
-            {optionalModifiers.length > 0 && (
+            {optionalModifiers?.length > 0 && (
                 <div className="mb-4">
                     {optionalModifiers.map((modifier, modIndex) => (
                         <div key={`optional-${modIndex}`} className="mb-4 border rounded-lg overflow-hidden">

@@ -59,6 +59,8 @@ const ProductHeader: React.FC<ProductHeaderProps> = ({
             return 'Invalid input';
         }
     }
+
+    console.log("modifiersList.length", modifiersList)
     
     // Check if this product is in the cart
     const cartItem = cartItems.find((item:any) => item.id === product.id);
@@ -67,10 +69,11 @@ const ProductHeader: React.FC<ProductHeaderProps> = ({
             <div className="md:pr-8 md:w-1/2">
                 <h1 className="text-3xl font-bold mb-2">{product.name}</h1>
                 <p className="text-gray-700 mb-2">{product.description}</p>
-                <div className="text-xl font-bold text-red-500 mb-3">
+                
+              { modifiersList && <div className="text-xl font-bold text-red-500 mb-3">
                     <span className="text-gray-700 font-normal mr-2">Price:</span>
                     {formatToDollar(product.price)}
-                </div>
+                </div>}
                 
                 <div className='max-h-[400px] overflow-y-auto thin-scrollbar'>
                 {/* Modifiers List with Spice Level */}

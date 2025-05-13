@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '../../redux/hooks';
 import { setSearchQuery, setSearchResults, setSearchState } from '../../redux/slices/searchSlice';
 import searchService, { SearchState as SearchServiceState } from '../../services/searchService';
+import _ from "lodash";
 
 // Format price to display with currency symbol
 const formatPrice = (price: number): string => {
@@ -283,23 +284,32 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
   // }, [dispatch, menuItems, menuCategories]);
   
   // Generate quick links from menu categories
+
   const quickLinks = React.useMemo(() => {
-    // First try to use menu categories from Redux
-    if (menuCategories && menuCategories.length > 0) {
-      return menuCategories.map((category: any) => ({
-        text: category.name,
-        query: category.name.toLowerCase()
-      }));
-    }
+    // if (menuCategories && menuCategories.length > 0) {
+    //   return menuCategories.map((category: any) => ({
+    //     text: category.name,
+    //     query: category.name.toLowerCase()
+    //   }));
+    // }
     
-    // If no categories in Redux, extract unique categories from menu items
-    if (menuItems && menuItems.length > 0) {
-      const uniqueCategories = [...new Set(menuItems.map((item: any) => item.category))];
-      return uniqueCategories.map((category: any) => ({
-        text: category.charAt(0).toUpperCase() + category.slice(1),
-        query: category.toLowerCase()
-      }));
-    }
+    
+    // if (menuItems && menuItems.length > 0) {
+    //   const uniqueCategories = [...new Set(menuItems.map((item: any) => item.category))];
+    //   return uniqueCategories.map((category: any) => ({
+    //     text: category.charAt(0).toUpperCase() + category.slice(1),
+    //     query: category.toLowerCase()
+    //   }));
+    // }
+    if(menuItems && menuItems.length)
+{
+  let items = menuItems.map((item:any)=>{
+    return { text: item.category, query: item.category }
+  })
+  let unique_item = _.uniqBy(items,'text')
+    return  unique_item
+  }
+
     
     // Default fallback if API data isn't loaded yet
     return [

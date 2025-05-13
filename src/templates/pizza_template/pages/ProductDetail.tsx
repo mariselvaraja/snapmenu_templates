@@ -10,11 +10,7 @@ import {
     RecommendedProducts, 
     ProductHeader, 
     ProductDetailsSection, 
-    NutritionalInfo, 
-    IngredientsSection, 
-    AllergensSection,
     ModifierOption,
-    Modifier,
     SelectedModifier
 } from './ProductDetail/index';
 
@@ -215,13 +211,13 @@ export default function ProductDetail() {
     };
     
     // Parse modifiers from product data
-    const [modifiersList, setModifiersList] = useState<Modifier[]>([]);
+    const [modifiersList, setModifiersList] = useState<any[]>([]);
     
     useEffect(() => {
         console.log("product", product);
         
         // Directly use modifiers_list from the product if available
-        if (product?.modifiers_list && Array.isArray(product.modifiers_list)) {
+        if (product) {
             setModifiersList(product.modifiers_list);
         }
     }, [product]);
