@@ -337,29 +337,29 @@ function ProductDetails() {
                     </div>
                   )}
                 </div>
-                <p className="text-gray-300 mb-6">{product.description}</p>
+                <p className="text-gray-300 mb-2">{product.description}</p>
+                <div className="text-2xl font-bold text-yellow-400 mb-6">
+                  <span className="text-gray-300 font-normal mr-2">Price:</span>
+                  ${typeof product.price === 'number' ? product.price?.toFixed(2) : product.price}
+                </div>
                 
-                <div className="flex items-center justify-between mb-6">
-                  <div className="text-2xl font-bold text-yellow-400">${typeof product.price === 'number' ? product.price?.toFixed(2) : product.price}</div>
-                  
-                  {/* Dietary Information Badges */}
-                  <div className="flex flex-wrap gap-2">
-                    {product.dietary?.isVegetarian && (
-                      <div className="bg-green-500 text-white px-3 py-1 rounded-full text-sm">
-                        Vegetarian
-                      </div>
-                    )}
-                    {product.dietary?.isVegan && (
-                      <div className="bg-green-600 text-white px-3 py-1 rounded-full text-sm">
-                        Vegan
-                      </div>
-                    )}
-                    {product.dietary?.isGlutenFree && (
-                      <div className="bg-blue-500 text-white px-3 py-1 rounded-full text-sm">
-                        GF
-                      </div>
-                    )}
-                  </div>
+                {/* Dietary Information Badges */}
+                <div className="flex flex-wrap gap-2 mb-6">
+                  {product.dietary?.isVegetarian && (
+                    <div className="bg-green-500 text-white px-3 py-1 rounded-full text-sm">
+                      Vegetarian
+                    </div>
+                  )}
+                  {product.dietary?.isVegan && (
+                    <div className="bg-green-600 text-white px-3 py-1 rounded-full text-sm">
+                      Vegan
+                    </div>
+                  )}
+                  {product.dietary?.isGlutenFree && (
+                    <div className="bg-blue-500 text-white px-3 py-1 rounded-full text-sm">
+                      GF
+                    </div>
+                  )}
                 </div>
                 
                 <div className="mb-6">

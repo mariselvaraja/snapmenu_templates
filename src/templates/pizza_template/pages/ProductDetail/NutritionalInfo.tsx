@@ -3,7 +3,7 @@ import { Activity, ChevronDown, ChevronUp } from 'lucide-react';
 import { MenuItem } from '../../../../common/redux';
 
 interface NutritionalInfoProps {
-    product: MenuItem;
+    product: any;
 }
 
 const NutritionalInfo: React.FC<NutritionalInfoProps> = ({ product }) => {
@@ -12,8 +12,8 @@ const NutritionalInfo: React.FC<NutritionalInfoProps> = ({ product }) => {
     const [isExpanded, setIsExpanded] = useState(true);
     
     // Check if there's any nutritional information to display
-    const hasNutritionalInfo = product.calories || 
-        (product.nutrients && Object.keys(product.nutrients).length > 0);
+    const hasNutritionalInfo = product.Calories || 
+        (product.Nutrients);
     
     if (!hasNutritionalInfo) {
         return null;
@@ -38,21 +38,19 @@ const NutritionalInfo: React.FC<NutritionalInfoProps> = ({ product }) => {
             
             {isExpanded && (
                 <div className="flex flex-wrap gap-2 p-4">
-                {product.calories && (
-                    <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
-                        Calories: {product.calories}
+                {product.Calories && (
+                    <span className="px-3 py-1 rounded-full text-sm">
+                        Calories: {product.Calories}
                     </span>
                 )}
-                {product.nutrients && Object.entries(product.nutrients).map(([key, value]) => (
-                    value && (
-                        <span 
-                            key={key} 
-                            className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm"
-                        >
-                            {key.charAt(0).toUpperCase() + key.slice(1)}: {value}
-                        </span>
-                    )
-                ))}
+                {product.Nutrients && (
+                    <span 
+                        className="px-3 py-1 rounded-full text-sm"
+                    >
+                        {product.Nutrients}
+                    </span>
+                )}
+                
                 </div>
             )}
         </div>

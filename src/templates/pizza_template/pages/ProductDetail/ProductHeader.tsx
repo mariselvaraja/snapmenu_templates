@@ -41,6 +41,24 @@ const ProductHeader: React.FC<ProductHeaderProps> = ({
     
     // Get cart items from Redux store
     const { items: cartItems } = useAppSelector(state => state.cart);
+
+    function formatToDollar(value:any) {
+        try {
+            // Convert to string and remove any $ signs or whitespace
+            let cleaned = String(value).replace(/\$/g, '').trim();
+            
+            // Parse as float
+            let amount = parseFloat(cleaned);
+    
+            // Check if it's a valid number
+            if (isNaN(amount)) throw new Error();
+    
+            // Format to $X.XX
+            return `$${amount.toFixed(2)}`;
+        } catch {
+            return 'Invalid input';
+        }
+    }
     
     // Check if this product is in the cart
     const cartItem = cartItems.find((item:any) => item.id === product.id);
@@ -48,8 +66,13 @@ const ProductHeader: React.FC<ProductHeaderProps> = ({
         <div className="flex flex-col md:flex-row justify-between items-start mb-4">
             <div className="md:pr-8 md:w-1/2">
                 <h1 className="text-3xl font-bold mb-2">{product.name}</h1>
-                <p className="text-gray-700 mb-3">{product.description}</p>
+                <p className="text-gray-700 mb-2">{product.description}</p>
+                <div className="text-xl font-bold text-red-500 mb-3">
+                    <span className="text-gray-700 font-normal mr-2">Price:</span>
+                    {formatToDollar(product.price)}
+                </div>
                 
+                <div className='max-h-[400px] overflow-y-auto'>
                 {/* Modifiers List with Spice Level */}
                 <ModifiersList 
                     modifiersList={modifiersList}
@@ -59,6 +82,7 @@ const ProductHeader: React.FC<ProductHeaderProps> = ({
                     setSpiceLevel={setSpiceLevel}
                     validationErrors={validationErrors}
                 />
+                </div>
                 
                 <div className="flex items-center justify-between mt-4 mb-4">
                     <div>

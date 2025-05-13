@@ -37,7 +37,7 @@ const AllergensSection: React.FC<AllergensSectionProps> = ({ product }) => {
                 {product.allergens.map((allergen, index) => (
                     <span 
                         key={index} 
-                        className="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm"
+                        className="px-3 py-1 rounded-full text-sm"
                     >
                         {allergen}
                     </span>
