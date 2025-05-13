@@ -21,17 +21,11 @@ export default function CartDrawer() {
     }[]
   }) => {
     // Ensure price is a number
-    const itemPrice = typeof item.price === 'number' ? item.price : 
+    const baseItemPrice = typeof item.price === 'number' ? item.price : 
       parseFloat(String(item.price).replace(/[^\d.-]/g, '')) || 0;
     
-    // Ensure quantity is a number
-    const quantity = typeof item.quantity === 'number' ? item.quantity : 
-      parseInt(String(item.quantity)) || 1;
-    
-    // Calculate base price
-    let itemTotal = itemPrice * quantity;
-    
-    // Add modifier prices
+    // Calculate modifier total
+    let modifierTotal = 0;
     if (item.selectedModifiers && item.selectedModifiers.length > 0) {
       item.selectedModifiers.forEach(modifier => {
         modifier.options.forEach(option => {
@@ -39,10 +33,17 @@ export default function CartDrawer() {
           const optionPrice = typeof option.price === 'number' ? option.price : 
             parseFloat(String(option.price).replace(/[^\d.-]/g, '')) || 0;
           
-          itemTotal += optionPrice * quantity;
+          modifierTotal += optionPrice;
         });
       });
     }
+    
+    // Ensure quantity is a number
+    const quantity = typeof item.quantity === 'number' ? item.quantity : 
+      parseInt(String(item.quantity)) || 1;
+    
+    // Calculate total price (base price + modifiers) * quantity
+    const itemTotal = (baseItemPrice + modifierTotal) * quantity;
     
     return total + itemTotal;
   }, 0);
@@ -143,19 +144,21 @@ export default function CartDrawer() {
                         <div className="flex justify-between items-center">
                           <h3 className="font-semibold">{item.name}</h3>
                           <div className="text-gray-600">
-                            {/* Calculate and display total price including modifiers and quantity */}
+                            {/* Calculate and display item price * quantity */}
                             {(() => {
                               // Ensure price is a number
-                              let baseItemPrice = typeof item.price === 'number' ? item.price : 
+                              const baseItemPrice = typeof item.price === 'number' ? item.price : 
                                 parseFloat(String(item.price).replace(/[^\d.-]/g, '')) || 0;
                               
+                              // Calculate modifier total
+                              let modifierTotal = 0;
                               if (item.selectedModifiers && item.selectedModifiers.length > 0) {
                                 item.selectedModifiers.forEach(modifier => {
                                   modifier.options.forEach(option => {
                                     // Ensure option price is a number
                                     const optionPrice = typeof option.price === 'number' ? option.price : 
                                       parseFloat(String(option.price).replace(/[^\d.-]/g, '')) || 0;
-                                    baseItemPrice += optionPrice;
+                                    modifierTotal += optionPrice;
                                   });
                                 });
                               }
@@ -164,8 +167,8 @@ export default function CartDrawer() {
                               const quantity = typeof item.quantity === 'number' ? item.quantity : 
                                 parseInt(String(item.quantity)) || 1;
                               
-                              // Multiply by quantity for total price
-                              const totalItemPrice = baseItemPrice * quantity;
+                              // Calculate total price (base price + modifiers) * quantity
+                              const totalItemPrice = (baseItemPrice + modifierTotal) * quantity;
                               
                               // Ensure we have a valid number before using toFixed
                               const formattedPrice = !isNaN(totalItemPrice) ? 
@@ -192,9 +195,9 @@ export default function CartDrawer() {
                                     <span>{option.name || modifier.name}</span>
                                     {option.price > 0 && (
                                       <span className="font-medium">
-                                        ${typeof option.price === 'number' ? 
-                                          option.price.toFixed(2) : 
-                                          (parseFloat(String(option.price).replace(/[^\d.-]/g, '')) || 0).toFixed(2)}
+                                        +${typeof option.price === 'number' ? 
+                                          (option.price * (typeof item.quantity === 'number' ? item.quantity : parseInt(String(item.quantity)) || 1)).toFixed(2) : 
+                                          ((parseFloat(String(option.price).replace(/[^\d.-]/g, '')) || 0) * (typeof item.quantity === 'number' ? item.quantity : parseInt(String(item.quantity)) || 1)).toFixed(2)}
                                       </span>
                                     )}
                                   </div>

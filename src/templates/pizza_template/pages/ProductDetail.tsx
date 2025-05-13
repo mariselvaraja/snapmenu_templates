@@ -218,7 +218,7 @@ export default function ProductDetail() {
         
         // Directly use modifiers_list from the product if available
         if (product) {
-            setModifiersList(product.modifiers_list);
+            setModifiersList(product.modifiers_list || []);
         }
     }, [product]);
     
