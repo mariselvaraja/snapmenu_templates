@@ -64,6 +64,10 @@ export default function ProductDetail() {
                 else if (spiceLevelName === 'Hot') setSpiceLevel(3);
             }
         }
+        else
+        {
+            setSelectedModifiers([]);
+        }
     }, [cartItem]);
     
     // Handle add to cart

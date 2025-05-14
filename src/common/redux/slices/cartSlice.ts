@@ -36,18 +36,61 @@ export const cartSlice = createSlice({
   initialState,
   reducers: {
     // Synchronous actions
-    addItem: (state, action: PayloadAction<any>) => {
-      const newItem = action.payload;
-      const existingItem = state.items.find((item:any) => item.id === newItem.id);
-
-      if (existingItem) {
-        existingItem.quantity += newItem.quantity;
-      } else {
-        state.items.push(newItem);
+addItem: (state, action: PayloadAction<any>) => {
+  const newItem = action.payload;
+  
+  // Check if an item with the same ID and same modifiers already exists
+  const existingItem = state.items.find((item:any) => {
+    // If IDs don't match, it's definitely not the same item
+    if (item.id !== newItem.id) return false;
+    
+    // If one has modifiers and the other doesn't, they're different
+    const itemHasModifiers = !!item.selectedModifiers && item.selectedModifiers.length > 0;
+    const newItemHasModifiers = !!newItem.selectedModifiers && newItem.selectedModifiers.length > 0;
+    
+    if (itemHasModifiers !== newItemHasModifiers) return false;
+    
+    // If neither has modifiers, they're the same
+    if (!itemHasModifiers && !newItemHasModifiers) return true;
+    
+    // At this point, we know both items have modifiers
+    // TypeScript safety: we've already checked these exist above
+    const itemModifiers = item.selectedModifiers || [];
+    const newItemModifiers = newItem.selectedModifiers || [];
+    
+    // If they have different numbers of modifiers, they're different
+    if (itemModifiers.length !== newItemModifiers.length) return false;
+    
+    // Compare each modifier and its options
+    for (const itemMod of itemModifiers) {
+      // Find the corresponding modifier in the new item
+      const newItemMod = newItemModifiers.find((mod:any) => mod.name === itemMod.name);
+      
+      // If the modifier doesn't exist in the new item, they're different
+      if (!newItemMod) return false;
+      
+      // If they have different numbers of options, they're different
+      if (itemMod.options.length !== newItemMod.options.length) return false;
+      
+      // Check if all options match
+      for (const itemOption of itemMod.options) {
+        const newItemOption = newItemMod.options.find((opt:any) => opt.name === itemOption.name);
+        if (!newItemOption) return false;
       }
-      // Open drawer when item is added
-      state.drawerOpen = true;
-    },
+    }
+    
+    // If we got here, all modifiers and options match
+    return true;
+  });
+
+  if (existingItem) {
+    existingItem.quantity += newItem.quantity;
+  } else {
+    state.items.push(newItem);
+  }
+  // Open drawer when item is added
+  state.drawerOpen = true;
+},
     removeItem: (state, action: PayloadAction<number>) => {
       state.items = state.items.filter((item:any) => item.id !== action.payload);
     },

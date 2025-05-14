@@ -191,7 +191,7 @@ export default function Cart() {
                                 parseInt(String(item.quantity)) || 1;
                               
                               // Calculate total price (base price + modifiers) * quantity
-                              const totalItemPrice = (baseItemPrice + modifierTotal) * quantity;
+                              const totalItemPrice = (baseItemPrice ) * quantity;
                               
                               // Ensure we have a valid number before using toFixed
                               const formattedPrice = !isNaN(totalItemPrice) ? 

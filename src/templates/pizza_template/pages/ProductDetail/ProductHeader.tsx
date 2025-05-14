@@ -60,7 +60,6 @@ const ProductHeader: React.FC<ProductHeaderProps> = ({
         }
     }
 
-    console.log("modifiersList.length", modifiersList)
     
     // Check if this product is in the cart
     const cartItem = cartItems.find((item:any) => item.id === product.id);
@@ -70,7 +69,7 @@ const ProductHeader: React.FC<ProductHeaderProps> = ({
                 <h1 className="text-3xl font-bold mb-2">{product.name}</h1>
                 <p className="text-gray-700 mb-2">{product.description}</p>
                 
-              { modifiersList && <div className="text-xl font-bold text-red-500 mb-3">
+              { modifiersList && modifiersList?.length !=0  && <div className="text-xl font-bold text-red-500 mb-3">
                     <span className="text-gray-700 font-normal mr-2">Price:</span>
                     {formatToDollar(product.price)}
                 </div>}
