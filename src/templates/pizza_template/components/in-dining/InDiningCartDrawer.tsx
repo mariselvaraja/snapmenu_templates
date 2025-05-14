@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Plus, Minus, Trash2, ShoppingBag } from 'lucide-react';
+import { X, Trash2, ShoppingBag } from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux';
-import { useLocation } from 'react-router-dom';
 import { RootState, AppDispatch } from '../../../../common/store';
 import { toggleDrawer, updateItemQuantity, removeItem } from '../../../../common/redux/slices/cartSlice';
 
@@ -13,16 +12,60 @@ interface InDiningCartDrawerProps {
 const InDiningCartDrawer: React.FC<InDiningCartDrawerProps> = ({ onPlaceOrder }) => {
   const dispatch = useDispatch<AppDispatch>();
   const { drawerOpen, items } = useSelector((state: RootState) => state.cart);
+  const tablename = sessionStorage.getItem('Tablename');
 
+  // Calculate subtotal including modifiers
+  const subtotal = items.reduce((total: number, item: any) => {
+    // Base item price
+    let baseItemPrice = typeof item.price === 'number' ? item.price : 
+      parseFloat(String(item.price).replace(/[^\d.-]/g, '')) || 0;
+    
+    // Calculate modifier total
+    let modifierTotal = 0;
+    if (item.selectedModifiers && item.selectedModifiers.length > 0) {
+      item.selectedModifiers.forEach((modifier: any) => {
+        modifier.options.forEach((option: any) => {
+          // Ensure option price is a number
+          const optionPrice = typeof option.price === 'number' ? option.price : 
+            parseFloat(String(option.price).replace(/[^\d.-]/g, '')) || 0;
+          
+          modifierTotal += optionPrice;
+        });
+      });
+    }
+    
+    // Ensure quantity is a number
+    const quantity = typeof item.quantity === 'number' ? item.quantity : 
+      parseInt(String(item.quantity)) || 1;
+    
+    // Calculate total price (base price + modifiers) * quantity
+    const itemTotal = (baseItemPrice + modifierTotal) * quantity;
+    
+    return total + itemTotal;
+  }, 0);
 
-  let tablename = sessionStorage.getItem('Tablename');
+  // Calculate item count
+  const itemCount = items.reduce((total: number, item: any) => {
+    const quantity = typeof item.quantity === 'number' ? item.quantity : 
+      parseInt(String(item.quantity)) || 1;
+    return total + quantity;
+  }, 0);
 
-  
-  // Calculate total price
-  const totalPrice = items.reduce(
-    (total, item) => total + item.price * item.quantity, 
-    0
-  );
+  const closeDrawer = () => {
+    dispatch(toggleDrawer(false));
+  };
+
+  const handleRemoveItem = (itemId: number) => {
+    dispatch(removeItem(itemId));
+  };
+
+  const handleQuantityChange = (itemId: number, quantity: number) => {
+    if (quantity <= 0) {
+      dispatch(removeItem(itemId));
+    } else {
+      dispatch(updateItemQuantity({ id: itemId, quantity }));
+    }
+  };
 
   return (
     <AnimatePresence>
@@ -31,11 +74,10 @@ const InDiningCartDrawer: React.FC<InDiningCartDrawerProps> = ({ onPlaceOrder })
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            animate={{ opacity: 0.5 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 bg-black bg-opacity-50 z-40"
-            onClick={() => dispatch(toggleDrawer())}
+            className="fixed inset-0 bg-black z-40"
+            onClick={closeDrawer}
           />
           
           {/* Drawer */}
@@ -43,135 +85,204 @@ const InDiningCartDrawer: React.FC<InDiningCartDrawerProps> = ({ onPlaceOrder })
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
-            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            transition={{ type: 'tween', ease: 'easeInOut', duration: 0.3 }}
             className="fixed top-0 right-0 h-full w-full sm:w-96 bg-white shadow-xl z-50 flex flex-col"
           >
             {/* Header */}
-            <div className="p-4 border-b border-gray-200">
-              <div className="flex justify-between items-center">
-                <div>
-                  <h2 className="text-xl font-semibold">Your Order</h2>
-                  <p className="text-xs text-gray-500">
-                    Table Number: {tablename}
-                  </p>
-                </div>
-                <button
-                  onClick={() => dispatch(toggleDrawer())}
-                  className="p-1 rounded-full hover:bg-gray-100"
-                >
-                  <X className="h-6 w-6 text-gray-500" />
-                </button>
+            <div className="flex items-center justify-between border-b p-4">
+              <div>
+                <h2 className="text-xl font-bold flex items-center">
+                  <ShoppingBag className="h-5 w-5 mr-2 text-red-500" />
+                  Your Order {itemCount > 0 && `(${itemCount})`}
+                </h2>
+                <p className="text-xs text-gray-500">
+                  Table Number: {tablename}
+                </p>
               </div>
+              <button
+                onClick={closeDrawer}
+                className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
             </div>
             
             {/* Cart Items */}
-            <div className="flex-1 overflow-y-auto p-4">
-              {items.length === 0 ? (
-                <div className="text-center py-12 flex flex-col items-center">
-                  <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mb-4">
-                    <ShoppingBag className="h-10 w-10 text-red-300" />
-                  </div>
-                  <p className="text-gray-500 text-lg font-medium">Your cart is empty</p>
-                  <p className="text-gray-400 text-sm mt-2">Add items to get started</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {items.map((item) => (
-                    <div key={item.id} className="flex border-b border-gray-100 pb-4">
-                      {/* Item Image */}
-                      <div className="w-20 h-20 bg-gray-100 rounded-md overflow-hidden flex-shrink-0">
-                        {item.image ? (
-                          <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center bg-red-100">
-                            <span className="text-2xl font-bold text-red-500">{item.name.charAt(0)}</span>
-                          </div>
-                        )}
-                      </div>
-                      
-                      {/* Item Details */}
-                      <div className="ml-4 flex-1">
-                        <div className="flex justify-between">
-                          <h3 className="font-medium">{item.name}</h3>
-                          <button
-                            onClick={() => dispatch(removeItem(item.id))}
-                            className="text-gray-400 hover:text-red-500"
-                          >
-                            <Trash2 size={18} />
-                          </button>
+            <div className="flex-grow overflow-y-auto">
+              {items.length > 0 ? (
+                <ul className="divide-y">
+                  {items.map((item: any) => (
+                    <li key={item.id} className="p-4 flex">
+                      {item.image ? (
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className="w-16 h-16 object-cover rounded-lg mr-4"
+                        />
+                      ) : (
+                        <div className="w-16 h-16 bg-red-100 flex items-center justify-center rounded-lg mr-4">
+                          <span className="text-xl font-bold text-red-500">
+                            {item.name && item.name.length > 0 
+                              ? item.name.charAt(0).toUpperCase() 
+                              : 'P'}
+                          </span>
                         </div>
-                        <p className="text-red-500 font-medium">${item.price?.toFixed(2)}</p>
+                      )}
+                      <div className="flex-1">
+                        <div className="flex justify-between items-center">
+                          <h3 className="font-semibold">{item.name}</h3>
+                          <div className="text-gray-600">
+                            {/* Calculate and display item price * quantity */}
+                            {(() => {
+                              // Ensure price is a number
+                              const baseItemPrice = typeof item.price === 'number' ? item.price : 
+                                parseFloat(String(item.price).replace(/[^\d.-]/g, '')) || 0;
+                              
+                              // Ensure quantity is a number
+                              const quantity = typeof item.quantity === 'number' ? item.quantity : 
+                                parseInt(String(item.quantity)) || 1;
+                              
+                              // Calculate total price (base price) * quantity
+                              const totalItemPrice = baseItemPrice * quantity;
+                              
+                              // Ensure we have a valid number before using toFixed
+                              const formattedPrice = !isNaN(totalItemPrice) ? 
+                                totalItemPrice.toFixed(2) : "0.00";
+                              
+                              return (
+                                <span className="font-medium">${formattedPrice}</span>
+                              );
+                            })()}
+                          </div>
+                        </div>
                         
-                        {/* Display Selected Modifiers and Spice Level */}
+                        {/* Display selected modifiers one by one with name on left and price on right */}
                         {item.selectedModifiers && item.selectedModifiers.length > 0 && (
-                          <div className="mt-1 mb-2">
-                            {item.selectedModifiers.map((modifier: any, idx: number) => (
-                              <div key={idx} className="text-xs text-gray-600">
-                                {modifier.name === "Spice Level" ? (
-                                  <div className="flex items-center">
-                                    <span className="font-medium mr-1">Spice:</span>
-                                    {modifier.options.map((option: any, optIdx: number) => (
-                                      <span key={optIdx} className="text-red-500 font-medium">{option.name}</span>
-                                    ))}
+                          <div className="mt-1 mb-2 text-xs text-gray-600">
+                            {/* First display all non-spice level modifiers */}
+                            {item.selectedModifiers.flatMap((modifier: any) => 
+                              modifier.name !== "Spice Level" ? 
+                                modifier.options.map((option: any, index: number) => (
+                                  <div 
+                                    key={`${modifier.name}-${option.name}-${index}`} 
+                                    className="flex justify-between items-center py-0.5"
+                                  >
+                                    <span>{option.name || modifier.name}</span>
+                                    {option.price > 0 && (
+                                      <span className="font-medium">
+                                        +${typeof option.price === 'number' ? 
+                                          (option.price * (typeof item.quantity === 'number' ? item.quantity : parseInt(String(item.quantity)) || 1)).toFixed(2) : 
+                                          ((parseFloat(String(option.price).replace(/[^\d.-]/g, '')) || 0) * (typeof item.quantity === 'number' ? item.quantity : parseInt(String(item.quantity)) || 1)).toFixed(2)}
+                                      </span>
+                                    )}
                                   </div>
-                                ) : (
-                                  <div>
-                                    <span className="font-medium">{modifier.name}:</span>
-                                    <span> {modifier.options.map((opt: any) => opt.name).join(', ')}</span>
-                                  </div>
-                                )}
-                              </div>
-                            ))}
+                                ))
+                              : []
+                            )}
+                            
+                            {/* Then display spice level modifiers at the end with quantity controls on the right */}
+                            {item.selectedModifiers.flatMap((modifier: any) => 
+                              modifier.name === "Spice Level" ? 
+                                modifier.options.map((option: any, index: number) => {
+                                  let chiliCount = 1; // Default to 1
+                                  if (option.name === "Medium") chiliCount = 2;
+                                  if (option.name === "Hot") chiliCount = 3;
+                                  
+                                  return (
+                                    <div 
+                                      key={`${modifier.name}-${option.name}-${index}`} 
+                                      className="flex justify-between items-center py-0.5"
+                                    >
+                                      <span className="flex items-center">
+                                        {/* Spice Level:  */}
+                                        <span className="ml-1 text-red-500">
+                                          {chiliCount === 1 && '🌶️'}
+                                          {chiliCount === 2 && '🌶️🌶️'}
+                                          {chiliCount === 3 && '🌶️🌶️🌶️'}
+                                        </span>
+                                      </span>
+                                      
+                                      {/* Quantity controls moved to right side of spice level */}
+                                      <div className="flex items-center">
+                                        <button 
+                                          className="w-6 h-6 bg-red-50 rounded-full flex items-center justify-center text-xs"
+                                          onClick={() => {
+                                            // Ensure quantity is a number
+                                            const quantity = typeof item.quantity === 'number' ? item.quantity : 
+                                              parseInt(String(item.quantity)) || 1;
+                                            handleQuantityChange(item.id, quantity - 1);
+                                          }}
+                                        >
+                                          -
+                                        </button>
+                                        <span className="mx-2 text-xs">
+                                          {typeof item.quantity === 'number' ? item.quantity : 
+                                            parseInt(String(item.quantity)) || 1}
+                                        </span>
+                                        <button 
+                                          className="w-6 h-6 bg-red-50 rounded-full flex items-center justify-center text-xs"
+                                          onClick={() => {
+                                            // Ensure quantity is a number
+                                            const quantity = typeof item.quantity === 'number' ? item.quantity : 
+                                              parseInt(String(item.quantity)) || 1;
+                                            handleQuantityChange(item.id, quantity + 1);
+                                          }}
+                                        >
+                                          +
+                                        </button>
+                                      </div>
+                                    </div>
+                                  );
+                                })
+                              : []
+                            )}
                           </div>
                         )}
                         
-                        {/* Quantity Controls */}
-                        <div className="flex items-center mt-2">
-                          <button
-                            onClick={() => dispatch(updateItemQuantity({ id: item.id, quantity: Math.max(1, item.quantity - 1) }))}
-                            className="w-8 h-8 flex items-center justify-center bg-gray-100 rounded-full text-gray-600 hover:bg-gray-200"
-                          >
-                            <Minus size={16} />
-                          </button>
-                          <span className="mx-3 w-6 text-center">{item.quantity}</span>
-                          <button
-                            onClick={() => dispatch(updateItemQuantity({ id: item.id, quantity: item.quantity + 1 }))}
-                            className="w-8 h-8 flex items-center justify-center bg-gray-100 rounded-full text-gray-600 hover:bg-gray-200"
-                          >
-                            <Plus size={16} />
-                          </button>
-                        </div>
+                        {/* Removed quantity controls and delete button */}
                       </div>
-                    </div>
+                    </li>
                   ))}
+                </ul>
+              ) : (
+                <div className="flex flex-col items-center justify-center h-full p-4 text-center">
+                  <ShoppingBag className="h-12 w-12 text-gray-300 mb-2" />
+                  <p className="text-gray-500 mb-4">Your cart is empty</p>
+                  <button
+                    onClick={closeDrawer}
+                    className="text-red-500 font-medium hover:text-red-600 transition-colors"
+                  >
+                    Continue Shopping
+                  </button>
                 </div>
               )}
             </div>
             
             {/* Footer */}
-            <div className="border-t border-gray-200 p-4">
-              {/* Total */}
-              <div className="flex justify-between text-lg font-bold mb-4">
-                <span>Total</span>
-                <span>${(totalPrice * 1.1)?.toFixed(2)}</span>
+            {items.length > 0 && (
+              <div className="border-t p-4">
+                <div className="flex justify-between mb-4">
+                  <span className="font-semibold">Total</span>
+                  <span className="font-semibold">${!isNaN(subtotal) ? subtotal.toFixed(2) : "0.00"}</span>
+                </div>
+                
+                {/* Place Order Button */}
+                <button
+                  disabled={items.length === 0}
+                  className={`w-full py-3 rounded-full text-white font-medium transition-colors ${
+                    items.length === 0 ? 'bg-gray-400 cursor-not-allowed' : 'bg-red-500 hover:bg-red-600'
+                  }`}
+                  onClick={() => {
+                    dispatch(toggleDrawer());
+                    if (onPlaceOrder && items.length > 0) {
+                      onPlaceOrder();
+                    }
+                  }}
+                >
+                  Place Order
+                </button>
               </div>
-              
-              {/* Place Order Button - No Checkout Button for In-Dining */}
-              <button
-                disabled={items.length === 0}
-                className={`w-full py-3 rounded-full text-white font-medium transition-colors ${
-                  items.length === 0 ? 'bg-gray-400 cursor-not-allowed' : 'bg-red-500 hover:bg-red-600'
-                }`}
-                onClick={() => {
-                  dispatch(toggleDrawer());
-                  if (onPlaceOrder && items.length > 0) {
-                    onPlaceOrder();
-                  }
-                }}
-              >
-                Place Order
-              </button>
-            </div>
+            )}
           </motion.div>
         </>
       )}

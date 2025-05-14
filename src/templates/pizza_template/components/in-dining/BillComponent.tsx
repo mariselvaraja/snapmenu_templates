@@ -38,8 +38,30 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
   // Convert single order to array if needed
   const orders = Array.isArray(order) ? order : [order];
   
-  // Calculate total amount from all orders
-  const totalAmount = orders.reduce((sum, order) => sum + (order.total || 0), 0);
+  // Calculate total amount from all orders including modifiers
+  const totalAmount = orders.reduce((sum, order) => {
+    // Base order total
+    let orderTotal = order.total || 0;
+    
+    // Calculate modifier totals if not already included in order.total
+    if (order.items) {
+      const modifierTotal = order.items.reduce((modSum, item) => {
+        if (item.modifiers && item.modifiers.length > 0) {
+          return modSum + item.modifiers.reduce((optionSum, modifier) => {
+            return optionSum + modifier.options.reduce((priceSum, option) => {
+              return priceSum + (option.price || 0) * item.quantity;
+            }, 0);
+          }, 0);
+        }
+        return modSum;
+      }, 0);
+      
+      // Add modifier total to order total
+      orderTotal += modifierTotal;
+    }
+    
+    return sum + orderTotal;
+  }, 0);
 
   const tableNumber = sessionStorage.getItem("table_number");
   const restaurant = useSelector((state: RootState) => state.restaurant.info);
@@ -209,20 +231,29 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
                   </div>
                 </div>
                 
-                ${item.spiceLevel ? `
+                ${item.modifiers && item.modifiers.length > 0 ? `
                   <div style="font-size: 12px; margin-top: 5px;">
-                    <strong>Spice Level:</strong> ${item.spiceLevel}
+                    ${item.modifiers.flatMap((modifier: any) => 
+                      modifier.options.map((option: any) => `
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
+                          <span>${option.name || modifier.name}</span>
+                          ${option.price > 0 ? `
+                            <span style="font-weight: 500;">+$${(option.price * item.quantity).toFixed(2)}</span>
+                          ` : ''}
+                        </div>
+                      `).join('')
+                    )}
                   </div>
                 ` : ''}
                 
-                ${item.modifiers && item.modifiers.length > 0 ? `
+                ${item.spiceLevel ? `
                   <div style="font-size: 12px; margin-top: 5px;">
-                    <strong>Modifiers:</strong>
-                    <ul style="margin: 2px 0 0 15px; padding: 0;">
-                      ${item.modifiers.map((modifier: any) => `
-                        <li>${modifier.name}: ${modifier.options.map((opt: any) => opt.name).join(', ')}</li>
-                      `).join('')}
-                    </ul>
+                    <strong>Spice Level:</strong> ${
+                      item.spiceLevel === "Mild" ? "Mild" :
+                      item.spiceLevel === "Medium" ? "Medium" :
+                      item.spiceLevel === "Hot" ? "Hot" :
+                      item.spiceLevel
+                    }
                   </div>
                 ` : ''}
               </div>
@@ -331,24 +362,34 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
                     </div>
                   </div>
                   
-                  {/* Spice Level */}
-                  {item.spiceLevel && (
+                  {/* Modifiers (without label) */}
+                  {item.modifiers && item.modifiers.length > 0 && (
                     <div className="text-xs text-gray-500 mt-1">
-                      <span className="font-medium">Spice Level:</span> {item.spiceLevel}
+                      {item.modifiers.flatMap((modifier, modIndex) => 
+                        modifier.options.map((option, optIndex) => (
+                          <div key={`${modIndex}-${optIndex}`} className="flex justify-between items-center py-0.5">
+                            <span>{option.name || modifier.name}</span>
+                            {option.price > 0 && (
+                              <span className="font-medium">
+                                +${(option.price * item.quantity).toFixed(2)}
+                              </span>
+                            )}
+                          </div>
+                        ))
+                      )}
                     </div>
                   )}
                   
-                  {/* Modifiers */}
-                  {item.modifiers && item.modifiers.length > 0 && (
+                  {/* Spice Level (moved after modifiers) */}
+                  {item.spiceLevel && (
                     <div className="text-xs text-gray-500 mt-1">
-                      <span className="font-medium">Modifiers:</span>
-                      <ul className="ml-2 mt-0.5">
-                        {item.modifiers.map((modifier, modIndex) => (
-                          <li key={modIndex}>
-                            {modifier.name}: {modifier.options.map(opt => opt.name).join(', ')}
-                          </li>
-                        ))}
-                      </ul>
+                      <span className="font-medium">Spice Level:</span> {' '}
+                      <span className="text-red-500">
+                        {item.spiceLevel === "Mild" && "Mild"}
+                        {item.spiceLevel === "Medium" && "Medium"}
+                        {item.spiceLevel === "Hot" && "Hot"}
+                        {!["Mild", "Medium", "Hot"].includes(item.spiceLevel) && item.spiceLevel}
+                      </span>
                     </div>
                   )}
                 </div>

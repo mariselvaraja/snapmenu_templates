@@ -8,9 +8,11 @@ interface TableStatus {
   [key: string]: any;
 }
 
+
 interface TableAvailabilityState {
   items: any[];
   tableStatus: TableStatus[];
+  time_slots : any[];
   loading: boolean;
   statusLoading: boolean;
   error: string | null;
@@ -19,6 +21,7 @@ interface TableAvailabilityState {
 
 const initialState: TableAvailabilityState = {
   items: [],
+  time_slots: [],
   tableStatus: [],
   loading: false,
   statusLoading: false,
@@ -36,8 +39,9 @@ export const tableAvailablitySlice = createSlice({
       state.loading = true;
       state.error = null;
     },
-    fetchTableAvailablitySuccess: (state, action: PayloadAction<{ availableDetails: any[] }>) => {
+    fetchTableAvailablitySuccess: (state, action: PayloadAction<{ availableDetails: any[], time_slots: any[] }>) => {
       state.items = action.payload.availableDetails;
+      state.time_slots = action.payload.time_slots;
       state.loading = false;
     },
     fetchTableAvailablityFailure: (state, action: PayloadAction<string>) => {

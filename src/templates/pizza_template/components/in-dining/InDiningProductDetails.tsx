@@ -1,7 +1,178 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { X, Plus, Minus, ArrowLeft, Heart, ShoppingCart, Check } from 'lucide-react';
+import { X, Plus, Minus, ArrowLeft, Heart, ShoppingCart, Check, Activity, ChevronDown, ChevronUp, Box, AlertTriangle } from 'lucide-react';
 import { FaPepperHot } from "react-icons/fa";
+import { LuVegan } from 'react-icons/lu';
+import { IoLeafOutline } from 'react-icons/io5';
+import { CiWheat } from 'react-icons/ci';
+import ModifierModal from '../ModifierModal';
+
+// Nutritional Information Section Component
+const NutritionalInfoSection: React.FC<{ product: any }> = ({ product }) => {
+  const [isExpanded, setIsExpanded] = useState(true);
+  
+  // Check if there's any nutritional information to display
+  const hasNutritionalInfo = product.Calories || product.Nutrients || 
+    product.calories || product.protein || product.carbs || product.fat || 
+    (product.nutrients && Object.values(product.nutrients).some(value => value !== undefined && value !== ''));
+  
+  if (!hasNutritionalInfo) {
+    return null;
+  }
+
+  return (
+    <div className="mb-4 border border-gray-200 rounded-lg overflow-hidden">
+      <button 
+        className="w-full text-left px-4 py-3 bg-gray-50 flex items-center justify-between"
+        onClick={() => setIsExpanded(!isExpanded)}
+      >
+        <h2 className="text-base font-semibold flex items-center">
+          <Activity className="h-4 w-4 mr-2" />
+          Nutritional Information
+        </h2>
+        {isExpanded ? (
+          <ChevronUp className="h-4 w-4 text-gray-500" />
+        ) : (
+          <ChevronDown className="h-4 w-4 text-gray-500" />
+        )}
+      </button>
+      
+      {isExpanded && (
+        <div className="p-4">
+          {/* Display Calories and Nutrients if they exist in the product */}
+          {(product.Calories || product.Nutrients) ? (
+            <div className="flex flex-wrap gap-2">
+              {product.Calories && (
+                <span className="px-3 py-1 rounded-full text-sm bg-gray-100">
+                  Calories: {product.Calories}
+                </span>
+              )}
+              {product.Nutrients && (
+                <span className="px-3 py-1 rounded-full text-sm bg-gray-100">
+                  {product.Nutrients}
+                </span>
+              )}
+            </div>
+          ) : (
+            /* Display detailed nutritional info if available */
+            <div className="grid grid-cols-2 gap-2">
+              {(product.calories || product.nutrients?.calories) && (
+                <div className="bg-gray-50 p-2 rounded">
+                  <span className="text-xs text-gray-500">Calories</span>
+                  <p className="font-medium">{product.calories || product.nutrients?.calories || '450'} kcal</p>
+                </div>
+              )}
+              {(product.protein || product.nutrients?.protein) && (
+                <div className="bg-gray-50 p-2 rounded">
+                  <span className="text-xs text-gray-500">Protein</span>
+                  <p className="font-medium">{product.protein || product.nutrients?.protein || '12'}g</p>
+                </div>
+              )}
+              {(product.carbs || product.nutrients?.carbs) && (
+                <div className="bg-gray-50 p-2 rounded">
+                  <span className="text-xs text-gray-500">Carbs</span>
+                  <p className="font-medium">{product.carbs || product.nutrients?.carbs || '45'}g</p>
+                </div>
+              )}
+              {(product.fat || product.nutrients?.fat) && (
+                <div className="bg-gray-50 p-2 rounded">
+                  <span className="text-xs text-gray-500">Fat</span>
+                  <p className="font-medium">{product.fat || product.nutrients?.fat || '18'}g</p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Ingredients Section Component
+const IngredientsSection: React.FC<{ product: any }> = ({ product }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  
+  if (!product.ingredients || product.ingredients.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="mb-4 border border-gray-200 rounded-lg overflow-hidden">
+      <button 
+        className="w-full text-left px-4 py-3 bg-gray-50 flex items-center justify-between"
+        onClick={() => setIsExpanded(!isExpanded)}
+      >
+        <h2 className="text-base font-semibold flex items-center">
+          <Box className="h-4 w-4 mr-2" />
+          Ingredients
+        </h2>
+        {isExpanded ? (
+          <ChevronUp className="h-4 w-4 text-gray-500" />
+        ) : (
+          <ChevronDown className="h-4 w-4 text-gray-500" />
+        )}
+      </button>
+      
+      {isExpanded && (
+        <div className="p-4">
+          <div className="flex flex-wrap gap-2">
+            {product.ingredients.map((ingredient: string, index: number) => (
+              <span
+                key={index}
+                className="bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs"
+              >
+                {ingredient}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Allergens Section Component
+const AllergensSection: React.FC<{ product: any }> = ({ product }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  
+  if (!product.allergens || product.allergens.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="mb-4 border border-gray-200 rounded-lg overflow-hidden">
+      <button 
+        className="w-full text-left px-4 py-3 bg-gray-50 flex items-center justify-between"
+        onClick={() => setIsExpanded(!isExpanded)}
+      >
+        <h2 className="text-base font-semibold flex items-center">
+          <AlertTriangle className="h-4 w-4 mr-2" />
+          Allergens
+        </h2>
+        {isExpanded ? (
+          <ChevronUp className="h-4 w-4 text-gray-500" />
+        ) : (
+          <ChevronDown className="h-4 w-4 text-gray-500" />
+        )}
+      </button>
+      
+      {isExpanded && (
+        <div className="p-4">
+          <div className="flex flex-wrap gap-2">
+            {product.allergens.map((allergen: string, index: number) => (
+              <span
+                key={index}
+                className="bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs"
+              >
+                {allergen}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 import { useDispatch, useSelector } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 import { AppDispatch, RootState } from '../../../../common/store';
@@ -18,10 +189,8 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
   onClose,
   menuItems
 }) => {
-  const [quantity, setQuantity] = useState<number>(1);
-  const [showModifiersPopup, setShowModifiersPopup] = useState<boolean>(false);
-  const [selectedModifierOptions, setSelectedModifierOptions] = useState<any[]>([]);
-  const [spiceLevel, setSpiceLevel] = useState<string | null>('Medium');
+  const [isModifierModalOpen, setIsModifierModalOpen] = useState<boolean>(false);
+  const [selectedMenuItem, setSelectedMenuItem] = useState<any>(null);
   const dispatch = useDispatch<AppDispatch>();
   const cartItems = useSelector((state: RootState) => state.cart.items);
   
@@ -30,91 +199,16 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
   const tableNumber =  sessionStorage.getItem('Tablename');
 
   
-  // Handle adding item with modifiers to cart
-  const handleAddToCart = () => {
-    // Group selected options by modifier name
-    const modifierGroups = selectedModifierOptions.reduce((groups: any, option: any) => {
-      const modifierName = option.modifierName;
-      if (!groups[modifierName]) {
-        groups[modifierName] = {
-          name: modifierName,
-          options: []
-        };
-      }
-      groups[modifierName].options.push({
-        name: option.name,
-        price: option.price || 0
-      });
-      return groups;
-    }, {});
-    
-    const itemToAdd = {
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      quantity: quantity,
-      image: product.image || '',
-      selectedModifiers: Object.values(modifierGroups) as { 
-        name: string; 
-        options: { name: string; price: number; }[] 
-      }[]
+  // Open modifier modal for a product
+  const openModifierModal = () => {
+    // Set the product with default quantity of 1
+    const productWithQuantity = {
+      ...product,
+      quantity: 1
     };
-    
-    // Add spice level as a modifier if selected
-    if (spiceLevel) {
-      itemToAdd.selectedModifiers.push({
-        name: "Spice Level",
-        options: [
-          {
-            name: spiceLevel,
-            price: 0
-          }
-        ]
-      });
-    }
-    
-    dispatch(addItem(itemToAdd));
-    onClose();
+    setSelectedMenuItem(productWithQuantity);
+    setIsModifierModalOpen(true);
   };
-  
-  // Toggle option selection
-  const toggleOption = (modifier: any, option: any) => {
-    const optionKey = `${modifier.name}-${option.name}`;
-    const optionIndex = selectedModifierOptions.findIndex(
-      opt => opt.modifierName === modifier.name && opt.name === option.name
-    );
-    
-    if (optionIndex >= 0) {
-      // Remove option if already selected
-      const newOptions = [...selectedModifierOptions];
-      newOptions.splice(optionIndex, 1);
-      setSelectedModifierOptions(newOptions);
-    } else {
-      // Add option if not selected
-      setSelectedModifierOptions([
-        ...selectedModifierOptions, 
-        { 
-          modifierName: modifier.name, 
-          name: option.name,
-          price: option.price || 0
-        }
-      ]);
-    }
-  };
-  
-  // Check if an option is selected
-  const isOptionSelected = (modifier: any, option: any) => {
-    return selectedModifierOptions.some(
-      opt => opt.modifierName === modifier.name && opt.name === option.name
-    );
-  };
-  
-  // Reset spice level to Medium when showing modifiers popup
-  useEffect(() => {
-    if (showModifiersPopup) {
-      setSpiceLevel('Medium');
-    }
-  }, [showModifiersPopup]);
   
   useEffect(() => {
     // Extract table number from URL query parameter or path parameter
@@ -172,7 +266,7 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
               <ShoppingCart className="h-6 w-6 text-red-500" />
               {cartItems.length > 0 && (
                 <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                  {cartItems.reduce((total, item) => total + item.quantity, 0)}
+                  {cartItems.reduce((total:any, item:any) => total + item.quantity, 0)}
                 </span>
               )}
             </button>
@@ -194,22 +288,22 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
               </div>
             )}
             
-            {/* Dietary Information Badges - Top Left */}
+            {/* Dietary Information Icons - Top Left */}
             {product.dietary && (
-              <div className="absolute top-2 left-2 flex flex-col gap-1">
+              <div className="absolute top-2 left-2 flex flex-wrap gap-1">
                 {product.dietary.isVegetarian && (
-                  <div className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium">
-                    Vegetarian
+                  <div className="bg-green-500 text-white w-8 h-8 rounded-full flex items-center justify-center">
+                    <IoLeafOutline className="w-5 h-5" />
                   </div>
                 )}
                 {product.dietary.isVegan && (
-                  <div className="bg-green-600 text-white px-3 py-1 rounded-full text-sm font-medium">
-                    Vegan
+                  <div className="bg-green-600 text-white w-8 h-8 rounded-full flex items-center justify-center">
+                    <LuVegan className="w-5 h-5" />
                   </div>
                 )}
                 {product.dietary.isGlutenFree && (
-                  <div className="bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-medium">
-                    Gluten Free
+                  <div className="bg-blue-500 text-white w-8 h-8 rounded-full flex items-center justify-center">
+                    <CiWheat className="w-5 h-5" />
                   </div>
                 )}
               </div>
@@ -221,131 +315,20 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
             <div className="p-6">
               <h2 className="text-2xl font-bold text-gray-800 mb-2">{product.name}</h2>
               <p className="text-xl font-bold text-red-500 mb-2">${product.price?.toFixed(2)}</p>
-              
-              {/* Dietary Information Badges */}
-              {product.dietary && (
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {product.dietary.isVegetarian && (
-                    <div className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium">
-                      Vegetarian
-                    </div>
-                  )}
-                  {product.dietary.isVegan && (
-                    <div className="bg-green-600 text-white px-3 py-1 rounded-full text-sm font-medium">
-                      Vegan
-                    </div>
-                  )}
-                  {product.dietary.isGlutenFree && (
-                    <div className="bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-medium">
-                      Gluten Free
-                    </div>
-                  )}
-                </div>
-              )}
+
               
               <p className="text-gray-600 mb-6">{product.description}</p>
 
 
-              {/* Ingredients */}
-              {product.ingredients && product.ingredients.length > 0 && (
-                <div className="mb-4">
-                  <h3 className="text-sm font-semibold text-gray-500 uppercase mb-1">Ingredients</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {product.ingredients.map((ingredient: string, index: number) => (
-                      <span
-                        key={index}
-                        className="bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs"
-                      >
-                        {ingredient}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Allergens */}
-              {product.allergens && product.allergens.length > 0 && (
-                <div className="mb-4">
-                  <h3 className="text-sm font-semibold text-gray-500 uppercase mb-1">Allergens</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {product.allergens.map((allergen: string, index: number) => (
-                      <span
-                        key={index}
-                        className="bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs"
-                      >
-                        {allergen}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
+              {/* Nutritional Information, Ingredients, and Allergens in collapsible sections */}
+              <NutritionalInfoSection product={product} />
+              <IngredientsSection product={product} />
+              <AllergensSection product={product} />
               
-              {/* Nutritional Information - Only show if nutritional data exists */}
-              {(product.calories || product.protein || product.carbs || product.fat || 
-                (product.nutrients && Object.values(product.nutrients).some(value => value !== undefined && value !== ''))) && (
-                <div className="mb-4">
-                  <h3 className="text-sm font-semibold text-gray-500 uppercase mb-1">Nutritional Information</h3>
-                  <div className="grid grid-cols-2 gap-2">
-                    {(product.calories || product.nutrients?.calories) && (
-                      <div className="bg-gray-50 p-2 rounded">
-                        <span className="text-xs text-gray-500">Calories</span>
-                        <p className="font-medium">{product.calories || product.nutrients?.calories || '450'} kcal</p>
-                      </div>
-                    )}
-                    {(product.protein || product.nutrients?.protein) && (
-                      <div className="bg-gray-50 p-2 rounded">
-                        <span className="text-xs text-gray-500">Protein</span>
-                        <p className="font-medium">{product.protein || product.nutrients?.protein || '12'}g</p>
-                      </div>
-                    )}
-                    {(product.carbs || product.nutrients?.carbs) && (
-                      <div className="bg-gray-50 p-2 rounded">
-                        <span className="text-xs text-gray-500">Carbs</span>
-                        <p className="font-medium">{product.carbs || product.nutrients?.carbs || '45'}g</p>
-                      </div>
-                    )}
-                    {(product.fat || product.nutrients?.fat) && (
-                      <div className="bg-gray-50 p-2 rounded">
-                        <span className="text-xs text-gray-500">Fat</span>
-                        <p className="font-medium">{product.fat || product.nutrients?.fat || '18'}g</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-              
-              {/* Preparation Time */}
-              <div className="mb-4">
-                <h3 className="text-sm font-semibold text-gray-500 uppercase mb-1">Preparation Time</h3>
-                <p className="text-gray-700">{product.prepTime || '15-20 minutes'}</p>
-              </div>
-              
-              {/* Price, Quantity Controls, and Add to Cart - Only visible on desktop */}
-              <div className="hidden md:flex justify-between items-center mt-6">
-                <div className="flex items-center">
-                  <p className="font-bold text-xl text-red-500 mr-4">
-                    ${(product.price * quantity)?.toFixed(2)}
-                  </p>
-                  
-                  <div className="flex items-center">
-                    <button
-                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                      className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200"
-                    >
-                      <Minus className="h-3 w-3" />
-                    </button>
-                    <span className="mx-3 font-semibold">{quantity}</span>
-                    <button
-                      onClick={() => setQuantity(quantity + 1)}
-                      className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200"
-                    >
-                      <Plus className="h-3 w-3" />
-                    </button>
-                  </div>
-                </div>
-                
+              {/* Add to Order Button - Only visible on desktop */}
+              <div className="hidden md:flex justify-end mt-6">
                 <button
-                  onClick={() => setShowModifiersPopup(true)}
+                  onClick={openModifierModal}
                   className="bg-red-500 text-white px-6 py-2 rounded-full hover:bg-red-600 transition-colors font-medium"
                 >
                   Add to Order
@@ -353,57 +336,6 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
               </div>
             </div>
             
-            {/* Spice Level Selection */}
-            <div className="p-6 border-t border-gray-100">
-              <h3 className="text-sm font-semibold text-gray-500 uppercase mb-3 flex items-center">
-                <FaPepperHot className="h-5 w-5 text-red-500 mr-2" /> Spice Level
-              </h3>
-              <div className="flex space-x-4 mb-4">
-                <button
-                  onClick={() => setSpiceLevel('Mild')}
-                  className={`flex items-center px-4 py-2 rounded-full border ${
-                    spiceLevel === 'Mild' 
-                      ? 'border-red-500 bg-red-50 text-red-500' 
-                      : 'border-gray-300 text-gray-700'
-                  }`}
-                >
-                  <FaPepperHot className="h-4 w-4 mr-2 text-yellow-500" />
-                  
-                  {spiceLevel === 'Mild' && <Check className="h-4 w-4 ml-2" />}
-                </button>
-                <button
-                  onClick={() => setSpiceLevel('Medium')}
-                  className={`flex items-center px-4 py-2 rounded-full border ${
-                    spiceLevel === 'Medium' 
-                      ? 'border-red-500 bg-red-50 text-red-500' 
-                      : 'border-gray-300 text-gray-700'
-                  }`}
-                >
-                  <div className="flex mr-2">
-                    <FaPepperHot className="h-4 w-4 text-orange-500" />
-                    <FaPepperHot className="h-4 w-4 -ml-1 text-orange-500" />
-                  </div>
-                  
-                  {spiceLevel === 'Medium' && <Check className="h-4 w-4 ml-2" />}
-                </button>
-                <button
-                  onClick={() => setSpiceLevel('Hot')}
-                  className={`flex items-center px-4 py-2 rounded-full border ${
-                    spiceLevel === 'Hot' 
-                      ? 'border-red-500 bg-red-50 text-red-500' 
-                      : 'border-gray-300 text-gray-700'
-                  }`}
-                >
-                  <div className="flex mr-2">
-                    <FaPepperHot className="h-4 w-4 text-red-500" />
-                    <FaPepperHot className="h-4 w-4 -ml-1 text-red-500" />
-                    <FaPepperHot className="h-4 w-4 -ml-1 text-red-500" />
-                  </div>
-                  
-                  {spiceLevel === 'Hot' && <Check className="h-4 w-4 ml-2" />}
-                </button>
-              </div>
-            </div>
             
             {/* Right Side - You May Also Like */}
             <div className="flex flex-col">
@@ -484,35 +416,10 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
         
         
         {/* Fixed Bottom Bar with Full-Width Add Button - Only visible on mobile */}
-        <div className="fixed md:hidden bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 flex flex-col z-50 shadow-lg">
-          {/* Price and Quantity Controls Row */}
-          <div className="flex justify-between items-center mb-3">
-            {/* Price on LHS */}
-            <p className="font-bold text-xl text-red-500">
-              ${(product.price * quantity)?.toFixed(2)}
-            </p>
-            
-            {/* Quantity Controls on RHS */}
-            <div className="flex items-center">
-              <button
-                onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200"
-              >
-                <Minus className="h-4 w-4" />
-              </button>
-              <span className="mx-4 font-semibold">{quantity}</span>
-              <button
-                onClick={() => setQuantity(quantity + 1)}
-                className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200"
-              >
-                <Plus className="h-4 w-4" />
-              </button>
-            </div>
-          </div>
-          
+        <div className="fixed md:hidden bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-50 shadow-lg">
           {/* Full-Width Add Button */}
           <button
-            onClick={() => setShowModifiersPopup(true)}
+            onClick={openModifierModal}
             className="w-full bg-red-500 text-white py-3 rounded-full hover:bg-red-600 transition-colors font-medium"
           >
             Add to Order
@@ -520,150 +427,12 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
         </div>
       </motion.div>
       
-      {/* Modifiers Popup */}
-      {showModifiersPopup && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-[60] flex items-center justify-center">
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 50 }}
-            className="bg-white rounded-lg max-w-md w-full max-h-[80vh] overflow-y-auto"
-          >
-            <div className="p-4 border-b border-gray-200 flex justify-between items-center">
-              <h3 className="text-lg font-semibold">Select Options for {product.name}</h3>
-              <button 
-                onClick={() => setShowModifiersPopup(false)}
-                className="p-1 rounded-full hover:bg-gray-100"
-                aria-label="Cancel"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-            
-            <div className="p-4">
-              {/* Spice Level Selection - Moved to top */}
-              <div className="mb-6">
-                <h4 className="text-sm font-semibold text-gray-500 uppercase mb-3 flex items-center">
-                  <FaPepperHot className="h-5 w-5 text-red-500 mr-2" /> Spice Level
-                </h4>
-                <div className="flex flex-wrap gap-2 mb-4">
-                  <button
-                    onClick={() => setSpiceLevel('Mild')}
-                    className={`flex items-center px-4 py-2 rounded-full border ${
-                      spiceLevel === 'Mild' 
-                        ? 'border-red-500 bg-red-50 text-red-500' 
-                        : 'border-gray-300 text-gray-700'
-                    }`}
-                  >
-                    <FaPepperHot className="h-4 w-4 mr-2 text-yellow-500" />
-                    Mild
-                    {spiceLevel === 'Mild' && <Check className="h-4 w-4 ml-2" />}
-                  </button>
-                  <button
-                    onClick={() => setSpiceLevel('Medium')}
-                    className={`flex items-center px-4 py-2 rounded-full border ${
-                      spiceLevel === 'Medium' 
-                        ? 'border-red-500 bg-red-50 text-red-500' 
-                        : 'border-gray-300 text-gray-700'
-                    }`}
-                  >
-                    <div className="flex mr-2">
-                      <FaPepperHot className="h-4 w-4 text-orange-500" />
-                      <FaPepperHot className="h-4 w-4 -ml-1 text-orange-500" />
-                    </div>
-                    Medium
-                    {spiceLevel === 'Medium' && <Check className="h-4 w-4 ml-2" />}
-                  </button>
-                  <button
-                    onClick={() => setSpiceLevel('Hot')}
-                    className={`flex items-center px-4 py-2 rounded-full border ${
-                      spiceLevel === 'Hot' 
-                        ? 'border-red-500 bg-red-50 text-red-500' 
-                        : 'border-gray-300 text-gray-700'
-                    }`}
-                  >
-                    <div className="flex mr-2">
-                      <FaPepperHot className="h-4 w-4 text-red-500" />
-                      <FaPepperHot className="h-4 w-4 -ml-1 text-red-500" />
-                      <FaPepperHot className="h-4 w-4 -ml-1 text-red-500" />
-                    </div>
-                    Hot
-                    {spiceLevel === 'Hot' && <Check className="h-4 w-4 ml-2" />}
-                  </button>
-                </div>
-              </div>
-              
-              {/* Modifiers List */}
-              <div className="space-y-4 mb-6">
-                <h4 className="text-sm font-semibold text-gray-500 uppercase mb-3">Additional Options</h4>
-                
-                {/* Get unique modifiers by name */}
-                {(() => {
-                  // Create a map to store unique modifiers by name
-                  const uniqueModifiers = new Map();
-                  
-                  // If modifiers_list exists, add each modifier to the map with name as key
-                  if (product.modifiers_list && product.modifiers_list.length > 0) {
-                    product.modifiers_list.forEach((modifier: any) => {
-                      if (!uniqueModifiers.has(modifier.name)) {
-                        uniqueModifiers.set(modifier.name, modifier);
-                      }
-                    });
-                  }
-                  
-                  // Convert map values back to array
-                  const modifiersArray = Array.from(uniqueModifiers.values());
-                  
-                  if (modifiersArray.length > 0) {
-                    return modifiersArray.map((modifier: any, index: number) => (
-                    <div key={index} className="border border-gray-200 rounded-lg p-3">
-                      <h4 className="font-medium mb-2">{modifier.name}</h4>
-                      <div className="mt-2 pl-2 space-y-2 max-h-40 overflow-y-auto pr-2">
-                        {modifier.options.map((option: any, optIndex: number) => (
-                          <div key={optIndex} className="flex items-center justify-between">
-                            <div className="flex items-center">
-                              <button
-                                onClick={() => toggleOption(modifier, option)}
-                                className={`w-5 h-5 rounded-md mr-2 flex items-center justify-center ${
-                                  isOptionSelected(modifier, option) 
-                                    ? 'bg-red-500 text-white' 
-                                    : 'border border-gray-300'
-                                }`}
-                              >
-                                {isOptionSelected(modifier, option) && <Check className="h-3 w-3" />}
-                              </button>
-                              <span className="text-sm text-gray-700">{option.name}</span>
-                            </div>
-                            <span className="text-sm text-gray-600">
-                              {option.price > 0 ? `+$${option.price?.toFixed(2)}` : '$0.00'}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    ));
-                  } else {
-                    return (
-                      <div className="text-center text-gray-500 py-4">
-                        <p>No additional options available for this item</p>
-                      </div>
-                    );
-                  }
-                })()}
-              </div>
-              
-              <div className="mt-6">
-                <button
-                  onClick={handleAddToCart}
-                  className="w-full bg-red-500 text-white py-3 rounded-full hover:bg-red-600 transition-colors font-medium"
-                >
-                  Add to Cart
-                </button>
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      )}
+      {/* Modifier Modal */}
+      <ModifierModal
+        isOpen={isModifierModalOpen}
+        onClose={() => setIsModifierModalOpen(false)}
+        menuItem={selectedMenuItem}
+      />
     </div>
   );
 };

@@ -8,6 +8,7 @@ import { RootState, AppDispatch } from '../../../common/store';
 import { setSearchQuery, setSearchResults, setSearchState } from '../../../common/redux/slices/searchSlice';
 import { addItem, toggleDrawer } from '../../../common/redux/slices/cartSlice';
 import searchService, { SearchState as SearchServiceState } from '../../../services/searchService';
+import _ from 'lodash';
 
 // Add TypeScript declarations for the Web Speech API
 declare global {
@@ -67,7 +68,7 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
 
   // Generate quick links from menu categories and popular dietary options
   const quickLinks = useMemo(() => {
-    const links = [];
+    const links:any = [];
     
     // Add dietary options
     links.push({ text: 'Vegetarian', query: 'vegetarian' });
@@ -75,29 +76,14 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
     links.push({ text: 'Gluten Free', query: 'gluten free' });
     
     // Add categories from menu data
-    if (menuCategories && menuCategories.length > 0) {
-      // Use categories from the menu API
-      menuCategories.forEach((category: any) => {
-        if (category && category.name) {
-          links.push({
-            text: category.name,
-            query: category.name.toLowerCase()
-          });
+    if(menuItems && menuItems.length)
+      {
+        let items = menuItems.map((item:any)=>{
+          return { text: item.category, query: item.category }
+        })
+        let unique_item = _.uniqBy(items,'text')
+          return  unique_item
         }
-      });
-    } else if (menuItems && menuItems.length > 0) {
-      // Extract unique categories from menu items if menuCategories is not available
-      const uniqueCategories = [...new Set(menuItems.map((item: any) => item.category))];
-      uniqueCategories.forEach((category: string) => {
-        if (category) {
-          links.push({
-            text: category.charAt(0).toUpperCase() + category.slice(1),
-            query: category.toLowerCase()
-          });
-        }
-      });
-    }
-    
     return links;
   }, [menuCategories, menuItems]);
 
@@ -815,7 +801,7 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
         <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
           <div className="text-sm font-medium text-gray-600 mb-2">Quick Links</div>
           <div className="flex flex-wrap gap-2">
-            {quickLinks.map((link, index) => (
+            {quickLinks.map((link:any, index:any) => (
               <button
                 key={index}
                 onClick={() => handleQuickLinkClick(link)}
