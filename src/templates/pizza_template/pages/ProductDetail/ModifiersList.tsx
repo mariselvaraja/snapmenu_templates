@@ -167,7 +167,6 @@ const ModifiersList: React.FC<ModifiersListProps> = ({
                                     </div>
                                 </div>
                                 <div className="font-medium flex items-center text-sm sm:text-base">
-                                    <span className="mr-2">{option.name}</span>
                                     <div className="flex">
                                         {option.name === 'Mild' && <FaPepperHot className="text-red-300 h-3 w-3 sm:h-4 sm:w-4" />}
                                         {option.name === 'Medium' && (

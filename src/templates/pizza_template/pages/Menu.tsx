@@ -317,10 +317,12 @@ export default function Menu() {
                         {/* Clickable red scroll arrow - only show on mobile */}
                         <button
                             onClick={scrollCategories}
-                            className="md:hidden bg-gray-100 hover:bg-gray-200 p-2 rounded-full transition-colors flex-shrink-0"
+                            className="md:hidden transition-colors flex items-center font-bold mb-2"
                             aria-label="Scroll categories"
                         >
-                            <ChevronRight className="w-4 h-4 text-red-500" />
+                            <ChevronRight className="w-4 h-4 text-red-500 animate-pulse duration-100" />
+                            <ChevronRight className="w-4 h-4 text-red-500 animate-pulse duration-200" />
+                            <ChevronRight className="w-4 h-4 text-red-500 animate-pulse duration-300" />
                         </button>
                     </div>
                     {/* Only show subcategories if a category is selected and not on mobile */}
