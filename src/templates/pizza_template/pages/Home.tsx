@@ -11,6 +11,7 @@ import {
 } from 'react-icons/fa';
 
 import { useAppDispatch, useAppSelector, addItem, CartItem } from '../../../common/redux';
+import { Carousel, CarouselItem } from '../../../components/carousel';
 
 // Define interfaces for the experienceCard data structure
 interface ExperienceCardSection {
@@ -292,16 +293,95 @@ export default function Home() {
                 <p className="text-xl">Loading featured items...</p>
               </div>
             ) : (
-              // Grid layout for all products - show all items without carousel
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                {popularItems.products.map((skuId: string, index: number) => {
-                  // Find menu item with matching SKU ID
-                  const menuItem = menuItems.find(item => item.sku_id === skuId);
-                  if (!menuItem) return null;
-                  
-                  return renderMenuItemCard(menuItem, index);
-                })}
-              </div>
+              // Carousel layout for featured menu items - show all items with auto-scroll
+              (() => {
+                // Prepare carousel items from all menu items
+                const carouselItems: CarouselItem[] = popularItems.products
+                  .map((skuId: string, index: number) => {
+                    const menuItem = menuItems.find(item => item.sku_id === skuId);
+                    if (!menuItem) return null;
+                    
+                    return {
+                      id: menuItem.id,
+                      content: (
+                        <div className="bg-white rounded-lg overflow-hidden shadow-lg mx-2">
+                          <Link to={`/product/${menuItem.id}`}>
+                            {menuItem.image ? (
+                              <img
+                                src={menuItem.image}
+                                alt={menuItem.name}
+                                className="w-full h-48 object-cover"
+                              />
+                            ) : (
+                              <div className="w-full h-48 bg-red-100 flex items-center justify-center text-4xl font-bold text-red-500">
+                                {menuItem.name.charAt(0)}
+                              </div>
+                            )}
+                            <div className="p-6">
+                              <h3 className="text-xl font-semibold mb-2">{menuItem.name}</h3>
+                              <p className="text-gray-600 mb-4">{menuItem.description}</p>
+                              <div className="flex items-center justify-between">
+                                <span className="text-lg font-bold text-red-500">${menuItem.price}</span>
+                                <button
+                                  className="inline-flex items-center bg-red-500 text-white px-3 py-1 rounded-full hover:bg-red-600 transition-colors"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    const cartItem: CartItem = {
+                                      id: menuItem.id,
+                                      name: menuItem.name,
+                                      price: menuItem.price,
+                                      image: menuItem.image,
+                                      quantity: 1,
+                                    };
+                                    dispatch(addItem(cartItem));
+                                  }}
+                                >
+                                  <ShoppingCart className="h-4 w-4 mr-1" />
+                                  Add to Cart
+                                </button>
+                              </div>
+                            </div>
+                          </Link>
+                        </div>
+                      )
+                    };
+                  })
+                  .filter(Boolean) as CarouselItem[];
+
+                return carouselItems.length > 0 ? (
+                  <Carousel
+                    items={carouselItems}
+                    autoplay={true}
+                    autoplaySpeed={3000}
+                    dots={true}
+                    arrows={true}
+                    infinite={true}
+                    slidesToShow={3}
+                    slidesToScroll={1}
+                    responsive={[
+                      {
+                        breakpoint: 1024,
+                        settings: {
+                          slidesToShow: 2,
+                          slidesToScroll: 1,
+                        }
+                      },
+                      {
+                        breakpoint: 600,
+                        settings: {
+                          slidesToShow: 1,
+                          slidesToScroll: 1,
+                        }
+                      }
+                    ]}
+                    className="featured-menu-carousel"
+                  />
+                ) : (
+                  <div className="text-center py-8">
+                    <p className="text-xl">No featured items available</p>
+                  </div>
+                );
+              })()
             )}
           </div>
         </section>

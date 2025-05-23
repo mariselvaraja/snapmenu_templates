@@ -1,5 +1,4 @@
-import { motion } from 'framer-motion';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { ShoppingCart, Plus, Minus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector, addItem, CartItem, fetchMenuRequest, MenuItem, removeItem, updateItemQuantity } from '../../../common/redux';
@@ -48,9 +47,52 @@ export default function Menu() {
     
 
     const handleAddToCart = (menuItem: MenuItem) => {
-        // Open the modifier modal and set the selected menu item
-        setSelectedMenuItem(menuItem);
-        setIsModifierModalOpen(true);
+        // Helper function to check if spice level should be shown based on is_spice_applicable
+        const shouldShowSpiceLevel = () => {
+            // Check if product has is_spice_applicable field and it's "yes"
+            if (menuItem?.is_spice_applicable?.toLowerCase() === 'yes') {
+                return true;
+            }
+            // Also check in raw_api_data if it exists
+            if (menuItem?.raw_api_data) {
+                try {
+                    const rawData = typeof menuItem.raw_api_data === 'string' 
+                        ? JSON.parse(menuItem.raw_api_data) 
+                        : menuItem.raw_api_data;
+                    if (rawData?.is_spice_applicable?.toLowerCase() === 'yes') {
+                        return true;
+                    }
+                } catch (e) {
+                    // If parsing fails, continue with other checks
+                }
+            }
+            return false;
+        };
+
+        // Helper function to check if modifiers are available
+        const hasModifiers = () => {
+            return menuItem?.modifiers_list && menuItem.modifiers_list.length > 0;
+        };
+
+        // Check if spice level is available OR modifiers are available
+        const needsModifierModal = shouldShowSpiceLevel() || hasModifiers();
+
+        if (needsModifierModal) {
+            // Open the modifier modal and set the selected menu item
+            setSelectedMenuItem(menuItem);
+            setIsModifierModalOpen(true);
+        } else {
+            // Directly add to cart without opening modifier modal
+            const cartItem: CartItem = {
+                id: menuItem.id,
+                name: menuItem.name,
+                price: menuItem.price,
+                image: menuItem.image,
+                quantity: 1,
+                selectedModifiers: []
+            };
+            dispatch(addItem(cartItem));
+        }
     };
 
     // Handle loading and error states
@@ -231,17 +273,12 @@ export default function Menu() {
                     onClose={() => setIsModifierModalOpen(false)}
                     menuItem={selectedMenuItem}
                 />
-                <motion.div
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
-                    className="text-center mb-16"
-                >
+                <div className="text-center mb-16">
                     <h1 className="text-4xl font-bold mb-4">Our Menu</h1>
                     <p className="text-xl text-gray-600">
                         Explore our selection of dishes
                     </p>
-                </motion.div>
+                </div>
 
                 <div className="flex flex-col space-y-4 mb-12">
                     {/* Categories in a single row with horizontal overflow on mobile */}
@@ -285,11 +322,8 @@ export default function Menu() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {sortedItems.map((item, index) => (
-                        <motion.div
+                        <div
                             key={item.id}
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.5, delay: index * 0.1 }}
                             className="bg-white rounded-lg overflow-hidden shadow-lg"
                         >
                             <div className="relative cursor-pointer" onClick={() => navigate(`/product/${item.id.toString()}`)}>
@@ -355,7 +389,7 @@ export default function Menu() {
                                     </div>
                                     
                                     {/* Add button or quantity controls */}
-                                    {!cartItems.find(cartItem => cartItem.id === item.id && cartItem.quantity > 0) ? (
+                                    {!cartItems.find((cartItem:any) => cartItem.id === item.id && cartItem.quantity > 0) ? (
                                         <button
                                             className="inline-flex items-center bg-red-500 text-white px-5 py-2 rounded-full hover:bg-red-600 transition-colors text-base font-medium"
                                             onClick={() => handleAddToCart(item)}
@@ -369,7 +403,7 @@ export default function Menu() {
                                                 className="w-8 h-8 flex items-center justify-center bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-full transition-colors"
                                                 onClick={(e) => {
                                                     e.stopPropagation();
-                                                    const cartItem = cartItems.find(cartItem => cartItem.id === item.id);
+                                                    const cartItem = cartItems.find((cartItem:any) => cartItem.id === item.id);
                                                     if (cartItem) {
                                                         const newQuantity = cartItem.quantity - 1;
                                                         if (newQuantity > 0) {
@@ -383,13 +417,13 @@ export default function Menu() {
                                                 <Minus className="w-3 h-3" />
                                             </button>
                                             <span className="mx-3 text-base font-semibold">
-                                                {cartItems.find(cartItem => cartItem.id === item.id)?.quantity || 0}
+                                                {cartItems.find((cartItem:any) => cartItem.id === item.id)?.quantity || 0}
                                             </span>
                                             <button
                                                 className="w-8 h-8 flex items-center justify-center bg-red-500 hover:bg-red-600 text-white rounded-full transition-colors"
                                                 onClick={(e) => {
                                                     e.stopPropagation();
-                                                    const cartItem = cartItems.find(cartItem => cartItem.id === item.id);
+                                                    const cartItem = cartItems.find((cartItem:any) => cartItem.id === item.id);
                                                     if (cartItem) {
                                                         dispatch(updateItemQuantity({ id: item.id, quantity: cartItem.quantity + 1 }));
                                                     } else {
@@ -403,7 +437,7 @@ export default function Menu() {
                                     )}
                                 </div>
                             </div>
-                        </motion.div>
+                        </div>
                     ))}
                 </div>
             </div>

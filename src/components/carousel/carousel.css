@@ -1,0 +1,57 @@
+/* Custom styles for the carousel component */
+.featured-menu-carousel .slick-dots {
+  bottom: -50px;
+}
+
+.featured-menu-carousel .slick-dots li button:before {
+  color: #ef4444; /* red-500 */
+  font-size: 12px;
+}
+
+.featured-menu-carousel .slick-dots li.slick-active button:before {
+  color: #dc2626; /* red-600 */
+}
+
+.featured-menu-carousel .slick-prev,
+.featured-menu-carousel .slick-next {
+  z-index: 10;
+  width: 40px;
+  height: 40px;
+}
+
+.featured-menu-carousel .slick-prev {
+  left: -50px;
+}
+
+.featured-menu-carousel .slick-next {
+  right: -50px;
+}
+
+.featured-menu-carousel .slick-prev:before,
+.featured-menu-carousel .slick-next:before {
+  color: #ef4444; /* red-500 */
+  font-size: 24px;
+}
+
+.featured-menu-carousel .slick-prev:hover:before,
+.featured-menu-carousel .slick-next:hover:before {
+  color: #dc2626; /* red-600 */
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .featured-menu-carousel .slick-prev {
+    left: -30px;
+  }
+  
+  .featured-menu-carousel .slick-next {
+    right: -30px;
+  }
+}
+
+@media (max-width: 768px) {
+  .featured-menu-carousel .slick-prev,
+  .featured-menu-carousel .slick-next {
+    display: none !important;
+  }
+}

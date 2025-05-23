@@ -117,7 +117,7 @@ export default function Footer() {
                     <a 
                       key={index} 
                       href={link.href} 
-                      className="text-gray-300 hover:text-white transition-all duration-300 px-3 py-1.5 rounded-md hover:bg-red-900/20 border border-transparent hover:border-red-900/30 transform hover:-translate-y-1 text-sm"
+                      className="text-gray-300 hover:text-white transition-all duration-300 px-3 py-1.5 rounded-md hover:bg-red-900/20 border border-transparent hover:border-red-900/30 transform hover:-translate-y-1"
                     >
                       {link.label}
                     </a>
