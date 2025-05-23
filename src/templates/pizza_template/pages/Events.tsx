@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { Calendar, Users, Clock, MapPin } from 'lucide-react';
 import { useAppSelector } from '../../../common/redux';
+import { useEffect } from 'react';
 
 // Define interface for event item with additional properties
 interface EventItem {
@@ -17,6 +18,11 @@ interface EventItem {
 
 export default function Events() {
   const { rawApiResponse } = useAppSelector(state => state.siteContent);
+  
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
   
   // Get site content from Redux state
   const siteContent = rawApiResponse? 

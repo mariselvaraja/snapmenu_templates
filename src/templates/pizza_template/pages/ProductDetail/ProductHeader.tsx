@@ -181,12 +181,29 @@ const ProductHeader: React.FC<ProductHeaderProps> = ({
                 
                 {/* Product Name, Description, Price and Add to Cart - Show under image on mobile */}
                 <div className="lg:hidden mt-4">
-                    <h1 className="text-2xl sm:text-3xl font-bold mb-2">{product.name}</h1>
-                    <p className="text-gray-700 mb-2 text-sm sm:text-base">{product.description}</p>
-                    { modifiersList && modifiersList?.length !=0  && <div className="text-lg sm:text-xl font-bold text-red-500 mb-3">
-                        <span className="text-gray-700 font-normal mr-2">Price:</span>
-                        {formatToDollar(product.price)}
-                    </div>}
+                    {/* Product name with price on the right */}
+                    <div className="flex justify-between items-start mb-2">
+                        <h1 className="text-2xl sm:text-3xl font-bold flex-1 mr-4">{product.name}</h1>
+                        { modifiersList && modifiersList?.length !=0  && (
+                            <div className="text-lg sm:text-xl font-bold text-red-500 flex-shrink-0">
+                                {formatToDollar(product.price)}
+                            </div>
+                        )}
+                    </div>
+                    <p className="text-gray-700 mb-4 text-sm sm:text-base">{product.description}</p>
+                    
+                    {/* Modifiers List for mobile - positioned after description */}
+                    <div className='max-h-[300px] sm:max-h-[400px] overflow-y-auto thin-scrollbar mb-4'>
+                        <ModifiersList 
+                            modifiersList={modifiersList}
+                            handleModifierOptionSelect={handleModifierOptionSelect}
+                            isModifierOptionSelected={isModifierOptionSelected}
+                            spiceLevel={spiceLevel}
+                            setSpiceLevel={setSpiceLevel}
+                            validationErrors={validationErrors}
+                            product={product}
+                        />
+                    </div>
                     
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-4 mb-4 gap-3 sm:gap-0">
                         <div>

@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAppSelector } from '../../../common/redux';
 import { TableReservation, BookingData } from '../shared/components/reservation';
 
@@ -63,6 +63,11 @@ export default function Reservation() {
   };
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [selectedTime, setSelectedTime] = useState(new Date().toTimeString().slice(0, 5));
+
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   const handleBookingComplete = (bookingData: BookingData): void => {
     // Handle booking logic here

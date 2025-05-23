@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { Heart, Users, Award, Star, ChefHat, Utensils } from 'lucide-react';
 import { useAppSelector } from '../../../common/redux';
+import { useEffect } from 'react';
 
 export default function About() {
   const { rawApiResponse } = useAppSelector(state => state.siteContent);
@@ -13,6 +14,11 @@ export default function About() {
   // Extract data for the sections
   const story = siteContent?.story?.storyContent || '';
   const hero = siteContent?.story?.hero || '';
+
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   console.log("story", siteContent.story)
 

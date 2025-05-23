@@ -33,6 +33,11 @@ export default function Gallery() {
   const [galleryItems, setGalleryItems] = useState<MediaItem[]>([]);
   const [selectedMedia, setSelectedMedia] = useState<MediaItem | null>(null);
 
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   // Transform gallery data from siteContent to match the component's expected format
   useEffect(() => {
     if (hasImages) {

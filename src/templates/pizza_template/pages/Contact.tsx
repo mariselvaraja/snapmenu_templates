@@ -2,9 +2,15 @@ import { motion } from 'framer-motion';
 import { MapPin, Clock } from 'lucide-react';
 import { FaEnvelope, FaPhoneAlt } from 'react-icons/fa';
 import { useAppSelector } from '../../../common/redux';
+import { useEffect } from 'react';
 
 export default function Contact() {
   const { rawApiResponse } = useAppSelector(state => state.siteContent);
+  
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
   
   // Get site content from Redux state
   const siteContent = rawApiResponse ? 

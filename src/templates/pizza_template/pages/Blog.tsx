@@ -2,6 +2,7 @@
 import { Calendar, User, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAppSelector } from '../../../common/redux';
+import { useEffect } from 'react';
 
 // Define interface for blog post with additional properties
 interface BlogPost {
@@ -16,6 +17,11 @@ interface BlogPost {
 
 export default function Blog() {
   const { rawApiResponse } = useAppSelector(state => state.siteContent);
+  
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
   
   // Get site content from Redux state
   const siteContent = rawApiResponse ? 

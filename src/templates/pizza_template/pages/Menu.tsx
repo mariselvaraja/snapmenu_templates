@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { ShoppingCart, Plus, Minus, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector, addItem, CartItem, fetchMenuRequest, MenuItem, removeItem, updateItemQuantity } from '../../../common/redux';
@@ -35,6 +35,10 @@ export default function Menu() {
     const { items, loading, error } = useAppSelector(state => state.menu);
     const { items: cartItems } = useAppSelector(state => state.cart);
     
+    // Scroll to top when component mounts
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, []);
     
     // Extract subcategories from 'mains' category
     const subCategories: SubCategoryType[] = items
