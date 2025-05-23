@@ -34,6 +34,7 @@ export default function InDiningOrder() {
   const [tableName, setTableName] = useState('');
   const [isModifierModalOpen, setIsModifierModalOpen] = useState<boolean>(false);
   const [selectedMenuItem, setSelectedMenuItem] = useState<any>(null);
+  const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
   
   // Get table number from URL
   const location = useLocation();
@@ -47,7 +48,12 @@ export default function InDiningOrder() {
     (typeof rawApiResponse === 'string' ? JSON.parse(rawApiResponse) : rawApiResponse) : 
     { navigationBar: { brand: { logo: {} }, navigation: [] } };
   const navigationBar = siteContent?.navigationBar || { brand: { logo: {} }, navigation: [] };
-  const { brand } = siteContent.homepage;
+  const homepage = siteContent.homepage;
+  const { brand } = homepage;
+  const heroData = homepage?.hero;
+  
+  // Use heroData.banners if available, otherwise use empty array
+  const banners = heroData?.banners?.length > 0 ? heroData.banners : [];
 
   console.log("brand", siteContent)
 
@@ -67,6 +73,19 @@ export default function InDiningOrder() {
     dispatch(fetchTableStatusRequest(tableFromQuery))
 
   }, [location]);
+  
+  // Auto-rotate carousel
+  useEffect(() => {
+    if (banners.length > 1) {
+      const interval = setInterval(() => {
+        setCurrentBannerIndex((prevIndex) => 
+          (prevIndex + 1) % banners.length
+        );
+      }, 5000); // Change slide every 5 seconds
+      
+      return () => clearInterval(interval);
+    }
+  }, [banners.length]);
   
   // Fetch in-dining orders when component mounts
   useEffect(() => {
@@ -352,6 +371,65 @@ export default function InDiningOrder() {
         </div>
       </div>
       
+      {/* Hero Banner Section with Carousel - Only render if banners exist */}
+      {banners && banners.length > 0 && (
+        <section className="relative h-64 sm:h-80 flex items-center overflow-hidden">
+          <div className="absolute inset-0 z-0">
+            {banners.map((banner: { image: string }, index: number) => (
+              <motion.div
+                key={index}
+                className="absolute inset-0"
+                initial={{ opacity: 0 }}
+                animate={{ 
+                  opacity: index === currentBannerIndex ? 1 : 0,
+                  zIndex: index === currentBannerIndex ? 1 : 0
+                }}
+                transition={{ duration: 0.8 }}
+                style={{
+                  backgroundImage: `url('${banner.image}')`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                }}
+              >
+                <div className="absolute inset-0 bg-black bg-opacity-40"></div>
+              </motion.div>
+            ))}
+          </div>
+
+          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-white w-full">
+            <motion.div
+              key={currentBannerIndex}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              className="text-center"
+            >
+              <h1 className="text-3xl md:text-5xl font-bold mb-4">
+                {banners[currentBannerIndex]?.title || 'Welcome to Our Restaurant'}
+              </h1>
+              <p className="text-lg md:text-xl mb-6 max-w-2xl mx-auto">
+                {banners[currentBannerIndex]?.subtitle || 'Discover our delicious menu'}
+              </p>
+            </motion.div>
+            
+            {/* Carousel indicators */}
+            {banners.length > 1 && (
+              <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+                {banners.map((_: any, index: number) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentBannerIndex(index)}
+                    className={`w-3 h-3 rounded-full transition-colors ${
+                      index === currentBannerIndex ? 'bg-white' : 'bg-white bg-opacity-50'
+                    }`}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+      
       {/* Menu Item Count and Categories */}
       <div className="sticky top-16 z-30">
         <div className="bg-white shadow-sm">
@@ -619,14 +697,6 @@ export default function InDiningOrder() {
                       </div>
                     )}
 
-                    {/* Customization indicators - removed check mark icon */}
-                    <div className="absolute bottom-2 left-2 flex flex-col gap-1">
-                      {shouldShowSpiceLevel(item) && (
-                        <div className="bg-red-500 text-white w-7 h-7 rounded-full flex items-center justify-center">
-                          <FaPepperHot className="w-4 h-4" />
-                        </div>
-                      )}
-                    </div>
                   </div>
                   <div className="p-4 sm:p-6 flex-1 flex flex-col justify-between">
                     {/* Product name with left-right alignment on mobile */}
@@ -639,19 +709,6 @@ export default function InDiningOrder() {
                       </h3>
                     </div>
                     
-                    {/* Customization indicators text */}
-                    <div className="flex flex-wrap gap-2 mb-2">
-                      {shouldShowSpiceLevel(item) && (
-                        <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full">
-                          Spice Level
-                        </span>
-                      )}
-                      {hasModifiers(item) && (
-                        <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
-                          Customizable
-                        </span>
-                      )}
-                    </div>
                     
                     {/* Description with line clamp */}
                     <p 
