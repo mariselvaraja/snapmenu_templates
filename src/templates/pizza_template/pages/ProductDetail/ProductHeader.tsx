@@ -83,7 +83,7 @@ const ProductHeader: React.FC<ProductHeaderProps> = ({
                     </div>}
                 </div>
                 
-                <div className='max-h-[300px] sm:max-h-[400px] overflow-y-auto thin-scrollbar'>
+                <div className='hidden lg:block max-h-[300px] sm:max-h-[400px] overflow-y-auto thin-scrollbar'>
                 {/* Modifiers List with Spice Level */}
                 <ModifiersList 
                     modifiersList={modifiersList}
