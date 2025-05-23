@@ -72,14 +72,16 @@ const ProductHeader: React.FC<ProductHeaderProps> = ({
     const cartItem = cartItems.find((item:any) => item.id === product.id);
     return (
         <div className="flex flex-col lg:flex-row justify-between items-start mb-4 sm:mb-6">
-            <div className="lg:pr-8 lg:w-1/2 w-full">
-                <h1 className="text-2xl sm:text-3xl lg:text-3xl font-bold mb-2">{product.name}</h1>
-                <p className="text-gray-700 mb-2 text-sm sm:text-base">{product.description}</p>
-                
-              { modifiersList && modifiersList?.length !=0  && <div className="text-lg sm:text-xl font-bold text-red-500 mb-3">
-                    <span className="text-gray-700 font-normal mr-2">Price:</span>
-                    {formatToDollar(product.price)}
-                </div>}
+            <div className="lg:pr-8 lg:w-1/2 w-full order-2 lg:order-1">
+                <div className="hidden lg:block">
+                    <h1 className="text-2xl sm:text-3xl lg:text-3xl font-bold mb-2">{product.name}</h1>
+                    <p className="text-gray-700 mb-2 text-sm sm:text-base">{product.description}</p>
+                    
+                  { modifiersList && modifiersList?.length !=0  && <div className="text-lg sm:text-xl font-bold text-red-500 mb-3">
+                        <span className="text-gray-700 font-normal mr-2">Price:</span>
+                        {formatToDollar(product.price)}
+                    </div>}
+                </div>
                 
                 <div className='max-h-[300px] sm:max-h-[400px] overflow-y-auto thin-scrollbar'>
                 {/* Modifiers List with Spice Level */}
@@ -94,7 +96,7 @@ const ProductHeader: React.FC<ProductHeaderProps> = ({
                 />
                 </div>
                 
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-4 mb-4 gap-3 sm:gap-0">
+                <div className="hidden lg:flex flex-col sm:flex-row sm:items-center sm:justify-between mt-4 mb-4 gap-3 sm:gap-0">
                     <div>
                         <div className="text-xl sm:text-2xl font-bold text-red-500">${(typeof calculateTotalPrice() === 'number' ? calculateTotalPrice() : 0).toFixed(2)}</div>
                     </div>
@@ -138,7 +140,7 @@ const ProductHeader: React.FC<ProductHeaderProps> = ({
                     )}
                 </div>
             </div>
-            <div className="lg:w-1/2 w-full mt-4 lg:mt-0">
+            <div className="lg:w-1/2 w-full mt-4 lg:mt-0 order-1 lg:order-2">
                 <div className="relative rounded-lg overflow-hidden shadow-lg">
                     {/* Dietary Information icons overlay */}
                     {product.dietary && Object.values(product.dietary).some(value => value) && (
@@ -175,6 +177,60 @@ const ProductHeader: React.FC<ProductHeaderProps> = ({
                             </span>
                         </div>
                     )}
+                </div>
+                
+                {/* Product Name, Description, Price and Add to Cart - Show under image on mobile */}
+                <div className="lg:hidden mt-4">
+                    <h1 className="text-2xl sm:text-3xl font-bold mb-2">{product.name}</h1>
+                    <p className="text-gray-700 mb-2 text-sm sm:text-base">{product.description}</p>
+                    { modifiersList && modifiersList?.length !=0  && <div className="text-lg sm:text-xl font-bold text-red-500 mb-3">
+                        <span className="text-gray-700 font-normal mr-2">Price:</span>
+                        {formatToDollar(product.price)}
+                    </div>}
+                    
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-4 mb-4 gap-3 sm:gap-0">
+                        <div>
+                            <div className="text-xl sm:text-2xl font-bold text-red-500">${(typeof calculateTotalPrice() === 'number' ? calculateTotalPrice() : 0).toFixed(2)}</div>
+                        </div>
+                        
+                        {/* Add to Cart button or Quantity Controls */}
+                        {!cartItem ? (
+                            <button
+                                onClick={handleAddToCart}
+                                className="inline-flex items-center justify-center bg-red-500 text-white px-4 py-2 sm:px-5 sm:py-2 rounded-full hover:bg-red-600 transition-colors text-sm sm:text-base font-medium w-full sm:w-auto"
+                            >
+                                <ShoppingCart className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+                                Add to Cart
+                            </button>
+                        ) : (
+                            <div className="inline-flex items-center bg-gray-100 rounded-full px-2 py-1 justify-center sm:justify-start">
+                                <button
+                                    className="w-8 h-8 flex items-center justify-center bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-full transition-colors"
+                                    onClick={() => {
+                                        const newQuantity = cartItem.quantity - 1;
+                                        if (newQuantity > 0) {
+                                            dispatch(updateItemQuantity({ id: product.id, quantity: newQuantity }));
+                                        } else {
+                                            dispatch(removeItem(product.id));
+                                        }
+                                    }}
+                                >
+                                    <Minus className="w-3 h-3" />
+                                </button>
+                                <span className="mx-3 text-base font-semibold">
+                                    {cartItem.quantity}
+                                </span>
+                                <button
+                                    className="w-8 h-8 flex items-center justify-center bg-red-500 hover:bg-red-600 text-white rounded-full transition-colors"
+                                    onClick={() => {
+                                        dispatch(updateItemQuantity({ id: product.id, quantity: cartItem.quantity + 1 }));
+                                    }}
+                                >
+                                    <Plus className="w-3 h-3" />
+                                </button>
+                            </div>
+                        )}
+                    </div>
                 </div>
                 
                 {/* You May Also Like section for mobile - positioned after image */}

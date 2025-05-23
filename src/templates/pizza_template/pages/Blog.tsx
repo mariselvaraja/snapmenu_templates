@@ -213,24 +213,27 @@ export default function Blog() {
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           transition={{ duration: 0.8 }}
-          className="mt-20 bg-red-500 rounded-xl p-12 text-white text-center"
+          className="mt-20 bg-red-500 rounded-xl p-6 sm:p-8 md:p-12 text-white text-center"
         >
-          <h2 className="text-3xl font-bold mb-4">Subscribe to Our Newsletter</h2>
-          <p className="text-lg mb-8">
+          <h2 className="text-2xl sm:text-3xl font-bold mb-4">Subscribe to Our Newsletter</h2>
+          <p className="text-base sm:text-lg mb-6 sm:mb-8 px-4">
             Get the latest news, recipes, and special offers delivered to your inbox
           </p>
-          <form className="max-w-md mx-auto flex gap-4">
-            <input
-              type="email"
-              placeholder="Enter your email"
-              className="flex-1 px-6 py-3 rounded-full text-gray-900 focus:outline-none"
-            />
-            <button
-              type="submit"
-              className="bg-white text-red-500 px-8 py-3 rounded-full font-semibold hover:bg-gray-100 transition-colors"
-            >
-              Subscribe
-            </button>
+          <form className="max-w-md mx-auto">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+              <input
+                type="email"
+                placeholder="Enter your email"
+                className="flex-1 px-4 sm:px-6 py-3 rounded-full text-gray-900 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 text-sm sm:text-base"
+                required
+              />
+              <button
+                type="submit"
+                className="bg-white text-red-500 px-6 sm:px-8 py-3 rounded-full font-semibold hover:bg-gray-100 transition-colors text-sm sm:text-base whitespace-nowrap"
+              >
+                Subscribe
+              </button>
+            </div>
           </form>
         </motion.div>
       </div>

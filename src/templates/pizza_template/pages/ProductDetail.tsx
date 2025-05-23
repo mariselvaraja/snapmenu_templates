@@ -41,6 +41,11 @@ export default function ProductDetail() {
     // State for spice level (1 = mild, 2 = medium, 3 = hot)
     const [spiceLevel, setSpiceLevel] = useState<number>(2);
     
+    // Scroll to top when component mounts or productId changes
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, [productId]);
+
     // Initialize selectedModifiers and spiceLevel from cart item if it exists
     useEffect(() => {
         if (cartItem && cartItem.selectedModifiers) {

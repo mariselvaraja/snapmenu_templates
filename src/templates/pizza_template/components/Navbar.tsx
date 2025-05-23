@@ -102,6 +102,7 @@ export default function Navbar() {
                 key={index}
                 to={link.path}
                 className="block px-3 py-2 hover:text-red-500"
+                onClick={() => setIsOpen(false)}
               >
                 {link.label}
               </Link>

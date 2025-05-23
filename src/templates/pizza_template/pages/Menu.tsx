@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { ShoppingCart, Plus, Minus } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { ShoppingCart, Plus, Minus, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector, addItem, CartItem, fetchMenuRequest, MenuItem, removeItem, updateItemQuantity } from '../../../common/redux';
 import ModifierModal from '../components/ModifierModal';
@@ -27,6 +27,7 @@ export default function Menu() {
     const [sortBy, setSortBy] = useState<string>('featured');
     const [isModifierModalOpen, setIsModifierModalOpen] = useState(false);
     const [selectedMenuItem, setSelectedMenuItem] = useState<MenuItem | null>(null);
+    const scrollContainerRef = useRef<HTMLDivElement>(null);
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
     
@@ -208,6 +209,16 @@ export default function Menu() {
         return 0;
     });
 
+    // Function to scroll categories horizontally
+    const scrollCategories = () => {
+        if (scrollContainerRef.current) {
+            scrollContainerRef.current.scrollBy({
+                left: 200,
+                behavior: 'smooth'
+            });
+        }
+    };
+
     const extractLevel1 = (items: any[]) => {
        // Filter out items where level1_category is null, undefined, or empty string
        const validItems = items.filter((item: any) => 
@@ -282,22 +293,35 @@ export default function Menu() {
 
                 <div className="flex flex-col space-y-4 mb-12">
                     {/* Categories in a single row with horizontal overflow on mobile */}
-                    <div className="flex md:flex-wrap overflow-x-auto no-scrollbar gap-4 uppercase pb-2">
-                        {extractLevel1(items).map((category: any) => (
-                            <button
-                                key={category}
-                                onClick={() => {
-                                    // If this category is already selected, deselect it (set to 'all')
-                                    // Otherwise, select this category
-                                    setSelectedType(selectedType === category ? 'all' : category);
-                                    setSelectedLevel2('all'); // Reset level2 selection when level1 changes
-                                    setSelectedCategory('all');
-                                }}
-                                className={`px-6 py-2 rounded-full transition-colors capitalize whitespace-nowrap flex-shrink-0 ${selectedType === category ? 'bg-red-500 text-white' : 'bg-gray-100 hover:bg-gray-200'}`}
-                            >
-                                {category}
-                            </button>
-                        ))}
+                    <div className="flex items-center gap-2">
+                        <div 
+                            ref={scrollContainerRef}
+                            className="flex md:flex-wrap overflow-x-auto no-scrollbar gap-4 uppercase pb-2 flex-1"
+                        >
+                            {extractLevel1(items).map((category: any) => (
+                                <button
+                                    key={category}
+                                    onClick={() => {
+                                        // If this category is already selected, deselect it (set to 'all')
+                                        // Otherwise, select this category
+                                        setSelectedType(selectedType === category ? 'all' : category);
+                                        setSelectedLevel2('all'); // Reset level2 selection when level1 changes
+                                        setSelectedCategory('all');
+                                    }}
+                                    className={`px-6 py-2 rounded-full transition-colors capitalize whitespace-nowrap flex-shrink-0 ${selectedType === category ? 'bg-red-500 text-white' : 'bg-gray-100 hover:bg-gray-200'}`}
+                                >
+                                    {category}
+                                </button>
+                            ))}
+                        </div>
+                        {/* Clickable red scroll arrow - only show on mobile */}
+                        <button
+                            onClick={scrollCategories}
+                            className="md:hidden bg-gray-100 hover:bg-gray-200 p-2 rounded-full transition-colors flex-shrink-0"
+                            aria-label="Scroll categories"
+                        >
+                            <ChevronRight className="w-4 h-4 text-red-500" />
+                        </button>
                     </div>
                     {/* Only show subcategories if a category is selected and not on mobile */}
                     {selectedType !== 'all' && (
