@@ -36,6 +36,7 @@ interface OrderItem {
   quantity: number;
   price: number;
   image?: string;
+  status?: string,
   modifiers?: {
     name: string;
     options: {
@@ -129,9 +130,10 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
     
     // Check if the order has ordered_items (from the sample data structure)
     const items = order.ordered_items 
-      ? order.ordered_items.map(item => ({
+      ? order.ordered_items.map((item:any) => ({
           name: item.name,
           quantity: item.quantity,
+          status: item.status,
           price: item.itemPrice || 0,
           image: item.image || '',
           modifiers: item.modifiers || [],
@@ -300,9 +302,10 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
                               <div className="flex justify-between items-start mb-1">
                                 <div>
                                   <h3 className="font-semibold text-gray-800">{item.name}</h3>
+                             
                                   <div className="flex items-center mt-1">
                                     <span className="px-2 py-0.5 rounded-full bg-red-50 text-red-600 text-xs font-medium border border-red-100">
-                                      Preparing
+                                    {item.status}
                                     </span>
                                   </div>
                                 </div>

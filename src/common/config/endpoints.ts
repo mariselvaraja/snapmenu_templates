@@ -33,7 +33,7 @@ const getDomainFromUrl = () => {
         if (domainParts.length > 2) {
             return domainParts.slice(0, -2).join('.');
         }
-        return "ctbiryani"; // No subdomain present, use tonyspizza as default
+        return "hunters"; // No subdomain present, use tonyspizza as default
 };
 
 // Endpoint configuration object

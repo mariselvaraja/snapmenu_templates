@@ -70,14 +70,36 @@ export default function ProductDetail() {
         }
     }, [cartItem]);
     
+    // Helper function to check if spice level should be validated
+    const shouldValidateSpiceLevel = () => {
+        // Check if product has is_spice_applicable field and it's "yes"
+        if (product?.is_spice_applicable?.toLowerCase() === 'yes') {
+            return true;
+        }
+        // Also check in raw_api_data if it exists
+        if (product?.raw_api_data) {
+            try {
+                const rawData = typeof product.raw_api_data === 'string' 
+                    ? JSON.parse(product.raw_api_data) 
+                    : product.raw_api_data;
+                if (rawData?.is_spice_applicable?.toLowerCase() === 'yes') {
+                    return true;
+                }
+            } catch (e) {
+                // If parsing fails, continue with other checks
+            }
+        }
+        return false;
+    };
+    
     // Handle add to cart
     const handleAddToCart = () => {
         // Validate required modifiers
         const newValidationErrors: {[key: string]: boolean} = {};
         let hasErrors = false;
         
-        // Check if spice level is required
-        if (modifiersList.some(mod => mod.name === 'Spice Level' && mod.is_forced?.toLowerCase() === 'yes')) {
+        // Check if spice level is required based on is_spice_applicable
+        if (shouldValidateSpiceLevel()) {
             if (spiceLevel === 0) {
                 newValidationErrors["Spice Level"] = true;
                 hasErrors = true;
@@ -125,8 +147,8 @@ export default function ProductDetail() {
                 })
             }));
 
-            // Add spice level as a modifier if it's set
-            if (spiceLevel > 0) {
+            // Add spice level as a modifier if it's set and spice is applicable
+            if (spiceLevel > 0 && shouldValidateSpiceLevel()) {
                 const spiceLevelNames = ['Mild', 'Medium', 'Hot'];
                 const spiceLevelModifier = {
                     name: 'Spice Level',

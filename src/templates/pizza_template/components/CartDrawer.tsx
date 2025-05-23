@@ -205,7 +205,7 @@ export default function CartDrawer() {
                               : []
                             )}
                             
-                            {/* Then display spice level modifiers at the end with quantity controls on the right */}
+                            {/* Then display spice level modifiers (only chili icons, no quantity controls) */}
                             {item.selectedModifiers.flatMap(modifier => 
                               modifier.name === "Spice Level" ? 
                                 modifier.options.map((option, index) => {
@@ -219,43 +219,12 @@ export default function CartDrawer() {
                                       className="flex justify-between items-center py-0.5"
                                     >
                                       <span className="flex items-center">
-                                        {/* Spice Level:  */}
                                         <span className="ml-1 text-red-500">
                                           {chiliCount === 1 && '🌶️'}
                                           {chiliCount === 2 && '🌶️🌶️'}
                                           {chiliCount === 3 && '🌶️🌶️🌶️'}
                                         </span>
                                       </span>
-                                      
-                                      {/* Quantity controls moved to right side of spice level */}
-                                      <div className="flex items-center">
-                                        <button 
-                                          className="w-6 h-6 bg-red-50 rounded-full flex items-center justify-center text-xs"
-                                          onClick={() => {
-                                            // Ensure quantity is a number
-                                            const quantity = typeof item.quantity === 'number' ? item.quantity : 
-                                              parseInt(String(item.quantity)) || 1;
-                                            handleQuantityChange(item.id, quantity - 1);
-                                          }}
-                                        >
-                                          -
-                                        </button>
-                                        <span className="mx-2 text-xs">
-                                          {typeof item.quantity === 'number' ? item.quantity : 
-                                            parseInt(String(item.quantity)) || 1}
-                                        </span>
-                                        <button 
-                                          className="w-6 h-6 bg-red-50 rounded-full flex items-center justify-center text-xs"
-                                          onClick={() => {
-                                            // Ensure quantity is a number
-                                            const quantity = typeof item.quantity === 'number' ? item.quantity : 
-                                              parseInt(String(item.quantity)) || 1;
-                                            handleQuantityChange(item.id, quantity + 1);
-                                          }}
-                                        >
-                                          +
-                                        </button>
-                                      </div>
                                     </div>
                                   );
                                 })
@@ -264,7 +233,45 @@ export default function CartDrawer() {
                           </div>
                         )}
                         
-                        {/* Removed quantity controls and delete button */}
+                        {/* Quantity controls - always shown regardless of spice level */}
+                        <div className="flex justify-between items-center mt-2">
+                          <div className="flex items-center">
+                            <button 
+                              className="w-6 h-6 bg-red-50 rounded-full flex items-center justify-center text-xs"
+                              onClick={() => {
+                                // Ensure quantity is a number
+                                const quantity = typeof item.quantity === 'number' ? item.quantity : 
+                                  parseInt(String(item.quantity)) || 1;
+                                handleQuantityChange(item.id, quantity - 1);
+                              }}
+                            >
+                              -
+                            </button>
+                            <span className="mx-2 text-xs">
+                              {typeof item.quantity === 'number' ? item.quantity : 
+                                parseInt(String(item.quantity)) || 1}
+                            </span>
+                            <button 
+                              className="w-6 h-6 bg-red-50 rounded-full flex items-center justify-center text-xs"
+                              onClick={() => {
+                                // Ensure quantity is a number
+                                const quantity = typeof item.quantity === 'number' ? item.quantity : 
+                                  parseInt(String(item.quantity)) || 1;
+                                handleQuantityChange(item.id, quantity + 1);
+                              }}
+                            >
+                              +
+                            </button>
+                          </div>
+                          
+                          {/* Delete button */}
+                          <button
+                            onClick={() => handleRemoveItem(item.id)}
+                            className="text-red-500 hover:text-red-700 transition-colors"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
                       </div>
                     </li>
                   ))}

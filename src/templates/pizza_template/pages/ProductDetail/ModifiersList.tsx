@@ -12,6 +12,7 @@ interface ModifiersListProps {
     validationErrors?: {
         [key: string]: boolean;
     };
+    product?: any; // Add product prop to access is_spice_applicable
 }
 
 const ModifiersList: React.FC<ModifiersListProps> = ({ 
@@ -20,7 +21,8 @@ const ModifiersList: React.FC<ModifiersListProps> = ({
     isModifierOptionSelected,
     spiceLevel,
     setSpiceLevel,
-    validationErrors = {}
+    validationErrors = {},
+    product
 }) => {
     // Create a local copy of validation errors that we can update
     const [localValidationErrors, setLocalValidationErrors] = useState<{
@@ -113,7 +115,27 @@ const ModifiersList: React.FC<ModifiersListProps> = ({
         }));
     };
 
-
+    // Check if spice level should be shown based on is_spice_applicable
+    const shouldShowSpiceLevel = () => {
+        // Check if product has is_spice_applicable field and it's "yes"
+        if (product?.is_spice_applicable?.toLowerCase() === 'yes') {
+            return true;
+        }
+        // Also check in raw_api_data if it exists
+        if (product?.raw_api_data) {
+            try {
+                const rawData = typeof product.raw_api_data === 'string' 
+                    ? JSON.parse(product.raw_api_data) 
+                    : product.raw_api_data;
+                if (rawData?.is_spice_applicable?.toLowerCase() === 'yes') {
+                    return true;
+                }
+            } catch (e) {
+                // If parsing fails, continue with other checks
+            }
+        }
+        return false;
+    };
 
     // Sort modifiers - required first, then non-required
     const requiredModifiers = modifiersList?.filter(modifier => isModifierRequired(modifier));
@@ -121,8 +143,8 @@ const ModifiersList: React.FC<ModifiersListProps> = ({
     
     return (
         <div className="mb-4">
-            {/* Spice Level Modifier - Always visible, no expand/collapse */}
-            {spiceLevel !== undefined && setSpiceLevel && (
+            {/* Spice Level Modifier - Only show if is_spice_applicable is "yes" */}
+            {spiceLevel !== undefined && setSpiceLevel && shouldShowSpiceLevel() && (
                 <div className="mb-6">
                     <h3 className="font-semibold mb-2">
                         Spice Level

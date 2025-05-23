@@ -71,6 +71,7 @@ export interface MenuItem {
   ingredients?: string[];
   pairings?: string[];
   modifiers_list : [];
+  is_spice_applicable?: string; // Added field to check if spice level should be shown
   raw_api_data?: string; // Added field to store the raw API data
 }
 

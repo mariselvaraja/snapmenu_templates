@@ -269,27 +269,31 @@ export default function Cart() {
                         )}
                         {/* Add quantity controls if there's no spice level */}
                         {!item.selectedModifiers?.some((modifier: CartItemModifier) => modifier.name === "Spice Level") && (
-                          <div className="flex justify-between items-center mt-2">
-                            <button 
-                              className="text-red-500 hover:text-red-600 transition-colors text-xs flex items-center"
-                              onClick={() => handleEditItem(item)}
-                            >
-                              <Pencil className="h-3 w-3 mr-1" />
-                              Edit
-                            </button>
-                            <div className="flex items-center">
+                          <div className="mt-2">
+                            <div className="flex justify-end">
+                              <div className="flex items-center">
+                                <button 
+                                  className="w-6 h-6 bg-red-50 rounded-full flex items-center justify-center text-sm"
+                                  onClick={() => handleQuantityChange(item.id, (typeof item.quantity === 'number' ? item.quantity : parseInt(String(item.quantity)) || 1) - 1)}
+                                >
+                                  -
+                                </button>
+                                <span className="mx-2 text-sm">{item.quantity}</span>
+                                <button 
+                                  className="w-6 h-6 bg-red-50 rounded-full flex items-center justify-center text-sm"
+                                  onClick={() => handleQuantityChange(item.id, (typeof item.quantity === 'number' ? item.quantity : parseInt(String(item.quantity)) || 1) + 1)}
+                                >
+                                  +
+                                </button>
+                              </div>
+                            </div>
+                            <div className="flex justify-end mt-2">
                               <button 
-                                className="w-6 h-6 bg-red-50 rounded-full flex items-center justify-center text-sm"
-                                onClick={() => handleQuantityChange(item.id, (typeof item.quantity === 'number' ? item.quantity : parseInt(String(item.quantity)) || 1) - 1)}
+                                className="text-red-500 hover:text-red-600 transition-colors text-xs flex items-center"
+                                onClick={() => handleEditItem(item)}
                               >
-                                -
-                              </button>
-                              <span className="mx-2 text-sm">{item.quantity}</span>
-                              <button 
-                                className="w-6 h-6 bg-red-50 rounded-full flex items-center justify-center text-sm"
-                                onClick={() => handleQuantityChange(item.id, (typeof item.quantity === 'number' ? item.quantity : parseInt(String(item.quantity)) || 1) + 1)}
-                              >
-                                +
+                                <Pencil className="h-3 w-3 mr-1" />
+                                Edit
                               </button>
                             </div>
                           </div>
