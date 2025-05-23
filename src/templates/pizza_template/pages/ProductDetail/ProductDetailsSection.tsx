@@ -14,60 +14,60 @@ const ProductDetailsSection: React.FC<ProductDetailsSectionProps> = ({ product }
     }
 
     return (
-        <div className="mb-8">
-            <div className="space-y-4">
+        <div className="mb-6 sm:mb-8">
+            <div className="space-y-3 sm:space-y-4">
                 {product.supplier && (
-                    <div className="border-b border-gray-100 pb-3">
+                    <div className="border-b border-gray-100 pb-2 sm:pb-3">
                         <div className="flex items-center mb-1">
-                            <Box className="h-4 w-4 mr-2 text-gray-500" />
-                            <span className="font-medium text-gray-700">Supplier</span>
+                            <Box className="h-3 w-3 sm:h-4 sm:w-4 mr-2 text-gray-500" />
+                            <span className="font-medium text-gray-700 text-sm sm:text-base">Supplier</span>
                         </div>
-                        <div className="text-gray-900 pl-6">{product.supplier}</div>
+                        <div className="text-gray-900 pl-5 sm:pl-6 text-sm sm:text-base">{product.supplier}</div>
                     </div>
                 )}
                 {product.brand && (
-                    <div className="border-b border-gray-100 pb-3">
+                    <div className="border-b border-gray-100 pb-2 sm:pb-3">
                         <div className="flex items-center mb-1">
-                            <Box className="h-4 w-4 mr-2 text-gray-500" />
-                            <span className="font-medium text-gray-700">Brand</span>
+                            <Box className="h-3 w-3 sm:h-4 sm:w-4 mr-2 text-gray-500" />
+                            <span className="font-medium text-gray-700 text-sm sm:text-base">Brand</span>
                         </div>
-                        <div className="text-gray-900 pl-6">{product.brand}</div>
+                        <div className="text-gray-900 pl-5 sm:pl-6 text-sm sm:text-base">{product.brand}</div>
                     </div>
                 )}
                 {product.unit && (
-                    <div className="border-b border-gray-100 pb-3">
+                    <div className="border-b border-gray-100 pb-2 sm:pb-3">
                         <div className="flex items-center mb-1">
-                            <Box className="h-4 w-4 mr-2 text-gray-500" />
-                            <span className="font-medium text-gray-700">Unit</span>
+                            <Box className="h-3 w-3 sm:h-4 sm:w-4 mr-2 text-gray-500" />
+                            <span className="font-medium text-gray-700 text-sm sm:text-base">Unit</span>
                         </div>
-                        <div className="text-gray-900 pl-6">{product.unit}</div>
+                        <div className="text-gray-900 pl-5 sm:pl-6 text-sm sm:text-base">{product.unit}</div>
                     </div>
                 )}
                 {product.external_id && (
-                    <div className="border-b border-gray-100 pb-3">
+                    <div className="border-b border-gray-100 pb-2 sm:pb-3">
                         <div className="flex items-center mb-1">
-                            <Info className="h-4 w-4 mr-2 text-gray-500" />
-                            <span className="font-medium text-gray-700">External ID</span>
+                            <Info className="h-3 w-3 sm:h-4 sm:w-4 mr-2 text-gray-500" />
+                            <span className="font-medium text-gray-700 text-sm sm:text-base">External ID</span>
                         </div>
-                        <div className="text-gray-900 pl-6">{product.external_id}</div>
+                        <div className="text-gray-900 pl-5 sm:pl-6 text-sm sm:text-base">{product.external_id}</div>
                     </div>
                 )}
                 {product.bar_code && (
-                    <div className="border-b border-gray-100 pb-3">
+                    <div className="border-b border-gray-100 pb-2 sm:pb-3">
                         <div className="flex items-center mb-1">
-                            <Info className="h-4 w-4 mr-2 text-gray-500" />
-                            <span className="font-medium text-gray-700">Bar Code</span>
+                            <Info className="h-3 w-3 sm:h-4 sm:w-4 mr-2 text-gray-500" />
+                            <span className="font-medium text-gray-700 text-sm sm:text-base">Bar Code</span>
                         </div>
-                        <div className="text-gray-900 pl-6">{product.bar_code}</div>
+                        <div className="text-gray-900 pl-5 sm:pl-6 text-sm sm:text-base">{product.bar_code}</div>
                     </div>
                 )}
                 {product.comment && (
-                    <div className="border-b border-gray-100 pb-3">
+                    <div className="border-b border-gray-100 pb-2 sm:pb-3">
                         <div className="flex items-center mb-1">
-                            <Info className="h-4 w-4 mr-2 text-gray-500" />
-                            <span className="font-medium text-gray-700">Chef Notes</span>
+                            <Info className="h-3 w-3 sm:h-4 sm:w-4 mr-2 text-gray-500" />
+                            <span className="font-medium text-gray-700 text-sm sm:text-base">Chef Notes</span>
                         </div>
-                        <div className="text-gray-900 pl-6">{product.comment}</div>
+                        <div className="text-gray-900 pl-5 sm:pl-6 text-sm sm:text-base">{product.comment}</div>
                     </div>
                 )}
             </div>

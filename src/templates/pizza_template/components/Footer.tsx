@@ -63,16 +63,16 @@ export default function Footer() {
       {/* Main content container */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Top decorative line */}
-        <div className="w-full h-px bg-gradient-to-r from-transparent via-red-500/30 to-transparent mb-16"></div>
+        <div className="w-full h-px bg-gradient-to-r from-transparent via-red-500/30 to-transparent mb-8 sm:mb-12 lg:mb-16"></div>
         
         {/* Main sections grid - Link Groups only */}
     
 
         {/* Contact, Quick Links, and Follow Us in a single row */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 mb-8 sm:mb-12 lg:mb-16">
           {/* Contact Info */}
-          <div className="backdrop-blur-sm bg-black/20 rounded-lg p-6 shadow-xl border border-gray-800/30 transform transition-all duration-300 hover:shadow-red-900/10 hover:-translate-y-1 h-full flex flex-col">
-            <h3 className="text-xl font-bold mb-6 text-white border-b border-red-500/30 pb-2 flex items-center">
+          <div className="backdrop-blur-sm bg-black/20 rounded-lg p-4 sm:p-6 shadow-xl border border-gray-800/30 transform transition-all duration-300 hover:shadow-red-900/10 hover:-translate-y-1 h-full flex flex-col">
+            <h3 className="text-lg sm:text-xl font-bold mb-4 sm:mb-6 text-white border-b border-red-500/30 pb-2 flex items-center">
               <PizzaSlice />
               <span className="ml-2">Contact Us</span>
             </h3>
@@ -106,8 +106,8 @@ export default function Footer() {
 
           {/* Quick Links */}
           {quickLinks && quickLinks.length > 0 && (
-            <div className="backdrop-blur-sm bg-black/20 rounded-lg p-6 shadow-xl border border-gray-800/30 transform transition-all duration-300 hover:shadow-red-900/10 hover:-translate-y-1 h-full flex flex-col">
-              <h3 className="text-xl font-bold mb-6 text-white border-b border-red-500/30 pb-2 flex items-center">
+            <div className="backdrop-blur-sm bg-black/20 rounded-lg p-4 sm:p-6 shadow-xl border border-gray-800/30 transform transition-all duration-300 hover:shadow-red-900/10 hover:-translate-y-1 h-full flex flex-col">
+              <h3 className="text-lg sm:text-xl font-bold mb-4 sm:mb-6 text-white border-b border-red-500/30 pb-2 flex items-center">
                 <PizzaSlice />
                 <span className="ml-2">Quick Links</span>
               </h3>
@@ -129,13 +129,13 @@ export default function Footer() {
 
           {/* Social Links */}
           {footerData?.social?.links && footerData.social.links.length > 0 && (
-            <div className="backdrop-blur-sm bg-black/20 rounded-lg p-6 shadow-xl border border-gray-800/30 transform transition-all duration-300 hover:shadow-red-900/10 hover:-translate-y-1 h-full flex flex-col">
-              <h3 className="text-xl font-bold mb-6 text-white border-b border-red-500/30 pb-2 flex items-center">
+            <div className="backdrop-blur-sm bg-black/20 rounded-lg p-4 sm:p-6 shadow-xl border border-gray-800/30 transform transition-all duration-300 hover:shadow-red-900/10 hover:-translate-y-1 h-full flex flex-col sm:col-span-2 lg:col-span-1">
+              <h3 className="text-lg sm:text-xl font-bold mb-4 sm:mb-6 text-white border-b border-red-500/30 pb-2 flex items-center">
                 <PizzaSlice />
                 <span className="ml-2">Follow Us</span>
               </h3>
               <div className="flex flex-col flex-grow justify-center items-center">
-                <div className="flex justify-center items-center space-x-6">
+                <div className="flex justify-center items-center space-x-4 sm:space-x-6">
                   {footerData.social.links.map((socialLink: any, index: number) => {
                     const iconMap: Record<string, React.FC<any>> = {
                       Facebook: Facebook,

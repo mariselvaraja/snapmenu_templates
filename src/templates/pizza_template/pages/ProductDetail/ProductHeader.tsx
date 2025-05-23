@@ -10,6 +10,7 @@ import ModifiersList from './ModifiersList';
 import NutritionalInfo from './NutritionalInfo';
 import IngredientsSection from './IngredientsSection';
 import AllergensSection from './AllergensSection';
+import RecommendedProducts from './RecommendedProducts';
 
 interface ProductHeaderProps {
     product: MenuItem;
@@ -24,6 +25,9 @@ interface ProductHeaderProps {
     validationErrors?: {
         [key: string]: boolean;
     };
+    showRecommendedProducts?: boolean;
+    currentProductId?: string;
+    allItems?: MenuItem[];
 }
 
 const ProductHeader: React.FC<ProductHeaderProps> = ({
@@ -35,7 +39,10 @@ const ProductHeader: React.FC<ProductHeaderProps> = ({
     handleModifierOptionSelect,
     isModifierOptionSelected,
     handleAddToCart,
-    validationErrors = {}
+    validationErrors = {},
+    showRecommendedProducts = false,
+    currentProductId = '',
+    allItems = []
 }) => {
     const dispatch = useAppDispatch();
     
@@ -64,17 +71,17 @@ const ProductHeader: React.FC<ProductHeaderProps> = ({
     // Check if this product is in the cart
     const cartItem = cartItems.find((item:any) => item.id === product.id);
     return (
-        <div className="flex flex-col md:flex-row justify-between items-start mb-4">
-            <div className="md:pr-8 md:w-1/2">
-                <h1 className="text-3xl font-bold mb-2">{product.name}</h1>
-                <p className="text-gray-700 mb-2">{product.description}</p>
+        <div className="flex flex-col lg:flex-row justify-between items-start mb-4 sm:mb-6">
+            <div className="lg:pr-8 lg:w-1/2 w-full">
+                <h1 className="text-2xl sm:text-3xl lg:text-3xl font-bold mb-2">{product.name}</h1>
+                <p className="text-gray-700 mb-2 text-sm sm:text-base">{product.description}</p>
                 
-              { modifiersList && modifiersList?.length !=0  && <div className="text-xl font-bold text-red-500 mb-3">
+              { modifiersList && modifiersList?.length !=0  && <div className="text-lg sm:text-xl font-bold text-red-500 mb-3">
                     <span className="text-gray-700 font-normal mr-2">Price:</span>
                     {formatToDollar(product.price)}
                 </div>}
                 
-                <div className='max-h-[400px] overflow-y-auto thin-scrollbar'>
+                <div className='max-h-[300px] sm:max-h-[400px] overflow-y-auto thin-scrollbar'>
                 {/* Modifiers List with Spice Level */}
                 <ModifiersList 
                     modifiersList={modifiersList}
@@ -87,22 +94,22 @@ const ProductHeader: React.FC<ProductHeaderProps> = ({
                 />
                 </div>
                 
-                <div className="flex items-center justify-between mt-4 mb-4">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-4 mb-4 gap-3 sm:gap-0">
                     <div>
-                        <div className="text-2xl font-bold text-red-500">${(typeof calculateTotalPrice() === 'number' ? calculateTotalPrice() : 0).toFixed(2)}</div>
+                        <div className="text-xl sm:text-2xl font-bold text-red-500">${(typeof calculateTotalPrice() === 'number' ? calculateTotalPrice() : 0).toFixed(2)}</div>
                     </div>
                     
                     {/* Add to Cart button or Quantity Controls */}
                     {!cartItem ? (
                         <button
                             onClick={handleAddToCart}
-                            className="inline-flex items-center bg-red-500 text-white px-5 py-2 rounded-full hover:bg-red-600 transition-colors text-base font-medium"
+                            className="inline-flex items-center justify-center bg-red-500 text-white px-4 py-2 sm:px-5 sm:py-2 rounded-full hover:bg-red-600 transition-colors text-sm sm:text-base font-medium w-full sm:w-auto"
                         >
-                            <ShoppingCart className="h-5 w-5 mr-2" />
+                            <ShoppingCart className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
                             Add to Cart
                         </button>
                     ) : (
-                        <div className="inline-flex items-center bg-gray-100 rounded-full px-2 py-1">
+                        <div className="inline-flex items-center bg-gray-100 rounded-full px-2 py-1 justify-center sm:justify-start">
                             <button
                                 className="w-8 h-8 flex items-center justify-center bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-full transition-colors"
                                 onClick={() => {
@@ -131,24 +138,24 @@ const ProductHeader: React.FC<ProductHeaderProps> = ({
                     )}
                 </div>
             </div>
-            <div className="md:w-1/2 mt-4 md:mt-0">
+            <div className="lg:w-1/2 w-full mt-4 lg:mt-0">
                 <div className="relative rounded-lg overflow-hidden shadow-lg">
                     {/* Dietary Information icons overlay */}
                     {product.dietary && Object.values(product.dietary).some(value => value) && (
                         <div className="absolute top-2 right-2 z-10 flex flex-wrap gap-1 justify-end">
                             {product.dietary.isVegan && (
-                                <div className="bg-green-500 text-white w-8 h-8 rounded-full flex items-center justify-center">
-                                    <LuVegan className="w-5 h-5" />
+                                <div className="bg-green-500 text-white w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center">
+                                    <LuVegan className="w-3 h-3 sm:w-5 sm:h-5" />
                                 </div>
                             )}
                             {product.dietary.isVegetarian && (
-                                <div className="bg-green-500 text-white w-8 h-8 rounded-full flex items-center justify-center">
-                                    <IoLeafOutline className="w-5 h-5" />
+                                <div className="bg-green-500 text-white w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center">
+                                    <IoLeafOutline className="w-3 h-3 sm:w-5 sm:h-5" />
                                 </div>
                             )}
                             {product.dietary.isGlutenFree && (
-                                <div className="bg-blue-500 text-white w-8 h-8 rounded-full flex items-center justify-center">
-                                    <CiWheat className="w-5 h-5" />
+                                <div className="bg-blue-500 text-white w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center">
+                                    <CiWheat className="w-3 h-3 sm:w-5 sm:h-5" />
                                 </div>
                             )}
                         </div>
@@ -157,11 +164,11 @@ const ProductHeader: React.FC<ProductHeaderProps> = ({
                         <img 
                             src={product.image} 
                             alt={product.name} 
-                            className="w-full h-64 object-cover"
+                            className="w-full h-48 sm:h-56 lg:h-64 object-cover"
                         />
                     ) : (
-                        <div className="w-full h-64 bg-red-100 flex items-center justify-center">
-                            <span className="text-6xl font-bold text-red-500">
+                        <div className="w-full h-48 sm:h-56 lg:h-64 bg-red-100 flex items-center justify-center">
+                            <span className="text-4xl sm:text-5xl lg:text-6xl font-bold text-red-500">
                                 {product.name && product.name.length > 0 
                                     ? product.name.charAt(0).toUpperCase() 
                                     : 'P'}
@@ -170,7 +177,18 @@ const ProductHeader: React.FC<ProductHeaderProps> = ({
                     )}
                 </div>
                 
-                <div className='mt-5'>
+                {/* You May Also Like section for mobile - positioned after image */}
+                {showRecommendedProducts && (
+                    <div className="lg:hidden mt-4 sm:mt-6">
+                        <RecommendedProducts 
+                            currentProductId={currentProductId} 
+                            allItems={allItems} 
+                            product={product} 
+                        />
+                    </div>
+                )}
+                
+                <div className='mt-3 sm:mt-5'>
                 
                 {/* Nutritional information section */}
                 <NutritionalInfo product={product} />

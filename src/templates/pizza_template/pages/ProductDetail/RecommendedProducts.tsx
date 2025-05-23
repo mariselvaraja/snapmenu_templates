@@ -116,7 +116,8 @@ const RecommendedProducts: React.FC<any> = ({
                 You May Also Like
             </h2>
 
-            <div className="space-y-4">
+            {/* Desktop layout - vertical stack */}
+            <div className="hidden md:block space-y-4">
                 {recommendedItems.map(item => (
                     <div 
                         key={item.id} 
@@ -146,6 +147,41 @@ const RecommendedProducts: React.FC<any> = ({
                         </div>
                     </div>
                 ))}
+            </div>
+
+            {/* Mobile layout - horizontal scroll */}
+            <div className="md:hidden">
+                <div className="flex gap-3 overflow-x-auto pb-2">
+                    {recommendedItems.map(item => (
+                        <div 
+                            key={item.id} 
+                            className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer flex-shrink-0 w-32"
+                            onClick={() => navigate(`/product/${item.id}`)}
+                        >
+                            <div className="p-2">
+                                {item.image ? (
+                                    <img 
+                                        src={item.image} 
+                                        alt={item.name} 
+                                        className="w-full h-20 object-cover rounded-md mb-2"
+                                    />
+                                ) : (
+                                    <div className="w-full h-20 bg-red-100 flex items-center justify-center rounded-md mb-2">
+                                        <span className="text-lg font-bold text-red-500">
+                                            {item.name && item.name.length > 0 
+                                                ? item.name.charAt(0).toUpperCase() 
+                                                : 'P'}
+                                        </span>
+                                    </div>
+                                )}
+                                <div>
+                                    <h3 className="font-medium text-xs leading-tight mb-1 line-clamp-2">{item.name}</h3>
+                                    <p className="text-red-500 text-xs font-semibold">${item.price}</p>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
             </div>
         </motion.div>
     );

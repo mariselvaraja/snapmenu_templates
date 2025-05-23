@@ -369,26 +369,28 @@ export default function ProductDetail() {
     }
 
     return (
-        <div className="py-10">
+        <div className="py-4 sm:py-6 lg:py-10">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <button 
                     onClick={() => navigate('/menu')}
-                    className="inline-flex items-center mb-8 bg-gray-100 text-gray-800 px-4 py-2 rounded-full hover:bg-gray-200 transition-colors"
+                    className="inline-flex items-center mb-4 sm:mb-6 lg:mb-8 bg-gray-100 text-gray-800 px-3 py-2 sm:px-4 sm:py-2 rounded-full hover:bg-gray-200 transition-colors text-sm sm:text-base"
                 >
                     <ArrowLeft className="h-4 w-4 mr-2" />
                     Back to Menu
                 </button>
 
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-                    {/* You May Also Like section on LHS */}
-                    <RecommendedProducts 
-                        currentProductId={productId || ''} 
-                        allItems={items} 
-                        product={product} 
-                    />
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
+                    {/* You May Also Like section on LHS for desktop */}
+                    <div className="hidden lg:block">
+                        <RecommendedProducts 
+                            currentProductId={productId || ''} 
+                            allItems={items} 
+                            product={product} 
+                        />
+                    </div>
 
                     {/* Product Details on RHS */}
-                    <div className="md:col-span-3">
+                    <div className="lg:col-span-3">
                         {/* Product Header with Image on Right */}
                         <ProductHeader 
                             product={product}
@@ -401,6 +403,9 @@ export default function ProductDetail() {
                             isModifierOptionSelected={isModifierOptionSelected}
                             handleAddToCart={handleAddToCart}
                             validationErrors={validationErrors}
+                            showRecommendedProducts={true}
+                            currentProductId={productId || ''}
+                            allItems={items}
                         />
                         {/* Success Notification */}
                         <AnimatePresence>
@@ -409,9 +414,9 @@ export default function ProductDetail() {
                                     initial={{ opacity: 0, y: -20 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: -20 }}
-                                    className="fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center z-50"
+                                    className="fixed top-4 right-4 left-4 sm:left-auto bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center z-50 text-sm sm:text-base"
                                 >
-                                    <CheckCircle className="h-5 w-5 mr-2" />
+                                    <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
                                     <span>Item added to cart!</span>
                                 </motion.div>
                             )}

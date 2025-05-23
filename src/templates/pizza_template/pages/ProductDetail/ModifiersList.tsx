@@ -150,12 +150,12 @@ const ModifiersList: React.FC<ModifiersListProps> = ({
                         Spice Level
                         <span className="text-red-500 text-sm ml-1">*</span>
                     </h3>
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                         {spiceLevelModifier.options.map((option, index) => (
                             <button
                                 key={option.name}
                                 onClick={() => handleSpiceLevelSelect(index + 1)}
-                                className={`p-2 rounded-lg border text-left transition-colors flex items-center ${
+                                className={`p-2 sm:p-3 rounded-lg border text-left transition-colors flex items-center ${
                                     spiceLevel === index + 1
                                         ? 'border-red-500 bg-red-50'
                                         : 'border-gray-200 hover:border-gray-300'
@@ -166,20 +166,21 @@ const ModifiersList: React.FC<ModifiersListProps> = ({
                                         {spiceLevel === index + 1 && <div className="w-2 h-2 rounded-full bg-red-500"></div>}
                                     </div>
                                 </div>
-                                <div className="font-medium flex items-center justify-center">
-                                    <div className="ml-2 flex">
-                                        {option.name === 'Mild' && <FaPepperHot className="text-red-300 h-4 w-4" />}
+                                <div className="font-medium flex items-center text-sm sm:text-base">
+                                    <span className="mr-2">{option.name}</span>
+                                    <div className="flex">
+                                        {option.name === 'Mild' && <FaPepperHot className="text-red-300 h-3 w-3 sm:h-4 sm:w-4" />}
                                         {option.name === 'Medium' && (
                                             <>
-                                                <FaPepperHot className="text-red-400 h-4 w-4" />
-                                                <FaPepperHot className="text-red-400 h-4 w-4 ml-1" />
+                                                <FaPepperHot className="text-red-400 h-3 w-3 sm:h-4 sm:w-4" />
+                                                <FaPepperHot className="text-red-400 h-3 w-3 sm:h-4 sm:w-4 ml-1" />
                                             </>
                                         )}
                                         {option.name === 'Hot' && (
                                             <>
-                                                <FaPepperHot className="text-red-500 h-4 w-4" />
-                                                <FaPepperHot className="text-red-500 h-4 w-4 ml-1" />
-                                                <FaPepperHot className="text-red-500 h-4 w-4 ml-1" />
+                                                <FaPepperHot className="text-red-500 h-3 w-3 sm:h-4 sm:w-4" />
+                                                <FaPepperHot className="text-red-500 h-3 w-3 sm:h-4 sm:w-4 ml-1" />
+                                                <FaPepperHot className="text-red-500 h-3 w-3 sm:h-4 sm:w-4 ml-1" />
                                             </>
                                         )}
                                     </div>
