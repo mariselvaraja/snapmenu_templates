@@ -132,18 +132,32 @@ const InDiningCartDrawer: React.FC<InDiningCartDrawerProps> = ({ onPlaceOrder })
                         <div className="flex justify-between items-center">
                           <h3 className="font-semibold">{item.name}</h3>
                           <div className="text-gray-600">
-                            {/* Calculate and display item price * quantity */}
+                            {/* Calculate and display item price * quantity including modifiers */}
                             {(() => {
                               // Ensure price is a number
                               const baseItemPrice = typeof item.price === 'number' ? item.price : 
                                 parseFloat(String(item.price).replace(/[^\d.-]/g, '')) || 0;
                               
+                              // Calculate modifier total
+                              let modifierTotal = 0;
+                              if (item.selectedModifiers && item.selectedModifiers.length > 0) {
+                                item.selectedModifiers.forEach((modifier: any) => {
+                                  modifier.options.forEach((option: any) => {
+                                    // Ensure option price is a number
+                                    const optionPrice = typeof option.price === 'number' ? option.price : 
+                                      parseFloat(String(option.price).replace(/[^\d.-]/g, '')) || 0;
+                                    
+                                    modifierTotal += optionPrice;
+                                  });
+                                });
+                              }
+                              
                               // Ensure quantity is a number
                               const quantity = typeof item.quantity === 'number' ? item.quantity : 
                                 parseInt(String(item.quantity)) || 1;
                               
-                              // Calculate total price (base price) * quantity
-                              const totalItemPrice = baseItemPrice * quantity;
+                              // Calculate total price (base price + modifiers) * quantity
+                              const totalItemPrice = (baseItemPrice + modifierTotal) * quantity;
                               
                               // Ensure we have a valid number before using toFixed
                               const formattedPrice = !isNaN(totalItemPrice) ? 
@@ -168,13 +182,20 @@ const InDiningCartDrawer: React.FC<InDiningCartDrawerProps> = ({ onPlaceOrder })
                                     className="flex justify-between items-center py-0.5"
                                   >
                                     <span>{option.name || modifier.name}</span>
-                                    {option.price > 0 && (
-                                      <span className="font-medium">
-                                        +${typeof option.price === 'number' ? 
-                                          (option.price * (typeof item.quantity === 'number' ? item.quantity : parseInt(String(item.quantity)) || 1)).toFixed(2) : 
-                                          ((parseFloat(String(option.price).replace(/[^\d.-]/g, '')) || 0) * (typeof item.quantity === 'number' ? item.quantity : parseInt(String(item.quantity)) || 1)).toFixed(2)}
-                                      </span>
-                                    )}
+                                    {(() => {
+                                      const optionPrice = typeof option.price === 'number' ? option.price : 
+                                        parseFloat(String(option.price).replace(/[^\d.-]/g, '')) || 0;
+                                      const quantity = typeof item.quantity === 'number' ? item.quantity : 
+                                        parseInt(String(item.quantity)) || 1;
+                                      const totalPrice = optionPrice * quantity;
+                                      
+                                      // Always show price, even if it's $0.00
+                                      return (
+                                        <span className="font-medium">
+                                          +${totalPrice.toFixed(2)}
+                                        </span>
+                                      );
+                                    })()}
                                   </div>
                                 ))
                               : []
@@ -239,7 +260,39 @@ const InDiningCartDrawer: React.FC<InDiningCartDrawerProps> = ({ onPlaceOrder })
                           </div>
                         )}
                         
-                        {/* Removed quantity controls and delete button */}
+                        {/* Add quantity controls for items without spice level */}
+                        {!item.selectedModifiers?.some((modifier: any) => modifier.name === "Spice Level") && (
+                          <div className="mt-2 flex justify-end">
+                            <div className="flex items-center">
+                              <button 
+                                className="w-6 h-6 bg-red-50 rounded-full flex items-center justify-center text-xs"
+                                onClick={() => {
+                                  // Ensure quantity is a number
+                                  const quantity = typeof item.quantity === 'number' ? item.quantity : 
+                                    parseInt(String(item.quantity)) || 1;
+                                  handleQuantityChange(item.id, quantity - 1);
+                                }}
+                              >
+                                -
+                              </button>
+                              <span className="mx-2 text-xs">
+                                {typeof item.quantity === 'number' ? item.quantity : 
+                                  parseInt(String(item.quantity)) || 1}
+                              </span>
+                              <button 
+                                className="w-6 h-6 bg-red-50 rounded-full flex items-center justify-center text-xs"
+                                onClick={() => {
+                                  // Ensure quantity is a number
+                                  const quantity = typeof item.quantity === 'number' ? item.quantity : 
+                                    parseInt(String(item.quantity)) || 1;
+                                  handleQuantityChange(item.id, quantity + 1);
+                                }}
+                              >
+                                +
+                              </button>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </li>
                   ))}

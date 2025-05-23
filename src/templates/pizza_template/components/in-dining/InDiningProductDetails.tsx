@@ -196,18 +196,72 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
   
   // Get table number from URL
   const location = useLocation();
-  const tableNumber =  sessionStorage.getItem('Tablename');
+  const tableNumber = sessionStorage.getItem('Tablename');
 
-  
-  // Open modifier modal for a product
-  const openModifierModal = () => {
-    // Set the product with default quantity of 1
-    const productWithQuantity = {
-      ...product,
-      quantity: 1
+  // Helper function to check if spice level should be shown based on is_spice_applicable
+  const shouldShowSpiceLevel = () => {
+    // Check if product has is_spice_applicable field and it's "yes"
+    if (product?.is_spice_applicable?.toLowerCase() === 'yes') {
+      return true;
+    }
+    // Also check in raw_api_data if it exists
+    if (product?.raw_api_data) {
+      try {
+        const rawData = typeof product.raw_api_data === 'string' 
+          ? JSON.parse(product.raw_api_data) 
+          : product.raw_api_data;
+        if (rawData?.is_spice_applicable?.toLowerCase() === 'yes') {
+          return true;
+        }
+      } catch (e) {
+        // If parsing fails, continue with other checks
+      }
+    }
+    return false;
+  };
+
+  // Helper function to check if product has any modifiers
+  const hasModifiers = () => {
+    return product?.modifiers_list && product.modifiers_list.length > 0;
+  };
+
+  // Helper function to check if product needs customization (has modifiers or spice level)
+  const needsCustomization = () => {
+    return hasModifiers() || shouldShowSpiceLevel();
+  };
+
+  // Add item directly to cart without opening modifier modal
+  const addDirectlyToCart = () => {
+    if (!product) return;
+
+    const cartItem = {
+      id: product.id,
+      name: product.name,
+      price: typeof product.price === 'number' ? product.price : 0,
+      image: product.image || '',
+      quantity: 1,
+      selectedModifiers: []
     };
-    setSelectedMenuItem(productWithQuantity);
-    setIsModifierModalOpen(true);
+
+    dispatch(addItem(cartItem));
+    dispatch(toggleDrawer(true));
+    onClose();
+  };
+
+  // Handle add to order button click
+  const handleAddToOrder = () => {
+    if (needsCustomization()) {
+      // Open modifier modal if product has modifiers or spice level
+      const productWithQuantity = {
+        ...product,
+        quantity: 1
+      };
+      setSelectedMenuItem(productWithQuantity);
+      setIsModifierModalOpen(true);
+    } else {
+      // Add directly to cart if no customization needed
+      addDirectlyToCart();
+    }
   };
   
   useEffect(() => {
@@ -316,9 +370,23 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
               <h2 className="text-2xl font-bold text-gray-800 mb-2">{product.name}</h2>
               <p className="text-xl font-bold text-red-500 mb-2">${product.price?.toFixed(2)}</p>
 
+              {/* Show spice level indicator if applicable */}
+              {shouldShowSpiceLevel() && (
+                <div className="flex items-center mb-2">
+                  <FaPepperHot className="text-red-500 h-4 w-4 mr-2" />
+                  <span className="text-sm text-gray-600">Spice level customizable</span>
+                </div>
+              )}
+
+              {/* Show modifiers indicator if available */}
+              {hasModifiers() && (
+                <div className="flex items-center mb-2">
+                  <Check className="text-green-500 h-4 w-4 mr-2" />
+                  <span className="text-sm text-gray-600">Customization options available</span>
+                </div>
+              )}
               
               <p className="text-gray-600 mb-6">{product.description}</p>
-
 
               {/* Nutritional Information, Ingredients, and Allergens in collapsible sections */}
               <NutritionalInfoSection product={product} />
@@ -328,10 +396,10 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
               {/* Add to Order Button - Only visible on desktop */}
               <div className="hidden md:flex justify-end mt-6">
                 <button
-                  onClick={openModifierModal}
+                  onClick={handleAddToOrder}
                   className="bg-red-500 text-white px-6 py-2 rounded-full hover:bg-red-600 transition-colors font-medium"
                 >
-                  Add to Order
+                  {needsCustomization() ? 'Customize & Add' : 'Add to Order'}
                 </button>
               </div>
             </div>
@@ -419,10 +487,10 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
         <div className="fixed md:hidden bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-50 shadow-lg">
           {/* Full-Width Add Button */}
           <button
-            onClick={openModifierModal}
+            onClick={handleAddToOrder}
             className="w-full bg-red-500 text-white py-3 rounded-full hover:bg-red-600 transition-colors font-medium"
           >
-            Add to Order
+            {needsCustomization() ? 'Customize & Add' : 'Add to Order'}
           </button>
         </div>
       </motion.div>

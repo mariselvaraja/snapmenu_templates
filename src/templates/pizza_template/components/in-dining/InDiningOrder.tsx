@@ -109,6 +109,55 @@ export default function InDiningOrder() {
     0
   );
 
+  // Helper function to check if spice level should be shown based on is_spice_applicable
+  const shouldShowSpiceLevel = (product: any) => {
+    // Check if product has is_spice_applicable field and it's "yes"
+    if (product?.is_spice_applicable?.toLowerCase() === 'yes') {
+      return true;
+    }
+    // Also check in raw_api_data if it exists
+    if (product?.raw_api_data) {
+      try {
+        const rawData = typeof product.raw_api_data === 'string' 
+          ? JSON.parse(product.raw_api_data) 
+          : product.raw_api_data;
+        if (rawData?.is_spice_applicable?.toLowerCase() === 'yes') {
+          return true;
+        }
+      } catch (e) {
+        // If parsing fails, continue with other checks
+      }
+    }
+    return false;
+  };
+
+  // Helper function to check if product has any modifiers
+  const hasModifiers = (product: any) => {
+    return product?.modifiers_list && product.modifiers_list.length > 0;
+  };
+
+  // Helper function to check if product needs customization (has modifiers or spice level)
+  const needsCustomization = (product: any) => {
+    return hasModifiers(product) || shouldShowSpiceLevel(product);
+  };
+
+  // Add item directly to cart without opening modifier modal
+  const addDirectlyToCart = (product: any) => {
+    if (!product) return;
+
+    const cartItem = {
+      id: product.id,
+      name: product.name,
+      price: typeof product.price === 'number' ? product.price : 0,
+      image: product.image || '',
+      quantity: 1,
+      selectedModifiers: []
+    };
+
+    dispatch(addItem(cartItem));
+    dispatch(toggleDrawer(true));
+  };
+
   const handleProductClick = (product: any) => {
     setSelectedProduct(product);
     setIsProductDetailsOpen(true);
@@ -197,10 +246,16 @@ export default function InDiningOrder() {
   };
   
   
-  // Open modifier modal for a product
+  // Smart function to handle add to order - opens modal only if customization is needed
   const openModifiersPopup = (product: any) => {
-    setSelectedMenuItem(product);
-    setIsModifierModalOpen(true);
+    if (needsCustomization(product)) {
+      // Open modifier modal if product has modifiers or spice level
+      setSelectedMenuItem(product);
+      setIsModifierModalOpen(true);
+    } else {
+      // Add directly to cart if no customization needed
+      addDirectlyToCart(product);
+    }
   };
 
   // Show orders view if showOrders is true
@@ -563,6 +618,15 @@ export default function InDiningOrder() {
                         )}
                       </div>
                     )}
+
+                    {/* Customization indicators - removed check mark icon */}
+                    <div className="absolute bottom-2 left-2 flex flex-col gap-1">
+                      {shouldShowSpiceLevel(item) && (
+                        <div className="bg-red-500 text-white w-7 h-7 rounded-full flex items-center justify-center">
+                          <FaPepperHot className="w-4 h-4" />
+                        </div>
+                      )}
+                    </div>
                   </div>
                   <div className="p-4 sm:p-6 flex-1 flex flex-col justify-between">
                     {/* Product name with left-right alignment on mobile */}
@@ -573,6 +637,20 @@ export default function InDiningOrder() {
                       >
                         {item.name}
                       </h3>
+                    </div>
+                    
+                    {/* Customization indicators text */}
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {shouldShowSpiceLevel(item) && (
+                        <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full">
+                          Spice Level
+                        </span>
+                      )}
+                      {hasModifiers(item) && (
+                        <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
+                          Customizable
+                        </span>
+                      )}
                     </div>
                     
                     {/* Description with line clamp */}

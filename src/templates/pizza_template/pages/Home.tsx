@@ -292,85 +292,16 @@ export default function Home() {
                 <p className="text-xl">Loading featured items...</p>
               </div>
             ) : (
-              <>
-                {popularItems.products.length > 3 ? (
-                  // Elegant carousel layout for more than 3 products
-                  <div className="relative">
-                    <div className="overflow-hidden">
-                      <motion.div 
-                        className="flex space-x-6 px-2"
-                        animate={{ 
-                          x: `-${currentPopularItemIndex * 100}%` 
-                        }}
-                        transition={{ 
-                          type: "spring", 
-                          stiffness: 300, 
-                          damping: 30 
-                        }}
-                      >
-                        {popularItems.products.map((skuId: string, index: number) => {
-                          // Find menu item with matching SKU ID
-                          const menuItem = menuItems.find(item => item.sku_id === skuId);
-                          if (!menuItem) return null;
-                          
-                          return (
-                            <div key={index} className="w-full md:w-1/3 flex-shrink-0">
-                              {renderMenuItemCard(menuItem, index, true)}
-                            </div>
-                          );
-                        })}
-                      </motion.div>
-                    </div>
-                    
-                    {/* Carousel Navigation */}
-                    <div className="flex justify-center mt-8 space-x-2">
-                      {Array.from({ length: Math.ceil(popularItems.products.length / 3) }).map((_, index) => (
-                        <button
-                          key={index}
-                          onClick={() => setCurrentPopularItemIndex(index)}
-                          className={`w-3 h-3 rounded-full ${
-                            currentPopularItemIndex === index ? 'bg-red-500' : 'bg-gray-300'
-                          }`}
-                          aria-label={`Go to slide ${index + 1}`}
-                        />
-                      ))}
-                    </div>
-                    
-                    {/* Carousel Controls */}
-                    {popularItems.products.length > 3 && (
-                      <>
-                        <button
-                          onClick={() => setCurrentPopularItemIndex(prev => Math.max(0, prev - 1))}
-                          className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 bg-white rounded-full p-2 shadow-lg z-10 hover:bg-gray-100 transition-colors"
-                          aria-label="Previous items"
-                          disabled={currentPopularItemIndex === 0}
-                        >
-                          <ArrowRight className="h-6 w-6 transform rotate-180 text-red-500" />
-                        </button>
-                        <button
-                          onClick={() => setCurrentPopularItemIndex(prev => Math.min(Math.ceil(popularItems.products.length / 3) - 1, prev + 1))}
-                          className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 bg-white rounded-full p-2 shadow-lg z-10 hover:bg-gray-100 transition-colors"
-                          aria-label="Next items"
-                          disabled={currentPopularItemIndex === Math.ceil(popularItems.products.length / 3) - 1}
-                        >
-                          <ArrowRight className="h-6 w-6 text-red-500" />
-                        </button>
-                      </>
-                    )}
-                  </div>
-                ) : (
-                  // Grid layout for 3 or fewer products
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    {popularItems.products.map((skuId: string, index: number) => {
-                      // Find menu item with matching SKU ID
-                      const menuItem = menuItems.find(item => item.sku_id === skuId);
-                      if (!menuItem) return null;
-                      
-                      return renderMenuItemCard(menuItem, index);
-                    })}
-                  </div>
-                )}
-              </>
+              // Grid layout for all products - show all items without carousel
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                {popularItems.products.map((skuId: string, index: number) => {
+                  // Find menu item with matching SKU ID
+                  const menuItem = menuItems.find(item => item.sku_id === skuId);
+                  if (!menuItem) return null;
+                  
+                  return renderMenuItemCard(menuItem, index);
+                })}
+              </div>
             )}
           </div>
         </section>

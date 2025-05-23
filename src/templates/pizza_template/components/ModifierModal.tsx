@@ -36,18 +36,6 @@ interface ModifierModalProps {
 }
 
 export default function ModifierModal({ isOpen, onClose, menuItem }: ModifierModalProps) {
-  // Define available modifiers
-  const spiceLevelModifier: Modifier = {
-    name: 'Spice Level',
-    is_multi_select: 'no',
-    is_forced: 'yes',
-    options: [
-      { name: 'Mild', price: 0 },
-      { name: 'Medium', price: 0 },
-      { name: 'Hot', price: 0 },
-    ]
-  };
-
   // Get menu items from Redux store
   const menuItems = useAppSelector((state) => state.menu.items);
   
@@ -61,6 +49,40 @@ export default function ModifierModal({ isOpen, onClose, menuItem }: ModifierMod
       : menuItem?.modifiers_list ? [menuItem?.modifiers_list] : []);
 
   console.log(": menuItem?.modifiers_list", menuItem?.modifiers_list);
+
+  // Helper function to check if spice level should be shown based on is_spice_applicable
+  const shouldShowSpiceLevel = () => {
+    // Check if product has is_spice_applicable field and it's "yes"
+    if (originalMenuItem?.is_spice_applicable?.toLowerCase() === 'yes') {
+      return true;
+    }
+    // Also check in raw_api_data if it exists
+    if (originalMenuItem?.raw_api_data) {
+      try {
+        const rawData = typeof originalMenuItem.raw_api_data === 'string' 
+          ? JSON.parse(originalMenuItem.raw_api_data) 
+          : originalMenuItem.raw_api_data;
+        if (rawData?.is_spice_applicable?.toLowerCase() === 'yes') {
+          return true;
+        }
+      } catch (e) {
+        // If parsing fails, continue with other checks
+      }
+    }
+    return false;
+  };
+
+  // Define available modifiers - only show spice level if applicable
+  const spiceLevelModifier: Modifier = {
+    name: 'Spice Level',
+    is_multi_select: 'no',
+    is_forced: shouldShowSpiceLevel() ? 'yes' : 'no',
+    options: [
+      { name: 'Mild', price: 0 },
+      { name: 'Medium', price: 0 },
+      { name: 'Hot', price: 0 },
+    ]
+  };
 
   // State to track selected modifiers
   const [selectedModifiers, setSelectedModifiers] = useState<{
@@ -220,8 +242,8 @@ export default function ModifierModal({ isOpen, onClose, menuItem }: ModifierMod
     const newValidationErrors: {[key: string]: boolean} = {};
     let hasErrors = false;
     
-    // Check if spice level is selected (if required)
-    if (spiceLevelModifier.is_forced?.toLowerCase() === 'yes') {
+    // Check if spice level is selected (if required and applicable)
+    if (shouldShowSpiceLevel() && spiceLevelModifier.is_forced?.toLowerCase() === 'yes') {
       const spiceLevelSelected = selectedModifiers.some(
         selected => selected.name === spiceLevelModifier.name && selected.options.length > 0
       );
@@ -335,8 +357,8 @@ export default function ModifierModal({ isOpen, onClose, menuItem }: ModifierMod
               {/* Modifiers */}
               <div className="flex-grow overflow-y-auto p-4">
                 {/* Sort modifiers - required first, then non-required */}
-                {/* Spice Level Modifier */}
-                {spiceLevelModifier.is_forced?.toLowerCase() === 'yes' && (
+                {/* Spice Level Modifier - Only show if spice is applicable */}
+                {shouldShowSpiceLevel() && spiceLevelModifier.is_forced?.toLowerCase() === 'yes' && (
                   <div className="mb-6">
                     <h3 className="font-semibold mb-2">
                       {spiceLevelModifier.name}
@@ -447,7 +469,7 @@ export default function ModifierModal({ isOpen, onClose, menuItem }: ModifierMod
                   ))}
 
                 {/* Non-required Spice Level Modifier */}
-                {spiceLevelModifier.is_forced?.toLowerCase() !== 'yes' && (
+                {shouldShowSpiceLevel() && spiceLevelModifier.is_forced?.toLowerCase() !== 'yes' && (
                   <div className="mb-6">
                     <h3 className="font-semibold mb-2">
                       {spiceLevelModifier.name}
