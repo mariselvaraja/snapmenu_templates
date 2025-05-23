@@ -184,11 +184,9 @@ const ProductHeader: React.FC<ProductHeaderProps> = ({
                     {/* Product name with price on the right */}
                     <div className="flex justify-between items-start mb-2">
                         <h1 className="text-2xl sm:text-3xl font-bold flex-1 mr-4">{product.name}</h1>
-                        { modifiersList && modifiersList?.length !=0  && (
-                            <div className="text-lg sm:text-xl font-bold text-red-500 flex-shrink-0">
-                                {formatToDollar(product.price)}
-                            </div>
-                        )}
+                        <div className="text-lg sm:text-xl font-bold text-red-500 flex-shrink-0">
+                            {formatToDollar(product.price)}
+                        </div>
                     </div>
                     <p className="text-gray-700 mb-4 text-sm sm:text-base">{product.description}</p>
                     
