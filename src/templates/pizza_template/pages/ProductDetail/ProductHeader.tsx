@@ -54,7 +54,6 @@ const ProductHeader: React.FC<ProductHeaderProps> = ({
     const { items: cartItems } = useAppSelector(state => state.cart);
 
 
-
     function formatToDollar(value:any) {
         try {
             // Convert to string and remove any $ signs or whitespace
@@ -101,8 +100,8 @@ const ProductHeader: React.FC<ProductHeaderProps> = ({
                     </div>}
                 </div>
                 
-   {         isPaymentAvilable &&    <div className='hidden lg:block max-h-[300px] sm:max-h-[400px] overflow-y-auto thin-scrollbar'>
-                
+                <div className='hidden lg:block max-h-[300px] sm:max-h-[400px] overflow-y-auto thin-scrollbar'>
+                {/* Modifiers List with Spice Level */}
                 <ModifiersList 
                     modifiersList={modifiersList}
                     handleModifierOptionSelect={handleModifierOptionSelect}
@@ -112,7 +111,7 @@ const ProductHeader: React.FC<ProductHeaderProps> = ({
                     validationErrors={validationErrors}
                     product={product}
                 />
-                </div>}
+                </div>
                 
          {   isPaymentAvilable &&    <div className="hidden lg:flex flex-col sm:flex-row sm:items-center sm:justify-between mt-4 mb-4 gap-3 sm:gap-0">
                     <div>
@@ -221,7 +220,7 @@ const ProductHeader: React.FC<ProductHeaderProps> = ({
                     <p className="text-gray-700 mb-4 text-sm sm:text-base">{product.description}</p>
                     
                     {/* Modifiers List for mobile - positioned after description */}
-                  { isPaymentAvilable && <div className='max-h-[300px] sm:max-h-[400px] overflow-y-auto thin-scrollbar mb-4'>
+                    <div className='max-h-[300px] sm:max-h-[400px] overflow-y-auto thin-scrollbar mb-4'>
                         <ModifiersList 
                             modifiersList={modifiersList}
                             handleModifierOptionSelect={handleModifierOptionSelect}
@@ -231,7 +230,7 @@ const ProductHeader: React.FC<ProductHeaderProps> = ({
                             validationErrors={validationErrors}
                             product={product}
                         />
-                    </div>}
+                    </div>
                     
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-4 mb-4 gap-3 sm:gap-0">
                         <div>
