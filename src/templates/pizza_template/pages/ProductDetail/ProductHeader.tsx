@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { LuVegan } from 'react-icons/lu';
 import { IoLeafOutline } from 'react-icons/io5';
 import { CiWheat } from 'react-icons/ci';
+import { GoDotFill } from 'react-icons/go';
 import { ShoppingCart, Plus, Minus } from 'lucide-react';
 import { MenuItem, useAppSelector, useAppDispatch, updateItemQuantity, removeItem } from '../../../../common/redux';
 import { SelectedModifier } from './types';
@@ -74,7 +75,19 @@ const ProductHeader: React.FC<ProductHeaderProps> = ({
         <div className="flex flex-col lg:flex-row justify-between items-start mb-4 sm:mb-6">
             <div className="lg:pr-8 lg:w-1/2 w-full order-2 lg:order-1">
                 <div className="hidden lg:block">
-                    <h1 className="text-2xl sm:text-3xl lg:text-3xl font-bold mb-2">{product.name}</h1>
+                    <div className="flex items-center gap-2 mb-2">
+                        {/* Food Type Icons - Veg/Non-Veg */}
+                        {product.dietary && (product.dietary.isVegetarian || product.dietary.isVegan) ? (
+                            <div className="bg-white w-4 h-4 rounded-sm flex items-center justify-center border border-green-600 flex-shrink-0">
+                                <GoDotFill className="w-2 h-2 text-green-600" />
+                            </div>
+                        ) : (
+                            <div className="bg-white w-4 h-4 rounded-sm flex items-center justify-center border border-red-600 flex-shrink-0">
+                                <GoDotFill className="w-2 h-2 text-red-600" />
+                            </div>
+                        )}
+                        <h1 className="text-2xl sm:text-3xl lg:text-3xl font-bold">{product.name}</h1>
+                    </div>
                     <p className="text-gray-700 mb-2 text-sm sm:text-base">{product.description}</p>
                     
                   { modifiersList && modifiersList?.length !=0  && <div className="text-lg sm:text-xl font-bold text-red-500 mb-3">
@@ -183,7 +196,19 @@ const ProductHeader: React.FC<ProductHeaderProps> = ({
                 <div className="lg:hidden mt-4">
                     {/* Product name with price on the right */}
                     <div className="flex justify-between items-start mb-2">
-                        <h1 className="text-2xl sm:text-3xl font-bold flex-1 mr-4">{product.name}</h1>
+                        <div className="flex items-center gap-2 flex-1 mr-4">
+                            {/* Food Type Icons - Veg/Non-Veg */}
+                            {product.dietary && (product.dietary.isVegetarian || product.dietary.isVegan) ? (
+                                <div className="bg-white w-4 h-4 rounded-sm flex items-center justify-center border border-green-600 flex-shrink-0">
+                                    <GoDotFill className="w-2 h-2 text-green-600" />
+                                </div>
+                            ) : (
+                                <div className="bg-white w-4 h-4 rounded-sm flex items-center justify-center border border-red-600 flex-shrink-0">
+                                    <GoDotFill className="w-2 h-2 text-red-600" />
+                                </div>
+                            )}
+                            <h1 className="text-2xl sm:text-3xl font-bold">{product.name}</h1>
+                        </div>
                         <div className="text-lg sm:text-xl font-bold text-red-500 flex-shrink-0">
                             {formatToDollar(product.price)}
                         </div>

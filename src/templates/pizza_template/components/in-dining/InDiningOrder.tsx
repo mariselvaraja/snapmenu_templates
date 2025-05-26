@@ -1,11 +1,12 @@
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
-import { Utensils, Trash2, Plus, X, Minus, Search, UtensilsCrossed, Pizza, ArrowLeft, ShoppingCart, ClipboardList, Filter, Check } from 'lucide-react';
+import { Utensils, Trash2, Plus, X, Minus, Search, UtensilsCrossed, Pizza, ArrowLeft, ShoppingCart, ClipboardList, Filter, Check, ChevronRight } from 'lucide-react';
 import { FaPepperHot } from "react-icons/fa";
 import ModifierModal from '../ModifierModal';
 import { LuVegan } from 'react-icons/lu';
 import { IoLeafOutline } from 'react-icons/io5';
 import { CiWheat } from 'react-icons/ci';
+import { GoDotFill } from 'react-icons/go';
 import { useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../../../../common/store';
 import { useDispatch } from 'react-redux';
@@ -17,8 +18,10 @@ import SearchBarComponent from '../SearchBarComponent';
 import InDiningProductDetails from './InDiningProductDetails';
 import InDiningCartDrawer from './InDiningCartDrawer';
 import InDiningOrders from './InDiningOrders';
+import OrdersBottomBar from './OrdersBottomBar';
 import { fetchTableStatusRequest } from '@/common/redux/slices/tableStatusSlice';
 import { useAppSelector } from '@/redux';
+import { getOrderHistoryRequest } from '@/common/redux/slices/orderHistorySlice';
 
 export default function InDiningOrder() {
   const [orderPlaced, setOrderPlaced] = useState<boolean>(false);
@@ -58,15 +61,54 @@ export default function InDiningOrder() {
   console.log("brand", siteContent)
 
   const searchParams = new URLSearchParams(location.search);
-  const tableFromQuery = searchParams.get('table');
+  const tableFromQuery:any = searchParams.get('table');
 
   
   useEffect(()=>{
     let tabledata = tableStatus?.find((table:any)=>table.table_id == tableFromQuery);
-      console.log("tableFromQuerys", tableFromQuery)
+    if(tableFromQuery)
+    {
+      dispatch(getOrderHistoryRequest(tableFromQuery));
+    }
       sessionStorage.setItem('Tablename', tabledata?.table_name)
       setTableName(tabledata?.table_name)
   },[tableFromQuery, tableStatus])
+
+
+  const orderHistoryState = useSelector((state: RootState) => state.orderHistory);
+  const historyLoading = orderHistoryState.loading;
+  const historyError = orderHistoryState.error;
+  const orderHistory = orderHistoryState.orders;
+  
+  // Transform orderHistory to match the expected Order interface
+  const orders = orderHistory ? orderHistory.map((orderData:any) => {
+    // Cast to ExtendedInDiningOrder to handle both data formats
+    const order = orderData as any;
+    
+    // Check if the order has ordered_items (from the sample data structure)
+    const items = order.ordered_items 
+      ? order.ordered_items.map((item:any) => ({
+          name: item.name,
+          quantity: item.quantity,
+          status: item.status,
+          price: item.itemPrice || 0,
+          image: item.image || '',
+          modifiers: item.modifiers || [],
+          spiceLevel: item.spiceLevel || null
+        }))
+      : order.items || []; // Fallback to order.items if ordered_items doesn't exist
+
+      
+    
+    return {
+      id: order.id || (order.dining_id ? order.dining_id.toString() : '') || '',
+      date: order.createdAt || order.created_date || new Date().toISOString(),
+      status: order.status || order.dining_status || 'pending',
+      total: order.totalAmount || (order.total_amount ? parseFloat(order.total_amount) : 0) || 0,
+      items: items
+    };
+  }) : [];
+
 
   useEffect(() => {
 
@@ -299,7 +341,7 @@ export default function InDiningOrder() {
   }
 
   return (
-    <div className="pt-0 pb-8 sm:pb-20">
+    <div className="pt-0 pb-20 sm:pb-24">
       {/* Navbar */}
       <div className="sticky top-0 z-40 bg-black bg-opacity-90 backdrop-blur-sm shadow-md">
         <div className=" mx-auto px-4 sm:px-6 lg:px-8">
@@ -331,20 +373,6 @@ export default function InDiningOrder() {
                 </button>
                 <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
                   Search
-                </div>
-              </div>
-              
-              {/* Orders Icon with Tooltip */}
-              <div className="relative group">
-              <button 
-                onClick={() => setShowOrders(true)}
-                className="p-2 rounded-full hover:bg-black hover:bg-opacity-50"
-                aria-label="Orders"
-              >
-                <ClipboardList className="h-6 w-6 text-red-500" />
-              </button>
-                <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
-                  Orders
                 </div>
               </div>
               
@@ -467,13 +495,14 @@ export default function InDiningOrder() {
                             setSelectedCategory(category);
                             setSelectedSubcategory('All');
                           }}
-                          className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex items-center ${
+                          className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex items-center gap-1 ${
                             selectedCategory === category
                               ? 'bg-red-500 text-white'
                               : 'bg-gray-300 text-gray-800 hover:bg-gray-400'
                           }`}
                         >
                           {category}
+                          <ChevronRight className="h-3 w-3" />
                         </button>
                       ))}
                     </>
@@ -556,13 +585,14 @@ export default function InDiningOrder() {
                             setSelectedCategory(category);
                             setSelectedSubcategory('All');
                           }}
-                          className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex items-center ${
+                          className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex items-center gap-1 ${
                             selectedCategory === category
                               ? 'bg-red-500 text-white'
                               : 'bg-gray-300 text-gray-800 hover:bg-gray-400'
                           }`}
                         >
                           {category}
+                          <ChevronRight className="h-3 w-3" />
                         </button>
                       ))}
                     </>
@@ -701,12 +731,24 @@ export default function InDiningOrder() {
                   <div className="p-4 sm:p-6 flex-1 flex flex-col justify-between">
                     {/* Product name with left-right alignment on mobile */}
                     <div className="flex justify-between items-start mb-2">
-                      <h3 
-                        className="text-lg sm:text-xl font-semibold cursor-pointer hover:text-red-500"
-                        onClick={() => handleProductClick(item)}
-                      >
-                        {item.name}
-                      </h3>
+                      <div className="flex items-center gap-2">
+                        {/* Food Type Icons - Veg/Non-Veg */}
+                        {item.dietary && (item.dietary.isVegetarian || item.dietary.isVegan) ? (
+                            <div className="bg-white w-4 h-4 rounded-sm flex items-center justify-center border border-green-600 flex-shrink-0">
+                            <GoDotFill className="w-2 h-2 text-green-600" />
+                          </div>
+                        ) : (
+                          <div className="bg-white w-4 h-4 rounded-sm flex items-center justify-center border border-red-600 flex-shrink-0">
+                            <GoDotFill className="w-2 h-2 text-red-600" />
+                          </div>
+                        )}
+                        <h3 
+                          className="text-lg sm:text-xl font-semibold cursor-pointer hover:text-red-500"
+                          onClick={() => handleProductClick(item)}
+                        >
+                          {item.name}
+                        </h3>
+                      </div>
                     </div>
                     
                     
@@ -755,6 +797,15 @@ export default function InDiningOrder() {
         onClose={() => setIsModifierModalOpen(false)}
         menuItem={selectedMenuItem}
       />
+      
+      {/* Fixed Bottom Bar - Orders */}
+{   orders.length != 0 &&   <OrdersBottomBar
+        onViewOrders={() => setShowOrders(true)}
+        onPlaceOrder={handlePlaceOrder}
+        orders={orders}
+        historyLoading={historyLoading}
+        historyError={historyError}
+      />}
       
     </div>
   );

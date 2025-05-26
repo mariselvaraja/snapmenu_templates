@@ -5,6 +5,7 @@ import { FaPepperHot } from "react-icons/fa";
 import { LuVegan } from 'react-icons/lu';
 import { IoLeafOutline } from 'react-icons/io5';
 import { CiWheat } from 'react-icons/ci';
+import { GoDotFill } from 'react-icons/go';
 import ModifierModal from '../ModifierModal';
 
 // Nutritional Information Section Component
@@ -367,7 +368,19 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 pb-28 md:pb-0">
             {/* Product Details - Left Side */}
             <div className="p-6">
-              <h2 className="text-2xl font-bold text-gray-800 mb-2">{product.name}</h2>
+              <div className="flex items-center gap-2 mb-2">
+                {/* Food Type Icons - Veg/Non-Veg */}
+                {product.dietary && (product.dietary.isVegetarian || product.dietary.isVegan) ? (
+                  <div className="bg-white w-4 h-4 rounded-sm flex items-center justify-center border border-green-600 flex-shrink-0">
+                    <GoDotFill className="w-2 h-2 text-green-600" />
+                  </div>
+                ) : (
+                  <div className="bg-white w-4 h-4 rounded-sm flex items-center justify-center border border-red-600 flex-shrink-0">
+                    <GoDotFill className="w-2 h-2 text-red-600" />
+                  </div>
+                )}
+                <h2 className="text-2xl font-bold text-gray-800">{product.name}</h2>
+              </div>
               <p className="text-xl font-bold text-red-500 mb-2">${product.price?.toFixed(2)}</p>
 
               {/* Show spice level indicator if applicable */}

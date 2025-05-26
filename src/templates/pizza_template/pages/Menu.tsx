@@ -7,6 +7,7 @@ import _ from 'lodash';
 import { LuVegan } from 'react-icons/lu';
 import { IoLeafOutline } from 'react-icons/io5';
 import { CiWheat } from 'react-icons/ci';
+import { GoDotFill } from 'react-icons/go';
 
 // Define types for category and subcategory
 interface CategoryType {
@@ -393,15 +394,27 @@ export default function Menu() {
                             </div>
                             <div className="p-6">
                                 <div className="flex items-center justify-between mb-2">
-                                    <h3 
-                                        className="text-xl font-semibold cursor-pointer hover:text-red-500 transition-colors"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            navigate(`/product/${item.id.toString()}`);
-                                        }}
-                                    >
-                                        {item.name}
-                                    </h3>
+                                    <div className="flex items-center gap-2">
+                                        {/* Food Type Icons - Veg/Non-Veg */}
+                                        {item.dietary && (item.dietary.isVegetarian || item.dietary.isVegan) ? (
+                                            <div className="bg-white w-4 h-4 rounded-sm flex items-center justify-center border border-green-600 flex-shrink-0">
+                                                <GoDotFill className="w-2 h-2 text-green-600" />
+                                            </div>
+                                        ) : (
+                                            <div className="bg-white w-4 h-4 rounded-sm flex items-center justify-center border border-red-600 flex-shrink-0">
+                                                <GoDotFill className="w-2 h-2 text-red-600" />
+                                            </div>
+                                        )}
+                                        <h3 
+                                            className="text-xl font-semibold cursor-pointer hover:text-red-500 transition-colors"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                navigate(`/product/${item.id.toString()}`);
+                                            }}
+                                        >
+                                            {item.name}
+                                        </h3>
+                                    </div>
                                     <span className="text-lg font-bold text-red-500">${item.price}</span>
                                 </div>
                                 <p 

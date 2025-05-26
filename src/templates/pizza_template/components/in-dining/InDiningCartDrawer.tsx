@@ -76,7 +76,7 @@ const InDiningCartDrawer: React.FC<InDiningCartDrawerProps> = ({ onPlaceOrder })
             initial={{ opacity: 0 }}
             animate={{ opacity: 0.5 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black z-40"
+            className="fixed inset-0 bg-black"
             onClick={closeDrawer}
           />
           
@@ -89,7 +89,7 @@ const InDiningCartDrawer: React.FC<InDiningCartDrawerProps> = ({ onPlaceOrder })
             className="fixed top-0 right-0 h-full w-full sm:w-96 bg-white shadow-xl z-50 flex flex-col"
           >
             {/* Header */}
-            <div className="flex items-center justify-between border-b p-4">
+            <div className="flex items-center justify-between border-b p-4 ">
               <div>
                 <h2 className="text-xl font-bold flex items-center">
                   <ShoppingBag className="h-5 w-5 mr-2 text-red-500" />
@@ -313,7 +313,7 @@ const InDiningCartDrawer: React.FC<InDiningCartDrawerProps> = ({ onPlaceOrder })
             
             {/* Footer */}
             {items.length > 0 && (
-              <div className="border-t p-4">
+              <div className="border-t p-4 z-10">
                 <div className="flex justify-between mb-4">
                   <span className="font-semibold">Total</span>
                   <span className="font-semibold">${!isNaN(subtotal) ? subtotal.toFixed(2) : "0.00"}</span>

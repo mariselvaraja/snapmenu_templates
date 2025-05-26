@@ -58,6 +58,22 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
   const [showBill, setShowBill] = useState(false);
   let tablename = sessionStorage.getItem('Tablename');
   
+  // Function to get status badge colors
+  const getStatusBadgeClasses = (status: string) => {
+    const normalizedStatus = status.toLowerCase();
+    
+    switch (normalizedStatus) {
+      case 'ready':
+        return 'bg-green-50 text-green-600 border-green-100';
+      case 'delivered':
+        return 'bg-blue-50 text-blue-600 border-blue-100';
+      case 'preparing':
+        return 'bg-yellow-50 text-yellow-600 border-yellow-100';
+      default:
+        return 'bg-red-50 text-red-600 border-red-100';
+    }
+  };
+  
   // Auto-close notification after 10 seconds
   useEffect(() => {
     if (showNotification) {
@@ -122,7 +138,6 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
   const historyError = orderHistoryState.error;
   const orderHistory = orderHistoryState.orders;
   
-  console.log("Iitems", orderHistory)
   // Transform orderHistory to match the expected Order interface
   const orders = orderHistory ? orderHistory.map((orderData:any) => {
     // Cast to ExtendedInDiningOrder to handle both data formats
@@ -200,6 +215,7 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
 
   // Fetch order history when tableNumber changes
 
+console.log("order.items", orders)
 
   return (
     <div className="fixed inset-0 bg-white z-50 overflow-y-auto">
@@ -224,37 +240,9 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
       </div>
       
 
-      {/* New Order Notification */}
-      {/* {newOrderNumber && showNotification && (
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="bg-red-50 border-l-4 border-red-500 p-4 mx-4 mt-4 rounded-md relative"
-        >
-          <button 
-            onClick={() => setShowNotification(false)} 
-            className="absolute top-2 right-2 text-red-500 hover:text-red-700"
-            aria-label="Close notification"
-          >
-            <X className="h-5 w-5" />
-          </button>
-          <div className="flex items-start">
-            <div className="flex-shrink-0">
-              <Utensils className="h-5 w-5 text-red-500" />
-            </div>
-            <div className="ml-3">
-              <h3 className="text-sm font-medium text-red-800">Order Update</h3>
-              <div className="mt-2 text-sm text-red-700">
-                <p>Your order is start preparing</p>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-      )} */}
 
       {/* Orders List */}
-      <div className="p-4">
+      <div className="p-4 mb-10">
         {historyLoading ? (
           <div className="text-center py-12">
             <p className="text-gray-500">Loading order history...</p>
@@ -283,7 +271,8 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
                   {/* Order Items */}
                   <div className="p-4">
                     <div className="space-y-4">
-                      {order.items && order.items.map((item: OrderItem, index: number) => (
+                      {order.items && order.items.map((item: any, index: number) => (
+                  
                         <div key={index} className="bg-white rounded-lg shadow-sm p-4 mb-4">
                           <div className="flex items-start">
                             {/* Product Image */}
@@ -303,9 +292,9 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
                                 <div>
                                   <h3 className="font-semibold text-gray-800">{item.name}</h3>
                              
-                                  <div className="flex items-center mt-1">
-                                    <span className="px-2 py-0.5 rounded-full bg-red-50 text-red-600 text-xs font-medium border border-red-100">
-                                    {item.status}
+                                  <div className="flex items-center mt-1 capitalize">
+                                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium border ${getStatusBadgeClasses(order.status)}`}>
+                                    {order.status}
                                     </span>
                                   </div>
                                 </div>
@@ -385,16 +374,16 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
         </div>
         <div className="flex space-x-3">
           <button 
-            className="bg-red-500 text-white px-4 py-2 rounded-full font-medium hover:bg-red-600 transition-colors"
+            className="bg-red-500 text-sm text-white px-4 py-2 rounded-full font-medium hover:bg-red-600 transition-colors"
             onClick={onClose}
           >
-            Continue Ordering
+            Continue
           </button>
           <button 
-            className="bg-gray-800 text-white px-4 py-2 rounded-full font-medium hover:bg-gray-900 transition-colors"
+            className="bg-gray-800 text-sm text-white px-4 py-2 rounded-full font-medium hover:bg-gray-900 transition-colors"
             onClick={() => setShowBill(true)}
           >
-            View Bill
+            Pay Bill
           </button>
         </div>
       </div>
