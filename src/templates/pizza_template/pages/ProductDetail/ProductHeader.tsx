@@ -12,6 +12,7 @@ import NutritionalInfo from './NutritionalInfo';
 import IngredientsSection from './IngredientsSection';
 import AllergensSection from './AllergensSection';
 import RecommendedProducts from './RecommendedProducts';
+import { usePayment } from '@/hooks';
 
 interface ProductHeaderProps {
     product: MenuItem;
@@ -51,6 +52,8 @@ const ProductHeader: React.FC<ProductHeaderProps> = ({
     
     // Get cart items from Redux store
     const { items: cartItems } = useAppSelector(state => state.cart);
+
+
 
     function formatToDollar(value:any) {
         try {
@@ -98,8 +101,8 @@ const ProductHeader: React.FC<ProductHeaderProps> = ({
                     </div>}
                 </div>
                 
-                <div className='hidden lg:block max-h-[300px] sm:max-h-[400px] overflow-y-auto thin-scrollbar'>
-                {/* Modifiers List with Spice Level */}
+   {         isPaymentAvilable &&    <div className='hidden lg:block max-h-[300px] sm:max-h-[400px] overflow-y-auto thin-scrollbar'>
+                
                 <ModifiersList 
                     modifiersList={modifiersList}
                     handleModifierOptionSelect={handleModifierOptionSelect}
@@ -109,7 +112,7 @@ const ProductHeader: React.FC<ProductHeaderProps> = ({
                     validationErrors={validationErrors}
                     product={product}
                 />
-                </div>
+                </div>}
                 
          {   isPaymentAvilable &&    <div className="hidden lg:flex flex-col sm:flex-row sm:items-center sm:justify-between mt-4 mb-4 gap-3 sm:gap-0">
                     <div>
@@ -218,7 +221,7 @@ const ProductHeader: React.FC<ProductHeaderProps> = ({
                     <p className="text-gray-700 mb-4 text-sm sm:text-base">{product.description}</p>
                     
                     {/* Modifiers List for mobile - positioned after description */}
-                    <div className='max-h-[300px] sm:max-h-[400px] overflow-y-auto thin-scrollbar mb-4'>
+                  { isPaymentAvilable && <div className='max-h-[300px] sm:max-h-[400px] overflow-y-auto thin-scrollbar mb-4'>
                         <ModifiersList 
                             modifiersList={modifiersList}
                             handleModifierOptionSelect={handleModifierOptionSelect}
@@ -228,7 +231,7 @@ const ProductHeader: React.FC<ProductHeaderProps> = ({
                             validationErrors={validationErrors}
                             product={product}
                         />
-                    </div>
+                    </div>}
                     
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-4 mb-4 gap-3 sm:gap-0">
                         <div>
