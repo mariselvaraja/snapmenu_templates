@@ -2,7 +2,7 @@
  * Restaurant service for handling restaurant-related API calls
  */
 
-import api, { ApiResponse } from './api';
+import api from './api';
 import endpoints from '../config/endpoints';
 
 // Restaurant interface

@@ -8,6 +8,7 @@ import { LuVegan } from 'react-icons/lu';
 import { IoLeafOutline } from 'react-icons/io5';
 import { CiWheat } from 'react-icons/ci';
 import { GoDotFill } from 'react-icons/go';
+import { usePayment } from '@/hooks';
 
 // Define types for category and subcategory
 interface CategoryType {
@@ -35,6 +36,7 @@ export default function Menu() {
     // Get menu data and cart items from Redux store
     const { items, loading, error } = useAppSelector(state => state.menu);
     const { items: cartItems } = useAppSelector(state => state.cart);
+    const {isPaymentAvilable} = usePayment();
     
     // Scroll to top when component mounts
     useEffect(() => {
@@ -426,10 +428,7 @@ export default function Menu() {
                                 >
                                     {item.description}
                                 </p>
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center">
-                                        {/* Removed rating stars as menu.json does not have rating */}
-                                    </div>
+                             {  isPaymentAvilable && <div className="flex items-center justify-between">
                                     
                                     {/* Add button or quantity controls */}
                                     {!cartItems.find((cartItem:any) => cartItem.id === item.id && cartItem.quantity > 0) ? (
@@ -478,7 +477,7 @@ export default function Menu() {
                                             </button>
                                         </div>
                                     )}
-                                </div>
+                                </div>}
                             </div>
                         </div>
                     ))}

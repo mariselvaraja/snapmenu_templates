@@ -44,8 +44,7 @@ export default function Checkout() {
   
   // Calculate cart totals
   const subtotal = cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
-  const tax = subtotal * 0.08; // 8% tax
-  const total = subtotal + tax;
+  const total = subtotal; // No tax applied
 
   const [formData, setFormData] = useState<FormData>({
     name: '',
@@ -401,7 +400,7 @@ export default function Checkout() {
                       (isSubmitting || cartItems.length === 0) ? 'opacity-70 cursor-not-allowed' : ''
                     }`}
                   >
-                    {isSubmitting ? 'Processing...' : cartItems.length === 0 ? 'Your Cart is Empty' : 'Complete Order'}
+                    {isSubmitting ? 'Processing...' : cartItems.length === 0 ? 'Your Cart is Empty' : 'Pay'}
                   </button>
                 </div>
               </form>
@@ -445,23 +444,11 @@ export default function Checkout() {
               </div>
               
               <div className="space-y-4">
-                <div className="flex justify-between">
-                  <span>Subtotal</span>
-                  <span>${subtotal?.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Tax</span>
-                  <span>${tax?.toFixed(2)}</span>
-                </div>
-                <div className="border-t pt-4 flex justify-between font-semibold text-lg">
+                <div className="pt-4 flex justify-between font-semibold text-lg">
                   <span>Total</span>
                   <span>${total?.toFixed(2)}</span>
                 </div>
               </div>
-              
-              <p className="text-sm text-gray-500 text-center mt-6">
-                Estimated delivery time: 30-45 minutes
-              </p>
             </div>
           </motion.div>
         </div>

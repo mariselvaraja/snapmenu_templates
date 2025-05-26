@@ -2,9 +2,8 @@
  * Cart service for handling cart-related API calls
  */
 
-import api, { ApiResponse } from './api';
+import api from './api';
 import endpoints from '../config/endpoints';
-import { environment } from '../config/endpoints';
 import { CartItem } from '../redux/slices/cartSlice';
 
 // Order interface
@@ -34,7 +33,7 @@ export const cartService = {
     console.log('Using local storage for cart data');
     
     try {
-      const cartData = localStorage.getItem('cart');
+      const cartData = sessionStorage.getItem('cart');
       return cartData ? JSON.parse(cartData) : [];
     } catch (error) {
       console.error('Error fetching cart from storage:', error);
@@ -50,7 +49,7 @@ export const cartService = {
     
     try {
       // Get current cart
-      const cartData = localStorage.getItem('cart');
+      const cartData = sessionStorage.getItem('cart');
       const cart: CartItem[] = cartData ? JSON.parse(cartData) : [];
       
       // Check if item already exists
@@ -65,7 +64,7 @@ export const cartService = {
       }
       
       // Save updated cart
-      localStorage.setItem('cart', JSON.stringify(cart));
+      sessionStorage.setItem('cart', JSON.stringify(cart));
       return cart;
     } catch (error) {
       console.error('Error adding item to cart in storage:', error);
@@ -81,14 +80,14 @@ export const cartService = {
     
     try {
       // Get current cart
-      const cartData = localStorage.getItem('cart');
+      const cartData = sessionStorage.getItem('cart');
       const cart: CartItem[] = cartData ? JSON.parse(cartData) : [];
       
       // Remove item
       const updatedCart = cart.filter(item => item.id !== itemId);
       
       // Save updated cart
-      localStorage.setItem('cart', JSON.stringify(updatedCart));
+      sessionStorage.setItem('cart', JSON.stringify(updatedCart));
       return updatedCart;
     } catch (error) {
       console.error('Error removing item from cart in storage:', error);
@@ -104,7 +103,7 @@ export const cartService = {
     
     try {
       // Get current cart
-      const cartData = localStorage.getItem('cart');
+      const cartData = sessionStorage.getItem('cart');
       const cart: CartItem[] = cartData ? JSON.parse(cartData) : [];
       
       // Find and update item
@@ -115,7 +114,7 @@ export const cartService = {
       }
       
       // Save updated cart
-      localStorage.setItem('cart', JSON.stringify(cart));
+      sessionStorage.setItem('cart', JSON.stringify(cart));
       return cart;
     } catch (error) {
       console.error('Error updating item in cart in storage:', error);
@@ -131,7 +130,7 @@ export const cartService = {
     
     try {
       // Clear cart
-      localStorage.setItem('cart', JSON.stringify([]));
+      sessionStorage.setItem('cart', JSON.stringify([]));
       return [];
     } catch (error) {
       console.error('Error clearing cart in storage:', error);
@@ -171,7 +170,7 @@ export const cartService = {
       const response = await api.post<any>(endpoints.cart.placeOrder, formattedPayload);
       
       // Clear local cart after successful order
-      localStorage.setItem('cart', JSON.stringify([]));
+      sessionStorage.setItem('cart', JSON.stringify([]));
       
       return response.data;
     } catch (error) {

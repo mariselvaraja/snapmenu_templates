@@ -9,6 +9,7 @@ import TemplateNotFound from './TemplateNotFound';
 import { LocationSelector } from '../components';
 import { fetchSiteContentRequest } from '../common/redux/slices/siteContentSlice';
 import { fetchMenuRequest } from '../common/redux/slices/menuSlice';
+import { fetchTpnConfigRequest } from '../redux/slices/tpnSlice';
 
 // Create a context for template-specific settings
 export const TemplateContext = createContext(null);
@@ -51,16 +52,6 @@ const TemplateContent = () => {
   // Check if any of the required API calls are still loading
   const isLoading = restaurantState.loading || menuState.loading || siteContentState.loading;
 
-  // Check if any of the required API calls have errors
-  const hasErrors = restaurantState.error || menuState.error || siteContentState.error;
-
-  // Check if all required data is loaded
-  const allDataLoaded = 
-    !isLoading && 
-    !hasErrors && 
-    restaurantState.info && 
-    menuState.items.length > 0 && 
-    siteContentState.content;
 
   // Toggle theme function
   const toggleTheme = () => {
@@ -118,6 +109,7 @@ const TemplateContent = () => {
       setLocationSelected(true);
       
       // Fetch required data
+      dispatch(fetchTpnConfigRequest());
       dispatch(fetchSiteContentRequest());
       dispatch(fetchMenuRequest());
     }

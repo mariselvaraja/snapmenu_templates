@@ -13,6 +13,7 @@ import {
     ModifierOption,
     SelectedModifier
 } from './ProductDetail/index';
+import { usePayment } from '@/hooks';
 
 export default function ProductDetail() {
     const { productId } = useParams<{ productId: string }>();
@@ -40,6 +41,8 @@ export default function ProductDetail() {
     
     // State for spice level (1 = mild, 2 = medium, 3 = hot)
     const [spiceLevel, setSpiceLevel] = useState<number>(2);
+
+    const {isPaymentAvilable} = usePayment();
     
     // Scroll to top when component mounts or productId changes
     useEffect(() => {
@@ -407,6 +410,7 @@ export default function ProductDetail() {
                             handleModifierOptionSelect={handleModifierOptionSelect}
                             isModifierOptionSelected={isModifierOptionSelected}
                             handleAddToCart={handleAddToCart}
+                            isPaymentAvilable = {isPaymentAvilable}
                             validationErrors={validationErrors}
                             showRecommendedProducts={true}
                             currentProductId={productId || ''}

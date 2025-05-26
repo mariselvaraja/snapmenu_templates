@@ -4,6 +4,7 @@ import menuReducer from './slices/menuSlice';
 import siteContentReducer from './slices/siteContentSlice';
 import searchReducer from './slices/searchSlice';
 import restaurantReducer from './slices/restaurantSlice';
+import tpnReducer from './slices/tpnSlice';
 
 const rootReducer = combineReducers({
   cart: cartReducer,
@@ -11,6 +12,7 @@ const rootReducer = combineReducers({
   siteContent: siteContentReducer,
   search: searchReducer,
   restaurant: restaurantReducer,
+  tpn: tpnReducer,
 });
 
 export type RootState = ReturnType<typeof rootReducer>;

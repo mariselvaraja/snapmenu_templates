@@ -9,6 +9,7 @@ import tableAvailabilityReducer from './slices/tableAvailabilitySlice';
 import makeReservationReducer from './slices/makeReservationSlice';
 import tableStatusReducer from './slices/tableStatusSlice';
 import orderHistoryReducer from './slices/orderHistorySlice';
+import tpnReducer from '../../redux/slices/tpnSlice';
 
 const rootReducer = combineReducers({
   cart: cartReducer,
@@ -20,7 +21,8 @@ const rootReducer = combineReducers({
   tableAvailability: tableAvailabilityReducer,
   makeReservation: makeReservationReducer,
   tableStatus: tableStatusReducer,
-  orderHistory: orderHistoryReducer
+  orderHistory: orderHistoryReducer,
+  tpn: tpnReducer
 });
 
 export type RootState = ReturnType<typeof rootReducer>;

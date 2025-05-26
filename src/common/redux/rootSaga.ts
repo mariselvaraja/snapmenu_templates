@@ -8,6 +8,7 @@ import { tableAvailabilitySaga } from './sagas/tableAvailabilitySaga';
 import { makeReservationSaga } from './sagas/makeReservationSaga';
 import { tableStatusSaga } from './sagas/tableStatusSaga';
 import { orderHistorySaga } from './sagas/orderHistorySaga';
+import { tpnSaga } from '../../redux/sagas/tpnSaga';
 
 export function* rootSaga(): Generator<any, void, any> {
   yield all([
@@ -19,6 +20,7 @@ export function* rootSaga(): Generator<any, void, any> {
     fork(tableAvailabilitySaga),
     fork(makeReservationSaga),
     fork(tableStatusSaga),
-    fork(orderHistorySaga)
+    fork(orderHistorySaga),
+    fork(tpnSaga)
   ]);
 }

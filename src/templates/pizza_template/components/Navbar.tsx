@@ -5,6 +5,7 @@ import { useAppSelector, useAppDispatch } from '../../../redux';
 import { toggleDrawer } from '../../../redux/slices/cartSlice';
 import { openSearchModal, closeSearchModal } from '../../../redux/slices/searchSlice';
 import { SearchModal } from '../../../components/search';
+import { usePayment } from '@/hooks';
 
 const UtensilsIcon = Utensils;
 const PizzaIcon = Pizza;
@@ -12,6 +13,8 @@ const PizzaIcon = Pizza;
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const { rawApiResponse } = useAppSelector(state => state.siteContent);
+
+  const {isPaymentAvilable} = usePayment();
   
   // Get site content from Redux state
   const siteContent = rawApiResponse ? 
@@ -70,7 +73,7 @@ export default function Navbar() {
               >
                 <Search className="h-6 w-6" />
               </button>
-              <button
+        {  isPaymentAvilable &&    <button
                 onClick={() => dispatch(toggleDrawer())}
                 className="relative hover:text-red-500 transition-colors"
               >
@@ -78,7 +81,7 @@ export default function Navbar() {
                { cartItemCount!=0 &&<span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                   {cartItemCount}
                 </span>}
-              </button>
+              </button>}
             </div>
           </div>
 
