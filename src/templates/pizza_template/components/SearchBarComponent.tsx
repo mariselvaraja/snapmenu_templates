@@ -39,6 +39,7 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
   const [isProductDetailsOpen, setIsProductDetailsOpen] = useState<boolean>(false);
   const [isListening, setIsListening] = useState(false);
   const [speechError, setSpeechError] = useState<string | null>(null);
+  const [isNavigating, setIsNavigating] = useState(false);
   const [filters, setFilters] = useState({
     vegetarian: true,
     vegan: true,
@@ -48,6 +49,7 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
   // Refs
   const inputRef = useRef<HTMLInputElement>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
+  const lastClickTimeRef = useRef<number>(0);
 
   // Focus input on mount and load all menu items initially
   useEffect(() => {
@@ -163,16 +165,37 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
   // Check if we're in the in-dining context
   const isInDiningContext = location.pathname.includes('placeindiningorder');
 
-  // Handle item select
+  // Handle item select with debounce to prevent multiple rapid clicks
   const handleItemSelect = (item: any) => {
+    const currentTime = Date.now();
+    const timeSinceLastClick = currentTime - lastClickTimeRef.current;
+    
+    // Prevent multiple clicks within 500ms
+    if (timeSinceLastClick < 500) {
+      return;
+    }
+    
+    // Prevent multiple clicks if already navigating
+    if (isNavigating) {
+      return;
+    }
+    
+    lastClickTimeRef.current = currentTime;
+    
     if (isInDiningContext) {
       // In in-dining context, show the product details popup
       setSelectedProduct(item);
       setIsProductDetailsOpen(true);
     } else {
       // In other contexts, navigate to the product route
+      setIsNavigating(true);
       onClose();
-      navigate(`/product/${item.id}`);
+      navigate(`/product/${item.pk_id || item.id}`);
+      
+      // Reset navigation state after a delay
+      setTimeout(() => {
+        setIsNavigating(false);
+      }, 1000);
     }
   };
 
@@ -352,13 +375,11 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
           <div
             key={item.id || `item-${index}`}
             data-result-item={index}
-            className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
+            className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
+            onClick={() => handleItemSelect(item)}
           >
             <div className="relative h-32 bg-gray-100">
-              <div 
-                className="w-full h-full cursor-pointer"
-                onClick={() => handleItemSelect(item)}
-              >
+              <div className="w-full h-full">
                 {item.image ? (
                   <img 
                     src={item.image} 
@@ -397,16 +418,10 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
             </div>
             
             <div className="p-3">
-              <h4 
-                className="font-medium text-gray-800 mb-1 line-clamp-1 cursor-pointer"
-                onClick={() => handleItemSelect(item)}
-              >
+              <h4 className="font-medium text-gray-800 mb-1 line-clamp-1">
                 {highlightQuery ? renderHighlightedText(item.name, query) : item.name}
               </h4>
-              <p 
-                className="text-xs text-gray-500 line-clamp-2 cursor-pointer"
-                onClick={() => handleItemSelect(item)}
-              >
+              <p className="text-xs text-gray-500 line-clamp-2">
                 {highlightQuery ? renderHighlightedText(item.description || 'No description available', query) : (item.description || 'No description available')}
               </p>
               
@@ -428,7 +443,8 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
               <div className="flex justify-between items-center mt-auto">
                 <p className="text-sm font-bold text-red-500">{formatPrice(item.price)}</p>
                 <button 
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.stopPropagation(); // Prevent card click event
                     dispatch(addItem({
                       id: item.id,
                       name: item.name,
