@@ -178,7 +178,8 @@ export default function Checkout() {
       if (response && typeof response === 'object' && 'payment_link' in response && response.payment_link) {
         console.log('Payment link detected:', response.payment_link);
         // Force the payment popup to open immediately
-        setShowPaymentPopup(true);
+        // setShowPaymentPopup(true);
+        window.open(response.payment_link,"_blank")
       }
       
       // Set order complete after all other state updates
@@ -238,7 +239,7 @@ export default function Checkout() {
           </div>
           
           {/* Payment Popup */}
-          {showPaymentPopup && (
+          {/* {showPaymentPopup && (
             <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
               <div className="relative w-full  h-[100vh] bg-white rounded-lg shadow-xl">
                 <div className="absolute top-2 right-2 z-10">
@@ -258,7 +259,7 @@ export default function Checkout() {
                 />
               </div>
             </div>
-          )}
+          )} */}
         </div>
       );
     }
