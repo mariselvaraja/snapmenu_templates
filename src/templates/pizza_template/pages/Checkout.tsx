@@ -170,8 +170,8 @@ export default function Checkout() {
       let restaurant_id = sessionStorage.getItem("franchise_id");
       
       // Call the placeOrder API endpoint
-      let response : any= {}
-      // await cartService.placeOrder(orderData,restaurant_id);
+      let response : any= 
+      await cartService.placeOrder(orderData,restaurant_id);
       response = JSON.parse(response)
       console.log('Order placed successfullys:', response);
       
