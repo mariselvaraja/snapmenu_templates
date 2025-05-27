@@ -244,6 +244,7 @@ const ProductHeader: React.FC<ProductHeaderProps> = ({
                         </div>
                         
                         {/* Add to Cart button or Quantity Controls */}
+                  {   isPaymentAvilable &&   <div>
                         {!cartItem ? (
                             <button
                                 onClick={handleAddToCart}
@@ -280,6 +281,8 @@ const ProductHeader: React.FC<ProductHeaderProps> = ({
                                 </button>
                             </div>
                         )}
+                        </div>}
+                       
                     </div>
                 </div>
                 

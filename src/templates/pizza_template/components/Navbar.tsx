@@ -117,7 +117,7 @@ export default function Navbar() {
               >
                 <Search className="h-6 w-6" />
               </button>
-            {  <button
+            { isPaymentAvilable && <button
                 onClick={() => dispatch(toggleDrawer())}
                 className="relative p-2"
               >

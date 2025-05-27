@@ -12,6 +12,7 @@ import {
 
 import { useAppDispatch, useAppSelector, addItem, CartItem } from '../../../common/redux';
 import { Carousel, CarouselItem } from '../../../components/carousel';
+import { usePayment } from '@/hooks';
 
 // Define interfaces for the experienceCard data structure
 interface ExperienceCardSection {
@@ -41,6 +42,8 @@ export default function Home() {
   const dispatch = useAppDispatch();
   const { items: menuItems, loading: menuLoading } = useAppSelector(state => state.menu);
   const { rawApiResponse } = useAppSelector(state => state.siteContent);
+
+  const {isPaymentAvilable} = usePayment();
   
   // Get site content from Redux state
   const siteContent = rawApiResponse ? 
@@ -98,7 +101,7 @@ export default function Home() {
             <p className="text-gray-600 mb-4">{menuItem.description}</p>
             <div className="flex items-center justify-between">
               <span className="text-lg font-bold text-red-500">${menuItem.price}</span>
-              <button
+            { isPaymentAvilable && <button
                 className="inline-flex items-center bg-red-500 text-white px-3 py-1 rounded-full hover:bg-red-600 transition-colors"
                 onClick={(e) => {
                   e.preventDefault();
@@ -114,7 +117,7 @@ export default function Home() {
               >
                 <ShoppingCart className="h-4 w-4 mr-1" />
                 Add to Cart
-              </button>
+              </button>}
             </div>
           </div>
         </Link>
@@ -322,7 +325,7 @@ export default function Home() {
                               <p className="text-gray-600 mb-4">{menuItem.description}</p>
                               <div className="flex items-center justify-between">
                                 <span className="text-lg font-bold text-red-500">${menuItem.price}</span>
-                                <button
+                             {  isPaymentAvilable && <button
                                   className="inline-flex items-center bg-red-500 text-white px-3 py-1 rounded-full hover:bg-red-600 transition-colors"
                                   onClick={(e) => {
                                     e.preventDefault();
@@ -338,7 +341,7 @@ export default function Home() {
                                 >
                                   <ShoppingCart className="h-4 w-4 mr-1" />
                                   Add to Cart
-                                </button>
+                                </button>}
                               </div>
                             </div>
                           </Link>
