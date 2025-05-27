@@ -107,8 +107,8 @@ export default function Checkout() {
     const orderedItems: OrderedItem[] = cartItems.map((item:any) => {
       console.log("ITEM", item)
 
-      const formatModifiers = item.selectedModifiers((modifiers:any)=>!modifiers.name.includes("Spice Level"));
-      const spiceLevel = item.selectedModifiers((modifiers:any)=>modifiers.name.includes("Spice Level"));
+      const formatModifiers = item?.selectedModifiers.filter((modifiers:any)=>!modifiers.name.includes("Spice Level"));
+      const spiceLevel = item?.selectedModifiers.find((modifiers:any)=>modifiers.name.includes("Spice Level"));
       console.log("spiceLevel", spiceLevel)
       let payloadObj: OrderedItem = {
         name: item.name,
@@ -120,7 +120,7 @@ export default function Checkout() {
       }
       if(spiceLevel)
       {
-        payloadObj = {...payloadObj, spice_level: 1}
+        payloadObj = {...payloadObj, spice_level:spiceLevel}
       }
      return  payloadObj
     });
