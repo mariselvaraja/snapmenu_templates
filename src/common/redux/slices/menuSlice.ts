@@ -73,6 +73,7 @@ export interface MenuItem {
   modifiers_list : [];
   is_spice_applicable?: string; // Added field to check if spice level should be shown
   raw_api_data?: string; // Added field to store the raw API data
+  food_type?: string; // Added field to specify food type (veg, non-veg, etc.)
 }
 
 export interface MenuCategory {

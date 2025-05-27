@@ -161,25 +161,30 @@ const ProductHeader: React.FC<ProductHeaderProps> = ({
             <div className="lg:w-1/2 w-full mt-4 lg:mt-0 order-1 lg:order-2">
                 <div className="relative rounded-lg overflow-hidden shadow-lg">
                     {/* Dietary Information icons overlay */}
-                    {product.dietary && Object.values(product.dietary).some(value => value) && (
+                    {(product.dietary && Object.values(product.dietary).some(value => value)) || product.food_type === 'veg' ? (
                         <div className="absolute top-2 right-2 z-10 flex flex-wrap gap-1 justify-end">
-                            {product.dietary.isVegan && (
+                            {product.food_type === 'veg' && (
+                                <div className="bg-green-600 text-white w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center">
+                                    <IoLeafOutline className="w-3 h-3 sm:w-5 sm:h-5" />
+                                </div>
+                            )}
+                            {product.dietary?.isVegan && (
                                 <div className="bg-green-500 text-white w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center">
                                     <LuVegan className="w-3 h-3 sm:w-5 sm:h-5" />
                                 </div>
                             )}
-                            {product.dietary.isVegetarian && (
+                            {product.dietary?.isVegetarian && (
                                 <div className="bg-green-500 text-white w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center">
                                     <IoLeafOutline className="w-3 h-3 sm:w-5 sm:h-5" />
                                 </div>
                             )}
-                            {product.dietary.isGlutenFree && (
+                            {product.dietary?.isGlutenFree && (
                                 <div className="bg-blue-500 text-white w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center">
                                     <CiWheat className="w-3 h-3 sm:w-5 sm:h-5" />
                                 </div>
                             )}
                         </div>
-                    )}
+                    ) : null}
                     {product.image ? (
                         <img 
                             src={product.image} 
