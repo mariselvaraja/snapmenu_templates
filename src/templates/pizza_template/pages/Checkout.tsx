@@ -24,6 +24,7 @@ interface OrderedItem {
   modifiers: Modifier[];
   modifier_price: string;
   total_item_price: string;
+  spice_level?: any;
 }
 
 interface OrderPayload {
@@ -43,7 +44,7 @@ export default function Checkout() {
   const cartItems = useAppSelector((state) => state.cart.items);
   
   // Calculate cart totals
-  const subtotal = cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+  const subtotal = cartItems.reduce((total: number, item: any) => total + (item.price * item.quantity), 0);
   const total = subtotal; // No tax applied
 
   const [formData, setFormData] = useState<FormData>({
@@ -103,24 +104,26 @@ export default function Checkout() {
   };
 
   const createOrderPayload = (): OrderPayload => {
-    const orderedItems: OrderedItem[] = cartItems.map(item => ({
-      name: item.name,
-      quantity: item.quantity,
-      itemPrice: item.price?.toFixed(2),
-      modifiers: [
-        // Example modifiers - in a real app, these would come from user selections
-        {
-          modifier_name: "extra cheese",
-          modifier_price: "1.50"
-        },
-        {
-          modifier_name: "garlic",
-          modifier_price: "0.50"
-        }
-      ],
-      modifier_price: "0.00",
-      total_item_price: (item.price * item.quantity)?.toFixed(2)
-    }));
+    const orderedItems: OrderedItem[] = cartItems.map((item:any) => {
+      console.log("ITEM", item)
+
+      const formatModifiers = item.selectedModifiers((modifiers:any)=>!modifiers.name.includes("Spice Level"));
+      const spiceLevel = item.selectedModifiers((modifiers:any)=>modifiers.name.includes("Spice Level"));
+      console.log("spiceLevel", spiceLevel)
+      let payloadObj: OrderedItem = {
+        name: item.name,
+        quantity: item.quantity,
+        itemPrice: item.price?.toFixed(2),
+        modifiers: formatModifiers,
+        modifier_price: "0.00",
+        total_item_price: (item.price * item.quantity)?.toFixed(2)
+      }
+      if(spiceLevel)
+      {
+        payloadObj = {...payloadObj, spice_level: 1}
+      }
+     return  payloadObj
+    });
 
     return {
       restaurant_id: "2256b9a6-5d53-4b77-b6a0-539043489ad3", // Hardcoded as requested
@@ -167,7 +170,8 @@ export default function Checkout() {
       let restaurant_id = sessionStorage.getItem("franchise_id");
       
       // Call the placeOrder API endpoint
-      let response = await cartService.placeOrder(orderData,restaurant_id);
+      let response : any= {}
+      // await cartService.placeOrder(orderData,restaurant_id);
       response = JSON.parse(response)
       console.log('Order placed successfullys:', response);
       

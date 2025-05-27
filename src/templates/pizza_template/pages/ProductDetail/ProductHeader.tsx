@@ -113,12 +113,12 @@ const ProductHeader: React.FC<ProductHeaderProps> = ({
                 />
                 </div>
                 
-         {   isPaymentAvilable &&    <div className="hidden lg:flex flex-col sm:flex-row sm:items-center sm:justify-between mt-4 mb-4 gap-3 sm:gap-0">
+         {       <div className="hidden lg:flex flex-col sm:flex-row sm:items-center sm:justify-between mt-4 mb-4 gap-3 sm:gap-0">
                     <div>
                         <div className="text-xl sm:text-2xl font-bold text-red-500">${(typeof calculateTotalPrice() === 'number' ? calculateTotalPrice() : 0).toFixed(2)}</div>
                     </div>
                     
-
+                   { isPaymentAvilable &&   <div>
                     {!cartItem ? (
                         <button
                             onClick={handleAddToCart}
@@ -155,6 +155,7 @@ const ProductHeader: React.FC<ProductHeaderProps> = ({
                             </button>
                         </div>
                     )}
+                    </div>}
                 </div>}
             </div>
             <div className="lg:w-1/2 w-full mt-4 lg:mt-0 order-1 lg:order-2">
