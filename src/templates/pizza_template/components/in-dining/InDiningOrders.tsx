@@ -93,7 +93,23 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
   // Function to hide URL bar on mobile
   const hideUrlBar = useRef(() => {
     if (isMobileRef.current && isComponentMountedRef.current) {
+      // For fixed positioned elements, we need to temporarily change the body height
+      // to allow scrolling and then hide the URL bar
+      const originalHeight = document.body.style.height;
+      const originalOverflow = document.body.style.overflow;
+      
+      // Temporarily make body scrollable
+      document.body.style.height = '101vh';
+      document.body.style.overflow = 'auto';
+      
+      // Scroll to hide URL bar
       window.scrollTo(0, 1);
+      
+      // Restore original styles after a short delay
+      setTimeout(() => {
+        document.body.style.height = originalHeight;
+        document.body.style.overflow = originalOverflow;
+      }, 100);
     }
   }).current;
 
@@ -108,6 +124,13 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
       }
     };
     
+    // Handle scroll events to hide URL bar
+    const handleScroll = () => {
+      if (isMobileRef.current && isComponentMountedRef.current) {
+        hideUrlBar();
+      }
+    };
+    
     // Check on mount
     checkMobile();
     
@@ -116,6 +139,15 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
     window.addEventListener('load', hideUrlBar);
     window.addEventListener('resize', hideUrlBar);
     window.addEventListener('orientationchange', hideUrlBar);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('touchmove', handleScroll, { passive: true });
+    
+    // Get the scrollable container and add scroll listeners
+    const scrollContainer = document.querySelector('.orders-scroll-container');
+    if (scrollContainer) {
+      scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
+      scrollContainer.addEventListener('touchmove', handleScroll, { passive: true });
+    }
     
     // Initial attempts to hide URL bar with different timing
     setTimeout(hideUrlBar, 100);
@@ -128,6 +160,13 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
       window.removeEventListener('load', hideUrlBar);
       window.removeEventListener('resize', hideUrlBar);
       window.removeEventListener('orientationchange', hideUrlBar);
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('touchmove', handleScroll);
+      
+      if (scrollContainer) {
+        scrollContainer.removeEventListener('scroll', handleScroll);
+        scrollContainer.removeEventListener('touchmove', handleScroll);
+      }
     };
   }, [hideUrlBar]);
   
@@ -254,7 +293,7 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
       </div>
 
       {/* Orders List */}
-      <div className="flex-grow overflow-y-auto">
+      <div className="flex-grow overflow-y-auto orders-scroll-container">
         {historyLoading ? (
           <ul className="divide-y">
             {/* Skeleton Loading Items */}

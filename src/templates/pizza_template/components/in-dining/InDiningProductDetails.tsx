@@ -206,7 +206,23 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
   // Function to hide URL bar on mobile
   const hideUrlBar = useRef(() => {
     if (isMobileRef.current && isComponentMountedRef.current) {
+      // For fixed positioned elements, we need to temporarily change the body height
+      // to allow scrolling and then hide the URL bar
+      const originalHeight = document.body.style.height;
+      const originalOverflow = document.body.style.overflow;
+      
+      // Temporarily make body scrollable
+      document.body.style.height = '101vh';
+      document.body.style.overflow = 'auto';
+      
+      // Scroll to hide URL bar
       window.scrollTo(0, 1);
+      
+      // Restore original styles after a short delay
+      setTimeout(() => {
+        document.body.style.height = originalHeight;
+        document.body.style.overflow = originalOverflow;
+      }, 100);
     }
   }).current;
 
@@ -287,6 +303,13 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
       }
     };
     
+    // Handle scroll events to hide URL bar
+    const handleScroll = () => {
+      if (isMobileRef.current && isComponentMountedRef.current) {
+        hideUrlBar();
+      }
+    };
+    
     // Check on mount
     checkMobile();
     
@@ -295,6 +318,15 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
     window.addEventListener('load', hideUrlBar);
     window.addEventListener('resize', hideUrlBar);
     window.addEventListener('orientationchange', hideUrlBar);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('touchmove', handleScroll, { passive: true });
+    
+    // Get the scrollable container and add scroll listeners
+    const scrollContainer = document.querySelector('.product-details-scroll-container');
+    if (scrollContainer) {
+      scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
+      scrollContainer.addEventListener('touchmove', handleScroll, { passive: true });
+    }
     
     // Initial attempts to hide URL bar with different timing
     setTimeout(hideUrlBar, 100);
@@ -307,6 +339,13 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
       window.removeEventListener('load', hideUrlBar);
       window.removeEventListener('resize', hideUrlBar);
       window.removeEventListener('orientationchange', hideUrlBar);
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('touchmove', handleScroll);
+      
+      if (scrollContainer) {
+        scrollContainer.removeEventListener('scroll', handleScroll);
+        scrollContainer.removeEventListener('touchmove', handleScroll);
+      }
     };
   }, [hideUrlBar]);
   
@@ -338,7 +377,7 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 100, scale: 1 }}
         transition={{ duration: 0.3 }}
-        className="bg-white w-full h-[100vh] overflow-y-auto relative"
+        className="bg-white w-full h-[100vh] overflow-y-auto relative product-details-scroll-container"
       >
         <div className="relative">
           {/* Title Bar - Visible on all screen sizes */}
