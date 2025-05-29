@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { X, Plus, Minus, ArrowLeft, Heart, ShoppingCart, Check, Activity, ChevronDown, ChevronUp, Box, AlertTriangle } from 'lucide-react';
 import { FaPepperHot } from "react-icons/fa";
@@ -198,6 +198,17 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
   // Get table number from URL
   const location = useLocation();
   const tableNumber = sessionStorage.getItem('Tablename');
+  
+  // Refs for URL bar hiding
+  const isMobileRef = useRef(false);
+  const isComponentMountedRef = useRef(false);
+  
+  // Function to hide URL bar on mobile
+  const hideUrlBar = useRef(() => {
+    if (isMobileRef.current && isComponentMountedRef.current) {
+      window.scrollTo(0, 1);
+    }
+  }).current;
 
   // Helper function to check if spice level should be shown based on is_spice_applicable
   const shouldShowSpiceLevel = () => {
@@ -264,6 +275,40 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
       addDirectlyToCart();
     }
   };
+  
+  // Check if device is mobile and set up URL bar hiding
+  useEffect(() => {
+    isComponentMountedRef.current = true;
+    
+    const checkMobile = () => {
+      isMobileRef.current = window.innerWidth <= 768;
+      if (isMobileRef.current) {
+        hideUrlBar();
+      }
+    };
+    
+    // Check on mount
+    checkMobile();
+    
+    // Set up event listeners
+    window.addEventListener('resize', checkMobile);
+    window.addEventListener('load', hideUrlBar);
+    window.addEventListener('resize', hideUrlBar);
+    window.addEventListener('orientationchange', hideUrlBar);
+    
+    // Initial attempts to hide URL bar with different timing
+    setTimeout(hideUrlBar, 100);
+    setTimeout(hideUrlBar, 300);
+    setTimeout(hideUrlBar, 1000);
+    
+    return () => {
+      isComponentMountedRef.current = false;
+      window.removeEventListener('resize', checkMobile);
+      window.removeEventListener('load', hideUrlBar);
+      window.removeEventListener('resize', hideUrlBar);
+      window.removeEventListener('orientationchange', hideUrlBar);
+    };
+  }, [hideUrlBar]);
   
   useEffect(() => {
     // Extract table number from URL query parameter or path parameter

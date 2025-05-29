@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Utensils, ClipboardList, ArrowLeft, Calendar, Clock, Users, ChevronDown, ChevronUp, X } from 'lucide-react';
+import { Utensils, ClipboardList, ArrowLeft, Calendar, Clock, Users, ChevronDown, ChevronUp, X, ShoppingBag } from 'lucide-react';
 import BillComponent from './BillComponent';
 import { useSelector, useDispatch } from 'react-redux';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { RootState } from '../../../../common/store';
 import { InDiningOrder } from '../../../../common/redux/slices/inDiningOrderSlice';
 import { getOrderHistoryRequest } from '../../../../common/redux/slices/orderHistorySlice';
@@ -56,6 +56,7 @@ interface InDiningOrdersProps {
 const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber }) => {
   const [showNotification, setShowNotification] = useState(!!newOrderNumber);
   const [showBill, setShowBill] = useState(false);
+  const navigate = useNavigate();
   let tablename = sessionStorage.getItem('Tablename');
   
   // Function to get status badge colors
@@ -183,6 +184,13 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
   const searchParams = new URLSearchParams(location.search);
   const tableFromQuery = searchParams.get('table');
 
+  // Function to handle continue button click
+  const handleContinue = () => {
+    // Simply close the orders modal to return to the in-dining order component
+    // The parent InDiningOrder component will handle showing the main ordering interface
+    onClose();
+  };
+
   useEffect(() => {
     if (tableFromQuery) {
       dispatch(getOrderHistoryRequest(tableFromQuery));
@@ -213,180 +221,231 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
     }
   }, [location]);
 
-  // Fetch order history when tableNumber changes
+  // Calculate item count
+  const itemCount = orders.reduce((total: number, order: Order) => {
+    return total + (order.items?.reduce((orderTotal: number, item: any) => {
+      const quantity = typeof item.quantity === 'number' ? item.quantity : 
+        parseInt(String(item.quantity)) || 1;
+      return orderTotal + quantity;
+    }, 0) || 0);
+  }, 0);
 
-console.log("order.items", orders)
+  console.log("order.items", orders)
 
   return (
-    <div className="fixed inset-0 bg-white z-50 overflow-y-auto">
+    <div className="fixed inset-0 bg-white z-50 flex flex-col">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-black bg-opacity-90 backdrop-blur-sm shadow-md">
-        <div className="px-4 py-3">
-          <div className="flex items-center">
-            <button
-              onClick={onClose}
-              className="p-1 mr-3"
-            >
-              <ArrowLeft className="h-6 w-6 text-red-500" />
-            </button>
-            <div>
-              <h2 className="text-lg font-semibold text-white">Your Orders</h2>
-              <p className="text-xs text-gray-300">
-                Table Number: {tablename}
-              </p>
-            </div>
-          </div>
+      <div className="flex items-center justify-between border-b p-4">
+        <div>
+          <h2 className="text-xl font-bold flex items-center">
+            <ShoppingBag className="h-5 w-5 mr-2 text-red-500" />
+            Your Orders {itemCount > 0 && `(${itemCount})`}
+          </h2>
+          <p className="text-xs text-gray-500">
+            Table Number: {tablename}
+          </p>
         </div>
+        <button
+          onClick={onClose}
+          className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+        >
+          <X className="h-5 w-5" />
+        </button>
       </div>
-      
-
 
       {/* Orders List */}
-      <div className="p-4 mb-10">
+      <div className="flex-grow overflow-y-auto">
         {historyLoading ? (
-          <div className="text-center py-12">
-            <p className="text-gray-500">Loading order history...</p>
-          </div>
+          <ul className="divide-y">
+            {/* Skeleton Loading Items */}
+            {[...Array(5)].map((_, index) => (
+              <li key={index} className="p-4 flex animate-pulse">
+                {/* Skeleton Product Image */}
+                <div className="w-16 h-16 bg-gray-200 rounded-lg mr-4 flex-shrink-0"></div>
+                
+                {/* Skeleton Product Details */}
+                <div className="flex-1">
+                  <div className="flex justify-between items-center mb-2">
+                    <div className="h-4 bg-gray-200 rounded w-32"></div>
+                    <div className="h-4 bg-gray-200 rounded w-16"></div>
+                  </div>
+                  
+                  {/* Skeleton Status Badge */}
+                  <div className="h-5 bg-gray-200 rounded-full w-20 mb-2"></div>
+                  
+                  {/* Skeleton Modifiers */}
+                  <div className="space-y-1">
+                    <div className="flex justify-between items-center">
+                      <div className="h-3 bg-gray-200 rounded w-24"></div>
+                      <div className="h-3 bg-gray-200 rounded w-12"></div>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <div className="h-3 bg-gray-200 rounded w-20"></div>
+                      <div className="h-5 bg-gray-200 rounded-full w-16"></div>
+                    </div>
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
         ) : historyError ? (
           <div className="text-center py-12">
             <p className="text-red-500">Error loading orders: {historyError}</p>
           </div>
         ) : orders.length === 0 ? (
-          <div className="text-center py-12 flex flex-col items-center">
-            <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mb-4">
-              <ClipboardList className="h-10 w-10 text-red-300" />
-            </div>
-            <p className="text-gray-500 text-lg font-medium">No orders yet</p>
-            <p className="text-gray-400 text-sm mt-2">Your order history will appear here</p>
+          <div className="flex flex-col items-center justify-center h-full p-4 text-center">
+            <ShoppingBag className="h-12 w-12 text-gray-300 mb-2" />
+            <p className="text-gray-500 mb-4">No orders yet</p>
+            <button
+              onClick={onClose}
+              className="text-red-500 font-medium hover:text-red-600 transition-colors"
+            >
+              Continue Shopping
+            </button>
           </div>
         ) : (
-          <div>
-            
-            <div className="space-y-4">
-              {orders.map((order: Order, orderIndex: number) => (
-                <div key={orderIndex} className="bg-white overflow-hidden">
-                  {/* Order Header */}
-               
+          <ul className="divide-y">
+            {orders.map((order: Order, orderIndex: number) => (
+              order.items && order.items.map((item: any, index: number) => (
+                <li key={`${orderIndex}-${index}`} className="p-4 flex">
+                  {/* Product Image */}
+                  {item.image ? (
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                      className="w-16 h-16 object-cover rounded-lg mr-4"
+                    />
+                  ) : (
+                    <div className="w-16 h-16 bg-red-100 flex items-center justify-center rounded-lg mr-4">
+                      <span className="text-xl font-bold text-red-500">
+                        {item.name && item.name.length > 0 
+                          ? item.name.charAt(0).toUpperCase() 
+                          : 'P'}
+                      </span>
+                    </div>
+                  )}
                   
-                  {/* Order Items */}
-                  <div className="p-4">
-                    <div className="space-y-4">
-                      {order.items && order.items.map((item: any, index: number) => (
-                  
-                        <div key={index} className="bg-white rounded-lg shadow-sm p-4 mb-4">
-                          <div className="flex items-start">
-                            {/* Product Image */}
-                            <div className="w-16 h-16 rounded-lg overflow-hidden mr-4 flex-shrink-0 bg-red-50 flex items-center justify-center">
-                              {item.image ? (
-                                <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
-                              ) : (
-                                <span className="text-xl font-bold text-red-500">
-                                  {item.name.charAt(0).toUpperCase()}
-                                </span>
-                              )}
-                            </div>
-                            
-                            {/* Product Details */}
-                            <div className="flex-1">
-                              <div className="flex justify-between items-start mb-1">
-                                <div>
-                                  <h3 className="font-semibold text-gray-800">{item.name}</h3>
-                             
-                                  <div className="flex items-center mt-1 capitalize">
-                                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium border ${getStatusBadgeClasses(order.status)}`}>
-                                    {order.status}
+                  {/* Product Details */}
+                  <div className="flex-1">
+                    <div className="flex justify-between items-center">
+                      <h3 className="font-semibold">{item.name}</h3>
+                      <div className="text-gray-600">
+                        <span className="font-medium">${(item.price * item.quantity)?.toFixed(2)}</span>
+                      </div>
+                    </div>
+                    
+                    {/* Status Badge */}
+                    <div className="flex items-center mt-1">
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium border ${getStatusBadgeClasses(order.status)}`}>
+                        {order.status}
+                      </span>
+                    </div>
+                    
+                    {/* Display selected modifiers one by one with name on left and price on right */}
+                    {item.modifiers && item.modifiers.length > 0 && (
+                      <div className="mt-1 mb-2 text-xs text-gray-600">
+                        {/* First display all non-spice level modifiers */}
+                        {item.modifiers.flatMap((modifier: any) => 
+                          modifier.name !== "Spice Level" ? 
+                            modifier.options.map((option: any, optIndex: number) => (
+                              <div 
+                                key={`${modifier.name}-${option.name}-${optIndex}`} 
+                                className="flex justify-between items-center py-0.5"
+                              >
+                                <span>{option.name || modifier.name}</span>
+                                {(() => {
+                                  const optionPrice = option.modified_price && option.modified_price > 0 ? 
+                                    option.modified_price : (option.price || 0);
+                                  const totalPrice = optionPrice * item.quantity;
+                                  
+                                  return (
+                                    <span className="font-medium">
+                                      +${totalPrice.toFixed(2)}
                                     </span>
-                                  </div>
-                                </div>
-                                <div className="font-semibold text-red-500">
-                                  ${(item.price * item.quantity)?.toFixed(2)}
-                                </div>
+                                  );
+                                })()}
                               </div>
-                              
-                              {/* Spice Level with Quantity */}
-                              {item.spiceLevel && (
-                                <div className="flex justify-between items-center mt-2 bg-gray-50 rounded-md px-3 py-2">
-                                  <div className="flex items-center">
-                                    <span className="text-xs text-gray-500 mr-2">Spice:</span>
-                                    <span className="text-red-500">
-                                      {item.spiceLevel === 'Mild' && '🌶️'}
-                                      {item.spiceLevel === 'Medium' && '🌶️🌶️'}
-                                      {item.spiceLevel === 'Hot' && '🌶️🌶️🌶️'}
-                                    </span>
-                                  </div>
-                                  <span className="text-xs bg-white px-2 py-1 rounded-full border border-gray-200 font-medium">
-                                    Qty: {item.quantity}
-                                  </span>
-                                </div>
-                              )}
-                              
-                              {/* Modifiers */}
-                              {item.modifiers && item.modifiers.length > 0 && item.modifiers.some(modifier => modifier.name !== "Spice Level") && (
-                                <div className="mt-2">
-                                  <div className="text-xs text-gray-500 mb-1 font-medium">Modifiers:</div>
-                                  <div className="bg-gray-50 rounded-md p-2 space-y-1">
-                                    {item.modifiers.filter(modifier => 
-                                      modifier.name !== "Spice Level"
-                                    ).map((modifier, modIndex) => (
-                                      <div key={modIndex}>
-                                        {modifier.options.map((option, optIndex) => (
-                                          <div 
-                                            key={`${modifier.name}-${option.name}-${optIndex}`} 
-                                            className="flex justify-between items-center py-1 px-1 text-xs border-b border-gray-100 last:border-b-0"
-                                          >
-                                            <span className="text-gray-700">{option.name || modifier.name}</span>
-                                            {((option.price && option.price > 0) || (option.modified_price && option.modified_price > 0)) && (
-                                              <span className="font-medium text-gray-900">
-                                                +${option.modified_price && option.modified_price > 0 ? 
-                                                  (option.modified_price * item.quantity).toFixed(2) : 
-                                                  ((option.price || 0) * item.quantity).toFixed(2)}
-                                              </span>
-                                            )}
-                                          </div>
-                                        ))}
-                                      </div>
-                                    ))}
-                                  </div>
-                                </div>
-                              )}
+                            ))
+                          : []
+                        )}
+                        
+                        {/* Then display spice level modifiers at the end with quantity */}
+                        {item.spiceLevel && (
+                          <div className="flex justify-between items-center py-0.5">
+                            <span className="flex items-center">
+                              <span className="ml-1 text-red-500">
+                                {item.spiceLevel === 'Mild' && '🌶️'}
+                                {item.spiceLevel === 'Medium' && '🌶️🌶️'}
+                                {item.spiceLevel === 'Hot' && '🌶️🌶️🌶️'}
+                              </span>
+                            </span>
+                            
+                            {/* Quantity display */}
+                            <div className="flex items-center">
+                              <span className="text-xs bg-gray-100 px-2 py-1 rounded-full">
+                                Qty: {item.quantity}
+                              </span>
                             </div>
                           </div>
-                        </div>
-                      ))}
-                    </div>
+                        )}
+                        
+                        {/* Add quantity display for items without spice level */}
+                        {!item.spiceLevel && (
+                          <div className="mt-2 flex justify-end">
+                            <span className="text-xs bg-gray-100 px-2 py-1 rounded-full">
+                              Qty: {item.quantity}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    
+                    {/* Add quantity display for items without modifiers */}
+                    {(!item.modifiers || item.modifiers.length === 0) && !item.spiceLevel && (
+                      <div className="mt-2 flex justify-end">
+                        <span className="text-xs bg-gray-100 px-2 py-1 rounded-full">
+                          Qty: {item.quantity}
+                        </span>
+                      </div>
+                    )}
                   </div>
-                </div>
-              ))}
-            </div>
-          </div>
+                </li>
+              ))
+            ))}
+          </ul>
         )}
       </div>
       
-      {/* Fixed Bottom Bar */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 flex justify-between items-center">
-        <div>
-          <div className="text-sm text-gray-600">Total Amount</div>
-          <div className="text-xl font-bold text-red-500">
-            ${orders.length > 0 
-              ? orders.reduce((sum, order) => sum + (order.total || 0), 0)?.toFixed(2) 
-              : '0.00'}
+      {/* Footer */}
+      {orders.length > 0 && (
+        <div className="border-t p-4 z-10">
+          <div className="flex justify-between mb-4">
+            <span className="font-semibold">Total</span>
+            <span className="font-semibold">
+              ${orders.length > 0 
+                ? orders.reduce((sum, order) => sum + (order.total || 0), 0)?.toFixed(2) 
+                : '0.00'}
+            </span>
+          </div>
+          
+          {/* Action Buttons */}
+          <div className="flex space-x-3">
+            <button 
+              className="flex-1 bg-red-500 text-white py-3 rounded-full font-medium hover:bg-red-600 transition-colors"
+              onClick={handleContinue}
+            >
+              Continue Shopping
+            </button>
+            <button 
+              className="flex-1 bg-gray-800 text-white py-3 rounded-full font-medium hover:bg-gray-900 transition-colors"
+              onClick={() => setShowBill(true)}
+            >
+              Pay Bill
+            </button>
           </div>
         </div>
-        <div className="flex space-x-3">
-          <button 
-            className="bg-red-500 text-sm text-white px-4 py-2 rounded-full font-medium hover:bg-red-600 transition-colors"
-            onClick={onClose}
-          >
-            Continue
-          </button>
-          <button 
-            className="bg-gray-800 text-sm text-white px-4 py-2 rounded-full font-medium hover:bg-gray-900 transition-colors"
-            onClick={() => setShowBill(true)}
-          >
-            Pay Bill
-          </button>
-        </div>
-      </div>
+      )}
+      
       {/* Bill Popup */}
       {showBill && orders.length > 0 && (
         <BillComponent 
