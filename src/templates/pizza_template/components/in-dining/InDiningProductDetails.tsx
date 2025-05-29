@@ -301,7 +301,7 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
       >
         <div className="relative">
           {/* Title Bar - Visible on all screen sizes */}
-          <div className="sticky top-0 z-10 bg-black bg-opacity-90 backdrop-blur-sm shadow-md px-4 py-3 flex items-center justify-between">
+          <div className="sticky top-0 z-40 bg-black bg-opacity-90 backdrop-blur-sm shadow-md px-4 py-3 flex items-center justify-between">
             <div className="flex items-center">
               <button
                 onClick={onClose}
