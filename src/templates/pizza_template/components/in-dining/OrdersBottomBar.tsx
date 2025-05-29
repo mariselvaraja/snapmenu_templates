@@ -44,7 +44,7 @@ const OrdersBottomBar: React.FC<any> = ({ onViewOrders, orders, historyLoading, 
           {/* View Orders Button */}
           <button
             onClick={onViewOrders}
-            className="flex text-sm items-center gap-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-full transition-colors cursor-pointer"
+            className="flex text-lg items-center gap-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 transition-colors cursor-pointer"
           >
             View Orders
             <ChevronRight className="h-4 w-4" />
