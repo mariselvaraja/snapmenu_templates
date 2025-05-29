@@ -27,6 +27,13 @@ export default function ProductDetail() {
     const product = items.find((item:any) => item.pk_id === productId);
     // State for success notification
     const [showSuccessNotification, setShowSuccessNotification] = useState(false);
+    const { rawApiResponse } = useAppSelector(state => state.siteContent);
+      // Get site content from Redux state
+      const siteContent = rawApiResponse ? 
+      (typeof rawApiResponse === 'string' ? JSON.parse(rawApiResponse) : rawApiResponse) : 
+      {};
+    const siteConfiguration = siteContent?.siteConfiguration;
+    const showPrice = siteConfiguration?.hidePriceInWebsite? false:  siteConfiguration?.hidePriceInProductDetails?false:true;
     
     console.log("product", product)
     
@@ -394,6 +401,7 @@ export default function ProductDetail() {
                             currentProductId={productId || ''} 
                             allItems={items} 
                             product={product} 
+                            showPrice={showPrice}
                         />
                     </div>
 
@@ -415,6 +423,7 @@ export default function ProductDetail() {
                             showRecommendedProducts={true}
                             currentProductId={productId || ''}
                             allItems={items}
+                            showPrice={showPrice}
                         />
                         {/* Success Notification */}
                         <AnimatePresence>

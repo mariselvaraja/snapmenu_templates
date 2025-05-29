@@ -41,19 +41,22 @@ export default function Home() {
   const [currentPopularItemIndex, setCurrentPopularItemIndex] = useState(0);
   const dispatch = useAppDispatch();
   const { items: menuItems, loading: menuLoading } = useAppSelector(state => state.menu);
-  const { rawApiResponse } = useAppSelector(state => state.siteContent);
+  
 
   const {isPaymentAvilable} = usePayment();
-  
+  const { rawApiResponse } = useAppSelector(state => state.siteContent);
   // Get site content from Redux state
   const siteContent = rawApiResponse ? 
     (typeof rawApiResponse === 'string' ? JSON.parse(rawApiResponse) : rawApiResponse) : 
     {};
   const homepage = siteContent.homepage;
+  const siteConfiguration = siteContent?.siteConfiguration;
+  const showPrice = siteConfiguration?.hidePriceInWebsite? false:  siteConfiguration?.hidePriceInHome?false:true;
   const heroData = homepage?.hero;
   const experienceCard: ExperienceCard = homepage?.experience || {};
   const popularItems: any = homepage?.popularItems || {};
   const offers: any = homepage?.offers?.offers || [];
+  
   
 
   
@@ -73,57 +76,6 @@ export default function Home() {
   
   
   const currentBanner = banners[currentBannerIndex];
-
-  // Function to render a menu item card
-  const renderMenuItemCard = (menuItem: any, index: number, isCarousel: boolean = false) => {
-    return (
-      <motion.div
-        key={index}
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: index * (isCarousel ? 0.1 : 0.2) }}
-        className={`bg-white rounded-lg overflow-hidden shadow-lg ${isCarousel ? 'flex-shrink-0 w-80' : ''}`}
-      >
-        <Link to={`/product/${menuItem.id}`}>
-          {menuItem.image ? (
-            <img
-              src={menuItem.image}
-              alt={menuItem.name}
-              className="w-full h-48 object-cover"
-            />
-          ) : (
-            <div className="w-full h-48 bg-red-100 flex items-center justify-center text-4xl font-bold text-red-500">
-              {menuItem.name.charAt(0)}
-            </div>
-          )}
-          <div className="p-6">
-            <h3 className="text-xl font-semibold mb-2">{menuItem.name}</h3>
-            <p className="text-gray-600 mb-4">{menuItem.description}</p>
-            <div className="flex items-center justify-between">
-              <span className="text-lg font-bold text-red-500">${menuItem.price}</span>
-            { isPaymentAvilable && <button
-                className="inline-flex items-center bg-red-500 text-white px-3 py-1 rounded-full hover:bg-red-600 transition-colors"
-                onClick={(e) => {
-                  e.preventDefault();
-                  const cartItem: CartItem = {
-                    id: menuItem.id,
-                    name: menuItem.name,
-                    price: menuItem.price,
-                    image: menuItem.image,
-                    quantity: 1,
-                  };
-                  dispatch(addItem(cartItem));
-                }}
-              >
-                <ShoppingCart className="h-4 w-4 mr-1" />
-                Add to Cart
-              </button>}
-            </div>
-          </div>
-        </Link>
-      </motion.div>
-    );
-  };
 
   // Fallback menu items
   const fallbackMenuItems = [
@@ -324,7 +276,7 @@ export default function Home() {
                               <h3 className="text-xl font-semibold mb-2">{menuItem.name}</h3>
                               <p className="text-gray-600 mb-4">{menuItem.description}</p>
                               <div className="flex items-center justify-between">
-                                <span className="text-lg font-bold text-red-500">${menuItem.price}</span>
+                               { (!siteConfiguration?.hidePriceInWebsite)? (!siteConfiguration?.hidePriceInHome)?<span className="text-lg font-bold text-red-500">${menuItem.price}</span>:null:null}
                              {  isPaymentAvilable && <button
                                   className="inline-flex items-center bg-red-500 text-white px-3 py-1 rounded-full hover:bg-red-600 transition-colors"
                                   onClick={(e) => {
@@ -451,9 +403,9 @@ export default function Home() {
                                             {menuItem.name.charAt(0)}
                                           </div>
                                         )}
-                                        <div className="absolute top-4 right-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
+                                      { showPrice && <div className="absolute top-4 right-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
                                           ${menuItem.price}
-                                        </div>
+                                        </div>}
                                       </div>
                                       <div className="p-6 flex-grow">
                                         <h3 className="text-2xl font-semibold mb-2">{menuItem.name}</h3>

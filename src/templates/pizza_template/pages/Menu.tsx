@@ -32,6 +32,15 @@ export default function Menu() {
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
+
+    const { rawApiResponse } = useAppSelector(state => state.siteContent);
+    // Get site content from Redux state
+    const siteContent = rawApiResponse ? 
+      (typeof rawApiResponse === 'string' ? JSON.parse(rawApiResponse) : rawApiResponse) : 
+      {};
+    const homepage = siteContent.homepage;
+    const siteConfiguration = siteContent?.siteConfiguration;
+    const showPrice = siteConfiguration?.hidePriceInWebsite? false:  siteConfiguration?.hidePriceInMenu?false:true;
     
     // Get menu data and cart items from Redux store
     const { items, loading, error } = useAppSelector(state => state.menu);
@@ -417,7 +426,7 @@ export default function Menu() {
                                             {item.name}
                                         </h3>
                                     </div>
-                                    <span className="text-lg font-bold text-red-500">${item.price}</span>
+                                  { showPrice &&  <span className="text-lg font-bold text-red-500">${item.price}</span>}
                                 </div>
                                 <p 
                                     className="text-gray-600 mb-4 line-clamp-2 cursor-pointer hover:text-gray-800 transition-colors"

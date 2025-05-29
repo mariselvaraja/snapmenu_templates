@@ -13,7 +13,8 @@ interface RecommendedProductsProps {
 const RecommendedProducts: React.FC<any> = ({ 
     currentProductId, 
     allItems, 
-    product 
+    product,
+    showPrice 
 }) => {
     const navigate = useNavigate();
 
@@ -142,7 +143,7 @@ const RecommendedProducts: React.FC<any> = ({
                             )}
                             <div>
                                 <h3 className="font-medium text-sm">{item.name}</h3>
-                                <p className="text-red-500 text-xs">${item.price}</p>
+                               {showPrice && <p className="text-red-500 text-xs">${item.price}</p>}
                             </div>
                         </div>
                     </div>
@@ -176,7 +177,7 @@ const RecommendedProducts: React.FC<any> = ({
                                 )}
                                 <div>
                                     <h3 className="font-medium text-xs leading-tight mb-1 line-clamp-2">{item.name}</h3>
-                                    <p className="text-red-500 text-xs font-semibold">${item.price}</p>
+                                    { showPrice && <p className="text-red-500 text-xs font-semibold">${item.price}</p>}
                                 </div>
                             </div>
                         </div>

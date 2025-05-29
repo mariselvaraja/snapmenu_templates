@@ -31,6 +31,7 @@ interface ProductHeaderProps {
     currentProductId?: string;
     allItems?: MenuItem[];
     isPaymentAvilable?: boolean;
+    showPrice?:boolean;
 }
 
 const ProductHeader: React.FC<ProductHeaderProps> = ({
@@ -46,7 +47,8 @@ const ProductHeader: React.FC<ProductHeaderProps> = ({
     showRecommendedProducts = false,
     currentProductId = '',
     allItems = [],
-    isPaymentAvilable
+    isPaymentAvilable,
+    showPrice
 }) => {
     const dispatch = useAppDispatch();
     
@@ -95,8 +97,8 @@ const ProductHeader: React.FC<ProductHeaderProps> = ({
                     <p className="text-gray-700 mb-2 text-sm sm:text-base">{product.description}</p>
                     
                   { modifiersList && modifiersList?.length !=0  && <div className="text-lg sm:text-xl font-bold text-red-500 mb-3">
-                        <span className="text-gray-700 font-normal mr-2">Price:</span>
-                        {formatToDollar(product.price)}
+                      {showPrice && <>  <span className="text-gray-700 font-normal mr-2">Price:</span>
+                        {formatToDollar(product.price)}</>}
                     </div>}
                 </div>
                 
@@ -115,7 +117,7 @@ const ProductHeader: React.FC<ProductHeaderProps> = ({
                 
          {       <div className="hidden lg:flex flex-col sm:flex-row sm:items-center sm:justify-between mt-4 mb-4 gap-3 sm:gap-0">
                     <div>
-                        <div className="text-xl sm:text-2xl font-bold text-red-500">${(typeof calculateTotalPrice() === 'number' ? calculateTotalPrice() : 0).toFixed(2)}</div>
+                     { showPrice &&  <div className="text-xl sm:text-2xl font-bold text-red-500">${(typeof calculateTotalPrice() === 'number' ? calculateTotalPrice() : 0).toFixed(2)}</div>}
                     </div>
                     
                    { isPaymentAvilable &&   <div>
@@ -219,9 +221,9 @@ const ProductHeader: React.FC<ProductHeaderProps> = ({
                             )}
                             <h1 className="text-2xl sm:text-3xl font-bold">{product.name}</h1>
                         </div>
-                        <div className="text-lg sm:text-xl font-bold text-red-500 flex-shrink-0">
+                    { showPrice &&    <div className="text-lg sm:text-xl font-bold text-red-500 flex-shrink-0">
                             {formatToDollar(product.price)}
-                        </div>
+                        </div>}
                     </div>
                     <p className="text-gray-700 mb-4 text-sm sm:text-base">{product.description}</p>
                     
@@ -240,7 +242,7 @@ const ProductHeader: React.FC<ProductHeaderProps> = ({
                     
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-4 mb-4 gap-3 sm:gap-0">
                         <div>
-                            <div className="text-xl sm:text-2xl font-bold text-red-500">${(typeof calculateTotalPrice() === 'number' ? calculateTotalPrice() : 0).toFixed(2)}</div>
+                           {showPrice && <div className="text-xl sm:text-2xl font-bold text-red-500">${(typeof calculateTotalPrice() === 'number' ? calculateTotalPrice() : 0).toFixed(2)}</div>}
                         </div>
                         
                         {/* Add to Cart button or Quantity Controls */}
