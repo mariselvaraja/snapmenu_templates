@@ -51,6 +51,7 @@ export default function Home() {
     {};
   const homepage = siteContent.homepage;
   const siteConfiguration = siteContent?.siteConfiguration;
+  console.log("siteConfiguration", siteConfiguration)
   const showPrice = siteConfiguration?.hidePriceInWebsite? false:  siteConfiguration?.hidePriceInHome?false:true;
   const heroData = homepage?.hero;
   const experienceCard: ExperienceCard = homepage?.experience || {};

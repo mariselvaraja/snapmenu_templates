@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Box, Check, ChevronDown, ChevronUp } from 'lucide-react';
 import { FaPepperHot } from 'react-icons/fa';
 import { Modifier, ModifierOption } from './types';
+import { useAppSelector } from '@/redux';
 
 interface ModifiersListProps {
     modifiersList: Modifier[];
@@ -15,6 +16,7 @@ interface ModifiersListProps {
     product?: any; // Add product prop to access is_spice_applicable
 }
 
+
 const ModifiersList: React.FC<ModifiersListProps> = ({ 
     modifiersList, 
     handleModifierOptionSelect, 
@@ -24,6 +26,16 @@ const ModifiersList: React.FC<ModifiersListProps> = ({
     validationErrors = {},
     product
 }) => {
+
+    const { rawApiResponse } = useAppSelector(state => state.siteContent);
+    // Get site content from Redux state
+    const siteContent = rawApiResponse ? 
+      (typeof rawApiResponse === 'string' ? JSON.parse(rawApiResponse) : rawApiResponse) : 
+      {};
+    const homepage = siteContent.homepage;
+    const siteConfiguration = siteContent?.siteConfiguration;
+    const showPrice = siteConfiguration?.hidePriceInWebsite? false:  siteConfiguration?.hidePriceInMenu?false:true;
+
     // Create a local copy of validation errors that we can update
     const [localValidationErrors, setLocalValidationErrors] = useState<{
         [key: string]: boolean;
@@ -240,7 +252,7 @@ const ModifiersList: React.FC<ModifiersListProps> = ({
                                             <div className="font-medium flex items-center justify-center line-clamp-1">
                                                 {displayName}
                                             </div>
-                                            {option.price !== undefined && parseFloat(String(option.price)) > 0 && (
+                                            {showPrice && option.price !== undefined && parseFloat(String(option.price)) > 0 && (
                                                 <div className="text-sm text-gray-600 ml-auto">
                                                     (+${typeof option.price === 'number' && !isNaN(option.price) 
                                                         ? option.price.toFixed(2) 
@@ -309,7 +321,7 @@ const ModifiersList: React.FC<ModifiersListProps> = ({
                                                     <div className="font-medium flex items-center justify-center line-clamp-1">
                                                         {displayName}
                                                     </div>
-                                                    {option.price !== undefined && parseFloat(String(option.price)) > 0 && (
+                                                    {showPrice && option.price !== undefined && parseFloat(String(option.price)) > 0 && (
                                                         <div className="text-sm text-gray-600 ml-auto">
                                                             (+${typeof option.price === 'number' && !isNaN(option.price) 
                                                                 ? option.price.toFixed(2) 

@@ -304,6 +304,17 @@ export default function ModifierModal({ isOpen, onClose, menuItem }: ModifierMod
     }
   };
 
+
+  const { rawApiResponse } = useAppSelector(state => state.siteContent);
+  // Get site content from Redux state
+  const siteContent = rawApiResponse ? 
+    (typeof rawApiResponse === 'string' ? JSON.parse(rawApiResponse) : rawApiResponse) : 
+    {};
+  const homepage = siteContent.homepage;
+  const siteConfiguration = siteContent?.siteConfiguration;
+  const showPrice = siteConfiguration?.hidePriceInWebsite? false:  siteConfiguration?.hidePriceInMenu?false:true;
+
+
   // Calculate additional price from modifiers
   const calculateAdditionalPrice = () => {
     return selectedModifiers.reduce((total, modifier) => {
@@ -407,7 +418,7 @@ export default function ModifierModal({ isOpen, onClose, menuItem }: ModifierMod
                               )}
                             </div>
                           </div>
-                          {typeof option.price === 'number' && option.price > 0 && (
+                          {showPrice && typeof option.price === 'number' && option.price > 0 && (
                             <div className="text-sm text-gray-600 ml-auto">+{option.price?.toFixed(2)}</div>
                           )}
                         </button>
@@ -456,7 +467,7 @@ export default function ModifierModal({ isOpen, onClose, menuItem }: ModifierMod
                             <div className="font-medium flex items-center justify-center line-clamp-1">
                               {option.name}
                             </div>
-                            { option.price !== undefined && (
+                            {showPrice && option.price !== undefined && (
                               <div className="text-sm text-gray-600 ml-auto">(+{typeof option.price === 'number' ? "$"+option.price?.toFixed(2) : option.price})</div>
                             )}
                           </button>
@@ -517,7 +528,7 @@ export default function ModifierModal({ isOpen, onClose, menuItem }: ModifierMod
                               )}
                             </div>
                           </div>
-                          {typeof option.price === 'number' && option.price > 0 && (
+                          {showPrice && typeof option.price === 'number' && option.price > 0 && (
                             <div className="text-sm text-gray-600 ml-auto">+{option.price?.toFixed(2)}</div>
                           )}
                         </button>
@@ -562,7 +573,7 @@ export default function ModifierModal({ isOpen, onClose, menuItem }: ModifierMod
                           <div className="font-medium flex items-center justify-center line-clamp-1">
                             {option.name}
                           </div>
-                          { option.price !== undefined && (
+                          {showPrice && option.price !== undefined && (
                             <div className="text-sm text-gray-600 ml-auto">(+{typeof option.price === 'number' ? "$"+option.price?.toFixed(2) : option.price})</div>
                           )}
                         </button>
