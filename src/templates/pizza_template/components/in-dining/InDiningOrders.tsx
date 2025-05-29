@@ -434,7 +434,7 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
               className="flex-1 bg-red-500 text-white py-3 rounded-full font-medium hover:bg-red-600 transition-colors"
               onClick={handleContinue}
             >
-              Continue Shopping
+              Continue
             </button>
             <button 
               className="flex-1 bg-gray-800 text-white py-3 rounded-full font-medium hover:bg-gray-900 transition-colors"
