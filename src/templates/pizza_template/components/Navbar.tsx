@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, ShoppingCart, Search, Utensils, Pizza } from 'lucide-react';
 import { useAppSelector, useAppDispatch } from '../../../redux';
 import { toggleDrawer } from '../../../redux/slices/cartSlice';
@@ -14,7 +14,22 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const { rawApiResponse } = useAppSelector(state => state.siteContent);
 
+  const [isCtbiriyani, setIsCtbiriyani] = useState(false);
+
   const {isPaymentAvilable} = usePayment();
+
+
+  useEffect(() => {
+    const url = window.location.href;
+    const { hostname } = new URL(url);
+    const domainParts = hostname.split('.');
+
+    if (domainParts.length > 2) {
+      const sub = domainParts.slice(0, -2).join('.');
+      setIsCtbiriyani(sub.includes('ctbiryani'));
+    }
+  }, []);
+
   
   // Get site content from Redux state
   const siteContent = rawApiResponse ? 
@@ -73,6 +88,13 @@ export default function Navbar() {
               >
                 <Search className="h-6 w-6" />
               </button>
+              
+              <a
+              href="https://ctbiryani.square.site/"
+              className="block px-3 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition-colors text-center mx-3 mt-2"
+            >
+              Order Online
+            </a>
         {  isPaymentAvilable &&    <button
                 onClick={() => dispatch(toggleDrawer())}
                 className="relative hover:text-red-500 transition-colors"
@@ -110,6 +132,12 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
+            <a
+              href="https://ctbiryani.square.site/"
+              className="block px-3 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition-colors text-center mx-3 mt-2"
+            >
+              Order Online
+            </a>
             <div className="flex justify-center mt-4 space-x-4">
               <button 
                 onClick={() => dispatch(openSearchModal())}
