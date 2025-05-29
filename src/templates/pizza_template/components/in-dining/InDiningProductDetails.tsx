@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { X, Plus, Minus, ArrowLeft, Heart, ShoppingCart, Check, Activity, ChevronDown, ChevronUp, Box, AlertTriangle } from 'lucide-react';
 import { FaPepperHot } from "react-icons/fa";
@@ -199,32 +199,7 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
   const location = useLocation();
   const tableNumber = sessionStorage.getItem('Tablename');
   
-  // Refs for URL bar hiding
-  const isMobileRef = useRef(false);
-  const isComponentMountedRef = useRef(false);
-  
-  // Function to hide URL bar on mobile
-  const hideUrlBar = useRef(() => {
-    if (isMobileRef.current && isComponentMountedRef.current) {
-      // For fixed positioned elements, we need to temporarily change the body height
-      // to allow scrolling and then hide the URL bar
-      const originalHeight = document.body.style.height;
-      const originalOverflow = document.body.style.overflow;
-      
-      // Temporarily make body scrollable
-      document.body.style.height = '101vh';
-      document.body.style.overflow = 'auto';
-      
-      // Scroll to hide URL bar
-      window.scrollTo(0, 1);
-      
-      // Restore original styles after a short delay
-      setTimeout(() => {
-        document.body.style.height = originalHeight;
-        document.body.style.overflow = originalOverflow;
-      }, 100);
-    }
-  }).current;
+
 
   // Helper function to check if spice level should be shown based on is_spice_applicable
   const shouldShowSpiceLevel = () => {
@@ -292,62 +267,7 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
     }
   };
   
-  // Check if device is mobile and set up URL bar hiding
-  useEffect(() => {
-    isComponentMountedRef.current = true;
-    
-    const checkMobile = () => {
-      isMobileRef.current = window.innerWidth <= 768;
-      if (isMobileRef.current) {
-        hideUrlBar();
-      }
-    };
-    
-    // Handle scroll events to hide URL bar
-    const handleScroll = () => {
-      if (isMobileRef.current && isComponentMountedRef.current) {
-        hideUrlBar();
-      }
-    };
-    
-    // Check on mount
-    checkMobile();
-    
-    // Set up event listeners
-    window.addEventListener('resize', checkMobile);
-    window.addEventListener('load', hideUrlBar);
-    window.addEventListener('resize', hideUrlBar);
-    window.addEventListener('orientationchange', hideUrlBar);
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    window.addEventListener('touchmove', handleScroll, { passive: true });
-    
-    // Get the scrollable container and add scroll listeners
-    const scrollContainer = document.querySelector('.product-details-scroll-container');
-    if (scrollContainer) {
-      scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
-      scrollContainer.addEventListener('touchmove', handleScroll, { passive: true });
-    }
-    
-    // Initial attempts to hide URL bar with different timing
-    setTimeout(hideUrlBar, 100);
-    setTimeout(hideUrlBar, 300);
-    setTimeout(hideUrlBar, 1000);
-    
-    return () => {
-      isComponentMountedRef.current = false;
-      window.removeEventListener('resize', checkMobile);
-      window.removeEventListener('load', hideUrlBar);
-      window.removeEventListener('resize', hideUrlBar);
-      window.removeEventListener('orientationchange', hideUrlBar);
-      window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('touchmove', handleScroll);
-      
-      if (scrollContainer) {
-        scrollContainer.removeEventListener('scroll', handleScroll);
-        scrollContainer.removeEventListener('touchmove', handleScroll);
-      }
-    };
-  }, [hideUrlBar]);
+
   
   useEffect(() => {
     // Extract table number from URL query parameter or path parameter
