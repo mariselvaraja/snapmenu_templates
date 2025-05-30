@@ -27,13 +27,12 @@ const GET_PAYMENT_INFO = import.meta.env.VITE_GET_PAYMENT_INFO || "/getTpnConfig
 // Function to get domain from URL
 const getDomainFromUrl = () => {
   const url = window.location.href;
-  const { hostname } = new URL(url);
-        const domainParts = hostname.split('.');
- 
-        // Assuming the last two parts are the domain and TLD
-        if (domainParts.length > 2) {
-            return domainParts.slice(0, -2).join('.');
-        }
+  console.log("url", url)
+  // const { hostname } = new URL(url);
+  //       const domainParts = hostname.split('.');
+  //       if (domainParts.length > 2) {
+  //           return domainParts.slice(0, -2).join('.');
+  //       }
         // hunters
         return "ctbiryani"; // No subdomain present, use tonyspizza as default
 };
