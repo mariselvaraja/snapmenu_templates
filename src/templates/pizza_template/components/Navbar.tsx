@@ -21,12 +21,14 @@ export default function Navbar() {
 
   useEffect(() => {
     const url = window.location.href;
-    const { hostname } = new URL(url);
-    const domainParts = hostname.split('.');
 
-    if (domainParts.length > 2) {
-      const sub = domainParts.slice(0, -2).join('.');
-      setIsCtbiriyani(sub.includes('ctbiryani'));
+    if (url) {
+
+      setIsCtbiriyani(url.includes('ctbiryani'));
+    }
+    else
+    {
+      setIsCtbiriyani(false)
     }
   }, []);
 
@@ -89,12 +91,12 @@ export default function Navbar() {
                 <Search className="h-6 w-6" />
               </button>
               
-              <a
+            { isCtbiriyani &&  <a
               href="https://ctbiryani.square.site/"
               className="block px-3 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition-colors text-center mx-3 mt-2"
             >
               Order Online
-            </a>
+            </a>}
         {  isPaymentAvilable &&    <button
                 onClick={() => dispatch(toggleDrawer())}
                 className="relative hover:text-red-500 transition-colors"
@@ -132,12 +134,12 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
-            <a
+         { isCtbiriyani &&  <a
               href="https://ctbiryani.square.site/"
               className="block px-3 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition-colors text-center mx-3 mt-2"
             >
               Order Online
-            </a>
+            </a>}
             <div className="flex justify-center mt-4 space-x-4">
               <button 
                 onClick={() => dispatch(openSearchModal())}

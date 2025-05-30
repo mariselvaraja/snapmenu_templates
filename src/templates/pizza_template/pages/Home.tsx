@@ -50,7 +50,7 @@ export default function Home() {
     (typeof rawApiResponse === 'string' ? JSON.parse(rawApiResponse) : rawApiResponse) : 
     {};
   const homepage = siteContent.homepage;
-  const siteConfiguration = siteContent?.siteConfiguration;
+  const siteConfiguration = siteContent?.siteConfiguration; 
   console.log("siteConfiguration", siteConfiguration)
   const showPrice = siteConfiguration?.hidePriceInWebsite? false:  siteConfiguration?.hidePriceInHome?false:true;
   const heroData = homepage?.hero;

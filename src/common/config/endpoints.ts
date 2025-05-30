@@ -27,14 +27,28 @@ const GET_PAYMENT_INFO = import.meta.env.VITE_GET_PAYMENT_INFO || "/getTpnConfig
 // Function to get domain from URL
 const getDomainFromUrl = () => {
   const url = window.location.href;
-  console.log("url", url)
-  // const { hostname } = new URL(url);
-  //       const domainParts = hostname.split('.');
-  //       if (domainParts.length > 2) {
-  //           return domainParts.slice(0, -2).join('.');
-  //       }
-        // hunters
-        return "ctbiryani"; // No subdomain present, use tonyspizza as default
+  const { hostname } = new URL(url);
+
+  if(url.includes('ctbiryani'))
+  {
+    return 'ctbiryani'
+  }
+  else
+  {
+    const domainParts = hostname.split('.');
+    if (domainParts.length > 2) {
+      if(domainParts.indexOf('www') == -1)
+      {
+        return domainParts.slice(0, -2).join('.');
+      }
+      else
+      {
+        return domainParts[1]
+      }
+    }
+  }
+  
+   return "ctbiryani"; 
 };
 
 // Endpoint configuration object
@@ -53,7 +67,7 @@ export const endpoints = {
   cart: {
     placeOrder: `${API_BASE_URL}${PLACE_ORDER_API_PATH}`,
   },
-  
+
   // Restaurant endpoints
   restaurant: {
     getInfo: `${API_BASE_URL_AUTH}${RESTAURANT_DETAILS_API_PATH_PYTHON}?domain=${getDomainFromUrl()}`,

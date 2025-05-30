@@ -18,6 +18,11 @@ export default function Footer() {
   const navigation = navigationBar?.navigation;
   const footer = siteContent?.footer;
   const contact = siteContent?.contact;
+  const siteConfiguration = siteContent?.siteConfiguration; 
+
+  // hidePrivacyAndPolicy: true,
+  // hideCookiePolicy: true,
+  // hideTermsAndCondition: true
 
   console.log(" contact", contact)
   // Use only API data
@@ -128,6 +133,7 @@ export default function Footer() {
           )}
 
           {/* Social Links */}
+          <>
           {footerData?.social?.links && footerData.social.links.length > 0 && (
             <div className="backdrop-blur-sm bg-black/20 rounded-lg p-4 sm:p-6 shadow-xl border border-gray-800/30 transform transition-all duration-300 hover:shadow-red-900/10 hover:-translate-y-1 h-full flex flex-col sm:col-span-2 lg:col-span-1">
               <h3 className="text-lg sm:text-xl font-bold mb-4 sm:mb-6 text-white border-b border-red-500/30 pb-2 flex items-center">
@@ -161,12 +167,12 @@ export default function Footer() {
                 </div>
               </div>
             </div>
-          )}
+          )}</>
         </div>
 
         {/* Policy Links */}
-        <div className="flex flex-wrap justify-center items-center gap-8 mb-10 max-w-4xl mx-auto">
-          {footerData?.privacyPolicy && (
+      { siteConfiguration?.hidePrivacyAndPolicy || siteConfiguration?.hideTermsAndCondition || siteConfiguration?.hideCookiePolicy &&  <div className="flex flex-wrap justify-center items-center gap-8 mb-10 max-w-4xl mx-auto">
+          {siteConfiguration?.hidePrivacyAndPolicy && footerData?.privacyPolicy && (
             <button 
               onClick={() => setActivePolicy('privacy')}
               className="text-gray-400 hover:text-white text-sm transition-colors duration-300 hover:underline underline-offset-4"
@@ -174,7 +180,7 @@ export default function Footer() {
               Privacy Policy
             </button>
           )}
-          {footerData?.termsConditions && (
+          {siteConfiguration?.hideTermsAndCondition && footerData?.termsConditions && (
             <button 
               onClick={() => setActivePolicy('terms')}
               className="text-gray-400 hover:text-white text-sm transition-colors duration-300 hover:underline underline-offset-4"
@@ -182,7 +188,7 @@ export default function Footer() {
               Terms & Conditions
             </button>
           )}
-          {footerData?.cookiePolicy && (
+          {siteConfiguration?.hideCookiePolicy && footerData?.cookiePolicy && (
             <button 
               onClick={() => setActivePolicy('cookie')}
               className="text-gray-400 hover:text-white text-sm transition-colors duration-300 hover:underline underline-offset-4"
@@ -190,7 +196,7 @@ export default function Footer() {
               Cookie Policy
             </button>
           )}
-        </div>
+        </div>}
 
 
         {/* Copyright Section with horizontal line */}
