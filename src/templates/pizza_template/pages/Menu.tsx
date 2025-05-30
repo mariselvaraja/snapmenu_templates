@@ -437,7 +437,7 @@ export default function Menu() {
                                 >
                                     {item.description}
                                 </p>
-                             {  isPaymentAvilable && <div className="flex items-center justify-between">
+                             { showPrice &&  isPaymentAvilable && <div className="flex items-center justify-between">
                                     
                                     {/* Add button or quantity controls */}
                                     {!cartItems.find((cartItem:any) => cartItem.id === item.id && cartItem.quantity > 0) ? (

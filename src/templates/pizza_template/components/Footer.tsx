@@ -20,6 +20,8 @@ export default function Footer() {
   const contact = siteContent?.contact;
   const siteConfiguration = siteContent?.siteConfiguration; 
 
+  console.log("siteConfiguration", rawApiResponse)
+
   // hidePrivacyAndPolicy: true,
   // hideCookiePolicy: true,
   // hideTermsAndCondition: true
@@ -171,8 +173,8 @@ export default function Footer() {
         </div>
 
         {/* Policy Links */}
-      { siteConfiguration?.hidePrivacyAndPolicy || siteConfiguration?.hideTermsAndCondition || siteConfiguration?.hideCookiePolicy &&  <div className="flex flex-wrap justify-center items-center gap-8 mb-10 max-w-4xl mx-auto">
-          {siteConfiguration?.hidePrivacyAndPolicy && footerData?.privacyPolicy && (
+      {   <div className="flex flex-wrap justify-center items-center gap-8 mb-10 max-w-4xl mx-auto">
+          {!siteConfiguration?.hidePrivacyAndPolicy && footerData?.privacyPolicy && (
             <button 
               onClick={() => setActivePolicy('privacy')}
               className="text-gray-400 hover:text-white text-sm transition-colors duration-300 hover:underline underline-offset-4"
@@ -180,7 +182,7 @@ export default function Footer() {
               Privacy Policy
             </button>
           )}
-          {siteConfiguration?.hideTermsAndCondition && footerData?.termsConditions && (
+          {!siteConfiguration?.hideTermsAndCondition && footerData?.termsConditions && (
             <button 
               onClick={() => setActivePolicy('terms')}
               className="text-gray-400 hover:text-white text-sm transition-colors duration-300 hover:underline underline-offset-4"
@@ -188,7 +190,7 @@ export default function Footer() {
               Terms & Conditions
             </button>
           )}
-          {siteConfiguration?.hideCookiePolicy && footerData?.cookiePolicy && (
+          {!siteConfiguration?.hideCookiePolicy && footerData?.cookiePolicy && (
             <button 
               onClick={() => setActivePolicy('cookie')}
               className="text-gray-400 hover:text-white text-sm transition-colors duration-300 hover:underline underline-offset-4"

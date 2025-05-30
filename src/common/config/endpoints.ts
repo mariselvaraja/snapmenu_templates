@@ -48,7 +48,7 @@ const getDomainFromUrl = () => {
     }
   }
   
-   return "ctbiryani"; 
+   return "annapurna"; 
 };
 
 // Endpoint configuration object

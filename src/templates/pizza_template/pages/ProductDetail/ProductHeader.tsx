@@ -120,7 +120,7 @@ const ProductHeader: React.FC<ProductHeaderProps> = ({
                      { showPrice &&  <div className="text-xl sm:text-2xl font-bold text-red-500">${(typeof calculateTotalPrice() === 'number' ? calculateTotalPrice() : 0).toFixed(2)}</div>}
                     </div>
                     
-                   { isPaymentAvilable &&   <div>
+                   {showPrice && isPaymentAvilable &&   <div>
                     {!cartItem ? (
                         <button
                             onClick={handleAddToCart}

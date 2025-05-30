@@ -278,23 +278,28 @@ export default function Home() {
                               <p className="text-gray-600 mb-4">{menuItem.description}</p>
                               <div className="flex items-center justify-between">
                                { (!siteConfiguration?.hidePriceInWebsite)? (!siteConfiguration?.hidePriceInHome)?<span className="text-lg font-bold text-red-500">${menuItem.price}</span>:null:null}
-                             {  isPaymentAvilable && <button
-                                  className="inline-flex items-center bg-red-500 text-white px-3 py-1 rounded-full hover:bg-red-600 transition-colors"
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    const cartItem: CartItem = {
-                                      id: menuItem.id,
-                                      name: menuItem.name,
-                                      price: menuItem.price,
-                                      image: menuItem.image,
-                                      quantity: 1,
-                                    };
-                                    dispatch(addItem(cartItem));
-                                  }}
-                                >
-                                  <ShoppingCart className="h-4 w-4 mr-1" />
-                                  Add to Cart
-                                </button>}
+                               {!siteConfiguration?.hidePriceInWebsite && !siteConfiguration?.hidePriceInHome && (
+  isPaymentAvilable && (
+    <button
+      className="inline-flex items-center bg-red-500 text-white px-3 py-1 rounded-full hover:bg-red-600 transition-colors"
+      onClick={(e) => {
+        e.preventDefault();
+        const cartItem: CartItem = {
+          id: menuItem.id,
+          name: menuItem.name,
+          price: menuItem.price,
+          image: menuItem.image,
+          quantity: 1,
+        };
+        dispatch(addItem(cartItem));
+      }}
+    >
+      <ShoppingCart className="h-4 w-4 mr-1" />
+      Add to Cart
+    </button>
+  )
+)}
+
                               </div>
                             </div>
                           </Link>
