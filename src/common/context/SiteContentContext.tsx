@@ -1,6 +1,5 @@
 import { createContext, useContext, ReactNode, useState, useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '../../common/redux';
-import { fetchSiteContentRequest, SiteContent } from '../../common/redux/slices/siteContentSlice';
 
 // Define types for the UI site content structure
 export interface UISiteContent {
@@ -253,14 +252,9 @@ interface SiteContentProviderProps {
 
 // Provider component that will wrap the app
 export function SiteContentProvider({ children }: SiteContentProviderProps) {
-  const dispatch = useAppDispatch();
+  
   const { content, rawApiResponse, loading, error } = useAppSelector(state => state.siteContent);
   const [siteContent, setSiteContent] = useState<UISiteContent | undefined>(undefined);
-
-  // Site content data is now fetched directly in App.jsx
-  // useEffect(() => {
-  //   dispatch(fetchSiteContentRequest());
-  // }, [dispatch]);
 
   // Transform API data to UI format when content changes
   useEffect(() => {

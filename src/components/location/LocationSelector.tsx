@@ -5,6 +5,7 @@ import { useAppDispatch } from '../../common/redux/hooks';
 import { useSelector } from 'react-redux';
 import { fetchSiteContentRequest } from '../../common/redux/slices/siteContentSlice';
 import { fetchMenuRequest } from '../../common/redux/slices/menuSlice';
+import { fetchTpnConfigRequest } from '@/redux/slices/tpnSlice';
 
 
 // Define location interface
@@ -82,9 +83,10 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
     sessionStorage.setItem('franchise_id', location.id);
     
     // After location is selected, fetch site content and menu data
+    dispatch(fetchTpnConfigRequest())
     dispatch(fetchSiteContentRequest());
     dispatch(fetchMenuRequest());
-    
+
     // Call the parent callback
     onSelectLocation(location);
   };

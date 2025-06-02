@@ -224,14 +224,7 @@ export default function Checkout() {
                 <p className="text-xl text-gray-600 mb-8">{orderResponse.message}</p>
               )}
               
-              <div className="flex flex-col sm:flex-row justify-center gap-4">
-                <button
-                  onClick={() => setShowPaymentPopup(true)}
-                  className="bg-red-500 text-white px-8 py-3 rounded-full font-semibold hover:bg-red-600 transition-colors"
-                >
-                  Make Payment
-                </button>
-                
+              <div className="flex flex-col sm:flex-row justify-center gap-4">  
                 <Link
                   to="/"
                   className="bg-gray-200 text-gray-800 px-8 py-3 rounded-full font-semibold hover:bg-gray-300 transition-colors"

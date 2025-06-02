@@ -112,12 +112,6 @@ const TemplateContent = () => {
         dispatch(fetchSiteContentRequest());
         dispatch(fetchMenuRequest());
     }
-    else
-    {
-      dispatch(fetchTpnConfigRequest());
-      dispatch(fetchSiteContentRequest());
-      dispatch(fetchMenuRequest());
-    }
   }, [restaurantState.info, dispatch]);
 
   // Check if current URL includes placeindiningorder

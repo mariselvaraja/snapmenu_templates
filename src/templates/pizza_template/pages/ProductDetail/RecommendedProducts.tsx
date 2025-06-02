@@ -21,28 +21,24 @@ const RecommendedProducts: React.FC<any> = ({
     const getRecommendedItems = (): MenuItem[] => {
         // Extract best combo SKU IDs from the product
         let recommendedSkuIds: string[] = [];
+
+
         
         // First try to use best_combo_ids if available (new format)
-        if (product.best_combo.best_combo_ids && typeof product.best_combo.best_combo_ids === 'string') {
-            recommendedSkuIds = product.best_combo.best_combo_ids
+        if (product?.best_combo?.best_combo_ids && typeof product.best_combo.best_combo_ids === 'string') {
+            recommendedSkuIds = product?.best_combo?.best_combo_ids? product?.best_combo?.best_combo_ids
                 .split(',')
-                .map((id: string) => id.trim());
+                .map((id: string) => id.trim()) : []
         } 
 
-        // Log the recommended SKU IDs for debugging
-        console.log("Recommended SKU IDs:", product.best_combo.best_combo_ids);
+        
         
         // Find items matching the recommended SKU IDs
         let recommendedItems = allItems.filter((item : any) => 
             item.sku_id && recommendedSkuIds.includes(item.sku_id)
         );
         
-        // Log the matched items for debugging
-        console.log("Matched items by SKU ID:", recommendedItems.map((item:any) => ({
-            id: item.id,
-            name: item.name,
-            sku_id: item.sku_id
-        })));
+
         
         // If we have pairings, try to find matching products by name
         if (product.pairings && Array.isArray(product.pairings) && product.pairings.length > 0 && recommendedItems.length < 5) {
@@ -62,25 +58,7 @@ const RecommendedProducts: React.FC<any> = ({
                 }
             });
         }
-        
-        // If still not enough recommended items, add random items
-        // if (recommendedItems.length === 0) {
-        //     recommendedItems = allItems
-        //         .filter(item => item.id.toString() !== currentProductId)
-        //         .slice(0, 5);
-        // } else if (recommendedItems.length < 5) {
-        //     // Add more random items to fill up to 5
-        //     const additionalItems = allItems
-        //         .filter(item => 
-        //             item.id.toString() !== currentProductId && 
-        //             !recommendedItems.some(ri => ri.id === item.id)
-        //         )
-        //         .slice(0, 5 - recommendedItems.length);
-            
-        //     recommendedItems = [...recommendedItems, ...additionalItems];
-        // }
-        
-        // Limit to 5 items
+
         return recommendedItems.slice(0, 5);
     };
 
@@ -112,13 +90,13 @@ const RecommendedProducts: React.FC<any> = ({
             transition={{ duration: 0.5 }}
             className="md:col-span-1"
         >
-            <h2 className="text-xl font-semibold mb-4 flex items-center">
+         { recommendedItems.length != 0 &&  <h2 className="text-xl font-semibold mb-4 flex items-center">
                 <Heart className="h-5 w-5 mr-2 text-red-500" />
                 You May Also Like
-            </h2>
+            </h2>}
 
             {/* Desktop layout - vertical stack */}
-            <div className="hidden md:block space-y-4">
+       {recommendedItems.length != 0 &&     <div className="hidden md:block space-y-4">
                 {recommendedItems.map(item => (
                     <div 
                         key={item.id} 
@@ -148,10 +126,10 @@ const RecommendedProducts: React.FC<any> = ({
                         </div>
                     </div>
                 ))}
-            </div>
+            </div>}
 
             {/* Mobile layout - horizontal scroll */}
-            <div className="md:hidden">
+      { recommendedItems.length != 0 &&     <div className="md:hidden">
                 <div className="flex gap-3 overflow-x-auto pb-2">
                     {recommendedItems.map(item => (
                         <div 
@@ -183,7 +161,7 @@ const RecommendedProducts: React.FC<any> = ({
                         </div>
                     ))}
                 </div>
-            </div>
+            </div>}
         </motion.div>
     );
 };

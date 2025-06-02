@@ -7,8 +7,6 @@ import {
   fetchRestaurantByDomainSuccess,
   fetchRestaurantByDomainFailure
 } from '../slices/restaurantSlice';
-import { fetchSiteContentRequest } from '../slices/siteContentSlice';
-import { fetchMenuRequest } from '../slices/menuSlice';
 import { restaurantService } from '../../services';
 
 // Worker Saga for fetching restaurant info based on current domain

@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
-import { Phone, Mail, MapPin, Calendar, Clock, Users, Check, Loader2 } from 'lucide-react';
+import { Phone, Mail, MapPin, Calendar, Clock, Users, Check, Loader2, Cross } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchTableAvailablityRequest } from '../../../../../common/redux/slices/tableAvailabilitySlice'
 import { RootState } from '../../../../../common/redux/rootReducer';
 import _ from 'lodash';
 import { makeReservationRequest, resetReservationState } from '@/common/redux/slices/makeReservationSlice';
+import { CiWarning } from 'react-icons/ci';
 
 interface TableReservationProps {
   onBookingComplete?: (bookingData: BookingData) => void;
@@ -74,15 +75,17 @@ export default function TableReservation({
     dispatch(fetchTableAvailablityRequest({date : selectedDate}));
   }, [selectedDate]);
 
+  // Reset success state when component mounts (e.g., when navigating from navbar)
+  useEffect(() => {
+    setShowSuccessPopup(false);
+    dispatch(resetReservationState());
+  }, []);
+
   useEffect(() => {
     if (reservationSuccess && reservationData) {
       setShowSuccessPopup(true);
-      // Hide popup after 3 seconds
-      const timer = setTimeout(() => {
-        setShowSuccessPopup(false);
-        dispatch(resetReservationState());
-      }, 3000);
-      return () => clearTimeout(timer);
+      window.scroll(0,0);
+      // Success screen will stay open until user manually closes it
     }
   }, [reservationSuccess, reservationData, dispatch]);
 
@@ -224,6 +227,132 @@ export default function TableReservation({
     return slots;
   };
 
+  // Show success screen when reservation is confirmed
+  if (showSuccessPopup) {
+    return (
+      <div className="w-full">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="bg-white p-8 mx-auto max-w-full min-h-screen flex items-center justify-center"
+        >
+          <div className="max-w-2xl w-full text-center">
+            {/* Success Icon and Title */}
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+              className=" rounded-full flex items-center justify-center mx-auto mb-8"
+            >
+            {JSON.parse(reservationData)?.message?.toLowerCase()?.includes("table booked")?  <Check className="h-24 w-24 text-green-500" /> :  <CiWarning className="h-24 w-24 text-red-500" /> }
+            </motion.div>
+            
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="text-4xl font-bold text-gray-800 mb-4"
+            >
+               {JSON.parse(reservationData)?.message}
+            </motion.h1>
+            
+          
+  
+            {/* Action Buttons */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1.0 }}
+              className="flex flex-col sm:flex-row gap-4 justify-center"
+            >
+              <button
+                onClick={() => {
+                  setShowSuccessPopup(false);
+                  dispatch(resetReservationState());
+                  // Reset form
+                  setName('');
+                  setPhone('');
+                  setEmail('');
+                  setSpecialRequest('');
+                  setSelectedTime('');
+                }}
+                className="bg-red-500 hover:bg-red-600 text-white py-3 px-8 rounded-md font-semibold transition-colors shadow-sm hover:shadow-md"
+              >
+                Make Another Reservation
+              </button>
+              <button
+                onClick={() => {
+                  setShowSuccessPopup(false);
+                  dispatch(resetReservationState());
+                }}
+                className="bg-gray-500 hover:bg-gray-600 text-white py-3 px-8 rounded-md font-semibold transition-colors shadow-sm hover:shadow-md"
+              >
+                Back to Reservations
+              </button>
+            </motion.div>
+
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
+  // Show loading indicator when table availability is being fetched
+  if (tableLoading) {
+    return (
+      <div className="w-full">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+          className="bg-white p-8 mx-auto max-w-full"
+        >
+          <div className="flex flex-col md:flex-row gap-8">
+            {/* Loading state for table availability */}
+            <div className="w-full bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+              <div className="text-center mb-4">
+                <Loader2 className="w-12 h-12 text-red-500 mx-auto mb-4 animate-spin" />
+                <h3 className="text-xl font-semibold text-gray-800 mb-2">Checking Table Availability</h3>
+                <p className="text-gray-600 mb-4">
+                  Please wait while we check available time slots for your selected date...
+                </p>
+              </div>
+              
+              {/* Date Field - Show selected date while loading */}
+              <div className="mb-8 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <label htmlFor="date" className="block text-md font-medium text-gray-700 mb-2">
+                  <Calendar className="inline-block mr-2 h-5 w-5 text-red-500" /> Selected Date
+                </label>
+                <input
+                  type="date"
+                  id="date"
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                  min={new Date().toISOString().split('T')[0]}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 text-lg"
+                  required
+                />
+              </div>
+              
+              <div className="mt-6">
+                <div className="animate-pulse space-y-4">
+                  <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                    {[...Array(8)].map((_, index) => (
+                      <div key={index} className="h-10 bg-gray-200 rounded"></div>
+                    ))}
+                  </div>
+                  <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
   if(timeSlots.length === 0) {
     // Generate default time slots based on operating hours
     const defaultTimeSlots = generateTimeSlots();
@@ -363,6 +492,7 @@ export default function TableReservation({
                   id="date"
                   value={selectedDate}
                   onChange={(e) => setSelectedDate(e.target.value)}
+                  min={new Date().toISOString().split('T')[0]}
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
                   required
                 />
@@ -508,18 +638,7 @@ export default function TableReservation({
           </div>
         </div>
 
-        {/* Success Popup */}
-        {showSuccessPopup && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="fixed top-4 right-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded shadow-md flex items-center z-50"
-          >
-            <Check className="h-5 w-5 mr-2 text-green-500" />
-            <span>{reservationData?.message || "Table Booked"}</span>
-          </motion.div>
-        )}
+
       </motion.div>
     </div>
   );

@@ -3,7 +3,7 @@ import {
   fetchSiteContentRequest, 
   fetchSiteContentSuccess, 
   fetchSiteContentFailure,
-  SiteContent
+  
 } from '../slices/siteContentSlice';
 import { siteContentService } from '../../services';
 import api from '../../services/api';
