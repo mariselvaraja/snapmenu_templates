@@ -104,20 +104,30 @@ export default function TableReservation({
       // timeZone: 'America/New_York'
     });
 
-    const now = new Date();
-    const newyarkNow = new Date(
-      now.toLocaleString("en-US", { timeZone: "America/New_York" })
-    );
-    const newyarkCurrentTimeSlot = formatter.format(newyarkNow);
-
     const formatedTimes = _.map(data, item => {
       const date = new Date(item.start_time.replace(' ', 'T'));
       return formatter.format(date);
     });
 
-    return _.filter(formatedTimes, time =>{
-      return time >= newyarkCurrentTimeSlot;
-    })
+    // Check if selected date is today
+    const today = new Date().toISOString().split('T')[0];
+    const isToday = selectedDate === today;
+
+    // If selected date is today, filter out past time slots
+    if (isToday) {
+      const now = new Date();
+      const newyarkNow = new Date(
+        now.toLocaleString("en-US", { timeZone: "America/New_York" })
+      );
+      const newyarkCurrentTimeSlot = formatter.format(newyarkNow);
+
+      return _.filter(formatedTimes, time =>{
+        return time >= newyarkCurrentTimeSlot;
+      });
+    }
+
+    // If selected date is a future date, return all formatted times
+    return formatedTimes;
   }
 
 
