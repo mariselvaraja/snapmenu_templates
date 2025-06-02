@@ -21,6 +21,7 @@ export default function App() {
 
  
   useEffect(() => {
+    sessionStorage.clear()
     dispatch(fetchRestaurantByDomainRequest())
   }, []);
 

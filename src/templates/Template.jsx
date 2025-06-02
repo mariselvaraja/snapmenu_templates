@@ -98,19 +98,47 @@ const TemplateContent = () => {
         sessionStorage.setItem("restaurant_id", parent_id);
         sessionStorage.setItem("franchise_id", franchise_id);
         sessionStorage.setItem("table_number", table_number);
-        
+              
+      setLocationSelected(true);
+      // Fetch required data
+      dispatch(fetchTpnConfigRequest());
+      dispatch(fetchSiteContentRequest());
+      dispatch(fetchMenuRequest());
       }
       else
       {
         sessionStorage.setItem("restaurant_id", singleRestaurant.restaurant_parent_id);
         sessionStorage.setItem("franchise_id", singleRestaurant.restaurant_id);
-      }
-      
+              
       setLocationSelected(true);
-        // Fetch required data
-        dispatch(fetchTpnConfigRequest());
-        dispatch(fetchSiteContentRequest());
-        dispatch(fetchMenuRequest());
+      // Fetch required data
+      dispatch(fetchTpnConfigRequest());
+      dispatch(fetchSiteContentRequest());
+      dispatch(fetchMenuRequest());
+      }
+
+    }
+    else
+    {
+      if(isPlaceInDiningOrderRoute)
+        {
+          sessionStorage.removeItem("restaurant_id");
+          sessionStorage.removeItem("franchise_id");
+          sessionStorage.removeItem("table_number");
+          
+        
+          
+          sessionStorage.setItem("restaurant_id", parent_id);
+          sessionStorage.setItem("franchise_id", franchise_id);
+          sessionStorage.setItem("table_number", table_number);
+                
+      setLocationSelected(true);
+      // Fetch required data
+      dispatch(fetchTpnConfigRequest());
+      dispatch(fetchSiteContentRequest());
+      dispatch(fetchMenuRequest());
+          
+        }
     }
   }, [restaurantState.info, dispatch]);
 
@@ -172,7 +200,7 @@ const TemplateContent = () => {
   
   // If restaurant API returned an error or empty data, show TemplateNotFound
   if (restaurantApiError) {
-    console.error('Restaurant API error or empty data:', restaurantState.error || 'No restaurant data');
+    
     return <TemplateNotFound />;
   }
 
