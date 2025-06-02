@@ -237,76 +237,7 @@ export default function TableReservation({
     return slots;
   };
 
-  // Show success screen when reservation is confirmed
-  if (showSuccessPopup) {
-    return (
-      <div className="w-full">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="bg-white p-8 mx-auto max-w-full min-h-screen flex items-center justify-center"
-        >
-          <div className="max-w-2xl w-full text-center">
-            {/* Success Icon and Title */}
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-              className=" rounded-full flex items-center justify-center mx-auto mb-8"
-            >
-            {JSON.parse(reservationData)?.message?.toLowerCase()?.includes("table booked")?  <Check className="h-24 w-24 text-green-500" /> :  <CiWarning className="h-24 w-24 text-red-500" /> }
-            </motion.div>
-            
-            <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-              className="text-4xl font-bold text-gray-800 mb-4"
-            >
-               {JSON.parse(reservationData)?.message}
-            </motion.h1>
-            
-          
-  
-            {/* Action Buttons */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1.0 }}
-              className="flex flex-col sm:flex-row gap-4 justify-center"
-            >
-              <button
-                onClick={() => {
-                  setShowSuccessPopup(false);
-                  dispatch(resetReservationState());
-                  // Reset form
-                  setName('');
-                  setPhone('');
-                  setEmail('');
-                  setSpecialRequest('');
-                  setSelectedTime('');
-                }}
-                className="bg-red-500 hover:bg-red-600 text-white py-3 px-8 rounded-md font-semibold transition-colors shadow-sm hover:shadow-md"
-              >
-                Make Another Reservation
-              </button>
-              <button
-                onClick={() => {
-                  setShowSuccessPopup(false);
-                  dispatch(resetReservationState());
-                }}
-                className="bg-gray-500 hover:bg-gray-600 text-white py-3 px-8 rounded-md font-semibold transition-colors shadow-sm hover:shadow-md"
-              >
-                Back to Reservations
-              </button>
-            </motion.div>
 
-          </div>
-        </motion.div>
-      </div>
-    );
-  }
 
   // Show loading indicator when table availability is being fetched
   if (tableLoading) {
@@ -648,6 +579,57 @@ export default function TableReservation({
           </div>
         </div>
 
+        {/* Success Popup Modal */}
+        {showSuccessPopup && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+            onClick={() => {
+              setShowSuccessPopup(false);
+              dispatch(resetReservationState());
+            }}
+          >
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              className="bg-white rounded-lg p-8 max-w-md mx-4 shadow-2xl relative"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Close button */}
+            
+              <div className="text-center">
+                <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                  {JSON.parse(reservationData)?.message?.toLowerCase()?.includes("table booked") ? 
+                    <Check className="h-12 w-12 text-green-500" /> : 
+                    <CiWarning className="h-12 w-12 text-red-500" />
+                  }
+                </div>
+                <h3 className="text-2xl font-bold text-gray-800 mb-4">
+                  {JSON.parse(reservationData)?.message}
+                </h3>
+                
+                <button
+                  onClick={() => {
+                    setShowSuccessPopup(false);
+                    dispatch(resetReservationState());
+                    // Reset form for new reservation
+                    setName('');
+                    setPhone('');
+                    setEmail('');
+                    setSpecialRequest('');
+                    setSelectedTime('');
+                  }}
+                  className="w-full bg-red-500 hover:bg-red-600 text-white py-3 px-4 rounded-md font-semibold transition-colors"
+                >
+                  Make Another Reservation
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
 
       </motion.div>
     </div>
