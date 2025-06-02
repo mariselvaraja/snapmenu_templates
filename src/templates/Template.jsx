@@ -107,8 +107,13 @@ const TemplateContent = () => {
       }
       
       setLocationSelected(true);
-      
-      // Fetch required data
+        // Fetch required data
+        dispatch(fetchTpnConfigRequest());
+        dispatch(fetchSiteContentRequest());
+        dispatch(fetchMenuRequest());
+    }
+    else
+    {
       dispatch(fetchTpnConfigRequest());
       dispatch(fetchSiteContentRequest());
       dispatch(fetchMenuRequest());
