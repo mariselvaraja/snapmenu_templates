@@ -444,7 +444,7 @@ export default function Menu() {
                              { showPrice &&  isPaymentAvilable && <div className="flex items-center justify-between">
                                     
                                     {/* Add button or quantity controls */}
-                                    {!cartItems.find((cartItem:any) => cartItem.id === item.id && cartItem.quantity > 0) ? (
+                                    {!cartItems.find((cartItem:any) => cartItem.pk_id === item.id && cartItem.quantity > 0) ? (
                                         <button
                                             className="inline-flex items-center bg-red-500 text-white px-5 py-2 rounded-full hover:bg-red-600 transition-colors text-base font-medium"
                                             onClick={() => handleAddToCart(item)}
@@ -458,7 +458,7 @@ export default function Menu() {
                                                 className="w-8 h-8 flex items-center justify-center bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-full transition-colors"
                                                 onClick={(e) => {
                                                     e.stopPropagation();
-                                                    const cartItem = cartItems.find((cartItem:any) => cartItem.id === item.id);
+                                                    const cartItem = cartItems.find((cartItem:any) => cartItem.pk_id === item.id);
                                                     if (cartItem) {
                                                         const newQuantity = cartItem.quantity - 1;
                                                         if (newQuantity > 0) {
@@ -472,13 +472,13 @@ export default function Menu() {
                                                 <Minus className="w-3 h-3" />
                                             </button>
                                             <span className="mx-3 text-base font-semibold">
-                                                {cartItems.find((cartItem:any) => cartItem.id === item.id)?.quantity || 0}
+                                                {cartItems.find((cartItem:any) => cartItem.pk_id === item.id)?.quantity || 0}
                                             </span>
                                             <button
                                                 className="w-8 h-8 flex items-center justify-center bg-red-500 hover:bg-red-600 text-white rounded-full transition-colors"
                                                 onClick={(e) => {
                                                     e.stopPropagation();
-                                                    const cartItem = cartItems.find((cartItem:any) => cartItem.id === item.id);
+                                                    const cartItem = cartItems.find((cartItem:any) => cartItem.pk_id === item.id);
                                                     if (cartItem) {
                                                         dispatch(updateItemQuantity({ id: item.id, quantity: cartItem.quantity + 1 }));
                                                     } else {
