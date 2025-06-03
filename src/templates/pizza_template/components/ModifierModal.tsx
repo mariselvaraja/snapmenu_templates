@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Check } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '../../../common/redux';
-import { addItem, CartItem } from '../../../common/redux/slices/cartSlice';
+import { CartItem } from '../../../redux/slices/cartSlice';
+import { useCartWithToast } from '../hooks/useCartWithToast';
 import { FaPepperHot } from 'react-icons/fa';
 
 interface ModifierOption {
@@ -96,6 +97,7 @@ export default function ModifierModal({ isOpen, onClose, menuItem }: ModifierMod
   }>({});
 
   const dispatch = useAppDispatch();
+  const { addItemWithToast } = useCartWithToast();
 
   // Reset selections when modal opens with a new item
   useEffect(() => {
@@ -286,17 +288,18 @@ export default function ModifierModal({ isOpen, onClose, menuItem }: ModifierMod
     }));
 
     const cartItem: CartItem = {
-      id: menuItem.id,
+      pk_id: typeof menuItem.pk_id === 'string' ? parseInt(menuItem.pk_id) : (menuItem.pk_id || 0),
       name: menuItem.name,
       price: menuItem.price,
       image: menuItem.image,
       quantity: menuItem.quantity || 1, // Use existing quantity if editing
+      spiceLevel: '',
       selectedModifiers: normalizedModifiers
     };
     
     // If this is a new item, add it to the cart
     if (!menuItem.selectedModifiers) {
-      dispatch(addItem(cartItem));
+      addItemWithToast(cartItem);
       onClose(); // Close without passing the updated item
     } else {
       // If it's an existing item being edited, pass the updated item back to the parent component

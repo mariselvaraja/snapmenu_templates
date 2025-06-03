@@ -111,7 +111,7 @@ export default function CartDrawer() {
               {items.length > 0 ? (
                 <ul className="divide-y">
                   {items.map((item: { 
-                    id: number, 
+                    pk_id: number, 
                     name: string, 
                     price: number, 
                     quantity: number, 
@@ -124,7 +124,7 @@ export default function CartDrawer() {
                       }[];
                     }[]
                   }) => (
-                    <li key={item.id} className="p-4 flex">
+                    <li key={item.pk_id} className="p-4 flex">
                       {item.image ? (
                         <img
                           src={item.image}
@@ -242,7 +242,7 @@ export default function CartDrawer() {
                                 // Ensure quantity is a number
                                 const quantity = typeof item.quantity === 'number' ? item.quantity : 
                                   parseInt(String(item.quantity)) || 1;
-                                handleQuantityChange(item.id, quantity - 1);
+                                handleQuantityChange(item.pk_id, quantity - 1);
                               }}
                             >
                               -
@@ -257,7 +257,7 @@ export default function CartDrawer() {
                                 // Ensure quantity is a number
                                 const quantity = typeof item.quantity === 'number' ? item.quantity : 
                                   parseInt(String(item.quantity)) || 1;
-                                handleQuantityChange(item.id, quantity + 1);
+                                handleQuantityChange(item.pk_id, quantity + 1);
                               }}
                             >
                               +
@@ -266,7 +266,7 @@ export default function CartDrawer() {
                           
                           {/* Delete button */}
                           <button
-                            onClick={() => handleRemoveItem(item.id)}
+                            onClick={() => handleRemoveItem(item.pk_id)}
                             className="text-red-500 hover:text-red-700 transition-colors"
                           >
                             <Trash2 className="h-4 w-4" />

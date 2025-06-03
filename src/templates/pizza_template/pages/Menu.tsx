@@ -1,7 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
 import { ShoppingCart, Plus, Minus, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useAppDispatch, useAppSelector, addItem, CartItem, fetchMenuRequest, MenuItem, removeItem, updateItemQuantity } from '../../../common/redux';
+import { useAppDispatch, useAppSelector, fetchMenuRequest, MenuItem, removeItem, updateItemQuantity } from '../../../common/redux';
+import { CartItem } from '../../../redux/slices/cartSlice';
+import { useCartWithToast } from '../hooks/useCartWithToast';
 import ModifierModal from '../components/ModifierModal';
 import _ from 'lodash';
 import { LuVegan } from 'react-icons/lu';
@@ -32,6 +34,7 @@ export default function Menu() {
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
+    const { addItemWithToast } = useCartWithToast();
 
     const { rawApiResponse } = useAppSelector(state => state.siteContent);
     // Get site content from Redux state
@@ -101,14 +104,15 @@ export default function Menu() {
         } else {
             // Directly add to cart without opening modifier modal
             const cartItem: CartItem = {
-                id: menuItem.id,
+                pk_id: typeof menuItem.pk_id === 'string' ? parseInt(menuItem.pk_id) : (menuItem.pk_id || 0),
                 name: menuItem.name,
                 price: menuItem.price,
                 image: menuItem.image,
                 quantity: 1,
+                spiceLevel: '',
                 selectedModifiers: []
             };
-            dispatch(addItem(cartItem));
+            addItemWithToast(cartItem);
         }
     };
 

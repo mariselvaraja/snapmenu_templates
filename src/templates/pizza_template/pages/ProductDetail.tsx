@@ -1,9 +1,11 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, CheckCircle } from 'lucide-react';
-import { useAppSelector, useAppDispatch, addItem, CartItem, toggleDrawer } from '../../../redux';
+import { useAppSelector, useAppDispatch, toggleDrawer } from '../../../redux';
 import { MenuItem } from '../../../redux/slices/menuSlice';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useCartWithToast } from '../hooks/useCartWithToast';
+import { CartItem } from '../../../redux/slices/cartSlice';
 import { 
     LoadingState, 
     ErrorState, 
@@ -19,14 +21,13 @@ export default function ProductDetail() {
     const { productId } = useParams<{ productId: string }>();
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
+    const { addItemWithToast } = useCartWithToast();
     
     // Get menu data from Redux store
     const { items, loading, error } = useAppSelector(state => state.menu);
     
     // Find the product in the menu data
     const product = items.find((item:any) => item.pk_id === productId);
-    // State for success notification
-    const [showSuccessNotification, setShowSuccessNotification] = useState(false);
     const { rawApiResponse } = useAppSelector(state => state.siteContent);
       // Get site content from Redux state
       const siteContent = rawApiResponse ? 
@@ -188,27 +189,20 @@ export default function ProductDetail() {
                 : 0;
 
             const cartItem: CartItem = {
-                id: product.id,
+                pk_id: typeof product.pk_id === 'string' ? parseInt(product.pk_id) : (product.pk_id || 0),
                 name: product.name,
                 price: productPrice,
                 image: product.image || '',
                 quantity: 1,
+                spiceLevel: '',
                 selectedModifiers: normalizedModifiers
             };
             
-            // Add item to cart
-            dispatch(addItem(cartItem));
-            
-            // Show success notification
-            setShowSuccessNotification(true);
+            // Add item to cart with toast notification
+            addItemWithToast(cartItem);
             
             // Open cart drawer
             dispatch(toggleDrawer(true));
-            
-            // Hide notification after 3 seconds
-            setTimeout(() => {
-                setShowSuccessNotification(false);
-            }, 3000);
         }
     };
     
@@ -425,20 +419,7 @@ export default function ProductDetail() {
                             allItems={items}
                             showPrice={showPrice}
                         />
-                        {/* Success Notification */}
-                        <AnimatePresence>
-                            {showSuccessNotification && (
-                                <motion.div
-                                    initial={{ opacity: 0, y: -20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -20 }}
-                                    className="fixed top-4 right-4 left-4 sm:left-auto bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center z-50 text-sm sm:text-base"
-                                >
-                                    <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
-                                    <span>Item added to cart!</span>
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
+
 
                         {/* Removed global validation message */}
 
