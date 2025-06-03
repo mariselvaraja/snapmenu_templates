@@ -8,7 +8,7 @@ export const useCartWithToast = () => {
 
   const addItemWithToast = (item: CartItem) => {
     dispatch(addItem(item));
-    showToast('Item added to cart!', 'success', 3000);
+ 
   };
 
   const removeItemWithToast = (itemId: number) => {
