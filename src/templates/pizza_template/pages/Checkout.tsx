@@ -38,13 +38,58 @@ interface OrderPayload {
   grand_total: string;
 }
 
+interface CartItemOption {
+  name: string;
+  price: number | string;
+}
+
+interface CartItemModifier {
+  name: string;
+  options: CartItemOption[];
+}
+
+interface CartItem {
+  id: number;
+  name: string;
+  price: number;
+  quantity: number;
+  image?: string;
+  selectedModifiers?: CartItemModifier[];
+}
+
 export default function Checkout() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const cartItems = useAppSelector((state) => state.cart.items);
   
-  // Calculate cart totals
-  const subtotal = cartItems.reduce((total: number, item: any) => total + (item.price * item.quantity), 0);
+  // Calculate cart totals including modifiers
+  const subtotal = cartItems.reduce((total: number, item: any) => {
+    // Base item price
+    const baseItemPrice = typeof item.price === 'number' ? item.price : 
+      parseFloat(String(item.price).replace(/[^\d.-]/g, '')) || 0;
+    
+    // Calculate modifier total
+    let modifierTotal = 0;
+    if (item.selectedModifiers && item.selectedModifiers.length > 0) {
+      item.selectedModifiers.forEach((modifier: any) => {
+        modifier.options.forEach((option: any) => {
+          // Ensure option price is a number
+          const optionPrice = typeof option.price === 'number' ? option.price : 
+            parseFloat(String(option.price).replace(/[^\d.-]/g, '')) || 0;
+          modifierTotal += optionPrice;
+        });
+      });
+    }
+    
+    // Ensure quantity is a number
+    const quantity = typeof item.quantity === 'number' ? item.quantity : 
+      parseInt(String(item.quantity)) || 1;
+    
+    // Calculate total price (base price + modifiers) * quantity
+    const itemTotal = (baseItemPrice + modifierTotal) * quantity;
+    
+    return total + itemTotal;
+  }, 0);
   const total = subtotal; // No tax applied
 
   const [formData, setFormData] = useState<FormData>({
@@ -415,28 +460,90 @@ export default function Checkout() {
               <h2 className="text-2xl font-semibold mb-6">Order Summary</h2>
               
               <div className="max-h-60 overflow-y-auto mb-6">
-                {cartItems.map((item) => (
-                  <div key={item.id} className="flex justify-between items-center py-2 border-b">
-                    <div className="flex items-center">
-                      {item.image ? (
-                        <img
-                          src={item.image}
-                          alt={item.name}
-                          className="w-10 h-10 object-cover rounded-md mr-2"
-                        />
-                      ) : (
-                        <div className="w-10 h-10 bg-red-100 flex items-center justify-center rounded-md mr-2">
-                          <span className="text-sm font-bold text-red-500">
-                            {item.name.charAt(0)}
-                          </span>
+                {cartItems.map((item: CartItem) => (
+                  <div key={item.id} className="py-3 border-b">
+                    <div className="flex justify-between items-start">
+                      <div className="flex items-start">
+                        {item.image ? (
+                          <img
+                            src={item.image}
+                            alt={item.name}
+                            className="w-10 h-10 object-cover rounded-md mr-2 flex-shrink-0"
+                          />
+                        ) : (
+                          <div className="w-10 h-10 bg-red-100 flex items-center justify-center rounded-md mr-2 flex-shrink-0">
+                            <span className="text-sm font-bold text-red-500">
+                              {item.name.charAt(0)}
+                            </span>
+                          </div>
+                        )}
+                        <div className="flex-1">
+                          <div className="flex items-center">
+                            <span className="font-medium">{item.quantity}x</span>
+                            <span className="ml-2 font-medium">{item.name}</span>
+                          </div>
+                          
+                          {/* Display selected modifiers */}
+                          {item.selectedModifiers && item.selectedModifiers.length > 0 && (
+                            <div className="mt-1 text-xs text-gray-600">
+                              {/* Display non-spice level modifiers */}
+                              {item.selectedModifiers.flatMap((modifier: CartItemModifier) => 
+                                modifier.name !== "Spice Level" ? 
+                                  modifier.options.map((option: CartItemOption, index: number) => (
+                                    <div key={`${modifier.name}-${option.name}-${index}`}>
+                                      <span>• {option.name || modifier.name}</span>
+                                    </div>
+                                  ))
+                                : []
+                              )}
+                              
+                              {/* Display spice level */}
+                              {item.selectedModifiers.flatMap((modifier: CartItemModifier) => 
+                                modifier.name === "Spice Level" ? 
+                                  modifier.options.map((option: CartItemOption, index: number) => {
+                                    let chiliCount = 1; // Default to 1
+                                    if (option.name === "Medium") chiliCount = 2;
+                                    if (option.name === "Hot") chiliCount = 3;
+                                    
+                                    return (
+                                      <div key={`${modifier.name}-${option.name}-${index}`} className="flex items-center mt-1">
+                                        <span className="text-gray-600">• Spice Level: </span>
+                                        <span className="ml-1 text-red-500">
+                                          {chiliCount === 1 && '🌶️'}
+                                          {chiliCount === 2 && '🌶️🌶️'}
+                                          {chiliCount === 3 && '🌶️🌶️🌶️'}
+                                        </span>
+                                        <span className="ml-1 text-gray-600">({option.name})</span>
+                                      </div>
+                                    );
+                                  })
+                                : []
+                              )}
+                            </div>
+                          )}
                         </div>
-                      )}
-                      <div>
-                        <span className="font-medium">{item.quantity}x</span>
-                        <span className="ml-2">{item.name}</span>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-medium">${(item.price * item.quantity)?.toFixed(2)}</div>
+                        {/* Display modifier prices under item price (excluding spice level) */}
+                        {item.selectedModifiers && item.selectedModifiers.length > 0 && (
+                          <div className="text-xs text-gray-500 mt-1">
+                            {item.selectedModifiers.flatMap((modifier: CartItemModifier) => 
+                              modifier.name !== "Spice Level" ? 
+                                modifier.options.map((option: CartItemOption, index: number) => {
+                                  const optionPrice = typeof option.price === 'number' ? option.price : parseFloat(String(option.price).replace(/[^\d.-]/g, '')) || 0;
+                                  return optionPrice > 0 ? (
+                                    <div key={`${modifier.name}-${option.name}-${index}-price`}>
+                                      +${(optionPrice * item.quantity).toFixed(2)}
+                                    </div>
+                                  ) : null;
+                                })
+                              : []
+                            )}
+                          </div>
+                        )}
                       </div>
                     </div>
-                    <span>${(item.price * item.quantity)?.toFixed(2)}</span>
                   </div>
                 ))}
               </div>
