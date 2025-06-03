@@ -53,7 +53,7 @@ export const cartService = {
       const cart: CartItem[] = cartData ? JSON.parse(cartData) : [];
       
       // Check if item already exists
-      const existingItemIndex = cart.findIndex(cartItem => cartItem.id === item.id);
+      const existingItemIndex = cart.findIndex(cartItem => cartItem.pk_id === item.pk_id);
       
       if (existingItemIndex >= 0) {
         // Update quantity if item exists
@@ -84,7 +84,7 @@ export const cartService = {
       const cart: CartItem[] = cartData ? JSON.parse(cartData) : [];
       
       // Remove item
-      const updatedCart = cart.filter(item => item.id !== itemId);
+      const updatedCart = cart.filter(item => item.pk_id !== itemId);
       
       // Save updated cart
       sessionStorage.setItem('cart', JSON.stringify(updatedCart));
@@ -107,7 +107,7 @@ export const cartService = {
       const cart: CartItem[] = cartData ? JSON.parse(cartData) : [];
       
       // Find and update item
-      const itemIndex = cart.findIndex(item => item.id === itemId);
+      const itemIndex = cart.findIndex(item => item.pk_id === itemId);
       
       if (itemIndex >= 0) {
         cart[itemIndex].quantity = quantity;
@@ -142,8 +142,7 @@ export const cartService = {
    * Places an order with the current cart items and customer information
    */
   placeOrder: async (orderData: OrderData, restaurant_id: any): Promise<any> => {
-    console.log('Placing order with API');
-    
+  
     try {
       // Format the order payload as required
       const formattedPayload = {
@@ -157,14 +156,17 @@ export const cartService = {
           name: item.name,
           quantity: item.quantity,
           itemPrice: item.price?.toFixed(2),
-          modifiers: [],
-          modifier_price: null,
+          modifiers: item.selectedModifiers?.filter((modifier) => modifier.name !== "Spice Level").flatMap((modifier) => modifier.options) || [],
+          modifier_price: item.selectedModifiers?.reduce((sum, modifier) => {
+            return sum + modifier.options.reduce((optSum, option) => optSum + option.price, 0);
+          }, 0) || 0,
+          spicelevel : item.selectedModifiers?.filter((modifier) => modifier.name == "Spice Level").flatMap((modifier) => modifier.options)[0].name,
           total_item_price: (item.price * item.quantity)?.toFixed(2)
         })),
         grand_total: orderData.items.reduce((sum, item) => sum + (item.price * item.quantity), 0)?.toFixed(2)
       };
       
-      console.log('Formatted payload:', formattedPayload);
+      console.log('Formatted payload:', orderData);
       
       // Make API call to place order
       const response = await api.post<any>(endpoints.cart.placeOrder, formattedPayload);

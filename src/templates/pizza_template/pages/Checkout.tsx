@@ -152,7 +152,7 @@ export default function Checkout() {
     const orderedItems: OrderedItem[] = cartItems.map((item:any) => {
       console.log("ITEM", item)
 
-      const formatModifiers = item?.selectedModifiers.filter((modifiers:any)=>!modifiers.name.includes("Spice Level"));
+      const formatModifiers = item?.selectedModifiers.filter((modifiers:any)=>!modifiers.name?.toLowerCase().includes("spice"));
       const spiceLevel = item?.selectedModifiers.find((modifiers:any)=>modifiers.name.includes("Spice Level"));
       console.log("spiceLevel", spiceLevel)
       let payloadObj: OrderedItem = {
@@ -165,13 +165,13 @@ export default function Checkout() {
       }
       if(spiceLevel)
       {
-        payloadObj = {...payloadObj, spice_level:spiceLevel}
+        payloadObj = {...payloadObj, spice_level:spiceLevel?.options?.[0]?.name}
       }
      return  payloadObj
     });
 
     return {
-      restaurant_id: "2256b9a6-5d53-4b77-b6a0-539043489ad3", // Hardcoded as requested
+      restaurant_id: "", // Hardcoded as requested
       name: formData.name,
       phone: formData.phone,
       email: formData.email,

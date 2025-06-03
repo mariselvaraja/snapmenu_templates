@@ -6,6 +6,7 @@ export interface CartItem {
   price: number;
   quantity: number;
   image: string;
+  spiceLevel: String,
   selectedModifiers?: {
     name: string;
     options: {
