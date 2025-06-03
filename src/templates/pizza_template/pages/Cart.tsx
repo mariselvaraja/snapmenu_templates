@@ -26,7 +26,7 @@ export default function Cart() {
   }
 
   interface CartItem {
-    id: number;
+    pk_id: number;
     name: string;
     price: number | string;
     quantity: number | string;
@@ -79,11 +79,24 @@ export default function Cart() {
     }
   };
   
+  // Get menu items from Redux store to access original modifiers
+  const menuItems = useAppSelector((state) => state.menu.items);
+  
   // Open modifier modal for editing
   const handleEditItem = (item: any) => {
+    // Find the original menu item to get its modifiers
+    // Try to match by pk_id first, then by id, then by name as fallback
+    const originalMenuItem = menuItems.find(menuItem => 
+      menuItem.pk_id === item.pk_id || 
+      menuItem.id === item.pk_id || 
+      menuItem.id === item.id ||
+      menuItem.name === item.name
+    );
+    
     setEditingItem({
       ...item,
-      modifiers_list: [] // This would normally come from your menu data
+      id: item.pk_id, // Use pk_id as id for the modal
+      modifiers_list: originalMenuItem?.modifiers_list || [] // Get modifiers from original menu item
     });
     setIsModifierModalOpen(true);
   };
@@ -97,8 +110,8 @@ export default function Cart() {
   // Handle updating item with new modifiers
   const handleUpdateItem = (updatedItem: any) => {
     if (editingItem) {
-      // First remove the old item
-      dispatch(removeItem(editingItem.id));
+      // First remove the old item using pk_id
+      dispatch(removeItem(editingItem.pk_id));
       
       // Then add the updated item with the same quantity
       // We need to set the quantity explicitly to avoid incrementing it
@@ -148,7 +161,7 @@ export default function Cart() {
                 </div>
                 <ul className="divide-y">
                   {cartItems.map((item: CartItem) => (
-                    <li key={item.id} className="p-6 flex items-center">
+                    <li key={item.pk_id} className="p-6 flex items-center">
                       {item.image ? (
                         <img
                           src={item.image}
@@ -248,14 +261,14 @@ export default function Cart() {
                                       <div className="flex items-center">
                                         <button 
                                           className="w-6 h-6 bg-red-50 rounded-full flex items-center justify-center text-sm"
-                                          onClick={() => handleQuantityChange(item.id, (typeof item.quantity === 'number' ? item.quantity : parseInt(String(item.quantity)) || 1) - 1)}
+                                          onClick={() => handleQuantityChange(item.pk_id, (typeof item.quantity === 'number' ? item.quantity : parseInt(String(item.quantity)) || 1) - 1)}
                                         >
                                           -
                                         </button>
                                         <span className="mx-2 text-sm">{item.quantity}</span>
                                         <button 
                                           className="w-6 h-6 bg-red-50 rounded-full flex items-center justify-center text-sm"
-                                          onClick={() => handleQuantityChange(item.id, (typeof item.quantity === 'number' ? item.quantity : parseInt(String(item.quantity)) || 1) + 1)}
+                                          onClick={() => handleQuantityChange(item.pk_id, (typeof item.quantity === 'number' ? item.quantity : parseInt(String(item.quantity)) || 1) + 1)}
                                         >
                                           +
                                         </button>
@@ -274,14 +287,14 @@ export default function Cart() {
                               <div className="flex items-center">
                                 <button 
                                   className="w-6 h-6 bg-red-50 rounded-full flex items-center justify-center text-sm"
-                                  onClick={() => handleQuantityChange(item.id, (typeof item.quantity === 'number' ? item.quantity : parseInt(String(item.quantity)) || 1) - 1)}
+                                  onClick={() => handleQuantityChange(item.pk_id, (typeof item.quantity === 'number' ? item.quantity : parseInt(String(item.quantity)) || 1) - 1)}
                                 >
                                   -
                                 </button>
                                 <span className="mx-2 text-sm">{item.quantity}</span>
                                 <button 
                                   className="w-6 h-6 bg-red-50 rounded-full flex items-center justify-center text-sm"
-                                  onClick={() => handleQuantityChange(item.id, (typeof item.quantity === 'number' ? item.quantity : parseInt(String(item.quantity)) || 1) + 1)}
+                                  onClick={() => handleQuantityChange(item.pk_id, (typeof item.quantity === 'number' ? item.quantity : parseInt(String(item.quantity)) || 1) + 1)}
                                 >
                                   +
                                 </button>

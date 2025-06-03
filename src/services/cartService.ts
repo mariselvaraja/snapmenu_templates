@@ -160,7 +160,7 @@ export const cartService = {
           modifier_price: item.selectedModifiers?.reduce((sum, modifier) => {
             return sum + modifier.options.reduce((optSum, option) => optSum + option.price, 0);
           }, 0) || 0,
-          spicelevel : item.selectedModifiers?.filter((modifier) => modifier.name == "Spice Level").flatMap((modifier) => modifier.options)[0].name,
+          spicelevel : item.selectedModifiers?.filter((modifier) => modifier.name == "Spice Level").flatMap((modifier) => modifier.options)?.[0].name,
           total_item_price: (item.price * item.quantity)?.toFixed(2)
         })),
         grand_total: orderData.items.reduce((sum, item) => sum + (item.price * item.quantity), 0)?.toFixed(2)

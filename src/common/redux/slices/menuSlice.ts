@@ -70,7 +70,19 @@ export interface MenuItem {
   allergens?: string[];
   ingredients?: string[];
   pairings?: string[];
-  modifiers_list : [];
+  modifiers_list?: {
+    name: string;
+    is_multi_select: string;
+    is_forced: string;
+    options: {
+      name: string;
+      price: number | string;
+      isEnabled?: boolean;
+      selectedByDefult?: string;
+      attrSortIndex?: number;
+      visibility?: string;
+    }[];
+  }[];
   is_spice_applicable?: string; // Added field to check if spice level should be shown
   raw_api_data?: string; // Added field to store the raw API data
   food_type?: string; // Added field to specify food type (veg, non-veg, etc.)

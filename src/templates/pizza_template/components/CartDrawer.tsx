@@ -1,12 +1,21 @@
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Trash2, ShoppingBag } from 'lucide-react';
+import { X, Trash2, ShoppingBag, Pencil } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '../../../redux';
-import { toggleDrawer, removeItem, updateItemQuantity } from '../../../redux/slices/cartSlice';
+import { toggleDrawer, removeItem, updateItemQuantity, addItem } from '../../../redux/slices/cartSlice';
+import ModifierModal from './ModifierModal';
 
 export default function CartDrawer() {
   const { items, drawerOpen } = useAppSelector((state) => state.cart);
   const dispatch = useAppDispatch();
+  
+  // State for modifier modal
+  const [isModifierModalOpen, setIsModifierModalOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<any>(null);
+  
+  // Get menu items from Redux store to access original modifiers
+  const menuItems = useAppSelector((state) => state.menu.items);
 
   // Calculate cart totals
   const subtotal = items.reduce((total: number, item: { 
@@ -69,6 +78,52 @@ export default function CartDrawer() {
     } else {
       dispatch(updateItemQuantity({ id: itemId, quantity }));
     }
+  };
+
+  // Open modifier modal for editing
+  const handleEditItem = (item: any) => {
+    // Find the original menu item to get its modifiers
+    // Try to match by pk_id first, then by id, then by name as fallback
+    const originalMenuItem = menuItems.find(menuItem => 
+      menuItem.pk_id === item.pk_id || 
+      menuItem.id === item.pk_id || 
+      menuItem.id === item.id ||
+      menuItem.name === item.name
+    );
+    
+    setEditingItem({
+      ...item,
+      id: item.pk_id, // Use pk_id as id for the modal
+      modifiers_list: originalMenuItem?.modifiers_list || [] // Get modifiers from original menu item
+    });
+    setIsModifierModalOpen(true);
+  };
+  
+  // Close modifier modal
+  const handleCloseModifierModal = () => {
+    setIsModifierModalOpen(false);
+    setEditingItem(null);
+  };
+  
+  // Handle updating item with new modifiers
+  const handleUpdateItem = (updatedItem: any) => {
+    if (editingItem) {
+      // First remove the old item using pk_id
+      dispatch(removeItem(editingItem.pk_id));
+      
+      // Then add the updated item with the same quantity
+      // We need to set the quantity explicitly to avoid incrementing it
+      const updatedCartItem = {
+        ...updatedItem,
+        quantity: editingItem.quantity
+      };
+      
+      // Use setTimeout to ensure the remove action completes first
+      setTimeout(() => {
+        dispatch(addItem(updatedCartItem));
+      }, 0);
+    }
+    handleCloseModifierModal();
   };
 
   return (
@@ -264,13 +319,13 @@ export default function CartDrawer() {
                             </button>
                           </div>
                           
-                          {/* Delete button */}
-                          <button
-                            onClick={() => handleRemoveItem(item.pk_id)}
+                          {/* Edit button */}
+                          {/* <button
+                            onClick={() => handleEditItem(item)}
                             className="text-red-500 hover:text-red-700 transition-colors"
                           >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
+                            <Pencil className="h-4 w-4" />
+                          </button> */}
                         </div>
                       </div>
                     </li>
