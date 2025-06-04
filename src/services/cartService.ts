@@ -152,18 +152,44 @@ export const cartService = {
         email: orderData.customerInfo.email,
         special_requests: orderData.customerInfo.address || "",
         order_type: "manual",
-        ordered_items: orderData.items.map(item => ({
-          name: item.name,
-          quantity: item.quantity,
-          itemPrice: item.price?.toFixed(2),
-          modifiers: item.selectedModifiers?.filter((modifier) => modifier.name !== "Spice Level").flatMap((modifier) => modifier.options) || [],
-          modifier_price: item.selectedModifiers?.reduce((sum, modifier) => {
-            return sum + modifier.options.reduce((optSum, option) => optSum + option.price, 0);
-          }, 0) || 0,
-          spicelevel : item.selectedModifiers?.filter((modifier) => modifier.name == "Spice Level").flatMap((modifier) => modifier.options)?.[0].name,
-          total_item_price: (item.price * item.quantity)?.toFixed(2)
-        })),
-        grand_total: orderData.items.reduce((sum, item) => sum + (item.price * item.quantity), 0)?.toFixed(2)
+        ordered_items: orderData.items.map(item => {
+          // Ensure we have valid item data
+          const itemName = item.name || 'Unknown Item';
+          const itemPrice = typeof item.price === 'number' ? item.price : parseFloat(String(item.price).replace(/[^\d.-]/g, '')) || 0;
+          const itemQuantity = typeof item.quantity === 'number' ? item.quantity : parseInt(String(item.quantity)) || 1;
+          
+          // Calculate modifier price safely
+          const modifierPrice = item.selectedModifiers?.reduce((sum, modifier) => {
+            return sum + (modifier.options?.reduce((optSum, option) => {
+              const optionPrice = typeof option.price === 'number' ? option.price : parseFloat(String(option.price).replace(/[^\d.-]/g, '')) || 0;
+              return optSum + optionPrice;
+            }, 0) || 0);
+          }, 0) || 0;
+          
+          // Get spice level safely
+          const spiceLevel = item.selectedModifiers?.find(modifier => modifier.name === "Spice Level")?.options?.[0]?.name || null;
+          
+          return {
+            name: itemName,
+            quantity: itemQuantity,
+            itemPrice: itemPrice.toFixed(2),
+            modifiers: item.selectedModifiers?.filter((modifier) => modifier.name !== "Spice Level").flatMap((modifier) => modifier.options || []) || [],
+            modifier_price: modifierPrice,
+            spicelevel: spiceLevel,
+            total_item_price: ((itemPrice + modifierPrice) * itemQuantity).toFixed(2)
+          };
+        }),
+        grand_total: orderData.items.reduce((sum, item) => {
+          const itemPrice = typeof item.price === 'number' ? item.price : parseFloat(String(item.price).replace(/[^\d.-]/g, '')) || 0;
+          const itemQuantity = typeof item.quantity === 'number' ? item.quantity : parseInt(String(item.quantity)) || 1;
+          const modifierPrice = item.selectedModifiers?.reduce((modSum, modifier) => {
+            return modSum + (modifier.options?.reduce((optSum, option) => {
+              const optionPrice = typeof option.price === 'number' ? option.price : parseFloat(String(option.price).replace(/[^\d.-]/g, '')) || 0;
+              return optSum + optionPrice;
+            }, 0) || 0);
+          }, 0) || 0;
+          return sum + ((itemPrice + modifierPrice) * itemQuantity);
+        }, 0).toFixed(2)
       };
       
       console.log('Formatted payload:', orderData);

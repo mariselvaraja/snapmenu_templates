@@ -11,11 +11,12 @@ import {
 } from 'react-icons/fa';
 
 import { useAppDispatch, useAppSelector, addItem } from '../../../common/redux';
-import { CartItem } from '../../../redux/slices/cartSlice';
 import { Carousel, CarouselItem } from '../../../components/carousel';
 import { usePayment } from '@/hooks';
 import { useCartWithToast } from '../hooks/useCartWithToast';
 import { useNavigate } from 'react-router-dom';
+import { useCart, createCartItem, CartItem } from '../context/CartContext';
+import ModifierModal from '../components/ModifierModal';
 
 // Define interfaces for the experienceCard data structure
 interface ExperienceCardSection {
@@ -42,6 +43,8 @@ export default function Home() {
   const [videoOpen, setVideoOpen] = useState(false);
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
   const [currentPopularItemIndex, setCurrentPopularItemIndex] = useState(0);
+  const [isModifierModalOpen, setIsModifierModalOpen] = useState(false);
+  const [selectedMenuItem, setSelectedMenuItem] = useState<any>(null);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { items: menuItems, loading: menuLoading } = useAppSelector(state => state.menu);
@@ -115,19 +118,12 @@ export default function Home() {
     const needsModifierModal = shouldShowSpiceLevel() || hasModifiers();
 
     if (needsModifierModal) {
-      // Navigate to product detail page for modifier selection
-      navigate(`/product/${menuItem.id}`);
+      // Open the modifier modal and set the selected menu item
+      setSelectedMenuItem(menuItem);
+      setIsModifierModalOpen(true);
     } else {
-      // Directly add to cart without modifiers
-      const cartItem: CartItem = {
-        pk_id: typeof menuItem.pk_id === 'string' ? parseInt(menuItem.pk_id) : (menuItem.pk_id || 0),
-        name: menuItem.name,
-        price: menuItem.price,
-        image: menuItem.image,
-        quantity: 1,
-        spiceLevel: '',
-        selectedModifiers: []
-      };
+      // Directly add to cart without opening modifier modal using standardized function
+      const cartItem = createCartItem(menuItem, [], 1);
       addItemWithToast(cartItem);
     }
   };
@@ -329,7 +325,7 @@ export default function Home() {
                             )}
                             <div className="p-6">
                               <h3 className="text-xl font-semibold mb-2">{menuItem.name}</h3>
-                              <p className="text-gray-600 mb-4">{menuItem.description}</p>
+                              <p className="text-gray-600 mb-4 line-clamp-3">{menuItem.description}</p>
                               <div className="flex items-center justify-between">
                                { (!siteConfiguration?.hidePriceInWebsite)? (!siteConfiguration?.hidePriceInHome)?<span className="text-lg font-bold text-red-500">${menuItem.price}</span>:null:null}
                                {!siteConfiguration?.hidePriceInWebsite && !siteConfiguration?.hidePriceInHome && (
@@ -770,6 +766,24 @@ export default function Home() {
           </div>
         </section>
       )}
+      
+      {/* Modifier Modal */}
+      <ModifierModal 
+        isOpen={isModifierModalOpen}
+        onClose={(updatedItem) => {
+          // If an updated item was returned, it means the user added it to cart
+          if (updatedItem) {
+            // Item was already added to cart in the modal, just close
+            setIsModifierModalOpen(false);
+            setSelectedMenuItem(null);
+          } else {
+            // User cancelled, just close
+            setIsModifierModalOpen(false);
+            setSelectedMenuItem(null);
+          }
+        }}
+        menuItem={selectedMenuItem}
+      />
     </div>
   );
 }
