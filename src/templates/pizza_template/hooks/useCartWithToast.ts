@@ -1,23 +1,22 @@
-import { useAppDispatch } from '../../../redux';
-import { addItem, removeItem, updateItemQuantity, CartItem } from '../../../redux/slices/cartSlice';
+import { useCart, CartItem } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 
 export const useCartWithToast = () => {
-  const dispatch = useAppDispatch();
+  const { addItem, removeItem, updateItemQuantity } = useCart();
   const { showToast } = useToast();
 
   const addItemWithToast = (item: CartItem) => {
-    dispatch(addItem(item));
+    addItem(item);
  
   };
 
-  const removeItemWithToast = (itemId: number) => {
-    dispatch(removeItem(itemId));
+  const removeItemWithToast = (skuId: string) => {
+    removeItem(skuId);
     showToast('Item removed from cart', 'info', 2000);
   };
 
-  const updateItemQuantityWithToast = (id: number, quantity: number) => {
-    dispatch(updateItemQuantity({ id, quantity }));
+  const updateItemQuantityWithToast = (skuId: string, quantity: number) => {
+    updateItemQuantity(skuId, quantity);
   };
 
   return {

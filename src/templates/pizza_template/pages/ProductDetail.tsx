@@ -1,11 +1,11 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, CheckCircle } from 'lucide-react';
-import { useAppSelector, useAppDispatch, toggleDrawer } from '../../../redux';
+import { useAppSelector, useAppDispatch } from '../../../redux';
 import { MenuItem } from '../../../redux/slices/menuSlice';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCartWithToast } from '../hooks/useCartWithToast';
-import { CartItem } from '../../../redux/slices/cartSlice';
+import { useCart, CartItem, generateSkuId, createCartItem, normalizeModifiers } from '../context/CartContext';
 import { 
     LoadingState, 
     ErrorState, 
@@ -38,11 +38,8 @@ export default function ProductDetail() {
     
     console.log("product", product)
     
-    // Get cart items from Redux store
-    const { items: cartItems } = useAppSelector(state => state.cart);
-    
-    // Check if this product is in the cart
-    const cartItem = cartItems.find((item:any) => item.id === product?.id);
+    // Get cart items from cart context
+    const { state: { items: cartItems }, toggleDrawer } = useCart();
     
     // State for selected modifiers and spice level
     const [selectedModifiers, setSelectedModifiers] = useState<SelectedModifier[]>([]);
@@ -67,37 +64,8 @@ export default function ProductDetail() {
         }
     }, [product?.pk_id]); // Reset when product ID changes
 
-    // Initialize selectedModifiers and spiceLevel from cart item if it exists
-    useEffect(() => {
-        if (cartItem && cartItem.selectedModifiers) {
-            // Convert cart item modifiers to the format expected by the component
-            const convertedModifiers = cartItem.selectedModifiers.map((modifier:any) => ({
-                name: modifier.name,
-                options: modifier.options.map((option:any) => ({
-                    name: option.name,
-                    price: option.price
-                }))
-            }));
-            
-            setSelectedModifiers(convertedModifiers);
-            
-            // Set spice level if it exists in the cart item
-            const spiceLevelModifier = cartItem.selectedModifiers.find((mod:any) => mod.name === 'Spice Level');
-            if (spiceLevelModifier && spiceLevelModifier.options.length > 0) {
-                const spiceLevelName = spiceLevelModifier.options[0].name;
-                if (spiceLevelName === 'Mild') setSpiceLevel(1);
-                else if (spiceLevelName === 'Medium') setSpiceLevel(2);
-                else if (spiceLevelName === 'Hot') setSpiceLevel(3);
-            } else {
-                setSpiceLevel(0);
-            }
-        }
-        else
-        {
-            setSelectedModifiers([]);
-            setSpiceLevel(0);
-        }
-    }, [cartItem]);
+    // Initialize selectedModifiers and spiceLevel - removed cart item dependency
+    // The ProductHeader component will handle cart item logic independently
     
     // Helper function to check if spice level should be validated
     const shouldValidateSpiceLevel = () => {
@@ -158,24 +126,9 @@ export default function ProductDetail() {
         
         // Make sure product exists
         if (product) {
-            // Create cart item with selected modifiers
-            // Convert any string prices to numbers for the cart and ensure they are valid numbers
-            const normalizedModifiers = selectedModifiers.map(modifier => ({
-                name: modifier.name,
-                options: modifier.options.map(option => {
-                    let price = 0;
-                    if (typeof option.price === 'string') {
-                        price = parseFloat(option.price.replace(/[^\d.-]/g, '')) || 0;
-                    } else if (typeof option.price === 'number' && !isNaN(option.price)) {
-                        price = option.price;
-                    }
-                    return {
-                        name: option.name,
-                        price: price
-                    };
-                })
-            }));
-
+            // Prepare modifiers including spice level
+            let allModifiers = [...selectedModifiers];
+            
             // Add spice level as a modifier if it's set and spice is applicable
             if (spiceLevel > 0 && shouldValidateSpiceLevel()) {
                 const spiceLevelNames = ['Mild', 'Medium', 'Hot'];
@@ -188,34 +141,22 @@ export default function ProductDetail() {
                 };
                 
                 // Check if spice level modifier already exists
-                const existingSpiceLevelIndex = normalizedModifiers.findIndex(mod => mod.name === 'Spice Level');
+                const existingSpiceLevelIndex = allModifiers.findIndex(mod => mod.name === 'Spice Level');
                 if (existingSpiceLevelIndex >= 0) {
-                    normalizedModifiers[existingSpiceLevelIndex] = spiceLevelModifier;
+                    allModifiers[existingSpiceLevelIndex] = spiceLevelModifier;
                 } else {
-                    normalizedModifiers.push(spiceLevelModifier);
+                    allModifiers.push(spiceLevelModifier);
                 }
             }
 
-            // Ensure product price is a valid number
-            const productPrice = typeof product.price === 'number' && !isNaN(product.price) 
-                ? product.price 
-                : 0;
-
-            const cartItem: CartItem = {
-                pk_id: typeof product.pk_id === 'string' ? parseInt(product.pk_id) : (product.pk_id || 0),
-                name: product.name,
-                price: productPrice,
-                image: product.image || '',
-                quantity: 1,
-                spiceLevel: '',
-                selectedModifiers: normalizedModifiers
-            };
+            // Use standardized cart item creation
+            const cartItem = createCartItem(product, allModifiers, 1);
             
             // Add item to cart with toast notification
             addItemWithToast(cartItem);
             
             // Open cart drawer
-            dispatch(toggleDrawer(true));
+            toggleDrawer(true);
         }
     };
     

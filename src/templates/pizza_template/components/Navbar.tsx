@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, ShoppingCart, Search, Utensils, Pizza } from 'lucide-react';
 import { useAppSelector, useAppDispatch } from '../../../redux';
-import { toggleDrawer } from '../../../redux/slices/cartSlice';
 import { openSearchModal, closeSearchModal } from '../../../redux/slices/searchSlice';
+import { useCart } from '../context/CartContext';
 import { SearchModal } from '../../../components/search';
 import { usePayment } from '@/hooks';
 
@@ -50,7 +50,7 @@ export default function Navbar() {
     navigationLinks = navigationBar.navigation.links;
   }
   
-  const cartItems = useAppSelector((state) => state.cart.items);
+  const { state: { items: cartItems }, toggleDrawer } = useCart();
   const isSearchModalOpen = useAppSelector((state) => state.search.isModalOpen);
   const dispatch = useAppDispatch();
   const cartItemCount = cartItems.reduce((total: number, item: { quantity: number }) => total + item.quantity, 0);
@@ -98,7 +98,7 @@ export default function Navbar() {
               Order Online
             </a>}
         {  isPaymentAvilable &&    <button
-                onClick={() => dispatch(toggleDrawer())}
+                onClick={() => toggleDrawer()}
                 className="relative hover:text-red-500 transition-colors"
               >
                 <ShoppingCart className="h-6 w-6" />
@@ -148,7 +148,7 @@ export default function Navbar() {
                 <Search className="h-6 w-6" />
               </button>
             { isPaymentAvilable && <button
-                onClick={() => dispatch(toggleDrawer())}
+                onClick={() => toggleDrawer()}
                 className="relative p-2"
               >
                 <ShoppingCart className="h-6 w-6" />

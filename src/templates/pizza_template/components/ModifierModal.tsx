@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Check } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '../../../common/redux';
-import { CartItem } from '../../../redux/slices/cartSlice';
+import { CartItem } from '../context/CartContext';
 import { useCartWithToast } from '../hooks/useCartWithToast';
+import { generateSkuId, createCartItem, normalizeModifiers } from '../context/CartContext';
 import { FaPepperHot } from 'react-icons/fa';
 
 interface ModifierOption {
@@ -41,20 +42,16 @@ export default function ModifierModal({ isOpen, onClose, menuItem }: ModifierMod
   const menuItems = useAppSelector((state) => state.menu.items);
   
   // Find the original menu item to get its modifiers
-  const originalMenuItem = menuItem ? menuItems.find(item => item.id === menuItem.id) : null;
+  const originalMenuItem = menuItem ? menuItems.find(item => item.pk_id === menuItem.pk_id) : null;
   
-  // Get modifiers from the original menu item or from the current item
-  const extraToppingsModifiers: Modifier[] = originalMenuItem?.modifiers_list || 
-    (Array.isArray(menuItem?.modifiers_list) 
-      ? menuItem?.modifiers_list 
-      : menuItem?.modifiers_list ? [menuItem?.modifiers_list] : []);
-
-  console.log(": menuItem?.modifiers_list", menuItem?.modifiers_list);
-
   // Helper function to check if spice level should be shown based on is_spice_applicable
   const shouldShowSpiceLevel = () => {
     // Check if product has is_spice_applicable field and it's "yes"
     if (originalMenuItem?.is_spice_applicable?.toLowerCase() === 'yes') {
+      return true;
+    }
+    // Also check in the menuItem directly (for cart items)
+    if (menuItem?.is_spice_applicable?.toLowerCase() === 'yes') {
       return true;
     }
     // Also check in raw_api_data if it exists
@@ -70,8 +67,33 @@ export default function ModifierModal({ isOpen, onClose, menuItem }: ModifierMod
         // If parsing fails, continue with other checks
       }
     }
+    // Check in menuItem's raw_api_data as well
+    if (menuItem?.raw_api_data) {
+      try {
+        const rawData = typeof menuItem.raw_api_data === 'string' 
+          ? JSON.parse(menuItem.raw_api_data) 
+          : menuItem.raw_api_data;
+        if (rawData?.is_spice_applicable?.toLowerCase() === 'yes') {
+          return true;
+        }
+      } catch (e) {
+        // If parsing fails, continue with other checks
+      }
+    }
     return false;
   };
+
+  // Get modifiers from the original menu item or from the current item
+  const extraToppingsModifiers: Modifier[] = originalMenuItem?.modifiers_list || 
+    (Array.isArray(menuItem?.modifiers_list) 
+      ? menuItem?.modifiers_list 
+      : menuItem?.modifiers_list ? [menuItem?.modifiers_list] : []);
+
+  console.log(": menuItem?.modifiers_list", menuItem?.modifiers_list);
+  console.log("originalMenuItem:", originalMenuItem);
+  console.log("extraToppingsModifiers:", extraToppingsModifiers);
+  console.log("shouldShowSpiceLevel():", shouldShowSpiceLevel());
+  console.log("menuItem:", menuItem);
 
   // Define available modifiers - only show spice level if applicable
   const spiceLevelModifier: Modifier = {
@@ -104,7 +126,15 @@ export default function ModifierModal({ isOpen, onClose, menuItem }: ModifierMod
     if (isOpen && menuItem) {
       // Initialize with the item's selected modifiers if they exist
       if (menuItem.selectedModifiers && menuItem.selectedModifiers.length > 0) {
-        setSelectedModifiers(menuItem.selectedModifiers);
+        // Deep clone the selected modifiers to avoid reference issues
+        const clonedModifiers = menuItem.selectedModifiers.map((modifier: any) => ({
+          name: modifier.name,
+          options: modifier.options.map((option: any) => ({
+            name: option.name,
+            price: option.price
+          }))
+        }));
+        setSelectedModifiers(clonedModifiers);
       } else {
         // Otherwise initialize with empty array
         setSelectedModifiers([]);
@@ -275,27 +305,8 @@ export default function ModifierModal({ isOpen, onClose, menuItem }: ModifierMod
       return;
     }
     
-    // Create cart item with selected modifiers
-    // Convert any string prices to numbers for the cart
-    const normalizedModifiers = selectedModifiers.map(modifier => ({
-      name: modifier.name,
-      options: modifier.options.map(option => ({
-        name: option.name,
-        price: typeof option.price === 'string' 
-          ? parseFloat(option.price.replace(/[^\d.-]/g, '')) || 0
-          : option.price
-      }))
-    }));
-
-    const cartItem: CartItem = {
-      pk_id: typeof menuItem.pk_id === 'string' ? parseInt(menuItem.pk_id) : (menuItem.pk_id || 0),
-      name: menuItem.name,
-      price: menuItem.price,
-      image: menuItem.image,
-      quantity: menuItem.quantity || 1, // Use existing quantity if editing
-      spiceLevel: '',
-      selectedModifiers: normalizedModifiers
-    };
+    // Use standardized cart item creation
+    const cartItem = createCartItem(menuItem, selectedModifiers, menuItem.quantity || 1);
     
     // If this is a new item, add it to the cart
     if (!menuItem.selectedModifiers) {

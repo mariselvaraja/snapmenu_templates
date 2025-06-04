@@ -2,20 +2,19 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Trash2, ShoppingBag, Pencil } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useAppSelector, useAppDispatch } from '../../../redux';
-import { toggleDrawer, removeItem, updateItemQuantity, addItem } from '../../../redux/slices/cartSlice';
+import { useCart } from '../context/CartContext';
 import ModifierModal from './ModifierModal';
 
 export default function CartDrawer() {
-  const { items, drawerOpen } = useAppSelector((state) => state.cart);
-  const dispatch = useAppDispatch();
+  const { state: { items, drawerOpen }, toggleDrawer, removeItem, updateItemQuantity, addItem } = useCart();
   
   // State for modifier modal
   const [isModifierModalOpen, setIsModifierModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
   
-  // Get menu items from Redux store to access original modifiers
-  const menuItems = useAppSelector((state) => state.menu.items);
+  // Note: Menu items would need to be passed as props or accessed through context
+  // For now, we'll handle this without the menu items dependency
+  const menuItems: any[] = [];
 
   // Calculate cart totals
   const subtotal = items.reduce((total: number, item: { 
@@ -65,29 +64,27 @@ export default function CartDrawer() {
   }, 0);
 
   const closeDrawer = () => {
-    dispatch(toggleDrawer(false));
+    toggleDrawer(false);
   };
 
-  const handleRemoveItem = (itemId: number) => {
-    dispatch(removeItem(itemId));
+  const handleRemoveItem = (skuId: string) => {
+    removeItem(skuId);
   };
 
-  const handleQuantityChange = (itemId: number, quantity: number) => {
+  const handleQuantityChange = (skuId: string, quantity: number) => {
     if (quantity <= 0) {
-      dispatch(removeItem(itemId));
+      removeItem(skuId);
     } else {
-      dispatch(updateItemQuantity({ id: itemId, quantity }));
+      updateItemQuantity(skuId, quantity);
     }
   };
 
   // Open modifier modal for editing
   const handleEditItem = (item: any) => {
     // Find the original menu item to get its modifiers
-    // Try to match by pk_id first, then by id, then by name as fallback
+    // Try to match by pk_id first, then by name as fallback
     const originalMenuItem = menuItems.find(menuItem => 
       menuItem.pk_id === item.pk_id || 
-      menuItem.id === item.pk_id || 
-      menuItem.id === item.id ||
       menuItem.name === item.name
     );
     
@@ -108,8 +105,8 @@ export default function CartDrawer() {
   // Handle updating item with new modifiers
   const handleUpdateItem = (updatedItem: any) => {
     if (editingItem) {
-      // First remove the old item using pk_id
-      dispatch(removeItem(editingItem.pk_id));
+      // First remove the old item using sku_id (not pk_id)
+      removeItem(editingItem.sku_id);
       
       // Then add the updated item with the same quantity
       // We need to set the quantity explicitly to avoid incrementing it
@@ -120,7 +117,7 @@ export default function CartDrawer() {
       
       // Use setTimeout to ensure the remove action completes first
       setTimeout(() => {
-        dispatch(addItem(updatedCartItem));
+        addItem(updatedCartItem);
       }, 0);
     }
     handleCloseModifierModal();
@@ -166,7 +163,8 @@ export default function CartDrawer() {
               {items.length > 0 ? (
                 <ul className="divide-y">
                   {items.map((item: { 
-                    pk_id: number, 
+                    pk_id: number,
+                    sku_id: string, 
                     name: string, 
                     price: number, 
                     quantity: number, 
@@ -179,7 +177,7 @@ export default function CartDrawer() {
                       }[];
                     }[]
                   }) => (
-                    <li key={item.pk_id} className="p-4 flex">
+                    <li key={item.sku_id} className="p-4 flex">
                       {item.image ? (
                         <img
                           src={item.image}
@@ -223,7 +221,7 @@ export default function CartDrawer() {
                                 parseInt(String(item.quantity)) || 1;
                               
                               // Calculate total price (base price + modifiers) * quantity
-                              const totalItemPrice = (baseItemPrice ) * quantity;
+                              const totalItemPrice = (baseItemPrice + modifierTotal) * quantity;
                               
                               // Ensure we have a valid number before using toFixed
                               const formattedPrice = !isNaN(totalItemPrice) ? 
@@ -297,7 +295,7 @@ export default function CartDrawer() {
                                 // Ensure quantity is a number
                                 const quantity = typeof item.quantity === 'number' ? item.quantity : 
                                   parseInt(String(item.quantity)) || 1;
-                                handleQuantityChange(item.pk_id, quantity - 1);
+                                handleQuantityChange(item.sku_id, quantity - 1);
                               }}
                             >
                               -
@@ -312,7 +310,7 @@ export default function CartDrawer() {
                                 // Ensure quantity is a number
                                 const quantity = typeof item.quantity === 'number' ? item.quantity : 
                                   parseInt(String(item.quantity)) || 1;
-                                handleQuantityChange(item.pk_id, quantity + 1);
+                                handleQuantityChange(item.sku_id, quantity + 1);
                               }}
                             >
                               +

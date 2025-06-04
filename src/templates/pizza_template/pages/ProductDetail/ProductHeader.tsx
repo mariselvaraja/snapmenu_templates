@@ -5,7 +5,8 @@ import { IoLeafOutline } from 'react-icons/io5';
 import { CiWheat } from 'react-icons/ci';
 import { GoDotFill } from 'react-icons/go';
 import { ShoppingCart, Plus, Minus } from 'lucide-react';
-import { MenuItem, useAppSelector, useAppDispatch, updateItemQuantity, removeItem } from '../../../../common/redux';
+import { MenuItem, useAppSelector } from '../../../../common/redux';
+import { useCart, generateSkuId, normalizeModifiers } from '../../context/CartContext';
 import { SelectedModifier } from './types';
 import ModifiersList from './ModifiersList';
 import NutritionalInfo from './NutritionalInfo';
@@ -37,6 +38,7 @@ interface ProductHeaderProps {
 const ProductHeader: React.FC<ProductHeaderProps> = ({
     product,
     calculateTotalPrice,
+    selectedModifiers,
     spiceLevel,
     setSpiceLevel,
     modifiersList,
@@ -50,10 +52,8 @@ const ProductHeader: React.FC<ProductHeaderProps> = ({
     isPaymentAvilable,
     showPrice
 }) => {
-    const dispatch = useAppDispatch();
-    
-    // Get cart items from Redux store
-    const { items: cartItems } = useAppSelector(state => state.cart);
+    // Get cart items from cart context
+    const { state: { items: cartItems }, updateItemQuantity, removeItem } = useCart();
 
 
     function formatToDollar(value:any) {
@@ -75,8 +75,39 @@ const ProductHeader: React.FC<ProductHeaderProps> = ({
     }
 
     
-    // Check if this product is in the cart
-    const cartItem = cartItems.find((item:any) => item.id === product.id);
+    // Generate the expected sku_id based on current modifiers and spice level using standardized functions
+    let allModifiers = [...selectedModifiers];
+    
+    // Add spice level as a modifier if it's set
+    if (spiceLevel > 0) {
+        const spiceLevelNames = ['Mild', 'Medium', 'Hot'];
+        const spiceLevelModifier = {
+            name: 'Spice Level',
+            options: [{
+                name: spiceLevelNames[spiceLevel - 1],
+                price: 0
+            }]
+        };
+        
+        // Check if spice level modifier already exists
+        const existingSpiceLevelIndex = allModifiers.findIndex(mod => mod.name === 'Spice Level');
+        if (existingSpiceLevelIndex >= 0) {
+            allModifiers[existingSpiceLevelIndex] = spiceLevelModifier;
+        } else {
+            allModifiers.push(spiceLevelModifier);
+        }
+    }
+    
+    // Use the standardized normalizeModifiers function to ensure consistency
+    const normalizedModifiers = normalizeModifiers(allModifiers);
+    
+    const expectedSkuId = generateSkuId(
+        typeof product.pk_id === 'string' ? parseInt(product.pk_id) : (product.pk_id || 0), 
+        normalizedModifiers
+    );
+    
+    // Check if this specific variant is in the cart
+    const cartItem = cartItems.find((item:any) => item.sku_id === expectedSkuId);
     return (
         <div className="flex flex-col lg:flex-row justify-between items-start mb-4 sm:mb-6">
             <div className="lg:pr-8 lg:w-1/2 w-full order-2 lg:order-1">
@@ -136,9 +167,9 @@ const ProductHeader: React.FC<ProductHeaderProps> = ({
                                 onClick={() => {
                                     const newQuantity = cartItem.quantity - 1;
                                     if (newQuantity > 0) {
-                                        dispatch(updateItemQuantity({ id: product.id, quantity: newQuantity }));
+                                        updateItemQuantity(cartItem.sku_id, newQuantity);
                                     } else {
-                                        dispatch(removeItem(product.id));
+                                        removeItem(cartItem.sku_id);
                                     }
                                 }}
                             >
@@ -150,7 +181,7 @@ const ProductHeader: React.FC<ProductHeaderProps> = ({
                             <button
                                 className="w-8 h-8 flex items-center justify-center bg-red-500 hover:bg-red-600 text-white rounded-full transition-colors"
                                 onClick={() => {
-                                    dispatch(updateItemQuantity({ id: product.id, quantity: cartItem.quantity + 1 }));
+                                    updateItemQuantity(cartItem.sku_id, cartItem.quantity + 1);
                                 }}
                             >
                                 <Plus className="w-3 h-3" />
@@ -262,9 +293,9 @@ const ProductHeader: React.FC<ProductHeaderProps> = ({
                                     onClick={() => {
                                         const newQuantity = cartItem.quantity - 1;
                                         if (newQuantity > 0) {
-                                            dispatch(updateItemQuantity({ id: product.id, quantity: newQuantity }));
+                                            updateItemQuantity(cartItem.sku_id, newQuantity);
                                         } else {
-                                            dispatch(removeItem(product.id));
+                                            removeItem(cartItem.sku_id);
                                         }
                                     }}
                                 >
@@ -276,7 +307,7 @@ const ProductHeader: React.FC<ProductHeaderProps> = ({
                                 <button
                                     className="w-8 h-8 flex items-center justify-center bg-red-500 hover:bg-red-600 text-white rounded-full transition-colors"
                                     onClick={() => {
-                                        dispatch(updateItemQuantity({ id: product.id, quantity: cartItem.quantity + 1 }));
+                                        updateItemQuantity(cartItem.sku_id, cartItem.quantity + 1);
                                     }}
                                 >
                                     <Plus className="w-3 h-3" />

@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, X, Check } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAppSelector, useAppDispatch, clearCart } from '../../../common/redux';
+import { useAppSelector } from '../../../common/redux';
+import { useCart } from '../context/CartContext';
 import { cartService } from '../../../services';
 
 interface FormData {
@@ -49,7 +50,7 @@ interface CartItemModifier {
 }
 
 interface CartItem {
-  id: number;
+  pk_id: number;
   name: string;
   price: number;
   quantity: number;
@@ -59,8 +60,7 @@ interface CartItem {
 
 export default function Checkout() {
   const navigate = useNavigate();
-  const dispatch = useAppDispatch();
-  const cartItems = useAppSelector((state) => state.cart.items);
+  const { state: { items: cartItems }, clearCart } = useCart();
   
   // Calculate cart totals including modifiers
   const subtotal = cartItems.reduce((total: number, item: any) => {
@@ -234,7 +234,7 @@ export default function Checkout() {
       // Set order complete after all other state updates
       setOrderComplete(true); 
       // Clear the cart after successful order
-      dispatch(clearCart());
+      clearCart();
     } catch (error) {
       console.error('Error placing order:', error);
       // Handle error (could show an error message to the user)
@@ -461,7 +461,7 @@ export default function Checkout() {
               
               <div className="max-h-60 overflow-y-auto mb-6">
                 {cartItems.map((item: CartItem) => (
-                  <div key={item.id} className="py-3 border-b">
+                  <div key={item.pk_id} className="py-3 border-b">
                     <div className="flex justify-between items-start">
                       <div className="flex items-start">
                         {item.image ? (

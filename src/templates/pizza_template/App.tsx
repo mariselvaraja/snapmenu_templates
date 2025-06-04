@@ -7,6 +7,7 @@ import TitleUpdater from './components/TitleUpdater';
 import PizzaTemplateRoutes from '../../routes/pizza_template_routes';
 import { SiteContentProvider } from './context/SiteContentContext';
 import { ToastProvider } from './context/ToastContext';
+import { CartProvider } from './context/CartContext';
 import { SearchInitializer } from '../../components';
 
 // Layout component that conditionally renders the Navbar
@@ -35,9 +36,11 @@ function App() {
   return (
     <SiteContentProvider>
       <ToastProvider>
-        <Router>
-          <Layout />
-        </Router>
+        <CartProvider>
+          <Router>
+            <Layout />
+          </Router>
+        </CartProvider>
       </ToastProvider>
     </SiteContentProvider>
   );

@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { ShoppingCart, Plus, Minus, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useAppDispatch, useAppSelector, fetchMenuRequest, MenuItem, removeItem, updateItemQuantity } from '../../../common/redux';
-import { CartItem } from '../../../redux/slices/cartSlice';
+import { useAppDispatch, useAppSelector, fetchMenuRequest, MenuItem } from '../../../common/redux';
+import { useCart, CartItem, generateSkuId, createCartItem, normalizeModifiers } from '../context/CartContext';
 import { useCartWithToast } from '../hooks/useCartWithToast';
 import ModifierModal from '../components/ModifierModal';
 import _ from 'lodash';
@@ -47,7 +47,7 @@ export default function Menu() {
     
     // Get menu data and cart items from Redux store
     const { items, loading, error } = useAppSelector(state => state.menu);
-    const { items: cartItems } = useAppSelector(state => state.cart);
+    const { state: { items: cartItems }, removeItem, updateItemQuantity } = useCart();
     const {isPaymentAvilable} = usePayment();
     
     // Scroll to top when component mounts
@@ -102,16 +102,8 @@ export default function Menu() {
             setSelectedMenuItem(menuItem);
             setIsModifierModalOpen(true);
         } else {
-            // Directly add to cart without opening modifier modal
-            const cartItem: CartItem = {
-                pk_id: typeof menuItem.pk_id === 'string' ? parseInt(menuItem.pk_id) : (menuItem.pk_id || 0),
-                name: menuItem.name,
-                price: menuItem.price,
-                image: menuItem.image,
-                quantity: 1,
-                spiceLevel: '',
-                selectedModifiers: []
-            };
+            // Directly add to cart without opening modifier modal using standardized function
+            const cartItem = createCartItem(menuItem, [], 1);
             addItemWithToast(cartItem);
         }
     };
@@ -301,7 +293,18 @@ export default function Menu() {
                 {/* Modifier Modal */}
                 <ModifierModal 
                     isOpen={isModifierModalOpen}
-                    onClose={() => setIsModifierModalOpen(false)}
+                    onClose={(updatedItem) => {
+                        // If an updated item was returned, it means the user added it to cart
+                        if (updatedItem) {
+                            // Item was already added to cart in the modal, just close
+                            setIsModifierModalOpen(false);
+                            setSelectedMenuItem(null);
+                        } else {
+                            // User cancelled, just close
+                            setIsModifierModalOpen(false);
+                            setSelectedMenuItem(null);
+                        }
+                    }}
                     menuItem={selectedMenuItem}
                 />
                 <div className="text-center mb-16">
@@ -444,7 +447,11 @@ export default function Menu() {
                              { showPrice &&  isPaymentAvilable && <div className="flex items-center justify-between">
                                     
                                     {/* Add button or quantity controls */}
-                                    {!cartItems.find((cartItem:any) => cartItem.pk_id === item.id && cartItem.quantity > 0) ? (
+                                    {(() => {
+                                        const expectedSkuId = generateSkuId(typeof item.pk_id === 'string' ? parseInt(item.pk_id) : (item.pk_id || 0), []);
+                                        const cartItem = cartItems.find((cartItem:any) => cartItem.sku_id === expectedSkuId);
+                                        return !cartItem || cartItem.quantity === 0;
+                                    })() ? (
                                         <button
                                             className="inline-flex items-center bg-red-500 text-white px-5 py-2 rounded-full hover:bg-red-600 transition-colors text-base font-medium"
                                             onClick={() => handleAddToCart(item)}
@@ -458,13 +465,14 @@ export default function Menu() {
                                                 className="w-8 h-8 flex items-center justify-center bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-full transition-colors"
                                                 onClick={(e) => {
                                                     e.stopPropagation();
-                                                    const cartItem = cartItems.find((cartItem:any) => cartItem.pk_id === item.id);
+                                                    const expectedSkuId = generateSkuId(typeof item.pk_id === 'string' ? parseInt(item.pk_id) : (item.pk_id || 0), []);
+                                                    const cartItem = cartItems.find((cartItem:any) => cartItem.sku_id === expectedSkuId);
                                                     if (cartItem) {
                                                         const newQuantity = cartItem.quantity - 1;
                                                         if (newQuantity > 0) {
-                                                            dispatch(updateItemQuantity({ id: item.id, quantity: newQuantity }));
+                                                            updateItemQuantity(cartItem.sku_id, newQuantity);
                                                         } else {
-                                                            dispatch(removeItem(item.id));
+                                                            removeItem(cartItem.sku_id);
                                                         }
                                                     }
                                                 }}
@@ -472,17 +480,20 @@ export default function Menu() {
                                                 <Minus className="w-3 h-3" />
                                             </button>
                                             <span className="mx-3 text-base font-semibold">
-                                                {cartItems.find((cartItem:any) => cartItem.pk_id === item.id)?.quantity || 0}
+                                                {cartItems.find((cartItem:any) => cartItem.sku_id === generateSkuId(typeof item.pk_id === 'string' ? parseInt(item.pk_id) : (item.pk_id || 0), []))?.quantity || 0}
                                             </span>
                                             <button
                                                 className="w-8 h-8 flex items-center justify-center bg-red-500 hover:bg-red-600 text-white rounded-full transition-colors"
                                                 onClick={(e) => {
                                                     e.stopPropagation();
-                                                    const cartItem = cartItems.find((cartItem:any) => cartItem.pk_id === item.id);
+                                                    const expectedSkuId = generateSkuId(typeof item.pk_id === 'string' ? parseInt(item.pk_id) : (item.pk_id || 0), []);
+                                                    const cartItem = cartItems.find((cartItem:any) => cartItem.sku_id === expectedSkuId);
                                                     if (cartItem) {
-                                                        dispatch(updateItemQuantity({ id: item.id, quantity: cartItem.quantity + 1 }));
+                                                        updateItemQuantity(cartItem.sku_id, cartItem.quantity + 1);
                                                     } else {
-                                                        handleAddToCart(item);
+                                                        // Use standardized cart item creation
+                                                        const newCartItem = createCartItem(item, [], 1);
+                                                        addItemWithToast(newCartItem);
                                                     }
                                                 }}
                                             >
