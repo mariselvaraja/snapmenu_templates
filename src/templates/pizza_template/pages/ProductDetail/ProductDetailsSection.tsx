@@ -61,15 +61,7 @@ const ProductDetailsSection: React.FC<ProductDetailsSectionProps> = ({ product }
                         <div className="text-gray-900 pl-5 sm:pl-6 text-sm sm:text-base">{product.bar_code}</div>
                     </div>
                 )}
-                {product.comment && (
-                    <div className="border-b border-gray-100 pb-2 sm:pb-3">
-                        <div className="flex items-center mb-1">
-                            <Info className="h-3 w-3 sm:h-4 sm:w-4 mr-2 text-gray-500" />
-                            <span className="font-medium text-gray-700 text-sm sm:text-base">Chef Notes</span>
-                        </div>
-                        <div className="text-gray-900 pl-5 sm:pl-6 text-sm sm:text-base">{product.comment}</div>
-                    </div>
-                )}
+            
             </div>
         </div>
     );

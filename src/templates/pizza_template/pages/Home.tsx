@@ -10,9 +10,12 @@ import {
   FaUserTie, FaClipboardList, FaReceipt
 } from 'react-icons/fa';
 
-import { useAppDispatch, useAppSelector, addItem, CartItem } from '../../../common/redux';
+import { useAppDispatch, useAppSelector, addItem } from '../../../common/redux';
+import { CartItem } from '../../../redux/slices/cartSlice';
 import { Carousel, CarouselItem } from '../../../components/carousel';
 import { usePayment } from '@/hooks';
+import { useCartWithToast } from '../hooks/useCartWithToast';
+import { useNavigate } from 'react-router-dom';
 
 // Define interfaces for the experienceCard data structure
 interface ExperienceCardSection {
@@ -40,8 +43,9 @@ export default function Home() {
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
   const [currentPopularItemIndex, setCurrentPopularItemIndex] = useState(0);
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const { items: menuItems, loading: menuLoading } = useAppSelector(state => state.menu);
-  
+  const { addItemWithToast } = useCartWithToast();
 
   const {isPaymentAvilable} = usePayment();
   const { rawApiResponse } = useAppSelector(state => state.siteContent);
@@ -77,6 +81,56 @@ export default function Home() {
   
   
   const currentBanner = banners[currentBannerIndex];
+
+  // Helper function to handle adding items to cart with modifier check
+  const handleAddToCart = (menuItem: any) => {
+    // Helper function to check if spice level should be shown based on is_spice_applicable
+    const shouldShowSpiceLevel = () => {
+      // Check if product has is_spice_applicable field and it's "yes"
+      if (menuItem?.is_spice_applicable?.toLowerCase() === 'yes') {
+        return true;
+      }
+      // Also check in raw_api_data if it exists
+      if (menuItem?.raw_api_data) {
+        try {
+          const rawData = typeof menuItem.raw_api_data === 'string' 
+            ? JSON.parse(menuItem.raw_api_data) 
+            : menuItem.raw_api_data;
+          if (rawData?.is_spice_applicable?.toLowerCase() === 'yes') {
+            return true;
+          }
+        } catch (e) {
+          // If parsing fails, continue with other checks
+        }
+      }
+      return false;
+    };
+
+    // Helper function to check if modifiers are available
+    const hasModifiers = () => {
+      return menuItem?.modifiers_list && menuItem.modifiers_list.length > 0;
+    };
+
+    // Check if spice level is available OR modifiers are available
+    const needsModifierModal = shouldShowSpiceLevel() || hasModifiers();
+
+    if (needsModifierModal) {
+      // Navigate to product detail page for modifier selection
+      navigate(`/product/${menuItem.id}`);
+    } else {
+      // Directly add to cart without modifiers
+      const cartItem: CartItem = {
+        pk_id: typeof menuItem.pk_id === 'string' ? parseInt(menuItem.pk_id) : (menuItem.pk_id || 0),
+        name: menuItem.name,
+        price: menuItem.price,
+        image: menuItem.image,
+        quantity: 1,
+        spiceLevel: '',
+        selectedModifiers: []
+      };
+      addItemWithToast(cartItem);
+    }
+  };
 
   // Fallback menu items
   const fallbackMenuItems = [
@@ -284,14 +338,7 @@ export default function Home() {
       className="inline-flex items-center bg-red-500 text-white px-3 py-1 rounded-full hover:bg-red-600 transition-colors"
       onClick={(e) => {
         e.preventDefault();
-        const cartItem: CartItem = {
-          id: menuItem.id,
-          name: menuItem.name,
-          price: menuItem.price,
-          image: menuItem.image,
-          quantity: 1,
-        };
-        dispatch(addItem(cartItem));
+        handleAddToCart(menuItem);
       }}
     >
       <ShoppingCart className="h-4 w-4 mr-1" />
@@ -418,16 +465,7 @@ export default function Home() {
                                         <p className="text-gray-600 mb-4">{menuItem.description}</p>
                                         <button
                                           className="w-full inline-flex items-center justify-center bg-red-500 text-white px-4 py-3 rounded-lg hover:bg-red-600 transition-colors"
-                                          onClick={() => {
-                                            const cartItem: CartItem = {
-                                              id: menuItem.id,
-                                              name: menuItem.name,
-                                              price: menuItem.price,
-                                              image: menuItem.image,
-                                              quantity: 1,
-                                            };
-                                            dispatch(addItem(cartItem));
-                                          }}
+                                          onClick={() => handleAddToCart(menuItem)}
                                         >
                                           <ShoppingCart className="h-5 w-5 mr-2" />
                                           Add to Cart
@@ -609,16 +647,7 @@ export default function Home() {
                               <p className="text-gray-600 mb-4">{menuItem.description}</p>
                               <button
                                 className="w-full inline-flex items-center justify-center bg-red-500 text-white px-4 py-3 rounded-lg hover:bg-red-600 transition-colors"
-                                onClick={() => {
-                                  const cartItem: CartItem = {
-                                    id: menuItem.id,
-                                    name: menuItem.name,
-                                    price: menuItem.price,
-                                    image: menuItem.image,
-                                    quantity: 1,
-                                  };
-                                  dispatch(addItem(cartItem));
-                                }}
+                                onClick={() => handleAddToCart(menuItem)}
                               >
                                 <ShoppingCart className="h-5 w-5 mr-2" />
                                 Add to Cart
