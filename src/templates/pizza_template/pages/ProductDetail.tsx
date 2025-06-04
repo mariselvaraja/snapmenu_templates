@@ -47,8 +47,8 @@ export default function ProductDetail() {
     // State for selected modifiers and spice level
     const [selectedModifiers, setSelectedModifiers] = useState<SelectedModifier[]>([]);
     
-    // State for spice level (1 = mild, 2 = medium, 3 = hot)
-    const [spiceLevel, setSpiceLevel] = useState<number>(2);
+    // State for spice level (0 = none, 1 = mild, 2 = medium, 3 = hot)
+    const [spiceLevel, setSpiceLevel] = useState<number>(0);
 
     const {isPaymentAvilable} = usePayment();
     
@@ -56,6 +56,16 @@ export default function ProductDetail() {
     useEffect(() => {
         window.scrollTo(0, 0);
     }, [productId]);
+
+    // Reset modifiers and spice level when product changes
+    useEffect(() => {
+        if (product) {
+            // Reset to default state when product changes
+            setSelectedModifiers([]);
+            setSpiceLevel(0);
+            setValidationErrors({});
+        }
+    }, [product?.pk_id]); // Reset when product ID changes
 
     // Initialize selectedModifiers and spiceLevel from cart item if it exists
     useEffect(() => {
@@ -78,11 +88,14 @@ export default function ProductDetail() {
                 if (spiceLevelName === 'Mild') setSpiceLevel(1);
                 else if (spiceLevelName === 'Medium') setSpiceLevel(2);
                 else if (spiceLevelName === 'Hot') setSpiceLevel(3);
+            } else {
+                setSpiceLevel(0);
             }
         }
         else
         {
             setSelectedModifiers([]);
+            setSpiceLevel(0);
         }
     }, [cartItem]);
     
@@ -258,75 +271,89 @@ export default function ProductDetail() {
     }, [product]);
     
 
-    // Handle modifier option selection
+    // Handle modifier option selection with improved logic from ModifierModal
     const handleModifierOptionSelect = (modifierName: string, option: ModifierOption): void => {
-        // Check if this modifier is multi-select
-        const modifier = modifiersList.find(mod => mod.name === modifierName);
-        const isMultiSelect = modifier?.is_multi_select?.toLowerCase() === 'yes';
-        
+        // Find if this modifier already exists in our selections
         setSelectedModifiers(prev => {
-            // Check if this modifier is already in the selected list
             const modifierIndex = prev.findIndex(mod => mod.name === modifierName);
             
+            // Check if the modifier is required and multi-select
+            let isRequired = false;
+            let isMultiSelect = false;
+            
+            const modifier = modifiersList.find(mod => mod.name === modifierName);
+            if (modifier) {
+                isRequired = modifier.is_forced?.toLowerCase() === 'yes';
+                isMultiSelect = modifier.is_multi_select?.toLowerCase() === 'yes';
+            }
+            
+            // If modifier exists in our selections
             if (modifierIndex >= 0) {
-                // Modifier exists, check if option is already selected
-                const optionIndex = prev[modifierIndex].options.findIndex((opt: {name: string}) => opt.name === option.name);
+                const newModifiers = [...prev];
+                const currentOptions = newModifiers[modifierIndex].options;
                 
-                if (optionIndex >= 0) {
-                    // Option is already selected, remove it (only for multi-select modifiers)
+                // For required modifiers, we don't allow deselection, only switching between options
+                if (isRequired) {
+                    // If multi-select is enabled, we can add multiple options
                     if (isMultiSelect) {
-                        const newOptions = [...prev[modifierIndex].options];
-                        newOptions.splice(optionIndex, 1);
+                        const optionIndex = currentOptions.findIndex(opt => opt.name === option.name);
                         
-                        // If no options left, remove the whole modifier
-                        if (newOptions.length === 0) {
-                            const newModifiers = [...prev];
-                            newModifiers.splice(modifierIndex, 1);
-                            return newModifiers;
+                        if (optionIndex >= 0) {
+                            // For required multi-select, don't allow removing the last option
+                            if (currentOptions.length > 1) {
+                                newModifiers[modifierIndex] = {
+                                    ...newModifiers[modifierIndex],
+                                    options: currentOptions.filter(opt => opt.name !== option.name)
+                                };
+                            }
                         } else {
-                            // Update options for this modifier
-                            const newModifiers = [...prev];
+                            // Add the option
                             newModifiers[modifierIndex] = {
                                 ...newModifiers[modifierIndex],
-                                options: newOptions
+                                options: [...currentOptions, option]
                             };
-                            return newModifiers;
                         }
                     } else {
-                        // For radio buttons, clicking an already selected option does nothing
-                        return prev;
-                    }
-                } else {
-                    // Option not selected, add it
-                    const newModifiers = [...prev];
-                    
-                    // For radio buttons (non-multi-select), replace all options with the new one
-                    if (!isMultiSelect) {
+                        // For single-select required modifiers, just replace the current option
                         newModifiers[modifierIndex] = {
                             ...newModifiers[modifierIndex],
-                            options: [{ name: option.name, price: option.price }]
+                            options: [option]
                         };
+                    }
+                } 
+                // For optional modifiers, toggle the option
+                else {
+                    const optionIndex = currentOptions.findIndex(opt => opt.name === option.name);
+                    
+                    if (optionIndex >= 0) {
+                        // Remove the option if it's already selected
+                        newModifiers[modifierIndex] = {
+                            ...newModifiers[modifierIndex],
+                            options: currentOptions.filter(opt => opt.name !== option.name)
+                        };
+                        
+                        // If no options left, remove the entire modifier
+                        if (newModifiers[modifierIndex].options.length === 0) {
+                            newModifiers.splice(modifierIndex, 1);
+                        }
                     } else {
-                        // For checkboxes (multi-select), add the new option to existing ones
-                        newModifiers[modifierIndex] = {
-                            ...newModifiers[modifierIndex],
-                            options: [...newModifiers[modifierIndex].options, { name: option.name, price: option.price } as any]
-                        };
+                        // Add the option
+                        if (isMultiSelect) {
+                            // For multi-select, add to existing options
+                            newModifiers[modifierIndex] = {
+                                ...newModifiers[modifierIndex],
+                                options: [...currentOptions, option]
+                            };
+                        } else {
+                            // For single-select, replace existing option
+                            newModifiers[modifierIndex] = {
+                                ...newModifiers[modifierIndex],
+                                options: [option]
+                            };
+                        }
                     }
-                    
-                    // Clear validation error for this modifier if it exists
-                    if (validationErrors[modifierName]) {
-                        setValidationErrors(prevErrors => {
-                            const newErrors = { ...prevErrors };
-                            delete newErrors[modifierName];
-                            return newErrors;
-                        });
-                    }
-                    
-                    return newModifiers;
                 }
-            } else {
-                // Modifier doesn't exist, add it with this option
+                
                 // Clear validation error for this modifier if it exists
                 if (validationErrors[modifierName]) {
                     setValidationErrors(prevErrors => {
@@ -336,10 +363,20 @@ export default function ProductDetail() {
                     });
                 }
                 
-                return [...prev, {
-                    name: modifierName,
-                    options: [{ name: option.name, price: option.price }]
-                }];
+                return newModifiers;
+            } 
+            // If this modifier doesn't exist in our selections yet
+            else {
+                // Clear validation error for this modifier if it exists
+                if (validationErrors[modifierName]) {
+                    setValidationErrors(prevErrors => {
+                        const newErrors = { ...prevErrors };
+                        delete newErrors[modifierName];
+                        return newErrors;
+                    });
+                }
+                
+                return [...prev, { name: modifierName, options: [option] }];
             }
         });
     };
