@@ -1,6 +1,9 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { X, Printer, CreditCard, DollarSign, Receipt } from 'lucide-react';
+import { useDispatch, useSelector } from 'react-redux';
+import { makePaymentRequest } from '../../../../common/redux/slices/paymentSlice';
+import { RootState } from '../../../../common/store';
 
 interface OrderItem {
   name: string;
@@ -24,6 +27,9 @@ interface BillComponentProps {
 }
 
 const BillComponent: React.FC<BillComponentProps> = ({ onClose, order, tableNumber }) => {
+  const dispatch = useDispatch();
+  const { isLoading, error } = useSelector((state: RootState) => state.payment);
+
   // Calculate subtotal
   const subtotal = order.items.reduce((total, item) => total + item.price * item.quantity, 0);
   
@@ -32,6 +38,16 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order, tableNumb
   
   // Calculate total
   const total = subtotal + tax;
+
+  // Handle payment
+  const handlePayment = () => {
+    dispatch(makePaymentRequest({
+      orderId: order.id,
+      amount: total,
+      tableNumber: tableNumber || undefined,
+      paymentMethod: 'card', // Default to card payment
+    }));
+  };
   
   // Format date
   const formattedDate = new Date(order.date).toLocaleString('en-US', {
@@ -121,23 +137,26 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order, tableNumb
           
           {/* Payment Options */}
           <div className="space-y-3">
-            <button className="w-full py-3 bg-amber-500 text-white rounded-lg flex items-center justify-center font-medium hover:bg-amber-600 transition-colors">
+            <button 
+              onClick={handlePayment}
+              disabled={isLoading}
+              className="w-full py-3 bg-amber-500 text-white rounded-lg flex items-center justify-center font-medium hover:bg-amber-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
               <CreditCard className="h-5 w-5 mr-2" />
-              Pay with Card
-            </button>
-            <button className="w-full py-3 bg-gray-800 text-white rounded-lg flex items-center justify-center font-medium hover:bg-gray-900 transition-colors">
-              <DollarSign className="h-5 w-5 mr-2" />
-              Pay with Cash
-            </button>
-            <button className="w-full py-3 border border-gray-300 text-gray-700 rounded-lg flex items-center justify-center font-medium hover:bg-gray-50 transition-colors">
-              <Printer className="h-5 w-5 mr-2" />
-              Print Bill
+              {isLoading ? 'Processing...' : 'Make Payment'}
             </button>
           </div>
+
+          {/* Error Message */}
+          {error && (
+            <div className="mt-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+              {error}
+            </div>
+          )}
           
-          {/* Thank You Note */}
+          {/* Make Payment Note */}
           <div className="text-center mt-6 text-sm text-gray-500">
-            <p>Thank you for dining with us!</p>
+            <p>Make Payment</p>
             <p>We hope to see you again soon.</p>
           </div>
         </div>

@@ -142,7 +142,9 @@ export default function TableReservation({
     e.preventDefault();
     
     function getStartAndEndTime(dateStr:any, timeStr:any) {
-      const [time, meridian] = timeStr.split(' ');
+      // If no time is selected, use a default time (e.g., 7:00 PM)
+      const defaultTime = timeStr || '7:00 PM';
+      const [time, meridian] = defaultTime.split(' ');
       let [hours, minutes] = time.split(':').map(Number);
     
       // Convert to 24-hour format
@@ -294,81 +296,6 @@ export default function TableReservation({
     );
   }
 
-  if(timeSlots.length === 0) {
-    // Generate default time slots based on operating hours
-    const defaultTimeSlots = generateTimeSlots();
-    
-    return (
-      <div className="w-full">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5 }}
-          className="bg-white p-8 mx-auto max-w-full"
-        >
-          <div className="flex flex-col md:flex-row gap-8">
-            {/* Left side - No Availability Message */}
-            <div className="w-full bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-              <div className="text-center mb-4">
-                <Clock className="w-12 h-12 text-red-400 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-gray-800 mb-2">No Available Time Slots</h3>
-                <p className="text-gray-600 mb-4">
-                  We don't have any available reservations for the selected date. 
-                  Please try selecting a different date or contact us directly.
-                </p>
-              </div>
-              
-              {/* Date Field - Moved to top for better visibility */}
-              <div className="mb-8 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                <label htmlFor="date" className="block text-md font-medium text-gray-700 mb-2">
-                  <Calendar className="inline-block mr-2 h-5 w-5 text-red-500" /> Try Another Date
-                </label>
-                <input
-                  type="date"
-                  id="date"
-                  value={selectedDate}
-                  onChange={(e) => setSelectedDate(e.target.value)}
-                  min={new Date().toISOString().split('T')[0]}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 text-lg"
-                  required
-                />
-              </div>
-              
-              <div className="mt-6">
-                <h4 className="text-lg font-medium text-gray-700 mb-3">Our Regular Hours</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                  {restaurantInfo.operatingHours.map((item, index) => (
-                    <div key={index} className="flex flex-col border border-gray-200 rounded-md p-3 bg-gray-50 hover:bg-gray-100 transition-colors">
-                      <span className="font-medium text-gray-800">{item.day}</span>
-                      <span className="text-gray-600">{item.hours}</span>
-                    </div>
-                  ))}
-                </div>
-                
-                <h4 className="text-lg font-medium text-gray-700 mb-3">Typical Available Time Slots</h4>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                  {defaultTimeSlots.map(time => (
-                    <div
-                      key={time}
-                      className="py-2 px-3 text-sm font-medium rounded-md bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors"
-                    >
-                      {time}
-                    </div>
-                  ))}
-                </div>
-                <p className="text-sm text-gray-500 mt-3 italic">
-                  Note: Availability varies by date. Please select a different date to check availability.
-                </p>
-              </div>
-            </div>
-            
-            {/* Right side - Restaurant Information */}
-   
-          </div>
-        </motion.div>
-      </div>
-    );
-  }
 
   return (
     <div className="w-full">
@@ -440,27 +367,50 @@ export default function TableReservation({
               </div>
               
               {/* Time Slots */}
-              {timeSlots && timeSlots.length != 0 &&    <div>
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  <Clock className="inline-block mr-1 h-4 w-4" /> Available Time Slots
+                  <Clock className="inline-block mr-1 h-4 w-4" /> Preferred Time
                 </label>
-               <div className="grid grid-cols-4 gap-2">
-                  {timeSlots.map(time => (
-                    <button
-                      key={time}
-                      type="button"
-                      onClick={() => setSelectedTime(time)}
-                      className={`py-2 px-3 text-sm font-medium rounded-md transition-colors ${
-                        selectedTime === time
-                          ? 'bg-red-500 text-white'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                      }`}
-                    >
-                      {time}
-                    </button>
-                  ))}
-                </div>
-              </div>}
+                
+                {timeSlots && timeSlots.length > 0 ? (
+                  <>
+                    <p className="text-sm text-gray-600 mb-3">Select your preferred time slot (click again to deselect):</p>
+                    <div className="grid grid-cols-4 gap-2">
+                      {timeSlots.map(time => (
+                        <button
+                          key={time}
+                          type="button"
+                          onClick={() => setSelectedTime(selectedTime === time ? '' : time)}
+                          className={`py-2 px-3 text-sm font-medium rounded-md transition-colors ${
+                            selectedTime === time
+                              ? 'bg-red-500 text-white'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
+                        >
+                          {time}
+                        </button>
+                      ))}
+                    </div>
+                    {selectedTime && (
+                      <div className="mt-3 p-3 bg-green-50 rounded-lg border border-green-200">
+                        <p className="text-sm text-green-800">
+                          <strong>Selected:</strong> {selectedTime} - Click the time again to deselect, or choose a different time.
+                        </p>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <p className="text-sm text-blue-800 mb-2">
+                      <strong>No specific time slots available for this date.</strong>
+                    </p>
+                    <p className="text-sm text-blue-700">
+                      Don't worry! You can still make a reservation. We'll use a default time (7:00 PM) 
+                      and our team will contact you to confirm the best available time that works for you.
+                    </p>
+                  </div>
+                )}
+              </div>
               
               {/* Phone and Email - 2 columns */}
               <div className="grid grid-cols-2 gap-4">
@@ -515,9 +465,11 @@ export default function TableReservation({
               {/* Submit Button */}
               <button
                 type="submit"
-                disabled={reservationLoading}
+                disabled={reservationLoading || (timeSlots && timeSlots.length > 0 && !selectedTime)}
                 className={`w-full ${
-                  reservationLoading ? 'bg-red-400' : 'bg-red-500 hover:bg-red-600'
+                  reservationLoading || (timeSlots && timeSlots.length > 0 && !selectedTime)
+                    ? 'bg-red-400 cursor-not-allowed' 
+                    : 'bg-red-500 hover:bg-red-600'
                 } text-white py-3 px-4 rounded-md font-semibold transition-colors shadow-sm hover:shadow-md mt-6 flex items-center justify-center`}
               >
                 {reservationLoading ? (
@@ -525,6 +477,8 @@ export default function TableReservation({
                     <Loader2 className="animate-spin mr-2 h-5 w-5" />
                     Processing...
                   </>
+                ) : (timeSlots && timeSlots.length > 0 && !selectedTime) ? (
+                  'Please Select a Time Slot'
                 ) : (
                   'Reserve Table'
                 )}

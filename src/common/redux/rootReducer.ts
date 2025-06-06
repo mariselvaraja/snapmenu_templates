@@ -10,6 +10,7 @@ import tableAvailabilityReducer from './slices/tableAvailabilitySlice';
 import makeReservationReducer from './slices/makeReservationSlice';
 import tableStatusReducer from './slices/tableStatusSlice';
 import orderHistoryReducer from './slices/orderHistorySlice';
+import paymentReducer from './slices/paymentSlice';
 import tpnReducer from '../../redux/slices/tpnSlice';
 
 const rootReducer = combineReducers({
@@ -24,6 +25,7 @@ const rootReducer = combineReducers({
   makeReservation: makeReservationReducer,
   tableStatus: tableStatusReducer,
   orderHistory: orderHistoryReducer,
+  payment: paymentReducer,
   tpn: tpnReducer
 });
 

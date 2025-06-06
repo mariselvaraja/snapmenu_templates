@@ -102,21 +102,13 @@ const BillComponent = ({ onClose, order, tableNumber }) => {
           <div className="space-y-3">
             <button className="w-full py-3 bg-orange-600 text-white rounded-lg flex items-center justify-center font-medium hover:bg-orange-700 transition-colors">
               <CreditCard className="h-5 w-5 mr-2" />
-              Pay with Card
-            </button>
-            <button className="w-full py-3 bg-gray-800 text-white rounded-lg flex items-center justify-center font-medium hover:bg-gray-900 transition-colors">
-              <DollarSign className="h-5 w-5 mr-2" />
-              Pay with Cash
-            </button>
-            <button className="w-full py-3 border border-gray-300 text-gray-700 rounded-lg flex items-center justify-center font-medium hover:bg-gray-50 transition-colors">
-              <Printer className="h-5 w-5 mr-2" />
-              Print Bill
+              Make Payment
             </button>
           </div>
           
-          {/* Thank You Note */}
+          {/* Make Payment Note */}
           <div className="text-center mt-6 text-sm text-gray-500">
-            <p>Thank you for dining with us!</p>
+            <p>Make Payment</p>
             <p>We hope to see you again soon.</p>
           </div>
         </div>

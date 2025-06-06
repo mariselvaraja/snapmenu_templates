@@ -1,8 +1,9 @@
 import React from 'react';
 import { X, Download, Phone, Mail, MapPin, Clock } from 'lucide-react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../../../common/store';
 import { useAppSelector } from '../../../../common/redux';
+import { makePaymentRequest } from '../../../../common/redux/slices/paymentSlice';
 import { motion } from 'framer-motion';
 
 interface OrderItem {
@@ -35,6 +36,9 @@ interface BillComponentProps {
 }
 
 const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
+  const dispatch = useDispatch();
+  const { isLoading, error } = useSelector((state: RootState) => state.payment);
+  
   // Convert single order to array if needed
   const orders = Array.isArray(order) ? order : [order];
   
@@ -66,6 +70,16 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
   const tableNumber = sessionStorage.getItem("table_number");
   const restaurant = useSelector((state: RootState) => state.restaurant.info);
   let tablename = sessionStorage.getItem('Tablename');
+
+  // Handle payment
+  const handlePayment = () => {
+    dispatch(makePaymentRequest({
+      orderId: orders.length > 0 ? orders[0].id : 'N/A',
+      amount: totalAmount,
+      tableNumber: tableNumber || undefined,
+      paymentMethod: 'card', // Default to card payment
+    }));
+  };
   
   // Get site content from Redux state for brand name and contact info
   const { rawApiResponse } = useAppSelector(state => state.siteContent);
@@ -404,10 +418,23 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
             </div>
           </div>
           
-          {/* Thank you message */}
-          <div className="text-center mt-6 text-gray-600">
-            <p>Thank you!</p>
+          {/* Make Payment Button */}
+          <div className="mb-6">
+            <button 
+              onClick={handlePayment}
+              disabled={isLoading}
+              className="w-full py-3 bg-red-500 text-white rounded-lg flex items-center justify-center font-medium hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? 'Processing...' : 'Make Payment'}
+            </button>
           </div>
+
+          {/* Error Message */}
+          {error && (
+            <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+              {error}
+            </div>
+          )}
         </div>
         
       </motion.div>

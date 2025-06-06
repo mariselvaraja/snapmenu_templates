@@ -23,6 +23,7 @@ const GET_TABLE_AVAILABILITY_PATH = import.meta.env.VITE_GET_TABLE_AVAILABILITY 
 const MAKE_RESERVATION_PATH = import.meta.env.VITE_MAKE_RESERVATION || "/makeReservation";
 const GET_TABLE_STATUS_PATH = import.meta.env.VITE_GET_TABLE_STATUS || "/getRestaurantTables";
 const GET_PAYMENT_INFO = import.meta.env.VITE_GET_PAYMENT_INFO || "/getTpnConfig";
+const MAKE_PAYMENT_PATH = import.meta.env.VITE_MAKE_PAYMENT || "/makePayment";
 
 // Function to get domain from URL
 const getDomainFromUrl = () => {
@@ -74,7 +75,8 @@ export const endpoints = {
   },
 
   payment: {
-    info: `${API_BASE_URL}${GET_PAYMENT_INFO}`
+    info: `${API_BASE_URL}${GET_PAYMENT_INFO}`,
+    makePayment: `${API_BASE_URL}${MAKE_PAYMENT_PATH}`
   },
   
   // In-dining order endpoints
