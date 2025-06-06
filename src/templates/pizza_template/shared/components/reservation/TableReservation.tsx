@@ -391,13 +391,7 @@ export default function TableReservation({
                         </button>
                       ))}
                     </div>
-                    {selectedTime && (
-                      <div className="mt-3 p-3 bg-green-50 rounded-lg border border-green-200">
-                        <p className="text-sm text-green-800">
-                          <strong>Selected:</strong> {selectedTime} - Click the time again to deselect, or choose a different time.
-                        </p>
-                      </div>
-                    )}
+
                   </>
                 ) : (
                   <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
@@ -465,9 +459,9 @@ export default function TableReservation({
               {/* Submit Button */}
               <button
                 type="submit"
-                disabled={reservationLoading || (timeSlots && timeSlots.length > 0 && !selectedTime)}
+                disabled={reservationLoading || (!selectedDate || (timeSlots && timeSlots.length > 0 && !selectedTime))}
                 className={`w-full ${
-                  reservationLoading || (timeSlots && timeSlots.length > 0 && !selectedTime)
+                  reservationLoading || (!selectedDate || (timeSlots && timeSlots.length > 0 && !selectedTime))
                     ? 'bg-red-400 cursor-not-allowed' 
                     : 'bg-red-500 hover:bg-red-600'
                 } text-white py-3 px-4 rounded-md font-semibold transition-colors shadow-sm hover:shadow-md mt-6 flex items-center justify-center`}
@@ -477,6 +471,8 @@ export default function TableReservation({
                     <Loader2 className="animate-spin mr-2 h-5 w-5" />
                     Processing...
                   </>
+                ) : !selectedDate ? (
+                  'Please Select a Date'
                 ) : (timeSlots && timeSlots.length > 0 && !selectedTime) ? (
                   'Please Select a Time Slot'
                 ) : (
