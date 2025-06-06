@@ -31,6 +31,7 @@ import { Confirmation } from '../templates/eatflow_template/pages/Confirmation';
 import ProductDetails from '../templates/eatflow_template/pages/ProductDetails';
 // @ts-ignore
 import InDiningOrderPage from '../templates/eatflow_template/pages/InDiningOrderPage';
+import { PaymentSuccess, PaymentFailure } from '../common/payments/ipos/index';
 
 /**
  * Define routes for the eatflow template
@@ -51,7 +52,9 @@ const EatflowTemplateRoutes = [
   <Route key="checkout" path={commonRoutePaths.checkout} element={<Checkout />} />,
   <Route key="confirmation" path="/confirmation" element={<Confirmation />} />,
   <Route key="in-dining-order" path={commonRoutePaths.inDiningOrder} element={<InDiningOrderPage />} />,
-  <Route key="in-dining-order-with-table" path={commonRoutePaths.inDiningOrderWithTable} element={<InDiningOrderPage />} />
+  <Route key="in-dining-order-with-table" path={commonRoutePaths.inDiningOrderWithTable} element={<InDiningOrderPage />} />,
+  <Route key="payment-success" path={commonRoutePaths.paymentSuccess} element={<PaymentSuccess />} />,
+  <Route key="payment-failure" path={commonRoutePaths.paymentFailure} element={<PaymentFailure />} />
 ];
 
 export default EatflowTemplateRoutes;

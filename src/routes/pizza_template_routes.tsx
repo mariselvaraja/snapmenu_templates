@@ -18,10 +18,10 @@ import Cart from '../templates/pizza_template/pages/Cart';
 import ProductDetail from '../templates/pizza_template/pages/ProductDetail';
 import Checkout from '../templates/pizza_template/pages/Checkout';
 import { InDiningOrder } from '../templates/pizza_template/components/in-dining';
-
 /**
  * Define routes for the pizza template
  * These routes are used in the pizza_template/App.tsx file
+ * Note: Payment routes are now handled at the App level as common routes
  */
 const PizzaTemplateRoutes = [
   <Route key="home" path={commonRoutePaths.home} element={<Home />} />,

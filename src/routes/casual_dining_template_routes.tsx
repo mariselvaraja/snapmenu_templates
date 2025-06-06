@@ -16,6 +16,7 @@ import Reservation from '../templates/casual_dining_template/components/Reservat
 import Blog from '../templates/casual_dining_template/pages/Blog';
 import Checkout from '../templates/casual_dining_template/components/Checkout';
 import { InDiningOrder } from '../templates/casual_dining_template/components/in-dining';
+import { PaymentSuccess, PaymentFailure } from '../common/payments/ipos/index';
 
 /**
  * Define routes for the casual dining template
@@ -35,7 +36,9 @@ const CasualDiningTemplateRoutes = [
   <Route key="cart" path={commonRoutePaths.cart} element={<Cart />} />,
   <Route key="checkout" path={commonRoutePaths.checkout} element={<Checkout />} />,
   <Route key="in-dining-order" path={commonRoutePaths.inDiningOrder} element={<InDiningOrder />} />,
-  <Route key="in-dining-order-with-table" path={commonRoutePaths.inDiningOrderWithTable} element={<InDiningOrder />} />
+  <Route key="in-dining-order-with-table" path={commonRoutePaths.inDiningOrderWithTable} element={<InDiningOrder />} />,
+  <Route key="payment-success" path={commonRoutePaths.paymentSuccess} element={<PaymentSuccess />} />,
+  <Route key="payment-failure" path={commonRoutePaths.paymentFailure} element={<PaymentFailure />} />
 ];
 
 export default CasualDiningTemplateRoutes;

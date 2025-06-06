@@ -36,6 +36,7 @@ import { InDiningOrder } from '../templates/culinary_journey_template/components
 // Import CulinaryJourneyLayout to access its components
 // @ts-ignore
 import { CulinaryJourneyLayout } from '../templates/culinary_journey_template/CulinaryJourneyLayout';
+import { PaymentSuccess, PaymentFailure } from '../common/payments/ipos/index';
 
 // Define PublicLayout and AdminRoute components similar to CulinaryJourneyLayout.jsx
 function AdminRoute({ children }: { children: React.ReactNode }) {
@@ -61,6 +62,10 @@ const CulinaryJourneyTemplateRoutes = [
   // In-dining routes
   <Route key="in-dining-order" path={commonRoutePaths.inDiningOrder} element={<InDiningOrder />} />,
   <Route key="in-dining-order-with-table" path={commonRoutePaths.inDiningOrderWithTable} element={<InDiningOrder />} />,
+  
+  // Payment routes (no template selection like in-dining orders)
+  <Route key="payment-success" path={commonRoutePaths.paymentSuccess} element={<PaymentSuccess />} />,
+  <Route key="payment-failure" path={commonRoutePaths.paymentFailure} element={<PaymentFailure />} />,
   // Home route
   <Route key="home" path={commonRoutePaths.home} element={
     <PublicLayout>

@@ -81,6 +81,7 @@ const TemplateContent = () => {
   let table_number = searchParams.get("table");
 
   const isPlaceInDiningOrderRoute = window.location.pathname.includes('placeindiningorder');
+  const isPaymentRoute = window.location.pathname.includes('payment');
   // Auto-select restaurant if there's only one in the list
   useEffect(() => {
 
@@ -117,6 +118,10 @@ const TemplateContent = () => {
       dispatch(fetchMenuRequest());
       }
 
+      if(isPaymentRoute)
+        {
+          setLocationSelected(true);
+        }
     }
     else
     {
@@ -139,6 +144,11 @@ const TemplateContent = () => {
       dispatch(fetchMenuRequest());
           
         }
+
+        if(isPaymentRoute)
+        {
+          setLocationSelected(true);
+        }
     }
   }, [restaurantState.info, dispatch]);
 
@@ -154,22 +164,22 @@ const TemplateContent = () => {
       if (savedLocation) {
         // If a location is already saved, set locationSelected to true
         // setLocationSelected(true);
-      } else if (!isPlaceInDiningOrderRoute) {
-        // If no location is selected and we're not on the placeindiningorder route, show the selector after a short delay
+      } else if (!isPlaceInDiningOrderRoute && !isPaymentRoute) {
+        // If no location is selected and we're not on the placeindiningorder or payment route, show the selector after a short delay
         const timer = setTimeout(() => {
           setShowLocationSelector(true);
         }, 500);
         return () => clearTimeout(timer);
       }
     }
-  }, [isLoading, isPlaceInDiningOrderRoute]); // Re-run when loading state changes or route changes
+  }, [isLoading, isPlaceInDiningOrderRoute, isPaymentRoute]); // Re-run when loading state changes or route changes
 
   // Make sure the location selector is always shown if no location is selected
   useEffect(() => {
-    if (!locationSelected && !isLoading && !showLocationSelector && !isPlaceInDiningOrderRoute) {
+    if (!locationSelected && !isLoading && !showLocationSelector && !isPlaceInDiningOrderRoute && !isPaymentRoute) {
       setShowLocationSelector(true);
     }
-  }, [locationSelected, isLoading, showLocationSelector, isPlaceInDiningOrderRoute]);
+  }, [locationSelected, isLoading, showLocationSelector, isPlaceInDiningOrderRoute, isPaymentRoute]);
 
   // Template context value
   const templateContextValue = {
@@ -250,7 +260,7 @@ const TemplateContent = () => {
       {locationSelected ? (
         renderTemplate()
       ) : (
-        !isPlaceInDiningOrderRoute && (
+        !isPlaceInDiningOrderRoute && !isPaymentRoute && (
           <div className="min-h-screen bg-white">
             <LocationSelector 
               isOpen={true}

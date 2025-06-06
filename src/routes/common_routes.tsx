@@ -37,4 +37,6 @@ export const commonRoutePaths = {
   checkout: '/checkout',
   product: '/product',
   ourStory: '/our-story',
+  paymentSuccess: '/payment/success',
+  paymentFailure: '/payment/failure',
 };
