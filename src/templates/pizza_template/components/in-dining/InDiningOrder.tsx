@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { Utensils, Trash2, Plus, X, Minus, Search, UtensilsCrossed, Pizza, ArrowLeft, ShoppingCart, ClipboardList, Filter, Check, ChevronRight } from 'lucide-react';
 import { FaPepperHot } from "react-icons/fa";
-import ModifierModal from '../ModifierModal';
+import InDiningModifierModal from './InDiningModifierModal';
 import { LuVegan } from 'react-icons/lu';
 import { IoLeafOutline } from 'react-icons/io5';
 import { CiWheat } from 'react-icons/ci';
@@ -11,7 +11,7 @@ import { useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../../../../common/store';
 import { useDispatch } from 'react-redux';
 import { useLocation } from 'react-router-dom';
-import { addItem, removeItem, toggleDrawer } from '../../../../common/redux/slices/cartSlice';
+import { addItem, removeItem, toggleDrawer, setTableId } from '../../../../common/redux/slices/inDiningCartSlice';
 import { setSearchQuery } from '../../../../common/redux/slices/searchSlice';
 import { getInDiningOrdersRequest, placeInDiningOrderRequest } from '../../../../common/redux/slices/inDiningOrderSlice';
 import SearchBarComponent from '../SearchBarComponent';
@@ -134,7 +134,7 @@ export default function InDiningOrder() {
     dispatch(getInDiningOrdersRequest());
   }, [dispatch]);
   
-  const cartItems = useSelector((state: RootState) => state.cart.items);
+  const cartItems = useSelector((state: RootState) => state.inDiningCart.items);
   const menuItems = useSelector((state: RootState) => state.menu.items);
   const loading = useSelector((state: RootState) => state.menu.loading);
   
@@ -791,10 +791,17 @@ export default function InDiningOrder() {
       {/* Cart Drawer Component */}
       <InDiningCartDrawer onPlaceOrder={handlePlaceOrder} />
       
-      {/* Modifier Modal */}
-      <ModifierModal
+      {/* In-Dining Modifier Modal */}
+      <InDiningModifierModal
         isOpen={isModifierModalOpen}
-        onClose={() => setIsModifierModalOpen(false)}
+        onClose={(updatedItem?: any) => {
+          setIsModifierModalOpen(false);
+          // If an updated item is passed back, it means we're editing an existing cart item
+          // For now, we'll just close the modal since we're adding new items to cart
+          if (updatedItem) {
+            console.log('Updated item received:', updatedItem);
+          }
+        }}
         menuItem={selectedMenuItem}
       />
       

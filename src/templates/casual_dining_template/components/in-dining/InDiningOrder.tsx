@@ -248,7 +248,7 @@ export default function InDiningOrder() {
       </div>
       
       {/* Menu Item Count and Categories */}
-      <div className="sticky top-16 z-30">
+      <div className="sticky top-16">
         <div className="bg-white shadow-sm">
           <div className="mx-auto px-4 sm:px-6 lg:px-8">
             {/* Desktop View */}

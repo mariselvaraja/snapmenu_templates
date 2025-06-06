@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { BrowserRouter as Router, Routes, Link, useLocation } from 'react-router-dom';
+import { Routes, Link, useLocation } from 'react-router-dom';
 import { CartProvider, useCart } from './context/CartContext';
 import { CartDrawer } from './components/CartDrawer';
 import { Footer } from './components/Footer';
@@ -127,9 +127,7 @@ const Layout = () => {
 function App() {
   return (
     <CartProvider>
-      <Router>
-        <Layout />
-      </Router>
+      <Layout />
     </CartProvider>
   );
 }

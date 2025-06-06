@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, useLocation } from 'react-router-dom';
+import { Routes, useLocation } from 'react-router-dom';
 import CartDrawer from './components/CartDrawer';
 import TitleUpdater from './components/TitleUpdater';
 import { Navigation } from './components/Navigation';
@@ -32,10 +32,8 @@ const Layout = () => {
 
 export default function App() {
   return (
-    <Router>
-      <CartProvider>
-        <Layout />
-      </CartProvider>
-    </Router>
+    <CartProvider>
+      <Layout />
+    </CartProvider>
   );
 }

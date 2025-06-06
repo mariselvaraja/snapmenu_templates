@@ -1,5 +1,6 @@
 import { combineReducers } from '@reduxjs/toolkit';
 import cartReducer from './slices/cartSlice';
+import inDiningCartReducer from './slices/inDiningCartSlice';
 import menuReducer from './slices/menuSlice';
 import siteContentReducer from './slices/siteContentSlice';
 import searchReducer from './slices/searchSlice';
@@ -13,6 +14,7 @@ import tpnReducer from '../../redux/slices/tpnSlice';
 
 const rootReducer = combineReducers({
   cart: cartReducer,
+  inDiningCart: inDiningCartReducer,
   menu: menuReducer,
   siteContent: siteContentReducer,
   search: searchReducer,

@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, useLocation } from 'react-router-dom';
+import { Routes, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import CartDrawer from './components/CartDrawer';
@@ -37,9 +37,7 @@ function App() {
     <SiteContentProvider>
       <ToastProvider>
         <CartProvider>
-          <Router>
-            <Layout />
-          </Router>
+          <Layout />
         </CartProvider>
       </ToastProvider>
     </SiteContentProvider>

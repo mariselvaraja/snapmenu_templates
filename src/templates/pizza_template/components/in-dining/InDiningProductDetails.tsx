@@ -6,7 +6,7 @@ import { LuVegan } from 'react-icons/lu';
 import { IoLeafOutline } from 'react-icons/io5';
 import { CiWheat } from 'react-icons/ci';
 import { GoDotFill } from 'react-icons/go';
-import ModifierModal from '../ModifierModal';
+import InDiningModifierModal from './InDiningModifierModal';
 
 // Nutritional Information Section Component
 const NutritionalInfoSection: React.FC<{ product: any }> = ({ product }) => {
@@ -177,7 +177,7 @@ const AllergensSection: React.FC<{ product: any }> = ({ product }) => {
 import { useDispatch, useSelector } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 import { AppDispatch, RootState } from '../../../../common/store';
-import { addItem, toggleDrawer } from '../../../../common/redux/slices/cartSlice';
+import { addItem, toggleDrawer, setTableId } from '../../../../common/redux/slices/inDiningCartSlice';
 
 interface InDiningProductDetailsProps {
   product: any;
@@ -193,7 +193,7 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
   const [isModifierModalOpen, setIsModifierModalOpen] = useState<boolean>(false);
   const [selectedMenuItem, setSelectedMenuItem] = useState<any>(null);
   const dispatch = useDispatch<AppDispatch>();
-  const cartItems = useSelector((state: RootState) => state.cart.items);
+  const cartItems = useSelector((state: RootState) => state.inDiningCart.items);
   
   // Get table number from URL
   const location = useLocation();
@@ -512,10 +512,17 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
         </div>
       </motion.div>
       
-      {/* Modifier Modal */}
-      <ModifierModal
+      {/* In-Dining Modifier Modal */}
+      <InDiningModifierModal
         isOpen={isModifierModalOpen}
-        onClose={() => setIsModifierModalOpen(false)}
+        onClose={(updatedItem?: any) => {
+          setIsModifierModalOpen(false);
+          // If an updated item is passed back, it means we're editing an existing cart item
+          // For now, we'll just close the modal since we're adding new items to cart
+          if (updatedItem) {
+            console.log('Updated item received:', updatedItem);
+          }
+        }}
         menuItem={selectedMenuItem}
       />
     </div>

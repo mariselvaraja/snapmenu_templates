@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Trash2, ShoppingBag } from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../../../../common/store';
-import { toggleDrawer, updateItemQuantity, removeItem } from '../../../../common/redux/slices/cartSlice';
+import { toggleDrawer, updateItemQuantityByCharacteristics, removeItemByCharacteristics } from '../../../../common/redux/slices/inDiningCartSlice';
 
 interface InDiningCartDrawerProps {
   onPlaceOrder?: () => void;
@@ -11,7 +11,7 @@ interface InDiningCartDrawerProps {
 
 const InDiningCartDrawer: React.FC<InDiningCartDrawerProps> = ({ onPlaceOrder }) => {
   const dispatch = useDispatch<AppDispatch>();
-  const { drawerOpen, items } = useSelector((state: RootState) => state.cart);
+  const { drawerOpen, items } = useSelector((state: RootState) => state.inDiningCart);
   const tablename = sessionStorage.getItem('Tablename');
 
   // Calculate subtotal including modifiers
@@ -55,16 +55,12 @@ const InDiningCartDrawer: React.FC<InDiningCartDrawerProps> = ({ onPlaceOrder })
     dispatch(toggleDrawer(false));
   };
 
-  const handleRemoveItem = (itemId: number) => {
-    dispatch(removeItem(itemId));
+  const handleRemoveItem = (item: any) => {
+    dispatch(removeItemByCharacteristics(item));
   };
 
-  const handleQuantityChange = (itemId: number, quantity: number) => {
-    if (quantity <= 0) {
-      dispatch(removeItem(itemId));
-    } else {
-      dispatch(updateItemQuantity({ id: itemId, quantity }));
-    }
+  const handleQuantityChange = (item: any, quantity: number) => {
+    dispatch(updateItemQuantityByCharacteristics({ item, quantity }));
   };
 
   return (
@@ -231,7 +227,7 @@ const InDiningCartDrawer: React.FC<InDiningCartDrawerProps> = ({ onPlaceOrder })
                                             // Ensure quantity is a number
                                             const quantity = typeof item.quantity === 'number' ? item.quantity : 
                                               parseInt(String(item.quantity)) || 1;
-                                            handleQuantityChange(item.id, quantity - 1);
+                                            handleQuantityChange(item, quantity - 1);
                                           }}
                                         >
                                           -
@@ -246,7 +242,7 @@ const InDiningCartDrawer: React.FC<InDiningCartDrawerProps> = ({ onPlaceOrder })
                                             // Ensure quantity is a number
                                             const quantity = typeof item.quantity === 'number' ? item.quantity : 
                                               parseInt(String(item.quantity)) || 1;
-                                            handleQuantityChange(item.id, quantity + 1);
+                                            handleQuantityChange(item, quantity + 1);
                                           }}
                                         >
                                           +
@@ -270,7 +266,7 @@ const InDiningCartDrawer: React.FC<InDiningCartDrawerProps> = ({ onPlaceOrder })
                                   // Ensure quantity is a number
                                   const quantity = typeof item.quantity === 'number' ? item.quantity : 
                                     parseInt(String(item.quantity)) || 1;
-                                  handleQuantityChange(item.id, quantity - 1);
+                                  handleQuantityChange(item, quantity - 1);
                                 }}
                               >
                                 -
@@ -285,7 +281,7 @@ const InDiningCartDrawer: React.FC<InDiningCartDrawerProps> = ({ onPlaceOrder })
                                   // Ensure quantity is a number
                                   const quantity = typeof item.quantity === 'number' ? item.quantity : 
                                     parseInt(String(item.quantity)) || 1;
-                                  handleQuantityChange(item.id, quantity + 1);
+                                  handleQuantityChange(item, quantity + 1);
                                 }}
                               >
                                 +
