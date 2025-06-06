@@ -6,9 +6,10 @@ export const paymentService = {
   /**
    * Make a payment for an order
    */
-  makePayment: async (paymentData: PaymentRequest): Promise<PaymentResponse> => {
+  makePayment: async (table_id: string): Promise<PaymentResponse> => {
     try {
-      const response = await api.post(endpoints.payment.makePayment, paymentData);
+      let url = endpoints.payment.makePayment+"?table_id="+table_id;
+      const response = await api.get(url);
       return response.data as PaymentResponse;
     } catch (error: any) {
       // Handle different error scenarios

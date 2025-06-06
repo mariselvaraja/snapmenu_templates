@@ -38,10 +38,10 @@ const paymentSlice = createSlice({
   initialState,
   reducers: {
     // Make payment actions
-    makePaymentRequest: (state, action: PayloadAction<PaymentRequest>) => {
+    makePaymentRequest: (state, action: PayloadAction<string>) => {
       state.isLoading = true;
       state.error = null;
-      state.currentPaymentRequest = action.payload;
+      state.currentPaymentRequest = null;
     },
     makePaymentSuccess: (state, action: PayloadAction<PaymentResponse>) => {
       state.isLoading = false;

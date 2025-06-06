@@ -9,12 +9,12 @@ import {
 } from '../slices/paymentSlice';
 import { paymentService } from '../../services/paymentService';
 
-function* makePaymentSaga(action: PayloadAction<PaymentRequest>) {
+function* makePaymentSaga(action: PayloadAction<string>) {
   try {
-    const paymentData = action.payload;
+    const table_id = action.payload;
     
     // Call the payment service
-    const response: PaymentResponse = yield call(paymentService.makePayment, paymentData);
+    const response: PaymentResponse = yield call(paymentService.makePayment, table_id);
     
     // Dispatch success action
     yield put(makePaymentSuccess(response));

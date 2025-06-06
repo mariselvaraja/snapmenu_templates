@@ -70,15 +70,13 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
   const tableNumber = sessionStorage.getItem("table_number");
   const restaurant = useSelector((state: RootState) => state.restaurant.info);
   let tablename = sessionStorage.getItem('Tablename');
+  let table_id = sessionStorage.getItem('table_number')  
 
   // Handle payment
   const handlePayment = () => {
-    dispatch(makePaymentRequest({
-      orderId: orders.length > 0 ? orders[0].id : 'N/A',
-      amount: totalAmount,
-      tableNumber: tableNumber || undefined,
-      paymentMethod: 'card', // Default to card payment
-    }));
+    if (table_id) {
+      dispatch(makePaymentRequest(table_id));
+    }
   };
   
   // Get site content from Redux state for brand name and contact info
