@@ -57,6 +57,7 @@ export default function InDiningOrder() {
   
   // Use heroData.banners if available, otherwise use empty array
   const banners = heroData?.banners?.length > 0 ? heroData.banners : [];
+  const table_name = sessionStorage.getItem('Tablename');
 
   console.log("brand", siteContent)
 
@@ -262,11 +263,6 @@ export default function InDiningOrder() {
     // Show the orders view instead of the order confirmation
     setShowOrders(true);
     
-    // Calculate tax amount (5% of total price)
-    const taxAmount = (totalPrice * 0.05)?.toFixed(2);
-    // Calculate grand total (total price + tax)
-    const grandTotal = (totalPrice * 1.05)?.toFixed(2);
-    
     // Transform cart items to the required format
     const orderedItems = cartItems.map((item:any) => {
       // Extract spice level from selectedModifiers if it exists
@@ -277,6 +273,7 @@ export default function InDiningOrder() {
         quantity: item.quantity,
         itemPrice: item.price,
         image: item.image || '',
+        table_name,
         modifiers: modifiers || [],
         spiceLevel: spiceLevel // Include spice level explicitly
       };

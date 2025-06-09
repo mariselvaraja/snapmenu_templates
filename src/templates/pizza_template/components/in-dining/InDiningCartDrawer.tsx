@@ -55,9 +55,6 @@ const InDiningCartDrawer: React.FC<InDiningCartDrawerProps> = ({ onPlaceOrder })
     dispatch(toggleDrawer(false));
   };
 
-  const handleRemoveItem = (item: any) => {
-    dispatch(removeItemByCharacteristics(item));
-  };
 
   const handleQuantityChange = (item: any, quantity: number) => {
     dispatch(updateItemQuantityByCharacteristics({ item, quantity }));
