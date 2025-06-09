@@ -4,6 +4,7 @@ import { CartItem, MenuItem } from '../../../../common/redux';
 export interface ModifierOption {
     name: string;
     price: number | string;  // Allow both number and string types
+    isEnabled?: boolean;
     selectedByDefult?: string;
     attrSortIndex?: number;
     visibility?: string;

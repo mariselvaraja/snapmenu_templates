@@ -224,7 +224,7 @@ const ModifiersList: React.FC<ModifiersListProps> = ({
                     {expandedModifiers[`required-${modIndex}`] && (
                         <div className="p-3">
                             <div className="grid grid-cols-1 gap-2">
-                                {modifier.options.map((option, optIndex) => {
+                                {modifier.options.filter(option => option.isEnabled !== false).map((option, optIndex) => {
                                     // Handle empty option names by using the modifier name
                                     const displayName = option.name ? option.name : modifier.name;
                                     
@@ -293,7 +293,7 @@ const ModifiersList: React.FC<ModifiersListProps> = ({
                             {expandedModifiers[`optional-${modIndex}`] && (
                                 <div className="p-3">
                                     <div className="grid grid-cols-1 gap-2">
-                                        {modifier.options.map((option, optIndex) => {
+                                        {modifier.options.filter(option => option.isEnabled !== false).map((option, optIndex) => {
                                             // Handle empty option names by using the modifier name
                                             const displayName = option.name ? option.name : modifier.name;
                                             

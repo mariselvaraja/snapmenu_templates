@@ -11,6 +11,7 @@ interface MenuItem {
   name: string;
   description: string;
   price: number;
+  indining_price?: number;
   image?: string;
   dietary?: {
     isVegetarian?: boolean;
@@ -109,7 +110,7 @@ const MenuItemCard: React.FC<MenuItemCardProps> = ({
         
         {/* Price on bottom left and Add to Order on bottom right */}
         <div className="flex justify-between items-center mt-auto">
-          <p className="text-lg font-bold text-red-500">${item.price?.toFixed(2)}</p>
+          <p className="text-lg font-bold text-red-500">${(item.indining_price || item.price)?.toFixed(2)}</p>
           <button 
             onClick={() => onAddToOrder(item)}
             className="flex items-center gap-2 bg-red-500 text-white px-4 sm:px-6 py-2 rounded-full hover:bg-red-600 transition-colors text-sm sm:text-base"

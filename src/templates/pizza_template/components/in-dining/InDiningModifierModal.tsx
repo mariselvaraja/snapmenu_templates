@@ -306,7 +306,7 @@ export default function InDiningModifierModal({ isOpen, onClose, menuItem }: InD
     const cartItem = {
       id: menuItem.id || menuItem.pk_id || Date.now(), // Use pk_id as fallback, or timestamp as last resort
       name: menuItem.name,
-      price: typeof menuItem.price === 'number' ? menuItem.price : parseFloat(String(menuItem.price).replace(/[^\d.-]/g, '')) || 0,
+      price: typeof (menuItem.indining_price || menuItem.price) === 'number' ? (menuItem.indining_price || menuItem.price) : parseFloat(String(menuItem.indining_price || menuItem.price).replace(/[^\d.-]/g, '')) || 0,
       image: menuItem.image || '',
       quantity: menuItem.quantity || 1,
       selectedModifiers: selectedModifiers.map(modifier => ({
@@ -458,7 +458,7 @@ export default function InDiningModifierModal({ isOpen, onClose, menuItem }: InD
                         <span className="text-red-500 text-sm ml-1">*</span>
                       </h3>
                       <div className="grid grid-cols-1 gap-2">
-                        {modifier.options.map((option) => (
+                        {modifier.options.filter(option => option.isEnabled !== false).map((option) => (
                           <button
                             key={option.name}
                             onClick={() => handleOptionToggle(modifier.name, option)}
@@ -558,7 +558,7 @@ export default function InDiningModifierModal({ isOpen, onClose, menuItem }: InD
                       {modifier.name}
                     </h3>
                     <div className="grid grid-cols-1 gap-2">
-                      {modifier.options.map((option) => (
+                      {modifier.options.filter(option => option.isEnabled !== false).map((option) => (
                         <button
                           key={option.name}
                           onClick={() => handleOptionToggle(modifier.name, option)}
@@ -598,7 +598,7 @@ export default function InDiningModifierModal({ isOpen, onClose, menuItem }: InD
                   onClick={handleAddToCart}
                   className="w-full bg-red-500 text-white py-3 rounded-full font-semibold hover:bg-red-600 transition-colors"
                 >
-                  {menuItem.selectedModifiers ? 'Update Item' : 'Add to Cart'} - ${(menuItem.price + calculateAdditionalPrice())?.toFixed(2)}
+                  {menuItem.selectedModifiers ? 'Update Item' : 'Add to Cart'} - ${((menuItem.indining_price || menuItem.price) + calculateAdditionalPrice())?.toFixed(2)}
                 </button>
               </div>
             </div>

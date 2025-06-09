@@ -240,7 +240,7 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
     const cartItem = {
       id: product.id,
       name: product.name,
-      price: typeof product.price === 'number' ? product.price : 0,
+      price: typeof (product.indining_price || product.price) === 'number' ? (product.indining_price || product.price) : 0,
       image: product.image || '',
       quantity: 1,
       selectedModifiers: []
@@ -385,7 +385,7 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
                 )}
                 <h2 className="text-2xl font-bold text-gray-800">{product.name}</h2>
               </div>
-              <p className="text-xl font-bold text-red-500 mb-2">${product.price?.toFixed(2)}</p>
+              <p className="text-xl font-bold text-red-500 mb-2">${(product.indining_price || product.price)?.toFixed(2)}</p>
 
               {/* Show spice level indicator if applicable */}
               {shouldShowSpiceLevel() && (
@@ -488,7 +488,7 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
                         </div>
                         <div className="p-2">
                           <h4 className="font-medium text-sm">{item.name}</h4>
-                          <p className="text-red-500 text-xs">${typeof item.price === 'number' ? item.price?.toFixed(2) : item.price}</p>
+                          <p className="text-red-500 text-xs">${typeof (item.indining_price || item.price) === 'number' ? (item.indining_price || item.price)?.toFixed(2) : (item.indining_price || item.price)}</p>
                         </div>
                       </div>
                     ));
