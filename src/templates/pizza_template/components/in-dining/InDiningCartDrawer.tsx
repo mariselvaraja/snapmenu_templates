@@ -41,6 +41,13 @@ const InDiningCartDrawer: React.FC<InDiningCartDrawerProps> = ({ onPlaceOrder })
     // Calculate total price (base price + modifiers) * quantity
     const itemTotal = (baseItemPrice + modifierTotal) * quantity;
     
+    console.log('Cart Drawer - Item:', item.name);
+    console.log('Cart Drawer - Base price:', baseItemPrice);
+    console.log('Cart Drawer - Modifier total:', modifierTotal);
+    console.log('Cart Drawer - Quantity:', quantity);
+    console.log('Cart Drawer - Item total:', itemTotal);
+    console.log('Cart Drawer - Selected modifiers:', item.selectedModifiers);
+    
     return total + itemTotal;
   }, 0);
 
@@ -125,36 +132,22 @@ const InDiningCartDrawer: React.FC<InDiningCartDrawerProps> = ({ onPlaceOrder })
                         <div className="flex justify-between items-center">
                           <h3 className="font-semibold">{item.name}</h3>
                           <div className="text-gray-600">
-                            {/* Calculate and display item price * quantity including modifiers */}
+                            {/* Display base item price * quantity separately */}
                             {(() => {
                               // Ensure price is a number
                               const baseItemPrice = typeof item.price === 'number' ? item.price : 
                                 parseFloat(String(item.price).replace(/[^\d.-]/g, '')) || 0;
                               
-                              // Calculate modifier total
-                              let modifierTotal = 0;
-                              if (item.selectedModifiers && item.selectedModifiers.length > 0) {
-                                item.selectedModifiers.forEach((modifier: any) => {
-                                  modifier.options.forEach((option: any) => {
-                                    // Ensure option price is a number
-                                    const optionPrice = typeof option.price === 'number' ? option.price : 
-                                      parseFloat(String(option.price).replace(/[^\d.-]/g, '')) || 0;
-                                    
-                                    modifierTotal += optionPrice;
-                                  });
-                                });
-                              }
-                              
                               // Ensure quantity is a number
                               const quantity = typeof item.quantity === 'number' ? item.quantity : 
                                 parseInt(String(item.quantity)) || 1;
                               
-                              // Calculate total price (base price + modifiers) * quantity
-                              const totalItemPrice = (baseItemPrice + modifierTotal) * quantity;
+                              // Calculate base price * quantity
+                              const totalBasePrice = baseItemPrice * quantity;
                               
                               // Ensure we have a valid number before using toFixed
-                              const formattedPrice = !isNaN(totalItemPrice) ? 
-                                totalItemPrice.toFixed(2) : "0.00";
+                              const formattedPrice = !isNaN(totalBasePrice) ? 
+                                totalBasePrice.toFixed(2) : "0.00";
                               
                               return (
                                 <span className="font-medium">${formattedPrice}</span>

@@ -92,7 +92,7 @@ export default function InDiningOrder() {
           name: item.name,
           quantity: item.quantity,
           status: item.status,
-          price: item.itemPrice || 0,
+          price: item?.indining_price || item.itemPrice || 0.00 ,
           image: item.image || '',
           modifiers: item.modifiers || [],
           spiceLevel: item.spiceLevel || null
@@ -165,11 +165,6 @@ export default function InDiningOrder() {
     )
   ).sort();
   
-  // Calculate total price
-  const totalPrice = cartItems.reduce(
-    (total:any, item:any) => total + item.price * item.quantity, 
-    0
-  );
 
   // Helper function to check if spice level should be shown based on is_spice_applicable
   const shouldShowSpiceLevel = (product: any) => {
@@ -210,7 +205,7 @@ export default function InDiningOrder() {
     const cartItem = {
       id: product.id,
       name: product.name,
-      price: typeof product.price === 'number' ? product.price : 0,
+      price: product?.indining_price || 0,
       image: product.image || '',
       quantity: 1,
       selectedModifiers: []
@@ -234,24 +229,6 @@ export default function InDiningOrder() {
     setSelectedProduct(null);
     setQuantity(1);
   };
-
-
-  const getItemPrice = (item:any)=>{
-    let price = 0;
-    if((item?.price) && ((item?.price != "$0")))
-    {
-      if(item.price.includes('$'))
-      {
-        return Number(item?.price.replace('$', ''))?.toFixed(2);
-      }
-      else
-      {
-        return item?.price?.toFixed(2)?.toFixed(2);
-      }
-    }
-    return price?.toFixed(2);
-  }
-
   
   const handlePlaceOrder = () => {
     if (cartItems.length === 0) return;
@@ -271,7 +248,7 @@ export default function InDiningOrder() {
       return {
         name: item.name,
         quantity: item.quantity,
-        itemPrice: item.price,
+        itemPrice: item.indining_price,
         image: item.image || '',
         table_name,
         modifiers: modifiers || [],
@@ -759,7 +736,7 @@ export default function InDiningOrder() {
                     
                     {/* Price on bottom left and Add to Order on bottom right */}
                     <div className="flex justify-between items-center mt-auto">
-                      <p className="text-lg font-bold text-red-500">${item.price?.toFixed(2)}</p>
+                      <p className="text-lg font-bold text-red-500">${item?.indining_price || 0.00}</p>
                       <button 
                         onClick={() => openModifiersPopup(item)}
                         className="flex items-center gap-2 bg-red-500 text-white px-4 sm:px-6 py-2 rounded-full hover:bg-red-600 transition-colors text-sm sm:text-base"

@@ -150,16 +150,6 @@ export default function InDiningModifierModal({ isOpen, onClose, menuItem }: InD
     onClose();
   };
 
-  // Helper function to check if a modifier is multi-select
-  const isModifierMultiSelect = (modifierName: string): boolean => {
-    if (modifierName === spiceLevelModifier.name) {
-      return spiceLevelModifier.is_multi_select?.toLowerCase() === 'yes';
-    } else {
-      const modifier = extraToppingsModifiers.find(mod => mod.name === modifierName);
-      return modifier?.is_multi_select?.toLowerCase() === 'yes' || false;
-    }
-  };
-
   const handleOptionToggle = (modifierName: string, option: ModifierOption) => {
     setSelectedModifiers(prev => {
       // Find if this modifier already exists in our selections
@@ -306,7 +296,7 @@ export default function InDiningModifierModal({ isOpen, onClose, menuItem }: InD
     const cartItem = {
       id: menuItem.id || menuItem.pk_id || Date.now(), // Use pk_id as fallback, or timestamp as last resort
       name: menuItem.name,
-      price: typeof (menuItem.indining_price || menuItem.price) === 'number' ? (menuItem.indining_price || menuItem.price) : parseFloat(String(menuItem.indining_price || menuItem.price).replace(/[^\d.-]/g, '')) || 0,
+      price: menuItem.indining_price || 0,
       image: menuItem.image || '',
       quantity: menuItem.quantity || 1,
       selectedModifiers: selectedModifiers.map(modifier => ({
@@ -319,6 +309,8 @@ export default function InDiningModifierModal({ isOpen, onClose, menuItem }: InD
     };
     
     console.log('InDining - Adding item to cart:', cartItem);
+    console.log('InDining - Selected modifiers:', selectedModifiers);
+    console.log('InDining - Calculated additional price:', calculateAdditionalPrice());
     
     // Dispatch to in-dining cart
     dispatch(addItem(cartItem));
@@ -598,7 +590,7 @@ export default function InDiningModifierModal({ isOpen, onClose, menuItem }: InD
                   onClick={handleAddToCart}
                   className="w-full bg-red-500 text-white py-3 rounded-full font-semibold hover:bg-red-600 transition-colors"
                 >
-                  {menuItem.selectedModifiers ? 'Update Item' : 'Add to Cart'} - ${((menuItem.indining_price || menuItem.price) + calculateAdditionalPrice())?.toFixed(2)}
+                  {menuItem.selectedModifiers ? 'Update Item' : 'Add to Cart'} - ${(Number(menuItem.indining_price) || 0).toFixed(2)}{calculateAdditionalPrice() > 0 && ` + $${calculateAdditionalPrice().toFixed(2)}`}
                 </button>
               </div>
             </div>
