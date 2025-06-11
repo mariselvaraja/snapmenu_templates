@@ -14,6 +14,7 @@ interface ModifiersListProps {
         [key: string]: boolean;
     };
     product?: any; // Add product prop to access is_spice_applicable
+    showPrice?: boolean; // Add showPrice prop
 }
 
 
@@ -24,17 +25,9 @@ const ModifiersList: React.FC<ModifiersListProps> = ({
     spiceLevel,
     setSpiceLevel,
     validationErrors = {},
-    product
+    product,
+    showPrice = true
 }) => {
-
-    const { rawApiResponse } = useAppSelector(state => state.siteContent);
-    // Get site content from Redux state
-    const siteContent = rawApiResponse ? 
-      (typeof rawApiResponse === 'string' ? JSON.parse(rawApiResponse) : rawApiResponse) : 
-      {};
-    const homepage = siteContent.homepage;
-    const siteConfiguration = siteContent?.siteConfiguration;
-    const showPrice = siteConfiguration?.hidePriceInWebsite? false:  siteConfiguration?.hidePriceInMenu?false:true;
 
     // Create a local copy of validation errors that we can update
     const [localValidationErrors, setLocalValidationErrors] = useState<{
@@ -252,12 +245,12 @@ const ModifiersList: React.FC<ModifiersListProps> = ({
                                             <div className="font-medium flex items-center justify-center line-clamp-1">
                                                 {displayName}
                                             </div>
-                                            {showPrice && option.price !== undefined && parseFloat(String(option.price)) > 0 && (
+                                            {showPrice && (
                                                 <div className="text-sm text-gray-600 ml-auto">
                                                     (+${typeof option.price === 'number' && !isNaN(option.price) 
                                                         ? option.price.toFixed(2) 
                                                         : typeof option.price === 'string' 
-                                                            ? (parseFloat(option.price) || 0).toFixed(2)
+                                                            ? (parseFloat(option.price.replace(/[^\d.-]/g, '')) || 0).toFixed(2)
                                                             : '0.00'})
                                                 </div>
                                             )}
@@ -321,15 +314,15 @@ const ModifiersList: React.FC<ModifiersListProps> = ({
                                                     <div className="font-medium flex items-center justify-center line-clamp-1">
                                                         {displayName}
                                                     </div>
-                                                    {showPrice && option.price !== undefined && parseFloat(String(option.price)) > 0 && (
-                                                        <div className="text-sm text-gray-600 ml-auto">
-                                                            (+${typeof option.price === 'number' && !isNaN(option.price) 
-                                                                ? option.price.toFixed(2) 
-                                                                : typeof option.price === 'string' 
-                                                                    ? (parseFloat(option.price) || 0).toFixed(2)
-                                                                    : '0.00'})
-                                                        </div>
-                                                    )}
+                                            {showPrice && (
+                                                <div className="text-sm text-gray-600 ml-auto">
+                                                    (+${typeof option.price === 'number' && !isNaN(option.price) 
+                                                        ? option.price.toFixed(2) 
+                                                        : typeof option.price === 'string' 
+                                                            ? (parseFloat(option.price.replace(/[^\d.-]/g, '')) || 0).toFixed(2)
+                                                            : '0.00'})
+                                                </div>
+                                            )}
                                                 </button>
                                             );
                                         })}

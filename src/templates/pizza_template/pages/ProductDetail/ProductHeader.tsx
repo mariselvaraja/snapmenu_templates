@@ -143,6 +143,7 @@ const ProductHeader: React.FC<ProductHeaderProps> = ({
                     setSpiceLevel={setSpiceLevel}
                     validationErrors={validationErrors}
                     product={product}
+                    showPrice={showPrice}
                 />
                 </div>
                 
@@ -268,6 +269,7 @@ const ProductHeader: React.FC<ProductHeaderProps> = ({
                             setSpiceLevel={setSpiceLevel}
                             validationErrors={validationErrors}
                             product={product}
+                            showPrice={showPrice}
                         />
                     </div>
                     
