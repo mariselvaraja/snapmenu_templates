@@ -17,6 +17,7 @@ import { useCartWithToast } from '../hooks/useCartWithToast';
 import { useNavigate } from 'react-router-dom';
 import { useCart, createCartItem, CartItem } from '../context/CartContext';
 import ModifierModal from '../components/ModifierModal';
+import { ComboSection } from '../components';
 
 // Define interfaces for the experienceCard data structure
 interface ExperienceCardSection {
@@ -57,6 +58,7 @@ export default function Home() {
     (typeof rawApiResponse === 'string' ? JSON.parse(rawApiResponse) : rawApiResponse) : 
     {};
   const homepage = siteContent.homepage;
+  const comboData = siteContent.homepage.combo;
   const siteConfiguration = siteContent?.siteConfiguration; 
   console.log("siteConfiguration", siteConfiguration)
   const showPrice = siteConfiguration?.hidePriceInWebsite? false:  siteConfiguration?.hidePriceInHome?false:true;
@@ -390,6 +392,13 @@ export default function Home() {
           </div>
         </section>
       )}
+
+      {/* Combo Section - Only render if comboData exists and has items */}
+      <ComboSection 
+        comboData={comboData}
+        siteConfiguration={siteConfiguration}
+        isPaymentAvailable={isPaymentAvilable}
+      />
 
       {/* Delivery Info - Only render if offers exists and has items */}
       {offers && Array.isArray(offers) && offers.length > 0 && (
