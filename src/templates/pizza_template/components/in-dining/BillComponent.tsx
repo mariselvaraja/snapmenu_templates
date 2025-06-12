@@ -5,6 +5,7 @@ import { RootState } from '../../../../common/store';
 import { useAppSelector } from '../../../../common/redux';
 import { makePaymentRequest } from '../../../../common/redux/slices/paymentSlice';
 import { motion } from 'framer-motion';
+import { usePayment } from '../../../../hooks/usePayment';
 
 interface OrderItem {
   name: string;
@@ -38,6 +39,11 @@ interface BillComponentProps {
 const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
   const dispatch = useDispatch();
   const { isLoading, error } = useSelector((state: RootState) => state.payment);
+  const { isPaymentAvilable } = usePayment();
+  const payment = useSelector((state:any)=>state.payment)
+  const paymentResponse = payment && payment.paymentResponse ? payment.paymentResponse : {"message" : "Error in MakePayment"}
+
+  console.log("payment", paymentResponse)
   
   // Convert single order to array if needed
   const orders = Array.isArray(order) ? order : [order];
@@ -297,6 +303,9 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
     }, 500);
   };
 
+  // Check if payment should be available - combine hook result with order validation
+  const isPaymentAvailable = isPaymentAvilable;
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -311,7 +320,7 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
         initial={{ scale: 0.9, y: 20 }}
         animate={{ scale: 1, y: 0 }}
         exit={{ scale: 0.9, y: 20 }}
-        className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto"
+        className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-hidden flex flex-col"
       >
         {/* Bill Header */}
         <div className="sticky top-0 z-10 bg-white border-b border-gray-200">
@@ -336,8 +345,9 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
           </div>
         </div>
         
-        {/* Bill Content */}
-        <div className="p-4" id="bill-content">
+        {/* Bill Content - Scrollable */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="p-4" id="bill-content">
           {/* Table Name */}
           <div className="text-center mb-6">
             <h1 className="text-2xl font-bold">{tablename}</h1>
@@ -415,9 +425,20 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
               </div>
             </div>
           </div>
-          
-          {/* Make Payment Button */}
-          <div className="mb-6">
+          </div>
+        </div>
+        
+        {/* Fixed Bottom Payment Section - Only show when payment is available */}
+        {isPaymentAvailable && (
+          <div className="border-t border-gray-200 bg-white p-4">
+            {/* Error Message */}
+            {error && (
+              <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+                {error}
+              </div>
+            )}
+            
+            {/* Make Payment Button */}
             <button 
               onClick={handlePayment}
               disabled={isLoading}
@@ -426,14 +447,7 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
               {isLoading ? 'Processing...' : 'Make Payment'}
             </button>
           </div>
-
-          {/* Error Message */}
-          {error && (
-            <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-              {error}
-            </div>
-          )}
-        </div>
+        )}
         
       </motion.div>
     </motion.div>
