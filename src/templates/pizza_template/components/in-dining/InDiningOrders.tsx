@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Utensils, ClipboardList, ArrowLeft, Calendar, Clock, Users, ChevronDown, ChevronUp, X, ShoppingBag } from 'lucide-react';
+import { Utensils, ClipboardList, ArrowLeft, Calendar, Clock, Users, ChevronDown, ChevronUp, X, ShoppingBag, Wifi, WifiOff } from 'lucide-react';
 import BillComponent from './BillComponent';
 import { useSelector, useDispatch } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { RootState } from '../../../../common/store';
 import { InDiningOrder } from '../../../../common/redux/slices/inDiningOrderSlice';
 import { getOrderHistoryRequest } from '../../../../common/redux/slices/orderHistorySlice';
+import { useWebSocketOrders } from '../../hooks/useWebSocketOrders';
 
 // Extended interface to handle both API response formats
 interface ExtendedInDiningOrder extends Partial<InDiningOrder> {
@@ -56,8 +57,52 @@ interface InDiningOrdersProps {
 const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber }) => {
   const [showNotification, setShowNotification] = useState(!!newOrderNumber);
   const [showBill, setShowBill] = useState(false);
+  const [showUpdateIndicator, setShowUpdateIndicator] = useState(false);
   const navigate = useNavigate();
   let tablename = sessionStorage.getItem('Tablename');
+
+  // Get franchise ID from session storage (restaurant_id for websocket)
+  const franchiseId = sessionStorage.getItem('franchise_id') || sessionStorage.getItem('restaurantId') || 'default-franchise';
+  
+  // WebSocket integration
+  const {
+    connectionStatus,
+    isConnected,
+    isConnecting,
+    error: wsError,
+    connect: connectWebSocket,
+    disconnect: disconnectWebSocket
+  } = useWebSocketOrders({
+    restaurantId: franchiseId,
+    tableId: tablename || undefined,
+    autoConnect: true,
+    onOrderUpdate: (data) => {
+      console.log('Order updated via WebSocket:', data);
+      // Show brief update indicator
+      setShowUpdateIndicator(true);
+      setTimeout(() => setShowUpdateIndicator(false), 2000);
+    },
+    onOrderStatusChange: (data) => {
+      console.log('Order status changed via WebSocket:', data);
+      // Show brief update indicator
+      setShowUpdateIndicator(true);
+      setTimeout(() => setShowUpdateIndicator(false), 2000);
+      // Show notification for status changes
+      if (data.status === 'ready') {
+        setShowNotification(true);
+      }
+    },
+    onNewOrder: (data) => {
+      console.log('New order received via WebSocket:', data);
+      setShowNotification(true);
+      // Show brief update indicator
+      setShowUpdateIndicator(true);
+      setTimeout(() => setShowUpdateIndicator(false), 2000);
+    },
+    onConnectionChange: (status) => {
+      console.log('WebSocket connection status changed:', status);
+    }
+  });
   
   // Function to get status badge colors
   const getStatusBadgeClasses = (status: string) => {
@@ -280,9 +325,28 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
             <ShoppingBag className="h-5 w-5 mr-2 text-red-500" />
             Your Orders {itemCount > 0 && `(${itemCount})`}
           </h2>
-          <p className="text-xs text-gray-500">
-            Table Number: {tablename}
-          </p>
+          <div className="flex items-center space-x-2">
+            <p className="text-xs text-gray-500">
+              Table Number: {tablename}
+            </p>
+            {/* WebSocket Connection Status */}
+            <div className="flex items-center space-x-1">
+              {isConnected ? (
+                <Wifi className="h-3 w-3 text-green-500" />
+              ) : isConnecting ? (
+                <div className="h-3 w-3 border border-gray-300 border-t-blue-500 rounded-full animate-spin" />
+              ) : (
+                <WifiOff className="h-3 w-3 text-red-500" />
+              )}
+              <span className={`text-xs ${
+                isConnected ? 'text-green-600' : 
+                isConnecting ? 'text-blue-600' : 
+                'text-red-600'
+              }`}>
+                {isConnected ? 'Live' : isConnecting ? 'Connecting...' : 'Offline'}
+              </span>
+            </div>
+          </div>
         </div>
         <button
           onClick={onClose}

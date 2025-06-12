@@ -31,6 +31,12 @@ export const orderHistorySlice = createSlice({
       state.error = action.payload;
     },
     
+    // Silent refresh - update orders without loading state
+    refreshOrderHistorySilent: (state, action: PayloadAction<InDiningOrder[]>) => {
+      state.orders = action.payload;
+      state.error = null;
+    },
+    
     // Clear order history
     clearOrderHistory: (state) => {
       state.orders = [];
@@ -42,6 +48,7 @@ export const {
   getOrderHistoryRequest,
   getOrderHistorySuccess,
   getOrderHistoryFailure,
+  refreshOrderHistorySilent,
   clearOrderHistory,
 } = orderHistorySlice.actions;
 
