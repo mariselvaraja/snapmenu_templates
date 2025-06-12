@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { X, Plus, Minus, ArrowLeft, Heart, ShoppingCart, Check, Activity, ChevronDown, ChevronUp, Box, AlertTriangle } from 'lucide-react';
+import { X, Plus, Minus, ArrowLeft, Heart, ShoppingCart, Check, Activity, ChevronDown, ChevronUp, Box, AlertTriangle, ClipboardList } from 'lucide-react';
 import { FaPepperHot } from "react-icons/fa";
 import { LuVegan } from 'react-icons/lu';
 import { IoLeafOutline } from 'react-icons/io5';
@@ -183,12 +183,16 @@ interface InDiningProductDetailsProps {
   product: any;
   onClose: () => void;
   menuItems: any[];
+  onProductSelect?: (product: any) => void;
+  onViewOrders?: () => void;
 }
 
 const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({ 
   product, 
   onClose,
-  menuItems
+  menuItems,
+  onProductSelect,
+  onViewOrders
 }) => {
   const [isModifierModalOpen, setIsModifierModalOpen] = useState<boolean>(false);
   const [selectedMenuItem, setSelectedMenuItem] = useState<any>(null);
@@ -311,9 +315,6 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
               </button>
               <div>
                 <h2 className="text-lg font-semibold text-white truncate">{product.name}</h2>
-                <p className="text-xs text-gray-300">
-                  Table Number: {tableNumber ? `#${tableNumber}` : 'No Table'}
-                </p>
               </div>
             </div>
             
@@ -465,10 +466,9 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
                         key={item.id} 
                         className="bg-gray-50 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer flex items-center"
                         onClick={() => {
-                          onClose();
-                          setTimeout(() => {
-                            // This would be handled by the parent component
-                          }, 100);
+                          if (onProductSelect) {
+                            onProductSelect(item);
+                          }
                         }}
                       >
                         <div className="w-16 h-16 flex-shrink-0">
@@ -488,7 +488,7 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
                         </div>
                         <div className="p-2">
                           <h4 className="font-medium text-sm">{item.name}</h4>
-                          <p className="text-red-500 text-xs">${typeof (item.indining_price || item.price) === 'number' ? (item.indining_price || item.price)?.toFixed(2) : (item.indining_price || item.price)}</p>
+                          <p className="text-red-500 text-xs">${(item?.indining_price || 0).toFixed(2)}</p>
                         </div>
                       </div>
                     ));
@@ -500,15 +500,31 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
         </div>
         
         
-        {/* Fixed Bottom Bar with Full-Width Add Button - Only visible on mobile */}
+        {/* Fixed Bottom Bar with Two Buttons - Only visible on mobile */}
         <div className="fixed md:hidden bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-50 shadow-lg">
-          {/* Full-Width Add Button */}
-          <button
-            onClick={handleAddToOrder}
-            className="w-full bg-red-500 text-white py-3 rounded-full hover:bg-red-600 transition-colors font-medium"
-          >
-            {needsCustomization() ? 'Customize & Add' : 'Add to Order'}
-          </button>
+          <div className="flex gap-3">
+            {/* Customize & Add Button */}
+            <button
+              onClick={handleAddToOrder}
+              className="flex-1 bg-red-500 text-white py-3 rounded-full hover:bg-red-600 transition-colors font-medium"
+            >
+              {needsCustomization() ? 'Customize & Add' : 'Add to Order'}
+            </button>
+            
+            {/* View Orders Button */}
+            {onViewOrders && (
+              <button
+                onClick={() => {
+                  onViewOrders();
+                  onClose();
+                }}
+                className="flex-1 bg-gray-100 text-gray-800 py-3 rounded-full hover:bg-gray-200 transition-colors font-medium flex items-center justify-center gap-2"
+              >
+                <ClipboardList className="h-4 w-4" />
+                View Orders
+              </button>
+            )}
+          </div>
         </div>
       </motion.div>
       

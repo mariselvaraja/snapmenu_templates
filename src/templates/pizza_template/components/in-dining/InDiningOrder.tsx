@@ -248,7 +248,7 @@ export default function InDiningOrder() {
       return {
         name: item.name,
         quantity: item.quantity,
-        itemPrice: item.indining_price,
+        itemPrice: item?.indining_price || item.price || 0,
         image: item.image || '',
         table_name,
         modifiers: modifiers || [],
@@ -759,6 +759,11 @@ export default function InDiningOrder() {
           product={selectedProduct}
           onClose={closeProductDetails}
           menuItems={menuItems}
+          onProductSelect={(product) => {
+            setSelectedProduct(product);
+            // Keep the product details modal open with the new product
+          }}
+          onViewOrders={() => setShowOrders(true)}
         />
       )}
       
