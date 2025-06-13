@@ -386,7 +386,7 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
                 )}
                 <h2 className="text-2xl font-bold text-gray-800">{product.name}</h2>
               </div>
-              <p className="text-xl font-bold text-red-500 mb-2">${product?.indining_price || 0.00}</p>
+              <p className="text-xl font-bold text-red-500 mb-2">${Number(product?.indining_price || 0).toFixed(2)}</p>
 
               {/* Show spice level indicator if applicable */}
               {shouldShowSpiceLevel() && (
@@ -488,7 +488,7 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
                         </div>
                         <div className="p-2">
                           <h4 className="font-medium text-sm">{item.name}</h4>
-                          <p className="text-red-500 text-xs">${(item?.indining_price || 0).toFixed(2)}</p>
+                          <p className="text-red-500 text-xs">${Number(item?.indining_price || 0)}</p>
                         </div>
                       </div>
                     ));

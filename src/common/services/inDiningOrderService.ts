@@ -29,13 +29,81 @@ export const inDiningOrderService = {
   /**
    * Get all in-dining orders
    */
-  getInDiningOrders: async (): Promise<any> => {
+  getInDiningOrders: async (tableId?: string): Promise<any> => {
     try {
-      const response = await api.get<GetInDiningOrdersResponse>(endpoints.inDiningOrder.get);
-      let result:any = response.data;
-      result = JSON.parse(result);
-      console.log("response", result)
-      return (result);
+      if (tableId) {
+        // If table ID is provided, get orders for specific table
+        const response = await api.get<GetInDiningOrdersResponse>(
+          endpoints.inDiningOrder.getHistory,
+          {},
+          { table_id: tableId }
+        );
+        let result:any = response.data;
+        console.log("Service response for table", tableId, result);
+        
+        // Ensure we return an array, even if empty
+        if (!result) {
+          console.log("No result, returning empty array");
+          return [];
+        }
+        
+        // If result is already an array, return it
+        if (Array.isArray(result)) {
+          console.log("Result is array:", result);
+          return result;
+        }
+        
+        // If result has orders property, return that
+        if (result.orders && Array.isArray(result.orders)) {
+          console.log("Result has orders property:", result.orders);
+          return result.orders;
+        }
+        
+        // If result is a string, try to parse it
+        if (typeof result === 'string') {
+          try {
+            const parsed = JSON.parse(result);
+            if (Array.isArray(parsed)) {
+              console.log("Parsed string to array:", parsed);
+              return parsed;
+            }
+            if (parsed.orders && Array.isArray(parsed.orders)) {
+              console.log("Parsed string has orders property:", parsed.orders);
+              return parsed.orders;
+            }
+          } catch (parseError) {
+            console.error("Error parsing result string:", parseError);
+          }
+        }
+        
+        console.log("Fallback: returning empty array");
+        return [];
+      } else {
+        // Get all orders
+        const response = await api.get<GetInDiningOrdersResponse>(endpoints.inDiningOrder.get);
+        let result:any = response.data;
+        
+        if (typeof result === 'string') {
+          try {
+            result = JSON.parse(result);
+          } catch (parseError) {
+            console.error("Error parsing result:", parseError);
+            return [];
+          }
+        }
+        
+        console.log("Service response for all orders:", result);
+        
+        // Ensure we return an array
+        if (Array.isArray(result)) {
+          return result;
+        }
+        if (result && Array.isArray(result.orders)) {
+          return result.orders;
+        }
+        
+        return [];
+      }
     } catch (error) {
       console.error('Error fetching in-dining orders:', error);
       throw error;

@@ -49,7 +49,7 @@ const getDomainFromUrl = () => {
     }
   }
   
-   return "annapurna"; 
+   return "testindine"; 
 }; 
 
 // Endpoint configuration object

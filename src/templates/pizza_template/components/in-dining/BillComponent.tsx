@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { X, Download, Phone, Mail, MapPin, Clock } from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../../../common/store';
 import { useAppSelector } from '../../../../common/redux';
-import { makePaymentRequest } from '../../../../common/redux/slices/paymentSlice';
+import { makePaymentRequest, resetPaymentState } from '../../../../common/redux/slices/paymentSlice';
+import { getInDiningOrdersRequest } from '../../../../common/redux/slices/inDiningOrderSlice';
 import { motion } from 'framer-motion';
 import { usePayment } from '../../../../hooks/usePayment';
 
@@ -38,12 +39,31 @@ interface BillComponentProps {
 
 const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
   const dispatch = useDispatch();
-  const { isLoading, error } = useSelector((state: RootState) => state.payment);
+  const { isLoading, error, paymentResponse } = useSelector((state: RootState) => state.payment);
   const { isPaymentAvilable } = usePayment();
-  const payment = useSelector((state:any)=>state.payment)
-  const paymentResponse = payment && payment.paymentResponse ? payment.paymentResponse : {"message" : "Error in MakePayment"}
 
   console.log("payment", paymentResponse)
+
+  // Reset payment state when component mounts
+  useEffect(() => {
+    dispatch(resetPaymentState());
+  }, [dispatch]);
+
+  // Handle close with order refresh
+  const handleClose = () => {
+    dispatch(getInDiningOrdersRequest(table_id || undefined));
+    onClose();
+  };
+
+  // Handle payment link opening in new tab and close component
+  useEffect(() => {
+    if (paymentResponse && paymentResponse.success && (paymentResponse as any).paymentLink) {
+      const paymentLink = (paymentResponse as any).paymentLink;
+      window.open(paymentLink, '_blank');
+      // Close the bill component after opening payment link
+      handleClose();
+    }
+  }, [paymentResponse]);
   
   // Convert single order to array if needed
   const orders = Array.isArray(order) ? order : [order];
@@ -245,7 +265,7 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
                   <div><strong>${item.name}</strong></div>
                   <div style="display: flex;">
                     <div style="width: 60px; text-align: center;">${item.quantity}x</div>
-                    <div style="width: 80px; text-align: right;">$${item.price?.toFixed(2)}</div>
+                    <div style="width: 80px; text-align: right;">$${Number(item.price || 0).toFixed(2)}</div>
                   </div>
                 </div>
                 
@@ -256,7 +276,7 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
                         <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
                           <span>${option.name || modifier.name}</span>
                           ${option.price > 0 ? `
-                            <span style="font-weight: 500;">+$${(option.price * item.quantity).toFixed(2)}</span>
+                            <span style="font-weight: 500;">+$${Number((option.price || 0) * item.quantity).toFixed(2)}</span>
                           ` : ''}
                         </div>
                       `).join('')
@@ -282,7 +302,7 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
           
           <div class="total-row">
             <div>TOTAL</div>
-            <div>$${totalAmount?.toFixed(2)}</div>
+            <div>$${Number(totalAmount || 0).toFixed(2)}</div>
           </div>
           
           <div class="divider"></div>
@@ -313,7 +333,7 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
       exit={{ opacity: 0 }}
       className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
       onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
+        if (e.target === e.currentTarget) handleClose();
       }}
     >
       <motion.div
@@ -335,7 +355,7 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
                 <Download className="h-4 w-4" />
               </button>
               <button
-                onClick={onClose}
+                onClick={handleClose}
                 className="p-1 rounded-full hover:bg-gray-100"
                 aria-label="Close"
               >
@@ -380,7 +400,7 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
                     <span className="font-medium">{item.name}</span>
                     <div className="flex">
                       <span className="w-16 text-center">{item.quantity}x</span>
-                      <span className="w-20 text-right">${item.price?.toFixed(2)}</span>
+                      <span className="w-20 text-right">${Number(item?.price || 0).toFixed(2)}</span>
                     </div>
                   </div>
                   
@@ -393,7 +413,7 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
                             <span>{option.name || modifier.name}</span>
                             {option.price > 0 && (
                               <span className="font-medium">
-                                +${(option.price * item.quantity).toFixed(2)}
+                                +${Number((option.price || 0) * item.quantity).toFixed(2)}
                               </span>
                             )}
                           </div>
@@ -421,15 +441,15 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
             <div className="border-t border-gray-200 pt-4 mt-4">
               <div className="flex justify-between font-bold">
                 <span>TOTAL</span>
-                <span>${totalAmount?.toFixed(2)}</span>
+                <span>${Number(totalAmount || 0).toFixed(2)}</span>
               </div>
             </div>
           </div>
           </div>
         </div>
         
-        {/* Fixed Bottom Payment Section - Only show when payment is available */}
-        {isPaymentAvailable && (
+        {/* Fixed Bottom Payment Section - Only show when payment is available and total is greater than 0 */}
+        {isPaymentAvailable && totalAmount > 0 && (
           <div className="border-t border-gray-200 bg-white p-4">
             {/* Error Message */}
             {error && (

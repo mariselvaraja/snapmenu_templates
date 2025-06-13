@@ -51,7 +51,7 @@ export const inDiningOrderSlice = createSlice({
     },
     
     // Get in-dining orders
-    getInDiningOrdersRequest: (state) => {
+    getInDiningOrdersRequest: (state, action: PayloadAction<string | undefined>) => {
       state.loading = true;
       state.error = null;
     },
@@ -61,6 +61,17 @@ export const inDiningOrderSlice = createSlice({
     },
     getInDiningOrdersFailure: (state, action: PayloadAction<string>) => {
       state.loading = false;
+      state.error = action.payload;
+    },
+    
+    // Get in-dining orders silently (without loading state)
+    getInDiningOrdersSilentRequest: (state) => {
+      state.error = null;
+    },
+    getInDiningOrdersSilentSuccess: (state, action: PayloadAction<InDiningOrder[]>) => {
+      state.orders = action.payload;
+    },
+    getInDiningOrdersSilentFailure: (state, action: PayloadAction<string>) => {
       state.error = action.payload;
     },
     
@@ -180,6 +191,9 @@ export const {
   getInDiningOrdersRequest,
   getInDiningOrdersSuccess,
   getInDiningOrdersFailure,
+  getInDiningOrdersSilentRequest,
+  getInDiningOrdersSilentSuccess,
+  getInDiningOrdersSilentFailure,
   placeInDiningOrderRequest,
   placeInDiningOrderSuccess,
   placeInDiningOrderFailure,
