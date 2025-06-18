@@ -81,6 +81,11 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
       // Show brief update indicator
       setShowUpdateIndicator(true);
       setTimeout(() => setShowUpdateIndicator(false), 2000);
+      
+      // Refresh orders data when order is updated
+      if (tableFromQuery) {
+        dispatch(getOrderHistoryRequest(tableFromQuery));
+      }
     },
     onOrderStatusChange: (data) => {
       console.log('Order status changed via WebSocket:', data);
@@ -91,6 +96,11 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
       if (data.status === 'ready') {
         setShowNotification(true);
       }
+      
+      // Refresh orders data when order status changes
+      if (tableFromQuery) {
+        dispatch(getOrderHistoryRequest(tableFromQuery));
+      }
     },
     onNewOrder: (data) => {
       console.log('New order received via WebSocket:', data);
@@ -98,6 +108,11 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
       // Show brief update indicator
       setShowUpdateIndicator(true);
       setTimeout(() => setShowUpdateIndicator(false), 2000);
+      
+      // Refresh orders data when new order is received
+      if (tableFromQuery) {
+        dispatch(getOrderHistoryRequest(tableFromQuery));
+      }
     },
     onConnectionChange: (status) => {
       console.log('WebSocket connection status changed:', status);
@@ -433,7 +448,7 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
                     <div className="flex justify-between items-center">
                       <h3 className="font-semibold">{item.name}</h3>
                       <div className="text-gray-600">
-                        <span className="font-medium">${(item.price * item.quantity)?.toFixed(2)}</span>
+                        <span className="font-medium">${Number(item.price * item.quantity || 0).toFixed(2)}</span>
                       </div>
                     </div>
                     
@@ -463,7 +478,7 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
                                   
                                   return (
                                     <span className="font-medium">
-                                      +${totalPrice.toFixed(2)}
+                                      +${Number(totalPrice || 0).toFixed(2)}
                                     </span>
                                   );
                                 })()}
@@ -472,14 +487,59 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
                           : []
                         )}
                         
-                        {/* Then display spice level modifiers at the end with quantity */}
-                        {item.spiceLevel && (
+                        {/* Display spice level from modifiers if available */}
+                        {item.modifiers && item.modifiers.some((modifier: any) => modifier.name === "Spice Level") && (
+                          item.modifiers.flatMap((modifier: any) => 
+                            modifier.name === "Spice Level" ? 
+                              modifier.options.map((option: any, index: number) => {
+                                let chiliCount = 1; // Default to 1
+                                if (option.name === "Medium") chiliCount = 2;
+                                if (option.name === "Hot") chiliCount = 3;
+                                
+                                return (
+                                  <div 
+                                    key={`${modifier.name}-${option.name}-${index}`} 
+                                    className="flex justify-between items-center py-0.5"
+                                  >
+                                    <span className="flex items-center">
+                                      <span className="ml-1 text-red-500">
+                                        {chiliCount === 1 && '🌶️'}
+                                        {chiliCount === 2 && '🌶️🌶️'}
+                                        {chiliCount === 3 && '🌶️🌶️🌶️'}
+                                      </span>
+                                    </span>
+                                    
+                                    {/* Quantity display */}
+                                    <div className="flex items-center">
+                                      <span className="text-xs bg-gray-100 px-2 py-1 rounded-full">
+                                        Qty: {item.quantity}
+                                      </span>
+                                    </div>
+                                  </div>
+                                );
+                              })
+                            : []
+                          )
+                        )}
+                        
+                        {/* Display spice level directly from item if not in modifiers */}
+                        {item.spiceLevel && !item.modifiers?.some((modifier: any) => modifier.name === "Spice Level") && (
                           <div className="flex justify-between items-center py-0.5">
                             <span className="flex items-center">
                               <span className="ml-1 text-red-500">
-                                {item.spiceLevel === 'Mild' && '🌶️'}
-                                {item.spiceLevel === 'Medium' && '🌶️🌶️'}
-                                {item.spiceLevel === 'Hot' && '🌶️🌶️🌶️'}
+                                {(() => {
+                                  let chiliCount = 1; // Default to 1
+                                  if (item.spiceLevel === "Medium") chiliCount = 2;
+                                  if (item.spiceLevel === "Hot") chiliCount = 3;
+                                  
+                                  return (
+                                    <>
+                                      {chiliCount === 1 && '🌶️'}
+                                      {chiliCount === 2 && '🌶️🌶️'}
+                                      {chiliCount === 3 && '🌶️🌶️🌶️'}
+                                    </>
+                                  );
+                                })()}
                               </span>
                             </span>
                             
@@ -493,7 +553,7 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
                         )}
                         
                         {/* Add quantity display for items without spice level */}
-                        {!item.spiceLevel && (
+                        {!item.spiceLevel && !item.modifiers?.some((modifier: any) => modifier.name === "Spice Level") && (
                           <div className="mt-2 flex justify-end">
                             <span className="text-xs bg-gray-100 px-2 py-1 rounded-full">
                               Qty: {item.quantity}
@@ -503,7 +563,7 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
                       </div>
                     )}
                     
-                    {/* Add quantity display for items without modifiers */}
+                    {/* Add quantity display for items without modifiers and spice level */}
                     {(!item.modifiers || item.modifiers.length === 0) && !item.spiceLevel && (
                       <div className="mt-2 flex justify-end">
                         <span className="text-xs bg-gray-100 px-2 py-1 rounded-full">
@@ -526,7 +586,7 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
             <span className="font-semibold">Total</span>
             <span className="font-semibold">
               ${orders.length > 0 
-                ? orders.reduce((sum, order) => sum + (order.total || 0), 0)?.toFixed(2) 
+                ? Number(orders.reduce((sum, order) => sum + (order.total || 0), 0) || 0).toFixed(2) 
                 : '0.00'}
             </span>
           </div>
@@ -552,7 +612,13 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
       {/* Bill Popup */}
       {showBill && orders.length > 0 && (
         <BillComponent 
-          onClose={() => setShowBill(false)} 
+          onClose={() => {
+            setShowBill(false);
+            // Refresh orders when bill component is closed
+            if (tableFromQuery) {
+              dispatch(getOrderHistoryRequest(tableFromQuery));
+            }
+          }} 
           order={orders} 
           tableNumber={tableNumber}
         />

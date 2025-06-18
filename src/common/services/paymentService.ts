@@ -6,9 +6,12 @@ export const paymentService = {
   /**
    * Make a payment for an order
    */
-  makePayment: async (table_id: string): Promise<PaymentResponse> => {
+  makePayment: async (table_id: string, total_amount?: number): Promise<PaymentResponse> => {
     try {
       let url = endpoints.payment.makePayment+"?table_id="+table_id;
+      if (total_amount !== undefined) {
+        url += "&total_amount=" + total_amount;
+      }
       const response = await api.get(url);
       return response.data as PaymentResponse;
     } catch (error: any) {

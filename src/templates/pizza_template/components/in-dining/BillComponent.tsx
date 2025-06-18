@@ -4,9 +4,10 @@ import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../../../common/store';
 import { useAppSelector } from '../../../../common/redux';
 import { makePaymentRequest, resetPaymentState } from '../../../../common/redux/slices/paymentSlice';
-import { getInDiningOrdersRequest } from '../../../../common/redux/slices/inDiningOrderSlice';
+import { getInDiningOrdersRequest, clearCurrentOrder } from '../../../../common/redux/slices/inDiningOrderSlice';
 import { motion } from 'framer-motion';
 import { usePayment } from '../../../../hooks/usePayment';
+import { useToast } from '../../context/ToastContext';
 
 interface OrderItem {
   name: string;
@@ -41,12 +42,26 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
   const dispatch = useDispatch();
   const { isLoading, error, paymentResponse } = useSelector((state: RootState) => state.payment);
   const { isPaymentAvilable } = usePayment();
+  const { showToast } = useToast();
+  const [previousPaymentResponse, setPreviousPaymentResponse] = React.useState<any>(null);
+  const [paymentMessage, setPaymentMessage] = React.useState<string>('');
+  const [isPaymentSuccess, setIsPaymentSuccess] = React.useState<boolean>(false);
 
-  console.log("payment", paymentResponse)
+  console.log("payments", typeof paymentResponse)
 
   // Reset payment state when component mounts
   useEffect(() => {
     dispatch(resetPaymentState());
+    setPreviousPaymentResponse(null);
+    setPaymentMessage('');
+    setIsPaymentSuccess(false);
+  }, [dispatch]);
+
+  // Clear in-dining order state when component unmounts
+  useEffect(() => {
+    return () => {
+      dispatch(clearCurrentOrder());
+    };
   }, [dispatch]);
 
   // Handle close with order refresh
@@ -55,15 +70,56 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
     onClose();
   };
 
-  // Handle payment link opening in new tab and close component
+  // Handle payment response
   useEffect(() => {
-    if (paymentResponse && paymentResponse.success && (paymentResponse as any).paymentLink) {
-      const paymentLink = (paymentResponse as any).paymentLink;
-      window.open(paymentLink, '_blank');
-      // Close the bill component after opening payment link
-      handleClose();
+    console.log("Payment response changed:", paymentResponse?.message);
+    console.log("Previous payment response:", previousPaymentResponse);
+    
+    if (paymentResponse && paymentResponse !== previousPaymentResponse) {
+      console.log("Processing payment response:", paymentResponse);
+      
+      // Set message and success status from payment response
+      if (paymentResponse?.payment_link) {
+        console.log("Payment Link Avilable")
+        window.open(paymentResponse.payment_link,"_blank")
+      }
+      else
+      {
+        console.log("Payment Link Not Avilable")
+      }
+
+      if (paymentResponse.message) {
+        console.log("Setting payment message:", paymentResponse.message);
+        setPaymentMessage(paymentResponse.message);
+        setIsPaymentSuccess(paymentResponse.success || false);
+        
+        // Show toast notification
+        showToast(paymentResponse.message, paymentResponse.success ? 'success' : 'error');
+        
+        // If payment is successful and there's a payment URL, redirect to it
+        if (paymentResponse.success && (paymentResponse.paymentUrl || paymentResponse.payment_link || paymentResponse.paymentLink)) {
+          const paymentUrl = paymentResponse.paymentUrl || paymentResponse.payment_link || paymentResponse.paymentLink;
+          window.open(paymentUrl, '_blank');
+        }
+      } else {
+        console.log("No message in payment response:", paymentResponse);
+        // If there's no message but we have a response, set a default message
+        setPaymentMessage("Payment request processed");
+        setIsPaymentSuccess(paymentResponse.success || false);
+      }
+      
+      // Update previous payment response to prevent duplicate messages
+      setPreviousPaymentResponse(paymentResponse);
+      
+      // Clear state and close popup after 5 seconds only if payment was successful
+      if (paymentResponse.success) {
+        setTimeout(() => {
+          dispatch(resetPaymentState());
+          handleClose();
+        }, 5000);
+      }
     }
-  }, [paymentResponse]);
+  }, [paymentResponse, previousPaymentResponse, dispatch, showToast]);
   
   // Convert single order to array if needed
   const orders = Array.isArray(order) ? order : [order];
@@ -101,7 +157,10 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
   // Handle payment
   const handlePayment = () => {
     if (table_id) {
-      dispatch(makePaymentRequest(table_id));
+      dispatch(makePaymentRequest({
+        table_id: table_id,
+        total_amount: totalAmount
+      }));
     }
   };
   
@@ -458,13 +517,44 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
               </div>
             )}
             
+            {/* Payment Message Display */}
+            {paymentMessage && (
+              <div className={`mb-4 p-3 border rounded ${
+                isPaymentSuccess 
+                  ? 'bg-green-100 border-green-400 text-green-700' 
+                  : 'bg-red-100 border-red-400 text-red-700'
+              }`}>
+                <div className="font-semibold mb-1">
+                  {isPaymentSuccess ? 'Payment Success' : 'Payment Error'}
+                </div>
+                {/* <div className="text-sm">{paymentMessage}</div> */}
+                {paymentResponse && (
+              <div className="mb-4 p-3 bg-gray-100 border border-gray-400 text-gray-700 rounded text-xs">
+                <div> {JSON.stringify(paymentResponse)}</div>
+              </div>
+            )}
+              </div>
+            )}
+
+            {/* Debug Info - Remove this after debugging */}
+          
+
+           
+            
             {/* Make Payment Button */}
             <button 
               onClick={handlePayment}
               disabled={isLoading}
               className="w-full py-3 bg-red-500 text-white rounded-lg flex items-center justify-center font-medium hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? 'Processing...' : 'Make Payment'}
+              {isLoading ? (
+                <div className="flex items-center space-x-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                  <span>Processing Payment...</span>
+                </div>
+              ) : (
+                'Make Payment'
+              )}
             </button>
           </div>
         )}

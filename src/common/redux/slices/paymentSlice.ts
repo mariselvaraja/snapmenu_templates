@@ -17,6 +17,8 @@ export interface PaymentResponse {
   transactionId?: string;
   message: string;
   paymentUrl?: string;
+  paymentLink?: string;
+  payment_link?: string;
 }
 
 interface PaymentState {
@@ -38,7 +40,7 @@ const paymentSlice = createSlice({
   initialState,
   reducers: {
     // Make payment actions
-    makePaymentRequest: (state, action: PayloadAction<string>) => {
+    makePaymentRequest: (state, action: PayloadAction<{table_id: string, total_amount?: number}>) => {
       state.isLoading = true;
       state.error = null;
       state.currentPaymentRequest = null;
