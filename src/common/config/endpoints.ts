@@ -24,6 +24,7 @@ const MAKE_RESERVATION_PATH = import.meta.env.VITE_MAKE_RESERVATION || "/makeRes
 const GET_TABLE_STATUS_PATH = import.meta.env.VITE_GET_TABLE_STATUS || "/getRestaurantTables";
 const GET_PAYMENT_INFO = import.meta.env.VITE_GET_PAYMENT_INFO || "/getTpnConfig";
 const MAKE_PAYMENT_PATH = import.meta.env.VITE_MAKE_PAYMENT || "/paymentGateway/inDining";
+const COMBO_API_PATH = import.meta.env.VITE_COMBO_API_PATH || "/combos";
 
 // Function to get domain from URL
 const getDomainFromUrl = () => {
@@ -91,7 +92,12 @@ export const endpoints = {
     availability:`${API_BASE_URL}${GET_TABLE_AVAILABILITY_PATH}`,
     makeReservation: `${API_BASE_URL}${MAKE_RESERVATION_PATH}`,
     status: `${API_BASE_URL}${GET_TABLE_STATUS_PATH}`,
-  }
+  },
+
+  // Combo endpoints
+  combo: {
+    getAll: `${API_BASE_URL}${COMBO_API_PATH}`,
+  },
 
 };
 

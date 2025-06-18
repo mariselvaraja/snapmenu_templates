@@ -34,6 +34,7 @@ export const commonRoutePaths = {
   reservation: '/reservation',
   cart: '/cart',
   productDetail: '/product/:productId',
+  comboDetail: '/combo/:comboId',
   checkout: '/checkout',
   product: '/product',
   ourStory: '/our-story',
