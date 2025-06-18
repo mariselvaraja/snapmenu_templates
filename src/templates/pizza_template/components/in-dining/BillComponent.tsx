@@ -79,15 +79,6 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
       console.log("Processing payment response:", paymentResponse);
       
       // Set message and success status from payment response
-      if (paymentResponse?.paymentLink) {
-        console.log("Payment Link Avilable")
-        window.open(paymentResponse.paymentLink,"_blank")
-      }
-      else
-      {
-        console.log("Payment Link Not Avilable")
-      }
-
       if (paymentResponse.message) {
         console.log("Setting payment message:", paymentResponse.message);
         setPaymentMessage(paymentResponse.message);
@@ -95,17 +86,27 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
         
         // Show toast notification
         showToast(paymentResponse.message, paymentResponse.success ? 'success' : 'error');
-        
-        // If payment is successful and there's a payment URL, redirect to it
-        if (paymentResponse.success && (paymentResponse.paymentUrl || paymentResponse.payment_link || paymentResponse.paymentLink)) {
-          const paymentUrl = paymentResponse.paymentUrl || paymentResponse.payment_link || paymentResponse.paymentLink;
-          window.open(paymentUrl, '_blank');
-        }
       } else {
         console.log("No message in payment response:", paymentResponse);
         // If there's no message but we have a response, set a default message
         setPaymentMessage("Payment request processed");
         setIsPaymentSuccess(paymentResponse.success || false);
+      }
+      
+      // If payment is successful and there's a payment URL, redirect to it
+      if ( (paymentResponse.paymentUrl || paymentResponse.payment_link || paymentResponse.paymentLink)) {
+        const paymentUrl = paymentResponse.paymentUrl || paymentResponse.payment_link || paymentResponse.paymentLink;
+        console.log("Payment Link Available:", paymentUrl);
+        window.open(paymentUrl, '_blank');
+      } else if (paymentResponse.paymentUrl || paymentResponse.payment_link || paymentResponse.paymentLink) {
+        // If there's a payment link but payment wasn't successful, still try to open it
+        const paymentUrl = paymentResponse.paymentUrl || paymentResponse.payment_link || paymentResponse.paymentLink;
+        console.log("Payment Link Available (non-success):", paymentUrl);
+        window.open(paymentUrl, '_blank');
+      } else {
+        console.log("Payment Link Not Available",JSON.parse(paymentResponse)?.paymentLink);
+        window.open(JSON.parse(paymentResponse)?.paymentLink,"_blank")
+        onClose();
       }
       
       // Update previous payment response to prevent duplicate messages

@@ -24,7 +24,7 @@ export interface PaymentResponse {
 interface PaymentState {
   isLoading: boolean;
   error: string | null;
-  paymentResponse: PaymentResponse | null;
+  paymentResponse: any | null;
   currentPaymentRequest: PaymentRequest | null;
 }
 
@@ -45,7 +45,7 @@ const paymentSlice = createSlice({
       state.error = null;
       state.currentPaymentRequest = null;
     },
-    makePaymentSuccess: (state, action: PayloadAction<PaymentResponse>) => {
+    makePaymentSuccess: (state, action: PayloadAction<any>) => {
       state.isLoading = false;
       state.error = null;
       state.paymentResponse = action.payload;
