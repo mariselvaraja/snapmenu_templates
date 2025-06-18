@@ -81,7 +81,7 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
       // Set message and success status from payment response
       if (paymentResponse?.payment_link) {
         console.log("Payment Link Avilable")
-        window.open(paymentResponse.payment_link,"_blank")
+        window.open(paymentResponse.paymentLink,"_blank")
       }
       else
       {
