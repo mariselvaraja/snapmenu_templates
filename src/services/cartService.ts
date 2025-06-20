@@ -14,12 +14,19 @@ export interface OrderData {
     email: string;
     phone: string;
     address: string;
+    address_line_1?: string;
+    address_line_2?: string;
+    locality?: string;
+    administrative_district_level_1?: string;
+    postal_code?: string;
+    country?: string;
   };
   paymentInfo?: {
     method: string;
     cardNumber?: string;
     expiryDate?: string;
   };
+  delivery_type: 'pickup' | 'delivery';
 }
 
 /**
@@ -145,14 +152,28 @@ export const cartService = {
   
     try {
       // Format the order payload as required
-      const formattedPayload = {
+      const formattedPayload: any = {
         restaurant_id:  sessionStorage.getItem("franchise_id"),
         name: orderData.customerInfo.name,
         phone: orderData.customerInfo.phone,
         email: orderData.customerInfo.email,
         special_requests: orderData.customerInfo.address || "",
         order_type: "manual",
-        ordered_items: orderData.items.map(item => {
+        delivery_type: orderData.delivery_type,
+      };
+
+      // Add address fields for delivery orders
+      if (orderData.delivery_type === 'delivery') {
+        formattedPayload.address_line_1 = orderData.customerInfo.address_line_1 || "";
+        formattedPayload.address_line_2 = orderData.customerInfo.address_line_2 || "";
+        formattedPayload.locality = orderData.customerInfo.locality || "";
+        formattedPayload.administrative_district_level_1 = orderData.customerInfo.administrative_district_level_1 || "";
+        formattedPayload.postal_code = orderData.customerInfo.postal_code || "";
+        formattedPayload.country = orderData.customerInfo.country || "US";
+      }
+
+      // Add ordered items and grand total
+      formattedPayload.ordered_items = orderData.items.map(item => {
           // Ensure we have valid item data
           const itemName = item.name || 'Unknown Item';
           const itemPrice = typeof item.price === 'number' ? item.price : parseFloat(String(item.price).replace(/[^\d.-]/g, '')) || 0;
@@ -178,19 +199,19 @@ export const cartService = {
             spicelevel: spiceLevel,
             total_item_price: ((itemPrice + modifierPrice) * itemQuantity).toFixed(2)
           };
-        }),
-        grand_total: orderData.items.reduce((sum, item) => {
-          const itemPrice = typeof item.price === 'number' ? item.price : parseFloat(String(item.price).replace(/[^\d.-]/g, '')) || 0;
-          const itemQuantity = typeof item.quantity === 'number' ? item.quantity : parseInt(String(item.quantity)) || 1;
-          const modifierPrice = item.selectedModifiers?.reduce((modSum, modifier) => {
-            return modSum + (modifier.options?.reduce((optSum, option) => {
-              const optionPrice = typeof option.price === 'number' ? option.price : parseFloat(String(option.price).replace(/[^\d.-]/g, '')) || 0;
-              return optSum + optionPrice;
-            }, 0) || 0);
-          }, 0) || 0;
-          return sum + ((itemPrice + modifierPrice) * itemQuantity);
-        }, 0).toFixed(2)
-      };
+        });
+
+      formattedPayload.grand_total = orderData.items.reduce((sum, item) => {
+        const itemPrice = typeof item.price === 'number' ? item.price : parseFloat(String(item.price).replace(/[^\d.-]/g, '')) || 0;
+        const itemQuantity = typeof item.quantity === 'number' ? item.quantity : parseInt(String(item.quantity)) || 1;
+        const modifierPrice = item.selectedModifiers?.reduce((modSum, modifier) => {
+          return modSum + (modifier.options?.reduce((optSum, option) => {
+            const optionPrice = typeof option.price === 'number' ? option.price : parseFloat(String(option.price).replace(/[^\d.-]/g, '')) || 0;
+            return optSum + optionPrice;
+          }, 0) || 0);
+        }, 0) || 0;
+        return sum + ((itemPrice + modifierPrice) * itemQuantity);
+      }, 0).toFixed(2);
       
       console.log('Formatted payload:', orderData);
       
@@ -198,8 +219,9 @@ export const cartService = {
       const response = await api.post<any>(endpoints.cart.placeOrder, formattedPayload);
       
       // Clear local cart after successful order
-      sessionStorage.setItem('cart', JSON.stringify([]));
-      
+      sessionStorage.setItem('cart', JSON.stringify([])); 
+
+      // Response is ApiResponse<any> object, access data property directly
       return response.data;
     } catch (error) {
       console.error('Error placing order:', error);

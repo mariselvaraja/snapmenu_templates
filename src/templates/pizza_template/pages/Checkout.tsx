@@ -1,17 +1,26 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, X, Check } from 'lucide-react';
+import { ArrowLeft, X, Check, Truck, Store } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAppSelector } from '../../../common/redux';
 import { useCart } from '../context/CartContext';
 import { cartService } from '../../../services';
+import { usePayment } from '@/hooks';
 
 interface FormData {
   name: string;
   phone: string;
   email: string;
   specialRequests: string;
+  address_line_1?: string;
+  address_line_2?: string;
+  locality?: string;
+  administrative_district_level_1?: string;
+  postal_code?: string;
+  country?: string;
 }
+
+type OrderType = 'delivery' | 'pickup';
 
 interface Modifier {
   modifier_name: string;
@@ -35,6 +44,7 @@ interface OrderPayload {
   email: string;
   special_requests: string | null;
   order_type: string;
+  delivery_type: string;
   ordered_items: OrderedItem[];
   grand_total: string;
 }
@@ -59,8 +69,18 @@ interface CartItem {
 }
 
 export default function Checkout() {
-  const navigate = useNavigate();
+
   const { state: { items: cartItems }, clearCart } = useCart();
+  const [activeTab, setActiveTab] = useState<OrderType>('pickup');
+
+
+  const tpnState = useAppSelector((state) => state?.tpn?.rawApiResponse);
+  const restaurant_id = sessionStorage.getItem("franchise_id");
+  
+  // Check if delivery is available based on pos_type being 'square'
+  const isDeliveryAvailable = tpnState?.tpn_config?.find((c:any) => 
+    c?.restaurant_id == restaurant_id && c?.pos_type === 'square'
+  );
   
   // Calculate cart totals including modifiers
   const subtotal = cartItems.reduce((total: number, item: any) => {
@@ -97,20 +117,23 @@ export default function Checkout() {
     phone: '',
     email: '',
     specialRequests: '',
+    address_line_1: '',
+    address_line_2: '',
+    locality: '',
+    administrative_district_level_1: '',
+    postal_code: '',
+    country: 'US',
   });
 
   const [errors, setErrors] = useState<Partial<FormData>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderComplete, setOrderComplete] = useState(false);
   const [orderResponse, setOrderResponse] = useState<{ message?: string, payment_link?: string } | null>(null);
-  const [showPaymentPopup, setShowPaymentPopup] = useState(false);
-  
-  // Function to close the payment popup
-  const closePaymentPopup = () => {
-    setShowPaymentPopup(false);
-  };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  
+
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
@@ -138,10 +161,25 @@ export default function Checkout() {
       newErrors.phone = 'Please enter a valid phone number';
     }
     
-    if (!formData.email.trim()) {
-      newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+    // Email is optional, but if provided, validate format
+    if (formData.email.trim() && !/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = 'Please enter a valid email address';
+    }
+
+    // Validate delivery-specific fields
+    if (activeTab === 'delivery') {
+      if (!formData.address_line_1?.trim()) {
+        newErrors.address_line_1 = 'Address line 1 is required for delivery';
+      }
+      if (!formData.locality?.trim()) {
+        newErrors.locality = 'City is required for delivery';
+      }
+      if (!formData.administrative_district_level_1?.trim()) {
+        newErrors.administrative_district_level_1 = 'State is required for delivery';
+      }
+      if (!formData.postal_code?.trim()) {
+        newErrors.postal_code = 'ZIP code is required for delivery';
+      }
     }
     
     setErrors(newErrors);
@@ -176,7 +214,8 @@ export default function Checkout() {
       phone: formData.phone,
       email: formData.email,
       special_requests: formData.specialRequests.trim() || null,
-      order_type: "manual", // Hardcoded as requested
+      order_type: "manual", // Keep as manual as requested
+      delivery_type: activeTab, // Use the selected tab (pickup or delivery)
       ordered_items: orderedItems,
       grand_total: total?.toFixed(2)
     };
@@ -205,18 +244,24 @@ export default function Checkout() {
           name: formData.name,
           email: formData.email,
           phone: formData.phone,
-          address: '', // Not collected in this form
+          address: formData.specialRequests, // Use special requests as address
+          address_line_1: formData.address_line_1,
+          address_line_2: formData.address_line_2,
+          locality: formData.locality,
+          administrative_district_level_1: formData.administrative_district_level_1,
+          postal_code: formData.postal_code,
+          country: formData.country,
         },
         paymentInfo: {
           method: 'card', // Default payment method
         },
+        delivery_type: activeTab, // Use the selected tab (pickup or delivery)
       };
 
       let restaurant_id = sessionStorage.getItem("franchise_id");
       
       // Call the placeOrder API endpoint
-      let response : any= 
-      await cartService.placeOrder(orderData,restaurant_id);
+      let response : any=  await cartService.placeOrder(orderData,restaurant_id);
       response = JSON.parse(response)
       console.log('Order placed successfullys:', response);
       
@@ -350,7 +395,7 @@ export default function Checkout() {
           >
             <ArrowLeft className="h-4 w-4 mr-2" /> Back to Cart
           </Link>
-          <h1 className="text-4xl font-bold">Checkout</h1>
+      
         </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -362,13 +407,46 @@ export default function Checkout() {
             className="lg:col-span-2"
           >
             <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-              <div className="p-6 border-b">
-                <h2 className="text-2xl font-semibold">Contact Information</h2>
+              {/* Header */}
+              <div className="p-6 border-b text-center">
+                <h2 className="text-3xl font-bold mb-2">Order Online</h2>
+                <p className="text-gray-600">Fresh, hot pizza delivered to your door or ready for pickup</p>
               </div>
+
+              {/* Tabs */}
+              {   isDeliveryAvailable && 
+              <div className="border-b">
+                <div className="flex">
+                <button
+                    onClick={() => setActiveTab('pickup')}
+                    className={`flex-1 flex items-center justify-center px-6 py-4 text-lg font-semibold transition-colors ${
+                      activeTab === 'pickup'
+                        ? 'bg-red-500 text-white border-b-2 border-red-500'
+                        : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+                    }`}
+                  >
+                    <Store className="h-5 w-5 mr-2" />
+                    Pickup
+                  </button>
+       <button
+                    onClick={() => setActiveTab('delivery')}
+                    className={`flex-1 flex items-center justify-center px-6 py-4 text-lg font-semibold transition-colors ${
+                      activeTab === 'delivery'
+                        ? 'bg-red-500 text-white border-b-2 border-red-500'
+                        : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+                    }`}
+                  >
+                    <Truck className="h-5 w-5 mr-2" />
+                    Delivery
+                  </button>
+       
+                </div>
+              </div>
+                      }
               <form onSubmit={handleSubmit} className="p-6 space-y-6">
                 <div>
                   <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                    Full Name
+                    Full Name *
                   </label>
                   <input
                     type="text"
@@ -386,7 +464,7 @@ export default function Checkout() {
 
                 <div>
                   <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-                    Phone Number
+                    Phone Number *
                   </label>
                   <input
                     type="tel"
@@ -404,7 +482,7 @@ export default function Checkout() {
 
                 <div>
                   <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                    Email Address
+                    Email Address (Optional)
                   </label>
                   <input
                     type="email"
@@ -415,10 +493,122 @@ export default function Checkout() {
                     className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 focus:outline-none ${
                       errors.email ? 'border-red-500' : 'border-gray-300'
                     }`}
-                    placeholder="Enter your email address"
+                    placeholder="Enter your email address (optional)"
                   />
                   {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email}</p>}
                 </div>
+
+                {/* Delivery-specific fields */}
+                {activeTab === 'delivery' && (
+                  <>
+                    <div>
+                      <label htmlFor="address_line_1" className="block text-sm font-medium text-gray-700 mb-1">
+                        Address Line 1 *
+                      </label>
+                      <input
+                        type="text"
+                        id="address_line_1"
+                        name="address_line_1"
+                        value={formData.address_line_1 || ''}
+                        onChange={handleChange}
+                        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 focus:outline-none ${
+                          errors.address_line_1 ? 'border-red-500' : 'border-gray-300'
+                        }`}
+                        placeholder="e.g., 600 Park Office Dr"
+                      />
+                      {errors.address_line_1 && <p className="mt-1 text-sm text-red-500">{errors.address_line_1}</p>}
+                    </div>
+
+                    <div>
+                      <label htmlFor="address_line_2" className="block text-sm font-medium text-gray-700 mb-1">
+                        Address Line 2 (Optional)
+                      </label>
+                      <input
+                        type="text"
+                        id="address_line_2"
+                        name="address_line_2"
+                        value={formData.address_line_2 || ''}
+                        onChange={handleChange}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:outline-none"
+                        placeholder="e.g., Suite 300, Apt 4B"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label htmlFor="locality" className="block text-sm font-medium text-gray-700 mb-1">
+                          City *
+                        </label>
+                        <input
+                          type="text"
+                          id="locality"
+                          name="locality"
+                          value={formData.locality || ''}
+                          onChange={handleChange}
+                          className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 focus:outline-none ${
+                            errors.locality ? 'border-red-500' : 'border-gray-300'
+                          }`}
+                          placeholder="e.g., Durham"
+                        />
+                        {errors.locality && <p className="mt-1 text-sm text-red-500">{errors.locality}</p>}
+                      </div>
+
+                      <div>
+                        <label htmlFor="administrative_district_level_1" className="block text-sm font-medium text-gray-700 mb-1">
+                          State *
+                        </label>
+                        <input
+                          type="text"
+                          id="administrative_district_level_1"
+                          name="administrative_district_level_1"
+                          value={formData.administrative_district_level_1 || ''}
+                          onChange={handleChange}
+                          className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 focus:outline-none ${
+                            errors.administrative_district_level_1 ? 'border-red-500' : 'border-gray-300'
+                          }`}
+                          placeholder="e.g., NC"
+                          maxLength={2}
+                        />
+                        {errors.administrative_district_level_1 && <p className="mt-1 text-sm text-red-500">{errors.administrative_district_level_1}</p>}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label htmlFor="postal_code" className="block text-sm font-medium text-gray-700 mb-1">
+                          ZIP Code *
+                        </label>
+                        <input
+                          type="text"
+                          id="postal_code"
+                          name="postal_code"
+                          value={formData.postal_code || ''}
+                          onChange={handleChange}
+                          className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 focus:outline-none ${
+                            errors.postal_code ? 'border-red-500' : 'border-gray-300'
+                          }`}
+                          placeholder="e.g., 27709"
+                        />
+                        {errors.postal_code && <p className="mt-1 text-sm text-red-500">{errors.postal_code}</p>}
+                      </div>
+
+                      <div>
+                        <label htmlFor="country" className="block text-sm font-medium text-gray-700 mb-1">
+                          Country *
+                        </label>
+                        <select
+                          id="country"
+                          name="country"
+                          value={formData.country || 'US'}
+                          onChange={handleChange}
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:outline-none"
+                        >
+                          <option value="US">United States</option>
+                        </select>
+                      </div>
+                    </div>
+                  </>
+                )}
 
                 <div>
                   <label htmlFor="specialRequests" className="block text-sm font-medium text-gray-700 mb-1">
@@ -431,7 +621,7 @@ export default function Checkout() {
                     onChange={handleChange}
                     rows={3}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:outline-none"
-                    placeholder="Any special instructions for your order"
+                    placeholder={activeTab === 'delivery' ? 'Any special delivery instructions' : 'Any special instructions for your order'}
                   />
                 </div>
 
@@ -443,7 +633,7 @@ export default function Checkout() {
                       (isSubmitting || cartItems.length === 0) ? 'opacity-70 cursor-not-allowed' : ''
                     }`}
                   >
-                    {isSubmitting ? 'Processing...' : cartItems.length === 0 ? 'Your Cart is Empty' : 'Pay'}
+                    {isSubmitting ? 'Processing...' : cartItems.length === 0 ? 'Your Cart is Empty' : `Place ${activeTab === 'delivery' ? 'Delivery' : 'Pickup'} Order`}
                   </button>
                 </div>
               </form>
