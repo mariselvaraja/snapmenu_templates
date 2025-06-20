@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { ShoppingCart, Plus, Minus, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector, fetchMenuRequest, MenuItem } from '../../../common/redux';
+import { fetchComboRequest } from '../../../redux/slices/comboSlice';
 import { useCart, CartItem, generateSkuId, createCartItem, normalizeModifiers } from '../context/CartContext';
 import { useCartWithToast } from '../hooks/useCartWithToast';
 import ModifierModal from '../components/ModifierModal';
@@ -47,6 +48,7 @@ export default function Menu() {
     
     // Get menu data and cart items from Redux store
     const { items, loading, error } = useAppSelector(state => state.menu);
+    const { data: comboData, loading: comboLoading, error: comboError } = useAppSelector(state => state.combo);
     const { state: { items: cartItems }, removeItem, updateItemQuantity } = useCart();
     const {isPaymentAvilable} = usePayment();
     
@@ -200,22 +202,56 @@ export default function Menu() {
         );
     }
 
-    const filteredItems = items.filter(item => {
-        // Filter by level1 category
-        if (selectedType !== 'all' && item.level1_category !== selectedType) return false;
-        
-        // Filter by level2 category
-        if (selectedLevel2 !== 'all' && item.level2_category !== selectedLevel2) return false;
-        
-        // Keep the original category filtering for backward compatibility
-        if (selectedType !== 'all' && item.category !== selectedType) return false;
-        if (selectedType === 'mains' && selectedCategory !== 'all' && 
-            (!item.tags || !item.tags.includes(selectedCategory))) return false;
-            
-        return true;
-    });
+    // Handle combo filtering and data preparation
+    const getDisplayItems = () => {
+        if (selectedType === 'combos') {
+            // Return combo data formatted as menu items
+            if (comboData && comboData.length > 0) {
+                return comboData
+                    .filter(combo => combo.is_enabled)
+                    .map((combo, index) => ({
+                        id: parseInt(combo.combo_id) || index + 10000, // Convert to number or use index with offset
+                        pk_id: combo.combo_id,
+                        name: combo.title,
+                        description: combo.description,
+                        price: parseFloat(combo.combo_price.replace(/[^\d.-]/g, '')) || 0,
+                        image: combo.combo_image,
+                        category: 'combo',
+                        level1_category: 'combo',
+                        level2_category: '',
+                        tags: [],
+                        dietary: {
+                            isVegetarian: false,
+                            isVegan: false,
+                            isGlutenFree: false
+                        },
+                        modifiers_list: [],
+                        is_spice_applicable: 'no',
+                        available: true
+                    }));
+            }
+            return [];
+        } else {
+            // Return regular menu items with filtering
+            return items.filter(item => {
+                // Filter by level1 category
+                if (selectedType !== 'all' && item.level1_category !== selectedType) return false;
+                
+                // Filter by level2 category
+                if (selectedLevel2 !== 'all' && item.level2_category !== selectedLevel2) return false;
+                
+                // Keep the original category filtering for backward compatibility
+                if (selectedType !== 'all' && item.category !== selectedType) return false;
+                if (selectedType === 'mains' && selectedCategory !== 'all' && 
+                    (!item.tags || !item.tags.includes(selectedCategory))) return false;
+                    
+                return true;
+            });
+        }
+    };
 
-    const sortedItems = [...filteredItems].sort((a, b) => {
+    const displayItems = getDisplayItems();
+    const sortedItems = [...displayItems].sort((a, b) => {
         if (sortBy === 'price-asc') return a.price - b.price;
         if (sortBy === 'price-desc') return b.price - a.price;
         return 0;
@@ -244,6 +280,11 @@ export default function Menu() {
        
        // Get unique values
        level1 = _.uniqBy(level1, (item: any) => item);
+       
+       // Add combo category if combo data exists
+       if (comboData && comboData.length > 0 && comboData.some(combo => combo.is_enabled)) {
+           level1.push('combos');
+       }
        
        // Return only the categories without "all" option
        return level1;
@@ -375,16 +416,22 @@ export default function Menu() {
                             key={item.id}
                             className="bg-white rounded-lg overflow-hidden shadow-lg"
                         >
-                            <div className="relative cursor-pointer" onClick={() => navigate(`/product/${item.id.toString()}`)}>
+                            <div className="relative cursor-pointer" onClick={() => {
+                                if (item.category === 'combo') {
+                                    navigate(`/combo/${item.pk_id}`);
+                                } else {
+                                    navigate(`/product/${item.id.toString()}`);
+                                }
+                            }}>
                                 {item.image ? (
                                     <img
                                         src={item.image}
                                         alt={item.name}
-                                        className="w-full h-64 object-cover"
+                                        className="w-full h-64 object-cover object-top"
                                     />
                                 ) : (
                                     <div className="w-full h-64 bg-red-100 flex items-center justify-center">
-                                        <span className="text-6xl font-bold text-red-500">
+                                        <span className="text-6xl font-bold text-red-500 line-clamp-3">
                                             {item.name && item.name.length > 0 
                                               ? item.name.charAt(0).toUpperCase() 
                                               : 'P'}
@@ -427,7 +474,11 @@ export default function Menu() {
                                             className="text-xl font-semibold cursor-pointer hover:text-red-500 transition-colors"
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                navigate(`/product/${item.id.toString()}`);
+                                                if (item.category === 'combo') {
+                                                    navigate(`/combo/${item.pk_id}`);
+                                                } else {
+                                                    navigate(`/product/${item.id.toString()}`);
+                                                }
                                             }}
                                         >
                                             {item.name}
@@ -439,7 +490,11 @@ export default function Menu() {
                                     className="text-gray-600 mb-4 line-clamp-2 cursor-pointer hover:text-gray-800 transition-colors"
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        navigate(`/product/${item.id.toString()}`);
+                                        if (item.category === 'combo') {
+                                            navigate(`/combo/${item.pk_id}`);
+                                        } else {
+                                            navigate(`/product/${item.id.toString()}`);
+                                        }
                                     }}
                                 >
                                     {item.description}

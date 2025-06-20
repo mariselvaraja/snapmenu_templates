@@ -12,6 +12,7 @@ import tableStatusReducer from './slices/tableStatusSlice';
 import orderHistoryReducer from './slices/orderHistorySlice';
 import paymentReducer from './slices/paymentSlice';
 import tpnReducer from '../../redux/slices/tpnSlice';
+import comboReducer from '../../redux/slices/comboSlice';
 
 const rootReducer = combineReducers({
   cart: cartReducer,
@@ -26,7 +27,8 @@ const rootReducer = combineReducers({
   tableStatus: tableStatusReducer,
   orderHistory: orderHistoryReducer,
   payment: paymentReducer,
-  tpn: tpnReducer
+  tpn: tpnReducer,
+  combo: comboReducer
 });
 
 export type RootState = ReturnType<typeof rootReducer>;

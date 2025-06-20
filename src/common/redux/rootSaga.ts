@@ -10,6 +10,7 @@ import { tableStatusSaga } from './sagas/tableStatusSaga';
 import { orderHistorySaga } from './sagas/orderHistorySaga';
 import { watchPaymentSagas } from './sagas/paymentSaga';
 import { tpnSaga } from '../../redux/sagas/tpnSaga';
+import { comboSaga } from '../../redux/sagas/comboSaga';
 
 export function* rootSaga(): Generator<any, void, any> {
   yield all([
@@ -23,6 +24,7 @@ export function* rootSaga(): Generator<any, void, any> {
     fork(tableStatusSaga),
     fork(orderHistorySaga),
     fork(watchPaymentSagas),
-    fork(tpnSaga)
+    fork(tpnSaga),
+    fork(comboSaga)
   ]);
 }

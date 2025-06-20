@@ -6,6 +6,8 @@ export { default as TitleUpdater } from './TitleUpdater';
 export { default as ModifierModal } from './ModifierModal';
 export { default as ComboSection } from './ComboSection';
 export { default as ComboCard } from './ComboCard';
+export { default as DefaultComboCards } from './DefaultComboCards';
+export { default as CarouselComboCards } from './CarouselComboCards';
 
 // Export in-dining components
 export { InDiningOrder, InDiningCartDrawer, InDiningProductDetails } from './in-dining';

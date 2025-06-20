@@ -11,6 +11,7 @@ import {
 } from 'react-icons/fa';
 
 import { useAppDispatch, useAppSelector, addItem } from '../../../common/redux';
+import { fetchComboRequest } from '../../../redux/slices/comboSlice';
 import { Carousel, CarouselItem } from '../../../components/carousel';
 import { usePayment } from '@/hooks';
 import { useCartWithToast } from '../hooks/useCartWithToast';
@@ -53,13 +54,18 @@ export default function Home() {
 
   const {isPaymentAvilable} = usePayment();
   const { rawApiResponse } = useAppSelector(state => state.siteContent);
+  const { data: comboData, loading: comboLoading, error: comboError } = useAppSelector(state => state.combo);
+  
   // Get site content from Redux state
   const siteContent = rawApiResponse ? 
     (typeof rawApiResponse === 'string' ? JSON.parse(rawApiResponse) : rawApiResponse) : 
     {};
   const homepage = siteContent.homepage;
-  const comboData = siteContent.homepage.combo;
-  const siteConfiguration = siteContent?.siteConfiguration; 
+  const siteConfiguration = siteContent?.siteConfiguration;
+  
+  // Get combo isActive from homepage content
+  const comboIsActive = homepage?.combo?.isActive || false;
+  
   console.log("siteConfiguration", siteConfiguration)
   const showPrice = siteConfiguration?.hidePriceInWebsite? false:  siteConfiguration?.hidePriceInHome?false:true;
   const heroData = homepage?.hero;
@@ -83,6 +89,13 @@ export default function Home() {
     
     return () => clearInterval(interval);
   }, [banners.length]);
+
+  // Fetch combo data when component mounts and clear localStorage
+  useEffect(() => {
+    localStorage.removeItem('selectedComboId');
+    dispatch(fetchComboRequest());
+    // Clear selected combo ID from localStorage when visiting home page
+  }, [dispatch]);
   
   
   const currentBanner = banners[currentBannerIndex];
@@ -395,9 +408,10 @@ export default function Home() {
 
       {/* Combo Section - Only render if comboData exists and has items */}
       <ComboSection 
-        comboData={comboData}
+        comboData={{ isActive: comboIsActive, data: comboData || [] }}
         siteConfiguration={siteConfiguration}
         isPaymentAvailable={isPaymentAvilable}
+        comboLoading={comboLoading}
       />
 
       {/* Delivery Info - Only render if offers exists and has items */}
