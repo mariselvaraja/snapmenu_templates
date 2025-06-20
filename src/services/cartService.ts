@@ -194,7 +194,12 @@ export const cartService = {
             name: itemName,
             quantity: itemQuantity,
             itemPrice: itemPrice.toFixed(2),
-            modifiers: item.selectedModifiers?.filter((modifier) => modifier.name !== "Spice Level").flatMap((modifier) => modifier.options || []) || [],
+            modifiers: item.selectedModifiers?.filter((modifier) => modifier.name !== "Spice Level").flatMap((modifier) => 
+              modifier.options?.map(option => ({
+                modifier_name: option.name,
+                modifier_price: typeof option.price === 'number' ? option.price : parseFloat(String(option.price).replace(/[^\d.-]/g, '')) || 0
+              })) || []
+            ) || [],
             modifier_price: modifierPrice,
             spicelevel: spiceLevel,
             total_item_price: ((itemPrice + modifierPrice) * itemQuantity).toFixed(2)
