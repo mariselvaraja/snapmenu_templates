@@ -384,14 +384,7 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
                       <span className="w-16 text-center">{item.quantity}</span>
                       <span className="w-20 text-right">
   ${Number(
-    (item?.price || 0) * (item?.quantity || 0) +
-    (item?.modifiers?.reduce(
-      (sum: number, mod: any) => {
-        const modifierPrice = mod.modifier_price || mod.modified_price || mod.price || 0;
-        return sum + (modifierPrice * (item?.quantity || 0));
-      },
-      0
-    ) || 0)
+    (item?.price || 0) * (item?.quantity || 0)
   ).toFixed(2)}
 </span>
                     </div>
@@ -415,7 +408,7 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
                                   
                                   return (
                                     <span className="font-medium">
-                                      (${Number( modifier.modifier_price * item.quantity || 0).toFixed(2)})
+                                     + (${Number( modifier.modifier_price * item.quantity || 0).toFixed(2)})
                                     </span>
                                   );
                                 })()}

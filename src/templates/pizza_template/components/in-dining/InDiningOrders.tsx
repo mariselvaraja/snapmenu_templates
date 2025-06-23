@@ -344,7 +344,23 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
             <p className="text-xs text-gray-500">
               Table Number: {tablename}
             </p>
-
+            {/* WebSocket Connection Status */}
+            <div className="flex items-center space-x-1">
+              {isConnected ? (
+                <Wifi className="h-3 w-3 text-green-500" />
+              ) : isConnecting ? (
+                <div className="h-3 w-3 border border-gray-300 border-t-blue-500 rounded-full animate-spin" />
+              ) : (
+                <WifiOff className="h-3 w-3 text-red-500" />
+              )}
+              <span className={`text-xs ${
+                isConnected ? 'text-green-600' : 
+                isConnecting ? 'text-blue-600' : 
+                'text-red-600'
+              }`}>
+                {isConnected ? 'Live' : isConnecting ? 'Connecting...' : 'Offline'}
+              </span>
+            </div>
           </div>
         </div>
         <button
@@ -435,14 +451,7 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
                       
                       </div>
                       <div className="text-gray-600">
-                      <span className="font-medium">
-  ${Number(
-    (item.price * item.quantity) +
-    ((item.modifiers?.reduce((sum: number, mod: { modifier_price?: number }) =>
-      sum + (mod.modifier_price || 0), 0) || 0) * item.quantity)
-  ).toFixed(2)}
-</span>
-
+                        <span className="font-medium">${Number((item.price * item.quantity) || 0).toFixed(2)}</span>
                    
                       </div>
                     </div>
@@ -471,7 +480,7 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
                                   
                                   return (
                                     <span className="font-medium">
-                                      (${Number( modifier.modifier_price * item.quantity|| 0).toFixed(2)})
+                                      +(${Number( modifier.modifier_price * item.quantity|| 0).toFixed(2)})
                                     </span>
                                   );
                                 })()}
