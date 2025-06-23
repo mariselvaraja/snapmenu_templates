@@ -7,14 +7,6 @@ import ModifierModal from './ModifierModal';
 
 export default function CartDrawer() {
   const { state: { items, drawerOpen }, toggleDrawer, removeItem, updateItemQuantity, addItem } = useCart();
-  
-  // State for modifier modal
-  const [isModifierModalOpen, setIsModifierModalOpen] = useState(false);
-  const [editingItem, setEditingItem] = useState<any>(null);
-  
-  // Note: Menu items would need to be passed as props or accessed through context
-  // For now, we'll handle this without the menu items dependency
-  const menuItems: any[] = [];
 
   // Calculate cart totals
   const subtotal = items.reduce((total: number, item: { 
@@ -67,10 +59,6 @@ export default function CartDrawer() {
     toggleDrawer(false);
   };
 
-  const handleRemoveItem = (skuId: string) => {
-    removeItem(skuId);
-  };
-
   const handleQuantityChange = (skuId: string, quantity: number) => {
     if (quantity <= 0) {
       removeItem(skuId);
@@ -78,50 +66,7 @@ export default function CartDrawer() {
       updateItemQuantity(skuId, quantity);
     }
   };
-
-  // Open modifier modal for editing
-  const handleEditItem = (item: any) => {
-    // Find the original menu item to get its modifiers
-    // Try to match by pk_id first, then by name as fallback
-    const originalMenuItem = menuItems.find(menuItem => 
-      menuItem.pk_id === item.pk_id || 
-      menuItem.name === item.name
-    );
-    
-    setEditingItem({
-      ...item,
-      id: item.pk_id, // Use pk_id as id for the modal
-      modifiers_list: originalMenuItem?.modifiers_list || [] // Get modifiers from original menu item
-    });
-    setIsModifierModalOpen(true);
-  };
   
-  // Close modifier modal
-  const handleCloseModifierModal = () => {
-    setIsModifierModalOpen(false);
-    setEditingItem(null);
-  };
-  
-  // Handle updating item with new modifiers
-  const handleUpdateItem = (updatedItem: any) => {
-    if (editingItem) {
-      // First remove the old item using sku_id (not pk_id)
-      removeItem(editingItem.sku_id);
-      
-      // Then add the updated item with the same quantity
-      // We need to set the quantity explicitly to avoid incrementing it
-      const updatedCartItem = {
-        ...updatedItem,
-        quantity: editingItem.quantity
-      };
-      
-      // Use setTimeout to ensure the remove action completes first
-      setTimeout(() => {
-        addItem(updatedCartItem);
-      }, 0);
-    }
-    handleCloseModifierModal();
-  };
 
   return (
     <AnimatePresence>

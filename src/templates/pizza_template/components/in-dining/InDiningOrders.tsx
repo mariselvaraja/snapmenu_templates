@@ -463,17 +463,17 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
                     {item.modifiers && item.modifiers.length > 0 && (
                       <div className="mt-1 mb-2 text-xs text-gray-600">
                         {/* First display all non-spice level modifiers */}
-                        {item.modifiers.flatMap((modifier: any) => 
-                          modifier.name !== "Spice Level" ? 
-                            modifier.options.map((option: any, optIndex: number) => (
+                        {item.modifiers.map((modifier: any) => 
+                          modifier.modifier_name !== "Spice Level" ? 
+                            
                               <div 
-                                key={`${modifier.name}-${option.name}-${optIndex}`} 
+                                key={`${modifier.modifier_name}`} 
                                 className="flex justify-between items-center py-0.5"
                               >
-                                <span>{option.name || modifier.name}</span>
+                                <span>{modifier.modifier_name}</span>
                                 {(() => {
-                                  const optionPrice = option.modified_price && option.modified_price > 0 ? 
-                                    option.modified_price : (option.price || 0);
+                                  const optionPrice = modifier.modified_price && modifier.modified_price > 0 ? 
+                                    modifier.modified_price : (modifier.price || 0);
                                   const totalPrice = optionPrice * item.quantity;
                                   
                                   return (
@@ -483,7 +483,7 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
                                   );
                                 })()}
                               </div>
-                            ))
+                            
                           : []
                         )}
                         

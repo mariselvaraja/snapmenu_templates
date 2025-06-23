@@ -244,7 +244,13 @@ export default function InDiningOrder() {
     const orderedItems = cartItems.map((item:any) => {
       // Extract spice level from selectedModifiers if it exists
       const spiceLevel = item.selectedModifiers?.find((mod:any) => mod.name === "Spice Level")?.options[0]?.name || "Medium";
-      const modifiers = item.selectedModifiers?.filter((mod:any) => mod.name != "Spice Level")
+      let modifiers = item.selectedModifiers?.filter((mod:any) => mod.name != "Spice Level");
+      let options = modifiers.flatMap((mod:any)=>mod.options);
+      modifiers = options.map((option:any)=>({
+        modifier_name : option.name,
+        modifier_price : option.price
+      }))
+      console.log("Modifiers", modifiers)
       return {
         name: item.name,
         quantity: item.quantity,

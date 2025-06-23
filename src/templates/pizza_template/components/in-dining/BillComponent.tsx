@@ -82,18 +82,15 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
     if (order.items) {
       const modifierTotal = order.items.reduce((modSum, item) => {
         if (item.modifiers && item.modifiers.length > 0) {
-          return modSum + item.modifiers.reduce((optionSum, modifier) => {
-            return optionSum + modifier.options.reduce((priceSum, option) => {
-              return priceSum + (option.price || 0) * item.quantity;
-            }, 0);
+          return modSum + item.modifiers.reduce((modifierSum, modifier) => {
+            const price = modifier?.modifier_price || 0;
+            return modifierSum + price * (item.quantity || 1);
           }, 0);
         }
         return modSum;
       }, 0);
-      
-      // Add modifier total to order total
-      orderTotal += modifierTotal;
     }
+    
     
     return sum + orderTotal;
   }, 0);
@@ -388,18 +385,29 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
                   {/* Modifiers (without label) */}
                   {item.modifiers && item.modifiers.length > 0 && (
                     <div className="text-xs text-gray-500 mt-1">
-                      {item.modifiers.flatMap((modifier, modIndex) => 
-                        modifier.options.map((option, optIndex) => (
-                          <div key={`${modIndex}-${optIndex}`} className="flex justify-between items-center py-0.5">
-                            <span>{option.name || modifier.name}</span>
-                            {option.price > 0 && (
-                              <span className="font-medium">
-                                +${Number((option.price || 0) * item.quantity).toFixed(2)}
-                              </span>
-                            )}
-                          </div>
-                        ))
-                      )}
+                         {item.modifiers.map((modifier: any) => 
+                          modifier.modifier_name !== "Spice Level" ? 
+                            
+                              <div 
+                                key={`${modifier.modifier_name}`} 
+                                className="flex justify-between items-center py-0.5"
+                              >
+                                <span>{modifier.modifier_name}</span>
+                                {(() => {
+                                  const optionPrice = modifier.modified_price && modifier.modified_price > 0 ? 
+                                    modifier.modified_price : (modifier.price || 0);
+                                  const totalPrice = optionPrice * item.quantity;
+                                  
+                                  return (
+                                    <span className="font-medium">
+                                      +${Number(totalPrice || 0).toFixed(2)}
+                                    </span>
+                                  );
+                                })()}
+                              </div>
+                            
+                          : []
+                        )}
                     </div>
                   )}
                   
