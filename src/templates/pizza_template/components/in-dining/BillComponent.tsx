@@ -69,58 +69,6 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
     dispatch(getInDiningOrdersRequest(table_id || undefined));
     onClose();
   };
-
-  // Handle payment response
-  useEffect(() => {
-    console.log("Payment response changed:", paymentResponse?.message);
-    console.log("Previous payment response:", previousPaymentResponse);
-    
-    if (paymentResponse && paymentResponse !== previousPaymentResponse) {
-      console.log("Processing payment response:", paymentResponse);
-      
-      // Set message and success status from payment response
-      if (paymentResponse.message) {
-        console.log("Setting payment message:", paymentResponse.message);
-        setPaymentMessage(paymentResponse.message);
-        setIsPaymentSuccess(paymentResponse.success || false);
-        
-        // Show toast notification
-        showToast(paymentResponse.message, paymentResponse.success ? 'success' : 'error');
-      } else {
-        console.log("No message in payment response:", paymentResponse);
-        // If there's no message but we have a response, set a default message
-        setPaymentMessage("Payment request processed");
-        setIsPaymentSuccess(paymentResponse.success || false);
-      }
-      
-      // If payment is successful and there's a payment URL, redirect to it
-      if ( (paymentResponse.paymentUrl || paymentResponse.payment_link || paymentResponse.paymentLink)) {
-        const paymentUrl = paymentResponse.paymentUrl || paymentResponse.payment_link || paymentResponse.paymentLink;
-        console.log("Payment Link Available:", paymentUrl);
-        window.open(paymentUrl, '_blank');
-      } else if (paymentResponse.paymentUrl || paymentResponse.payment_link || paymentResponse.paymentLink) {
-        // If there's a payment link but payment wasn't successful, still try to open it
-        const paymentUrl = paymentResponse.paymentUrl || paymentResponse.payment_link || paymentResponse.paymentLink;
-        console.log("Payment Link Available (non-success):", paymentUrl);
-        window.open(paymentUrl, '_blank');
-      } else {
-        console.log("Payment Link Not Available",JSON.parse(paymentResponse)?.paymentLink);
-        window.open(JSON.parse(paymentResponse)?.paymentLink,"_blank")
-        onClose();
-      }
-      
-      // Update previous payment response to prevent duplicate messages
-      setPreviousPaymentResponse(paymentResponse);
-      
-      // Clear state and close popup after 5 seconds only if payment was successful
-      if (paymentResponse.success) {
-        setTimeout(() => {
-          dispatch(resetPaymentState());
-          handleClose();
-        }, 5000);
-      }
-    }
-  }, [paymentResponse, previousPaymentResponse, dispatch, showToast]);
   
   // Convert single order to array if needed
   const orders = Array.isArray(order) ? order : [order];
@@ -150,8 +98,6 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
     return sum + orderTotal;
   }, 0);
 
-  const tableNumber = sessionStorage.getItem("table_number");
-  const restaurant = useSelector((state: RootState) => state.restaurant.info);
   let tablename = sessionStorage.getItem('Tablename');
   let table_id = sessionStorage.getItem('table_number')  
 
@@ -170,32 +116,7 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
   const siteContent = rawApiResponse?.data ? 
     (typeof rawApiResponse.data === 'string' ? JSON.parse(rawApiResponse.data) : rawApiResponse.data) : 
     {};
-  
-  // Get brand name from navigation bar
-  const navigationBar = siteContent?.navigationBar || { brand: { name: 'Restaurant' }, navigation: { links: [] } };
-  const { brand } = navigationBar;
-  
-  // Get contact information
-  const contact = siteContent?.contact || {
-    infoCards: {
-      phone: {
-        numbers: ["(212) 555-1234"],
-      },
-      email: {
-        addresses: ["info@chrisrestaurant.com"],
-      },
-      address: {
-        street: "123 Main Street",
-        city: "New York",
-        state: "NY",
-        zip: "10001",
-      },
-      hours: {
-        weekday: "Mon-Thu: 5pm-10pm",
-        weekend: "Fri-Sat: 5pm-11pm",
-      }
-    }
-  };
+
   
   // Function to format date in Month-day-year format
   const formatDate = (dateString: string) => {
@@ -536,11 +457,6 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
             )}
               </div>
             )}
-
-            {/* Debug Info - Remove this after debugging */}
-          
-
-           
             
             {/* Make Payment Button */}
             <button 

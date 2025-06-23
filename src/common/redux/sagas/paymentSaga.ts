@@ -16,13 +16,29 @@ function* makePaymentSaga(action: PayloadAction<{table_id: string, total_amount?
     // Call the payment service
     const response: PaymentResponse = yield call(paymentService.makePayment, table_id, total_amount);
     
-    // Dispatch success action
-    yield put(makePaymentSuccess(response));
-    
-    // If payment is successful and there's a payment URL, redirect to it
-    if (response.success && response.paymentUrl) {
-      window.location.href = response.paymentUrl;
+    // Handle response parsing - check if response is a string that needs parsing
+    let payment_response: PaymentResponse;
+    if (typeof response === 'string') {
+      try {
+        payment_response = JSON.parse(response);
+        if( payment_response?.paymentUrl)
+        {
+          window.location.href = payment_response.paymentUrl;
+        }
+        else if(payment_response?.message)
+        {
+          alert(payment_response?.message)
+        }
+      } catch (parseError) {
+        console.error('Failed to parse payment response:', parseError);
+        throw new Error('Invalid payment response format');
+      }
+    } else {
+      payment_response = response;
     }
+    
+    // Dispatch success action
+    yield put(makePaymentSuccess(payment_response));
   } catch (error: any) {
     // Extract error message
     const errorMessage = error?.response?.data?.message || 

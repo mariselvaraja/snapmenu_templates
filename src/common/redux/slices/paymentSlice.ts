@@ -68,6 +68,12 @@ const paymentSlice = createSlice({
     clearPaymentError: (state) => {
       state.error = null;
     },
+    
+    // Show payment message (for toast notifications)
+    showPaymentMessage: (state, action: PayloadAction<string>) => {
+      // This action is primarily for triggering UI notifications
+      // The message can be stored temporarily if needed
+    },
   },
 });
 
@@ -77,6 +83,7 @@ export const {
   makePaymentFailure,
   resetPaymentState,
   clearPaymentError,
+  showPaymentMessage,
 } = paymentSlice.actions;
 
 export default paymentSlice.reducer;
