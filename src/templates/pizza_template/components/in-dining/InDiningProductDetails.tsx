@@ -413,12 +413,18 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
               
               {/* Add to Order Button - Only visible on desktop */}
               <div className="hidden md:flex justify-end mt-6">
-                <button
-                  onClick={handleAddToOrder}
-                  className="bg-red-500 text-white px-6 py-2 rounded-full hover:bg-red-600 transition-colors font-medium"
-                >
-                  {needsCustomization() ? 'Customize & Add' : 'Add to Order'}
-                </button>
+                {product.inventory_status === false ? (
+                  <div className="px-6 py-2 rounded-full bg-gray-200 text-gray-600 font-medium">
+                    Out of Stock
+                  </div>
+                ) : (
+                  <button
+                    onClick={handleAddToOrder}
+                    className="bg-red-500 text-white px-6 py-2 rounded-full hover:bg-red-600 transition-colors font-medium"
+                  >
+                    {needsCustomization() ? 'Customize & Add' : 'Add to Order'}
+                  </button>
+                )}
               </div>
             </div>
             
@@ -503,13 +509,19 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
         {/* Fixed Bottom Bar with Two Buttons - Only visible on mobile */}
         <div className="fixed md:hidden bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-50 shadow-lg">
           <div className="flex gap-3">
-            {/* Customize & Add Button */}
-            <button
-              onClick={handleAddToOrder}
-              className="flex-1 bg-red-500 text-white py-3 rounded-full hover:bg-red-600 transition-colors font-medium"
-            >
-              {needsCustomization() ? 'Customize & Add' : 'Add to Order'}
-            </button>
+            {/* Customize & Add Button or Out of Stock */}
+            {product.inventory_status === false ? (
+              <div className="flex-1 bg-gray-200 text-gray-600 py-3 rounded-full font-medium text-center">
+                Out of Stock
+              </div>
+            ) : (
+              <button
+                onClick={handleAddToOrder}
+                className="flex-1 bg-red-500 text-white py-3 rounded-full hover:bg-red-600 transition-colors font-medium"
+              >
+                {needsCustomization() ? 'Customize & Add' : 'Add to Order'}
+              </button>
+            )}
             
             {/* View Orders Button */}
             {onViewOrders && (

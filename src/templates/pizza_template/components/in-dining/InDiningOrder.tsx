@@ -740,15 +740,21 @@ export default function InDiningOrder() {
                       {item.description}
                     </p>
                     
-                    {/* Price on bottom left and Add to Order on bottom right */}
+                    {/* Price on bottom left and Add to Order/Out of Stock on bottom right */}
                     <div className="flex justify-between items-center mt-auto">
                       <p className="text-lg font-bold text-red-500">${item?.indining_price || 0.00}</p>
-                      <button 
-                        onClick={() => openModifiersPopup(item)}
-                        className="flex items-center gap-2 bg-red-500 text-white px-4 sm:px-6 py-2 rounded-full hover:bg-red-600 transition-colors text-sm sm:text-base"
-                      >
-                        Add <Plus/>
-                      </button>
+                      {item.inventory_status === false ? (
+                        <div className="px-4 sm:px-6 py-2 rounded-full bg-gray-200 text-gray-600 text-sm sm:text-base font-medium">
+                          Out of Stock
+                        </div>
+                      ) : (
+                        <button 
+                          onClick={() => openModifiersPopup(item)}
+                          className="flex items-center gap-2 bg-red-500 text-white px-4 sm:px-6 py-2 rounded-full hover:bg-red-600 transition-colors text-sm sm:text-base"
+                        >
+                          Add <Plus/>
+                        </button>
+                      )}
                     </div>
                   </div>
                 </motion.div>
