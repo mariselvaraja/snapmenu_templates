@@ -21,9 +21,10 @@ function* makePaymentSaga(action: PayloadAction<{table_id: string, total_amount?
     if (typeof response === 'string') {
       try {
         payment_response = JSON.parse(response);
-        if( payment_response?.paymentUrl)
+        if( payment_response?.paymentLink)
         {
-          window.location.href = payment_response.paymentUrl;
+          // window.location.href = payment_response.paymentLink;
+          window.open(payment_response.paymentLink, "_blank")
         }
         else if(payment_response?.message)
         {

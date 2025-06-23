@@ -400,7 +400,7 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
                                   
                                   return (
                                     <span className="font-medium">
-                                      +${Number(totalPrice || 0).toFixed(2)}
+                                      +${Number( modifier.modifier_price * item.quantity || 0).toFixed(2)}
                                     </span>
                                   );
                                 })()}

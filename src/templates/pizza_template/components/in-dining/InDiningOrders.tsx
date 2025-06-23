@@ -472,13 +472,11 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
                               >
                                 <span>{modifier.modifier_name}</span>
                                 {(() => {
-                                  const optionPrice = modifier.modified_price && modifier.modified_price > 0 ? 
-                                    modifier.modified_price : (modifier.price || 0);
-                                  const totalPrice = optionPrice * item.quantity;
+                                 
                                   
                                   return (
                                     <span className="font-medium">
-                                      +${Number(totalPrice || 0).toFixed(2)}
+                                      +${Number( modifier.modifier_price * item.quantity|| 0).toFixed(2)}
                                     </span>
                                   );
                                 })()}

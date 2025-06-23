@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, X, Check, Truck, Store } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { ArrowLeft, Check, Truck, Store } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useAppSelector } from '../../../common/redux';
 import { useCart } from '../context/CartContext';
 import { cartService } from '../../../services';
-import { usePayment } from '@/hooks';
+import { usePaymentPopup } from '../../../common/redux/usepaymentPopup';
 
 interface FormData {
   name: string;
@@ -69,7 +69,7 @@ interface CartItem {
 }
 
 export default function Checkout() {
-
+  const { openPopup } = usePaymentPopup();
   const { state: { items: cartItems }, clearCart } = useCart();
   const [activeTab, setActiveTab] = useState<OrderType>('pickup');
 
@@ -271,15 +271,14 @@ export default function Checkout() {
       // Check for payment link and ensure it's properly detected
       if (response && typeof response === 'object' && 'payment_link' in response && response.payment_link) {
         console.log('Payment link detected:', response.payment_link);
-        // Force the payment popup to open immediately
-        // setShowPaymentPopup(true);
-        window.open(response.payment_link,"_blank")
+        // Use the payment popup hook to open the payment link
+        openPopup(response.payment_link);
       }
       
       // Set order complete after all other state updates
-      setOrderComplete(true); 
+      // setOrderComplete(true); 
       // Clear the cart after successful order
-      clearCart();
+      // clearCart();
     } catch (error) {
       console.error('Error placing order:', error);
       // Handle error (could show an error message to the user)
