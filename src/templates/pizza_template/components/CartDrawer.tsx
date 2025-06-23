@@ -166,7 +166,7 @@ export default function CartDrawer() {
                                 parseInt(String(item.quantity)) || 1;
                               
                               // Calculate total price (base price + modifiers) * quantity
-                              const totalItemPrice = (baseItemPrice + modifierTotal) * quantity;
+                              const totalItemPrice = (baseItemPrice ) * quantity;
                               
                               // Ensure we have a valid number before using toFixed
                               const formattedPrice = !isNaN(totalItemPrice) ? 
@@ -193,9 +193,9 @@ export default function CartDrawer() {
                                     <span>{option.name || modifier.name}</span>
                                     {option.price > 0 && (
                                       <span className="font-medium">
-                                        +${typeof option.price === 'number' ? 
+                                        (${typeof option.price === 'number' ? 
                                           (option.price * (typeof item.quantity === 'number' ? item.quantity : parseInt(String(item.quantity)) || 1)).toFixed(2) : 
-                                          ((parseFloat(String(option.price).replace(/[^\d.-]/g, '')) || 0) * (typeof item.quantity === 'number' ? item.quantity : parseInt(String(item.quantity)) || 1)).toFixed(2)}
+                                          ((parseFloat(String(option.price).replace(/[^\d.-]/g, '')) || 0) * (typeof item.quantity === 'number' ? item.quantity : parseInt(String(item.quantity)) || 1)).toFixed(2)})
                                       </span>
                                     )}
                                   </div>

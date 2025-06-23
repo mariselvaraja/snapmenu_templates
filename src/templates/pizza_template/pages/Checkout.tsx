@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Check, Truck, Store } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -69,13 +69,24 @@ interface CartItem {
 }
 
 export default function Checkout() {
-  const { openPopup } = usePaymentPopup();
+  const { openPopup, closePopup } = usePaymentPopup();
   const { state: { items: cartItems }, clearCart } = useCart();
   const [activeTab, setActiveTab] = useState<OrderType>('pickup');
 
 
   const tpnState = useAppSelector((state) => state?.tpn?.rawApiResponse);
   const restaurant_id = sessionStorage.getItem("franchise_id");
+
+  useEffect(() => {
+    const handleMessage = (event:any) => {
+      console.log("PopUP Event", event)
+
+        closePopup();
+      
+    };
+
+    window.addEventListener('message', handleMessage, false);
+  }, [closePopup]);
   
   // Check if delivery is available based on pos_type being 'square'
   const isDeliveryAvailable = tpnState?.tpn_config?.find((c:any) => 

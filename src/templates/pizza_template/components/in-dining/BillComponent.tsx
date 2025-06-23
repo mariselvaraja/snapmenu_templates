@@ -15,8 +15,12 @@ interface OrderItem {
   price: number;
   image?: string;
   modifiers?: {
-    name: string;
-    options: {
+    modifier_name?: string;
+    modifier_price?: number;
+    modified_price?: number;
+    price?: number;
+    name?: string;
+    options?: {
       name: string;
       price: number;
     }[];
@@ -377,8 +381,19 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
                   <div className="flex justify-between">
                     <span className="font-medium">{item.name}</span>
                     <div className="flex">
-                      <span className="w-16 text-center">{item.quantity}x</span>
-                      <span className="w-20 text-right">${Number(item?.price || 0).toFixed(2)}</span>
+                      <span className="w-16 text-center">{item.quantity}</span>
+                      <span className="w-20 text-right">
+  ${Number(
+    (item?.price || 0) * (item?.quantity || 0) +
+    (item?.modifiers?.reduce(
+      (sum: number, mod: any) => {
+        const modifierPrice = mod.modifier_price || mod.modified_price || mod.price || 0;
+        return sum + (modifierPrice * (item?.quantity || 0));
+      },
+      0
+    ) || 0)
+  ).toFixed(2)}
+</span>
                     </div>
                   </div>
                   
@@ -400,7 +415,7 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
                                   
                                   return (
                                     <span className="font-medium">
-                                      +${Number( modifier.modifier_price * item.quantity || 0).toFixed(2)}
+                                      (${Number( modifier.modifier_price * item.quantity || 0).toFixed(2)})
                                     </span>
                                   );
                                 })()}

@@ -20,39 +20,25 @@ export default function PaymentSuccess() {
   const [orderDetails, setOrderDetails] = useState<OrderDetails | null>(null);
   const [paymentDetails, setPaymentDetails] = useState<PaymentDetails | null>(null);
 
-  useEffect(() => {
-    // Extract order and payment details from location state or URL params
-    const searchParams = new URLSearchParams(location.search);
-    const orderNumber = searchParams.get('orderNumber');
-    const amount = searchParams.get('amount');
-    const transactionId = searchParams.get('transactionId');
-    
-    // Set order details from URL params or location state
-    if (location.state) {
-      setOrderDetails(location.state.orderDetails);
-      setPaymentDetails(location.state.paymentDetails);
-    } else if (orderNumber || amount || transactionId) {
-      setOrderDetails({
-        orderNumber: orderNumber || 'N/A',
-        timestamp: new Date().toISOString()
-      });
-      setPaymentDetails({
-        amount: amount ? parseFloat(amount) : 0,
-        transactionId: transactionId || 'N/A',
-        method: 'Card Payment'
-      });
+  useEffect(()=>{
+
+    const payload = {
+      status: "SUCCESS",
+    };
+
+    if (window.opener) {
+      window.opener.postMessage(
+        {
+          type: 'PAYMENT',
+          payload,
+        },
+        '*' // Ideally use your domain here for security
+      );
+
+      // Optional: close the popup after sending the message
+      window.close();
     }
-  }, [location]);
-
-  const handleGoHome = () => {
-    navigate('/');
-  };
-
-  const handleViewReceipt = () => {
-    // Navigate to receipt page or download receipt
-    console.log('View receipt clicked');
-    // You can implement receipt viewing logic here
-  };
+},[])
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 flex items-center justify-center p-4">
