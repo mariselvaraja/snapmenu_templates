@@ -154,155 +154,275 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
 
   // Function to handle bill download
   const handleDownload = () => {
-    // Create a printable version of the bill
-    const printContent = document.getElementById('bill-content');
-    if (!printContent) return;
-    
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) {
-      alert('Please allow popups for this website');
-      return;
-    }
-    
-    printWindow.document.write(`
-      <html>
-        <head>
-          <title>Bill</title>
-          <style>
-            body {
-              font-family: monospace;
-              padding: 20px;
-              max-width: 400px;
-              margin: 0 auto;
-            }
-            .header {
-              text-align: center;
-              margin-bottom: 20px;
-            }
-            .table-name {
-              font-size: 24px;
-              font-weight: bold;
-              margin-bottom: 5px;
-              text-align: center;
-            }
-            .bill-info {
-              display: flex;
-              justify-content: space-between;
-              margin-bottom: 20px;
-              border-bottom: 1px dashed #000;
-              padding-bottom: 10px;
-            }
-            .items-header {
-              display: flex;
-              justify-content: space-between;
-              border-bottom: 1px dashed #000;
-              padding-bottom: 5px;
-              margin-bottom: 10px;
-            }
-            .item-row {
-              display: flex;
-              justify-content: space-between;
-              margin-bottom: 5px;
-            }
-            .total-row {
-              display: flex;
-              justify-content: space-between;
-              font-weight: bold;
-              border-top: 1px dashed #000;
-              padding-top: 10px;
-              margin-top: 10px;
-            }
-            .thank-you {
-              text-align: center;
-              margin-top: 30px;
-            }
-            .divider {
-              border-bottom: 1px dashed #000;
-              margin: 20px 0;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="table-name">${tablename}</div>
+    try {
+      // First try the modern approach with better error handling
+      const printContent = document.getElementById('bill-content');
+      if (!printContent) {
+        showToast('Error: Bill content not found', 'error');
+        return;
+      }
+
+      // Function to download as file
+      const downloadAsFile = (content: string) => {
+        try {
+          const blob = new Blob([content], { type: 'text/plain' });
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `bill-${tablename || 'table'}-${Date.now()}.txt`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+          showToast('Bill downloaded as text file', 'success');
+        } catch (error) {
+          console.error('Download error:', error);
+          showToast('Download failed. Please try again.', 'error');
+        }
+      };
+
+      // Generate bill content as text
+      const generateBillText = () => {
+        const billDate = orders.length > 0 ? formatDate(orders[0].date) : formatDate(new Date().toISOString());
+        const orderId = orders.length > 0 ? orders[0].id : 'N/A';
+        
+        let billText = `${tablename || 'Table'}\n`;
+        billText += `Order #: ${orderId} | ${billDate}\n`;
+        billText += `${'='.repeat(40)}\n\n`;
+        
+        billText += `${'Item'.padEnd(20)} ${'Qty'.padStart(5)} ${'Price'.padStart(10)}\n`;
+        billText += `${'-'.repeat(40)}\n`;
+        
+        orders.forEach(order => {
+          if (order.items) {
+            order.items.forEach((item: OrderItem) => {
+              const itemName = item.name.length > 18 ? item.name.substring(0, 18) + '..' : item.name;
+              const itemPrice = `$${Number((item.price || 0) * (item.quantity || 0)).toFixed(2)}`;
+              billText += `${itemName.padEnd(20)} ${String(item.quantity).padStart(5)} ${itemPrice.padStart(10)}\n`;
+              
+              // Add modifiers
+              if (item.modifiers && item.modifiers.length > 0) {
+                item.modifiers.forEach((modifier: any) => {
+                  if (modifier.modifier_name !== "Spice Level") {
+                    const modPrice = `+$${Number((modifier.modifier_price || 0) * item.quantity).toFixed(2)}`;
+                    const modName = modifier.modifier_name.length > 16 ? 
+                      modifier.modifier_name.substring(0, 16) + '..' : modifier.modifier_name;
+                    billText += `  ${modName.padEnd(18)} ${modPrice.padStart(15)}\n`;
+                  }
+                });
+              }
+              
+              // Add spice level
+              if (item.spiceLevel) {
+                billText += `  Spice: ${item.spiceLevel}\n`;
+              }
+            });
+          }
+        });
+        
+        billText += `${'-'.repeat(40)}\n`;
+        billText += `${'TOTAL'.padEnd(25)} ${'$' + Number(totalAmount || 0).toFixed(2).padStart(10)}\n`;
+        billText += `${'='.repeat(40)}\n`;
+        billText += `\nThank you!\n`;
+        
+        return billText;
+      };
+
+      // Alternative: Try print with better popup handling
+      const tryPrintWindow = () => {
+        try {
+          const printWindow = window.open('', '_blank', 'width=600,height=800,scrollbars=yes,resizable=yes');
           
-          <div class="bill-info">
-            <div>Order #: ${orders.length > 0 ? orders[0].id : 'N/A'}</div>
-            <div>${orders.length > 0 ? formatDate(orders[0].date) : new Date().toISOString()}</div>
-          </div>
-          
-          <div class="divider"></div>
-          
-          <div class="items-header">
-            <div>Item</div>
-            <div style="display: flex;">
-              <div style="width: 60px; text-align: center;">Qty</div>
-              <div style="width: 80px; text-align: right;">Price</div>
-            </div>
-          </div>
-          
-          ${orders.map(order => 
-            order.items && order.items.map((item: OrderItem) => `
-              <div style="margin-bottom: 15px; border-bottom: 1px dashed #ccc; padding-bottom: 10px;">
-                <div class="item-row">
-                  <div><strong>${item.name}</strong></div>
+          if (!printWindow) {
+            // Popup blocked, use alternative method
+            showToast('Popup blocked. Bill copied to clipboard instead.', 'warning');
+            if (navigator.clipboard && window.isSecureContext) {
+              navigator.clipboard.writeText(generateBillText());
+            } else {
+              downloadAsFile(generateBillText());
+            }
+            return;
+          }
+
+          const billDate = orders.length > 0 ? formatDate(orders[0].date) : formatDate(new Date().toISOString());
+          const orderId = orders.length > 0 ? orders[0].id : 'N/A';
+
+          printWindow.document.write(`
+            <!DOCTYPE html>
+            <html>
+              <head>
+                <title>Bill - ${tablename}</title>
+                <style>
+                  body {
+                    font-family: 'Courier New', monospace;
+                    padding: 20px;
+                    max-width: 400px;
+                    margin: 0 auto;
+                    line-height: 1.4;
+                  }
+                  .table-name {
+                    font-size: 24px;
+                    font-weight: bold;
+                    margin-bottom: 10px;
+                    text-align: center;
+                  }
+                  .bill-info {
+                    display: flex;
+                    justify-content: space-between;
+                    margin-bottom: 20px;
+                    border-bottom: 1px dashed #000;
+                    padding-bottom: 10px;
+                    font-size: 14px;
+                  }
+                  .items-header {
+                    display: flex;
+                    justify-content: space-between;
+                    border-bottom: 1px dashed #000;
+                    padding-bottom: 5px;
+                    margin-bottom: 10px;
+                    font-weight: bold;
+                  }
+                  .item-row {
+                    display: flex;
+                    justify-content: space-between;
+                    margin-bottom: 8px;
+                  }
+                  .modifier-row {
+                    display: flex;
+                    justify-content: space-between;
+                    margin-left: 20px;
+                    font-size: 12px;
+                    color: #666;
+                    margin-bottom: 3px;
+                  }
+                  .spice-level {
+                    margin-left: 20px;
+                    font-size: 12px;
+                    color: #666;
+                    margin-bottom: 5px;
+                  }
+                  .total-row {
+                    display: flex;
+                    justify-content: space-between;
+                    font-weight: bold;
+                    border-top: 1px dashed #000;
+                    padding-top: 10px;
+                    margin-top: 15px;
+                    font-size: 16px;
+                  }
+                  .thank-you {
+                    text-align: center;
+                    margin-top: 30px;
+                    font-weight: bold;
+                  }
+                  @media print {
+                    body { margin: 0; padding: 10px; }
+                  }
+                </style>
+              </head>
+              <body>
+                <div class="table-name">${tablename || 'Table'}</div>
+                
+                <div class="bill-info">
+                  <div>Order #: ${orderId}</div>
+                  <div>${billDate}</div>
+                </div>
+                
+                <div class="items-header">
+                  <div>Item</div>
                   <div style="display: flex;">
-                    <div style="width: 60px; text-align: center;">${item.quantity}x</div>
-                    <div style="width: 80px; text-align: right;">$${Number(item.price || 0).toFixed(2)}</div>
+                    <div style="width: 50px; text-align: center;">Qty</div>
+                    <div style="width: 70px; text-align: right;">Price</div>
                   </div>
                 </div>
                 
-                ${item.modifiers && item.modifiers.length > 0 ? `
-                  <div style="font-size: 12px; margin-top: 5px;">
-                    ${item.modifiers.flatMap((modifier: any) => 
-                      modifier.options.map((option: any) => `
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
-                          <span>${option.name || modifier.name}</span>
-                          ${option.price > 0 ? `
-                            <span style="font-weight: 500;">+$${Number((option.price || 0) * item.quantity).toFixed(2)}</span>
-                          ` : ''}
+                ${orders.map(order => 
+                  order.items ? order.items.map((item: OrderItem) => `
+                    <div style="margin-bottom: 10px;">
+                      <div class="item-row">
+                        <div><strong>${item.name || 'Unknown Item'}</strong></div>
+                        <div style="display: flex;">
+                          <div style="width: 50px; text-align: center;">${item.quantity || 0}</div>
+                          <div style="width: 70px; text-align: right;">$${Number((item.price || 0) * (item.quantity || 0)).toFixed(2)}</div>
                         </div>
-                      `).join('')
-                    )}
-                  </div>
-                ` : ''}
+                      </div>
+                      
+                      ${item.modifiers && item.modifiers.length > 0 ? 
+                        item.modifiers.map((modifier: any) => 
+                          modifier.modifier_name !== "Spice Level" ? `
+                            <div class="modifier-row">
+                              <span>${modifier.modifier_name || 'Modifier'}</span>
+                              <span>+$${Number((modifier.modifier_price || 0) * (item.quantity || 0)).toFixed(2)}</span>
+                            </div>
+                          ` : ''
+                        ).join('') : ''
+                      }
+                      
+                      ${item.spiceLevel ? `
+                        <div class="spice-level">
+                          <strong>Spice Level:</strong> ${item.spiceLevel}
+                        </div>
+                      ` : ''}
+                    </div>
+                  `).join('') : ''
+                ).join('')}
                 
-                ${item.spiceLevel ? `
-                  <div style="font-size: 12px; margin-top: 5px;">
-                    <strong>Spice Level:</strong> ${
-                      item.spiceLevel === "Mild" ? "Mild" :
-                      item.spiceLevel === "Medium" ? "Medium" :
-                      item.spiceLevel === "Hot" ? "Hot" :
-                      item.spiceLevel
-                    }
-                  </div>
-                ` : ''}
-              </div>
-            `).join('')
-          ).join('')}
+                <div class="total-row">
+                  <div>TOTAL</div>
+                  <div>$${Number(totalAmount || 0).toFixed(2)}</div>
+                </div>
+                
+                <div class="thank-you">Thank you!</div>
+              </body>
+            </html>
+          `);
           
-          <div class="divider"></div>
+          printWindow.document.close();
           
-          <div class="total-row">
-            <div>TOTAL</div>
-            <div>$${Number(totalAmount || 0).toFixed(2)}</div>
-          </div>
+          // Wait for content to load then print
+          printWindow.onload = () => {
+            setTimeout(() => {
+              printWindow.focus();
+              printWindow.print();
+            }, 250);
+          };
           
-          <div class="divider"></div>
+          showToast('Print dialog opened', 'success');
           
-          <div class="thank-you">Thank you!</div>
-        </body>
-      </html>
-    `);
-    
-    printWindow.document.close();
-    printWindow.focus();
-    
-    // Print the window
-    setTimeout(() => {
-      printWindow.print();
-      // Close the window after printing (optional)
-      // printWindow.close();
-    }, 500);
+        } catch (error) {
+          console.error('Print window error:', error);
+          showToast('Print failed. Bill copied to clipboard instead.', 'error');
+          if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(generateBillText());
+          } else {
+            downloadAsFile(generateBillText());
+          }
+        }
+      };
+
+      // Try to use the Clipboard API first (modern browsers)
+      if (navigator.clipboard && window.isSecureContext) {
+        const billText = generateBillText();
+        navigator.clipboard.writeText(billText).then(() => {
+          showToast('Bill copied to clipboard! You can paste it in any text editor and print.', 'success');
+        }).catch(() => {
+          // Fallback to download as file
+          downloadAsFile(generateBillText());
+        });
+      } else {
+        // Fallback to download as file
+        downloadAsFile(generateBillText());
+      }
+
+      // Try print window as secondary option
+      setTimeout(() => {
+        tryPrintWindow();
+      }, 100);
+
+    } catch (error) {
+      console.error('Download error:', error);
+      showToast('Download failed. Please try again.', 'error');
+    }
   };
 
   // Check if payment should be available - combine hook result with order validation
