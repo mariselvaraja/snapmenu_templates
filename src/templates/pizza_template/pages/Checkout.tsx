@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { useAppSelector } from '../../../common/redux';
 import { useCart } from '../context/CartContext';
 import { cartService } from '../../../services';
-import { usePaymentPopup } from '../../../common/redux/usepaymentPopup';
+import { usePaymentPopup } from '../../../common/popups/usePaymentPopup';
 
 interface FormData {
   name: string;
