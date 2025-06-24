@@ -161,18 +161,7 @@ export default function PaymentStatusCheck() {
             Please wait while we check your payment status...
           </motion.p>
 
-          {/* Transaction ID Display */}
-          {transactionId && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.9, duration: 0.5 }}
-              className="bg-gray-50 rounded-lg px-4 py-2 mb-4 border border-gray-200"
-            >
-              <p className="text-xs text-gray-500 mb-1">Transaction ID</p>
-              <p className="text-sm font-mono text-gray-700 break-all">{transactionId}</p>
-            </motion.div>
-          )}
+
         </motion.div>
 
         {/* Animated loading dots */}
