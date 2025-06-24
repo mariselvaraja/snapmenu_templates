@@ -79,7 +79,7 @@ export default function Checkout() {
 
   useEffect(() => {
     const handleMessage = (event: any) => {
-      console.log("PopUP Event", event);
+      console.log("PopUP Event", event.data.payload);
 
       // Handle payment status check message
       if (event.data.type === 'PAYMENT_STATUS_CHECK') {
@@ -306,7 +306,8 @@ export default function Checkout() {
       if (response && typeof response === 'object' && 'payment_link' in response && response.payment_link) {
         console.log('Payment link detected:', response.payment_link);
         // Use the payment popup hook to open the payment link
-        // openPopup(response.payment_link);
+        openPopup(response.payment_link);
+        // openPopup("https://annapurna.snapmenu.ai/payment/status?transaction_id=iy12")
       }
       
       // Set order complete after all other state updates
