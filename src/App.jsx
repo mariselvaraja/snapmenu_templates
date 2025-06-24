@@ -6,7 +6,7 @@ import Template from './templates/Template';
 import AppRouter from './Router';
 import { fetchRestaurantByDomainRequest } from './common/redux/slices/restaurantSlice';
 import { useDispatch } from 'react-redux';
-import { PaymentSuccess, PaymentFailure } from './common/payments/ipos/index';
+import { PaymentSuccess, PaymentFailure, PaymentStatusCheck } from './common/payments/ipos/index';
 
 // Component to handle Redux dispatch within Provider
 const AppContent = () => {
@@ -27,6 +27,7 @@ const AppContent = () => {
   return (
     <Routes>
       {/* Common payment routes - rendered outside of any template */}
+      <Route path="/payment/status" element={<PaymentStatusCheck />} />
       <Route path="/payment/success" element={<PaymentSuccess />} />
       <Route path="/payment/failure" element={<PaymentFailure />} />
       

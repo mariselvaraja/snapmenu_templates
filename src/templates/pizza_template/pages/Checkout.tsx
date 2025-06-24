@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Check, Truck, Store } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAppSelector } from '../../../common/redux';
 import { useCart } from '../context/CartContext';
 import { cartService } from '../../../services';
@@ -78,15 +78,38 @@ export default function Checkout() {
   const restaurant_id = sessionStorage.getItem("franchise_id");
 
   useEffect(() => {
-    const handleMessage = (event:any) => {
-      console.log("PopUP Event", event)
+    const handleMessage = (event: any) => {
+      console.log("PopUP Event", event);
 
+      // Handle payment status check message
+      if (event.data.type === 'PAYMENT_STATUS_CHECK') {
+        const { transaction_id } = event.data.payload;
+        console.log("Received transaction_id:", transaction_id);
+        
+        // Handle the transaction ID (you can add your logic here)
+        // For example: update order status, show success message, etc.
+        
+        // Close the popup
         closePopup();
-      
+        
+        // Set order as complete and clear cart
+        setOrderComplete(true);
+        clearCart();
+        
+        return;
+      }
+
+      // Handle other message types
+      closePopup();
     };
 
     window.addEventListener('message', handleMessage, false);
-  }, [closePopup]);
+
+    // Cleanup event listener
+    return () => {
+      window.removeEventListener('message', handleMessage, false);
+    };
+  }, [closePopup, clearCart]);
   
   // Check if delivery is available based on pos_type being 'square'
   const isDeliveryAvailable = tpnState?.tpn_config?.find((c:any) => 
@@ -283,7 +306,7 @@ export default function Checkout() {
       if (response && typeof response === 'object' && 'payment_link' in response && response.payment_link) {
         console.log('Payment link detected:', response.payment_link);
         // Use the payment popup hook to open the payment link
-        openPopup(response.payment_link);
+        // openPopup(response.payment_link);
       }
       
       // Set order complete after all other state updates
