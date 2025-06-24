@@ -411,15 +411,14 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
             <p className="text-red-500">Error loading orders: {historyError}</p>
           </div>
         ) : orders.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full p-4 text-center">
-            <ShoppingBag className="h-12 w-12 text-gray-300 mb-2" />
-            <p className="text-gray-500 mb-4">No orders yet</p>
-            <button
-              onClick={onClose}
-              className="text-red-500 font-medium hover:text-red-600 transition-colors"
-            >
-              Continue Shopping
-            </button>
+          <div className="text-center py-12">
+            <div className="flex flex-col items-center">
+              <ShoppingBag className="h-16 w-16 text-gray-300 mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No orders yet</h3>
+              <p className="text-gray-500 text-center max-w-sm">
+                Your orders will appear here once you place them. Start browsing our menu to get started!
+              </p>
+            </div>
           </div>
         ) : (
           <ul className="divide-y">
@@ -463,30 +462,22 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
                       </span>
                     </div>
                     
-                    {/* Display selected modifiers one by one with name on left and price on right */}
-                    {item.modifiers && item.modifiers.length > 0 && (
+                    {/* Display selected modifiers and spice level */}
+                    {((item.modifiers && item.modifiers.length > 0) || item.spiceLevel) && (
                       <div className="mt-1 mb-2 text-xs text-gray-600">
                         {/* First display all non-spice level modifiers */}
-                        {item.modifiers.map((modifier: any) => 
+                        {item.modifiers && item.modifiers.length > 0 && item.modifiers.map((modifier: any) => 
                           modifier.modifier_name !== "Spice Level" ? 
-                            
-                              <div 
-                                key={`${modifier.modifier_name}`} 
-                                className="flex justify-between items-center py-0.5"
-                              >
-                                <span>{modifier.modifier_name}</span>
-                                {(() => {
-                                 
-                                  
-                                  return (
-                                    <span className="font-medium">
-                                      +(${Number( modifier.modifier_price * item.quantity|| 0).toFixed(2)})
-                                    </span>
-                                  );
-                                })()}
-                              </div>
-                            
-                          : []
+                            <div 
+                              key={`${modifier.modifier_name}`} 
+                              className="flex justify-between items-center py-0.5"
+                            >
+                              <span>{modifier.modifier_name}</span>
+                              <span className="font-medium">
+                                +(${Number( modifier.modifier_price * item.quantity|| 0).toFixed(2)})
+                              </span>
+                            </div>
+                          : null
                         )}
                         
                         {/* Display spice level from modifiers if available */}
@@ -504,14 +495,13 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
                                     className="flex justify-between items-center py-0.5"
                                   >
                                     <span className="flex items-center">
+                                      Spice Level
                                       <span className="ml-1 text-red-500">
                                         {chiliCount === 1 && '🌶️'}
                                         {chiliCount === 2 && '🌶️🌶️'}
                                         {chiliCount === 3 && '🌶️🌶️🌶️'}
                                       </span>
                                     </span>
-                                    
-               
                                   </div>
                                 );
                               })
@@ -523,6 +513,7 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
                         {item.spiceLevel && !item.modifiers?.some((modifier: any) => modifier.name === "Spice Level") && (
                           <div className="flex justify-between items-center py-0.5">
                             <span className="flex items-center">
+                              Spice Level
                               <span className="ml-1 text-red-500">
                                 {(() => {
                                   let chiliCount = 1; // Default to 1
@@ -539,12 +530,8 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
                                 })()}
                               </span>
                             </span>
-                            
-          
                           </div>
                         )}
-                        
-        
                       </div>
                     )}
                     

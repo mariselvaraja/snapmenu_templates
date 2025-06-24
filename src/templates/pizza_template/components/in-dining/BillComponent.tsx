@@ -70,7 +70,7 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
 
   // Handle close with order refresh
   const handleClose = () => {
-    dispatch(getInDiningOrdersRequest(table_id || undefined));
+    // dispatch(getInDiningOrdersRequest(table_id || undefined));
     onClose();
   };
   

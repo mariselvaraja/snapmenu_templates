@@ -48,7 +48,7 @@ function* placeInDiningOrderSaga(action: ReturnType<typeof placeInDiningOrderReq
     const placedOrder = yield call(inDiningOrderService.placeInDiningOrder,orderData);
     yield put(placeInDiningOrderSuccess(placedOrder));
     //GET INDINING ORDER
-    yield put(getOrderHistoryRequest(orderData.table_id));
+    // yield put(getOrderHistoryRequest(orderData.table_id));
   } catch (error) {
     yield put(placeInDiningOrderFailure(error instanceof Error ? error.message : 'An unknown error occurred'));
   }
