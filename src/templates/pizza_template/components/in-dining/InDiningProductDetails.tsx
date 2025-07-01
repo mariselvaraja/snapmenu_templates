@@ -178,6 +178,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 import { AppDispatch, RootState } from '../../../../common/store';
 import { addItem, toggleDrawer, setTableId } from '../../../../common/redux/slices/inDiningCartSlice';
+import InDiningDrinksModifierModal from './InDiningDrinksModifierModal';
 
 interface InDiningProductDetailsProps {
   product: any;
@@ -185,6 +186,7 @@ interface InDiningProductDetailsProps {
   menuItems: any[];
   onProductSelect?: (product: any) => void;
   onViewOrders?: () => void;
+  currentMenuType : any
 }
 
 const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({ 
@@ -192,9 +194,11 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
   onClose,
   menuItems,
   onProductSelect,
-  onViewOrders
+  onViewOrders,
+  currentMenuType
 }) => {
   const [isModifierModalOpen, setIsModifierModalOpen] = useState<boolean>(false);
+   const [isDrinksModifierModalOpen, setIsDrinksModifierModalOpen] = useState<boolean>(false);
   const [selectedMenuItem, setSelectedMenuItem] = useState<any>(null);
   const dispatch = useDispatch<AppDispatch>();
   const cartItems = useSelector((state: RootState) => state.inDiningCart.items);
@@ -202,7 +206,6 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
   // Get table number from URL
   const location = useLocation();
   const tableNumber = sessionStorage.getItem('Tablename');
-  
 
 
   // Helper function to check if spice level should be shown based on is_spice_applicable
@@ -257,13 +260,17 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
 
   // Handle add to order button click
   const handleAddToOrder = () => {
-    if (needsCustomization()) {
-      // Open modifier modal if product has modifiers or spice level
-      const productWithQuantity = {
-        ...product,
-        quantity: 1
-      };
-      setSelectedMenuItem(productWithQuantity);
+    const productWithQuantity = {
+      ...product,
+      quantity: 1
+    };
+    setSelectedMenuItem(productWithQuantity);
+
+    // For drinks menu, open drinks modifier modal if it has prices array
+    if (currentMenuType === "drinks" && product?.prices && Array.isArray(product.prices) && product.prices.length > 0) {
+      setIsDrinksModifierModalOpen(true);
+    } else if (needsCustomization()) {
+      // Open regular modifier modal if product has modifiers or spice level
       setIsModifierModalOpen(true);
     } else {
       // Add directly to cart if no customization needed
@@ -386,7 +393,16 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
                 )}
                 <h2 className="text-2xl font-bold text-gray-800">{product.name}</h2>
               </div>
-              <p className="text-xl font-bold text-red-500 mb-2">${Number(product?.indining_price || 0).toFixed(2)}</p>
+              <p className="text-xl font-bold text-red-500 mb-2">
+                ${(() => {
+                  // For drinks menu, use 0th index price from prices array
+                  if (currentMenuType === "drinks" && product?.prices && Array.isArray(product.prices) && product.prices.length > 0) {
+                    return parseFloat(product.prices[0].price) || 0;
+                  }
+                  // For food menu or fallback, use indining_price
+                  return Number(product?.indining_price || 0);
+                })().toFixed(2)}
+              </p>
 
               {/* Show spice level indicator if applicable */}
               {shouldShowSpiceLevel() && (
@@ -494,7 +510,16 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
                         </div>
                         <div className="p-2">
                           <h4 className="font-medium text-sm">{item.name}</h4>
-                          <p className="text-red-500 text-xs">${Number(item?.indining_price || 0)}</p>
+                          <p className="text-red-500 text-xs">
+                            ${(() => {
+                              // For drinks menu, use 0th index price from prices array
+                              if (currentMenuType === "drinks" && item?.prices && Array.isArray(item.prices) && item.prices.length > 0) {
+                                return parseFloat(item.prices[0].price) || 0;
+                              }
+                              // For food menu or fallback, use indining_price
+                              return Number(item?.indining_price || 0);
+                            })()}
+                          </p>
                         </div>
                       </div>
                     ));
@@ -553,6 +578,17 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
         }}
         menuItem={selectedMenuItem}
       />
+
+       <InDiningDrinksModifierModal
+              isOpen={isDrinksModifierModalOpen}
+              onClose={(updatedItem?: any) => {
+                setIsDrinksModifierModalOpen(false);
+                if (updatedItem) {
+                  console.log('Updated drinks item received:', updatedItem);
+                }
+              }}
+              menuItem={selectedMenuItem}
+            />
     </div>
   );
 };

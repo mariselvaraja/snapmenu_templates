@@ -176,11 +176,11 @@ const InDiningCartDrawer: React.FC<InDiningCartDrawerProps> = ({ onPlaceOrder })
                                       const totalPrice = optionPrice * quantity;
                                       
                                       // Always show price, even if it's $0.00
-                                      return (
+                                      return totalPrice > 0 ? (
                                         <span className="font-medium">
                                           +${totalPrice.toFixed(2)}
                                         </span>
-                                      );
+                                      ) : "";
                                     })()}
                                   </div>
                                 ))
