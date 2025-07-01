@@ -114,6 +114,7 @@ export const menuSlice = createSlice({
   reducers: {
     // Synchronous actions
     setMenuItems: (state, action: PayloadAction<any[]>) => {
+      console.log("action.payload", action.payload)
       state.items = action.payload;
     },
     setMenuCategories: (state, action: PayloadAction<any[]>) => {

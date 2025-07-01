@@ -9,9 +9,10 @@ import {
 import { menuService } from '../../services';
 
 // Worker Saga
-function* fetchMenuSaga(): Generator<any, void, any> {
+function* fetchMenuSaga(action:any): Generator<any, void, any> {
   try {
-    const menuData = yield call(menuService.getMenu);
+    const type = action.payload || '';
+    const menuData = yield call(menuService.getMenu, type);
     yield put(fetchMenuSuccess(menuData));
   } catch (error) {
     yield put(fetchMenuFailure(error instanceof Error ? error.message : 'An unknown error occurred'));
@@ -28,6 +29,8 @@ function* fetchMenuByCategorySaga(action: { type: string, payload: string }): Ge
     const categoryItems = menuData.items.filter((item: { category: string }) => 
       item.category.toLowerCase() === action.payload.toLowerCase()
     );
+
+    console.log("menuData", menuData)
     
     // Update the store with filtered items
     yield put(setMenuItems(categoryItems));

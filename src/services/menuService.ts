@@ -13,11 +13,12 @@ export const menuService = {
   /**
    * Fetches the menu data from the API
    */
-  getMenu: async (): Promise<{ items: MenuItem[], categories: MenuCategory[] }> => {
+  getMenu: async (type:any): Promise<{ items: MenuItem[], categories: MenuCategory[] }> => {
     console.log('Fetching menu data from API');
     
     try {
-      const response = await api.get<any>(endpoints.menu.getAll);
+      let url = type? endpoints.menu.getAll+"?type=website" : endpoints.menu.getAll;
+      const response = await api.get<any>(url);
       
       // Store the raw API response
       console.log('Menu API response:', response.data);

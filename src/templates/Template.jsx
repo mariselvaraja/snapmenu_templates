@@ -115,7 +115,7 @@ const TemplateContent = () => {
       // Fetch required data
       dispatch(fetchTpnConfigRequest());
       dispatch(fetchSiteContentRequest());
-      dispatch(fetchMenuRequest());
+      dispatch(fetchMenuRequest('website'));
       }
 
       if(isPaymentRoute)
