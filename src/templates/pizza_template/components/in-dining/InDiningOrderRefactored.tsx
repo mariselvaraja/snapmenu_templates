@@ -112,6 +112,7 @@ export default function InDiningOrderRefactored() {
           product={selectedProduct}
           onClose={closeProductDetails}
           menuItems={menuItems}
+          currentMenuType = ""
         />
       )}
       
