@@ -85,7 +85,7 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
     // After location is selected, fetch site content and menu data
     dispatch(fetchTpnConfigRequest())
     dispatch(fetchSiteContentRequest());
-    dispatch(fetchMenuRequest());
+    dispatch(fetchMenuRequest('website'));
 
     // Call the parent callback
     onSelectLocation(location);
