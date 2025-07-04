@@ -13,7 +13,7 @@ export const menuService = {
   /**
    * Fetches the menu data from the API
    */
-  getMenu: async (type?: string): Promise<{ items: MenuItem[], categories: MenuCategory[], foodMenu?: MenuItem[], drinksMenu?: MenuItem[] }> => {
+  getMenu: async (type?:any): Promise<{ items: MenuItem[], categories: MenuCategory[], foodMenu?: MenuItem[], drinksMenu?: MenuItem[] }> => {
     
     try {
       const url = type ? `${endpoints.menu.getAll}?type=${type}` : endpoints.menu.getAll;
