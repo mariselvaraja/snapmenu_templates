@@ -13,11 +13,10 @@ export const menuService = {
   /**
    * Fetches the menu data from the API
    */
-  getMenu: async (type?: stringtype:any): Promise<{ items: MenuItem[], categories: MenuCategory[], foodMenu?: MenuItem[], drinksMenu?: MenuItem[] }> => {
+  getMenu: async (type?: string): Promise<{ items: MenuItem[], categories: MenuCategory[], foodMenu?: MenuItem[], drinksMenu?: MenuItem[] }> => {
     
     try {
-      let url = type? endpoints.menu.getAll+"?type=website" : endpoints.menu.getAll;
-       url = type ? `${url}?type=${type}` : endpoints.menu.getAll;
+      const url = type ? `${endpoints.menu.getAll}?type=${type}` : endpoints.menu.getAll;
       const response = await api.get<any>(url);
       
       // Check if response.data is a string (JSON string)

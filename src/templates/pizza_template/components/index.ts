@@ -8,6 +8,7 @@ export { default as ComboSection } from './ComboSection';
 export { default as ComboCard } from './ComboCard';
 export { default as DefaultComboCards } from './DefaultComboCards';
 export { default as CarouselComboCards } from './CarouselComboCards';
+export { default as PartyOrdersSection } from './PartyOrdersSection';
 
 // Export in-dining components
 export { InDiningOrder, InDiningCartDrawer, InDiningProductDetails } from './in-dining';
