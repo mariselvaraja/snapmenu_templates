@@ -49,9 +49,9 @@ const getDomainFromUrl = () => {
       }
     }
   }
-  
-   return "pizza"; 
-  // return 'annapurna'
+  // return "uat"
+  //  return "mayajas"; 
+  return 'annapurna'
 }; 
 
 // Endpoint configuration object

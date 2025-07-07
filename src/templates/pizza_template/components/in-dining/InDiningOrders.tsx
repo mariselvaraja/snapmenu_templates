@@ -8,6 +8,12 @@ import { RootState } from '../../../../common/store';
 import { InDiningOrder } from '../../../../common/redux/slices/inDiningOrderSlice';
 import { getOrderHistoryRequest } from '../../../../common/redux/slices/orderHistorySlice';
 import { useWebSocketOrders } from '../../hooks/useWebSocketOrders';
+import usePaymentManagement from '../../hooks/usePaymentManagement';
+import VerifyingPaymentPopup from '../VerifyingPaymentPopup';
+import PaymentSuccessPopup from '../PaymentSuccessPopup';
+import PaymentFailedPopup from '../PaymentFailedPopup';
+import PaymentFailedProcessingPopup from '../PaymentFailedProcessingPopup';
+import { useToast } from '../../context/ToastContext';
 
 // Extended interface to handle both API response formats
 interface ExtendedInDiningOrder extends Partial<InDiningOrder> {
@@ -60,6 +66,54 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
   const [showUpdateIndicator, setShowUpdateIndicator] = useState(false);
   const navigate = useNavigate();
   let tablename = sessionStorage.getItem('Tablename');
+  const { showToast } = useToast();
+
+  // Global payment management hook for handling payments when bill is closed
+  const {
+    showVerifyingPaymentPopup,
+    showPaymentFailedPopup,
+    showPaymentFailedProcessingPopup,
+    showPaymentSuccessPopup,
+    initiatePayment,
+    handlePaymentSuccess,
+    handlePaymentRetry,
+    resetAllPopupStates
+  } = usePaymentManagement();
+
+  // Monitor payment responses globally
+  const paymentState = useSelector((state: RootState) => state.payment);
+  const [previousPaymentResponse, setPreviousPaymentResponse] = useState<any>(null);
+
+  useEffect(() => {
+    if (paymentState.paymentResponse && paymentState.paymentResponse !== previousPaymentResponse) {
+      console.log('Global payment response received:', paymentState.paymentResponse);
+      setPreviousPaymentResponse(paymentState.paymentResponse);
+      
+      // Check if payment response contains a payment link
+      const paymentLink = paymentState.paymentResponse?.paymentLink || 
+                         paymentState.paymentResponse?.payment_link || 
+                         paymentState.paymentResponse?.paymentUrl;
+      
+      if (paymentLink) {
+        console.log('Global payment link detected, initiating payment:', paymentLink);
+        
+        // Close the bill component first when payment link is detected
+        if (showBill) {
+          setShowBill(false);
+        }
+        
+        // Then use the new payment management system
+        initiatePayment(paymentLink);
+      } else if (paymentState.paymentResponse?.message) {
+        // Handle direct payment response without link
+        if (paymentState.paymentResponse?.success === true) {
+          showToast('Payment completed successfully!', 'success');
+        } else {
+          showToast(paymentState.paymentResponse.message || 'Payment failed', 'error');
+        }
+      }
+    }
+  }, [paymentState.paymentResponse, previousPaymentResponse, initiatePayment, showToast, showBill]);
 
   // Get franchise ID from session storage (restaurant_id for websocket)
   const franchiseId = sessionStorage.getItem('franchise_id') || sessionStorage.getItem('restaurantId') || 'default-franchise';
@@ -373,7 +427,7 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
 
       {/* Orders List */}
       <div className="flex-grow overflow-y-auto orders-scroll-container">
-        {historyLoading ? (
+        {historyLoading && orders.length === 0 ? (
           <ul className="divide-y">
             {/* Skeleton Loading Items */}
             {[...Array(5)].map((_, index) => (
@@ -581,15 +635,90 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
         <BillComponent 
           onClose={() => {
             setShowBill(false);
-            // Refresh orders when bill component is closed
-            if (tableFromQuery) {
-              dispatch(getOrderHistoryRequest(tableFromQuery));
-            }
+            // Don't refresh orders when bill component is closed manually
           }} 
           order={orders} 
           tableNumber={tableNumber}
         />
       )}
+
+      {/* Global Payment Popup Components - Show even when bill is closed */}
+      <VerifyingPaymentPopup
+        isOpen={showVerifyingPaymentPopup}
+        onClose={() => {
+          resetAllPopupStates();
+          // Refresh orders when verifying popup is closed
+          if (tableFromQuery) {
+            dispatch(getOrderHistoryRequest(tableFromQuery));
+          }
+        }}
+      />
+
+      <PaymentSuccessPopup
+        isOpen={showPaymentSuccessPopup}
+        onClose={() => {
+          resetAllPopupStates();
+          // Refresh orders when success popup is closed
+          if (tableFromQuery) {
+            dispatch(getOrderHistoryRequest(tableFromQuery));
+          }
+        }}
+        onContinue={() => handlePaymentSuccess(() => {
+          showToast('Payment completed successfully!', 'success');
+          // Refresh orders after successful payment
+          if (tableFromQuery) {
+            dispatch(getOrderHistoryRequest(tableFromQuery));
+          }
+        })}
+      />
+
+      <PaymentFailedPopup
+        isOpen={showPaymentFailedPopup}
+        onClose={() => {
+          resetAllPopupStates();
+          // Refresh orders when failed popup is closed
+          if (tableFromQuery) {
+            dispatch(getOrderHistoryRequest(tableFromQuery));
+          }
+        }}
+        onTryAgain={() => handlePaymentRetry(() => {
+          // Retry the payment with the same payment link
+          if (paymentState.paymentResponse?.paymentLink || 
+              paymentState.paymentResponse?.payment_link || 
+              paymentState.paymentResponse?.paymentUrl) {
+            const paymentLink = paymentState.paymentResponse?.paymentLink || 
+                               paymentState.paymentResponse?.payment_link || 
+                               paymentState.paymentResponse?.paymentUrl;
+            initiatePayment(paymentLink);
+          } else {
+            showToast('No payment link available for retry', 'error');
+          }
+        })}
+      />
+
+      <PaymentFailedProcessingPopup
+        isOpen={showPaymentFailedProcessingPopup}
+        onClose={() => {
+          resetAllPopupStates();
+          // Refresh orders when processing failed popup is closed
+          if (tableFromQuery) {
+            dispatch(getOrderHistoryRequest(tableFromQuery));
+          }
+        }}
+        onTryAgain={() => handlePaymentRetry(() => {
+          // Retry the payment with the same payment link
+          if (paymentState.paymentResponse?.paymentLink || 
+              paymentState.paymentResponse?.payment_link || 
+              paymentState.paymentResponse?.paymentUrl) {
+            const paymentLink = paymentState.paymentResponse?.paymentLink || 
+                               paymentState.paymentResponse?.payment_link || 
+                               paymentState.paymentResponse?.paymentUrl;
+            initiatePayment(paymentLink);
+          } else {
+            showToast('No payment link available for retry', 'error');
+          }
+        })}
+      />
     </div>
   );
 };

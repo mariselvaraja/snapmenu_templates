@@ -5,7 +5,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAppSelector } from '../../../common/redux';
 import { useCart } from '../context/CartContext';
 import { cartService } from '../../../services';
-import { usePaymentPopup } from '../../../common/popups/usePaymentPopup';
+import usePaymentManagement from '../hooks/usePaymentManagement';
+import VerifyingPaymentPopup from '../components/VerifyingPaymentPopup';
+import PaymentSuccessPopup from '../components/PaymentSuccessPopup';
+import PaymentFailedPopup from '../components/PaymentFailedPopup';
+import PaymentFailedProcessingPopup from '../components/PaymentFailedProcessingPopup';
+import OrderMessagePopup from '../components/OrderMessagePopup';
 
 interface FormData {
   name: string;
@@ -69,47 +74,23 @@ interface CartItem {
 }
 
 export default function Checkout() {
-  const { openPopup, closePopup } = usePaymentPopup();
   const { state: { items: cartItems }, clearCart } = useCart();
   const [activeTab, setActiveTab] = useState<OrderType>('pickup');
 
+  // Use the new payment management hook
+  const {
+    showVerifyingPaymentPopup,
+    showPaymentFailedPopup,
+    showPaymentFailedProcessingPopup,
+    showPaymentSuccessPopup,
+    initiatePayment,
+    handlePaymentSuccess,
+    handlePaymentRetry,
+    resetAllPopupStates
+  } = usePaymentManagement();
 
   const tpnState = useAppSelector((state) => state?.tpn?.rawApiResponse);
   const restaurant_id = sessionStorage.getItem("franchise_id");
-
-  useEffect(() => {
-    const handleMessage = (event: any) => {
-      console.log("PopUP Event", event.data.payload);
-
-      // Handle payment status check message
-      if (event.data.type === 'PAYMENT_STATUS_CHECK') {
-        const { transaction_id } = event.data.payload;
-        console.log("Received transaction_id:", transaction_id);
-        
-        // Handle the transaction ID (you can add your logic here)
-        // For example: update order status, show success message, etc.
-        
-        // Close the popup
-        closePopup();
-        
-        // Set order as complete and clear cart
-        setOrderComplete(true);
-        clearCart();
-        
-        return;
-      }
-
-      // Handle other message types
-      closePopup();
-    };
-
-    window.addEventListener('message', handleMessage, false);
-
-    // Cleanup event listener
-    return () => {
-      window.removeEventListener('message', handleMessage, false);
-    };
-  }, [closePopup, clearCart]);
   
   // Check if delivery is available based on pos_type being 'square'
   const isDeliveryAvailable = tpnState?.tpn_config?.find((c:any) => 
@@ -305,15 +286,13 @@ export default function Checkout() {
       // Check for payment link and ensure it's properly detected
       if (response && typeof response === 'object' && 'payment_link' in response && response.payment_link) {
         console.log('Payment link detected:', response.payment_link);
-        // Use the payment popup hook to open the payment link
-        openPopup(response.payment_link);
-        // openPopup("https://annapurna.snapmenu.ai/payment/status?transaction_id=iy12")
+        // Use the new payment management system to initiate payment
+        initiatePayment(response.payment_link);
+      } else {
+        // No payment link, set order as complete
+        setOrderComplete(true);
+        clearCart();
       }
-      
-      // Set order complete after all other state updates
-      // setOrderComplete(true); 
-      // Clear the cart after successful order
-      // clearCart();
     } catch (error) {
       console.error('Error placing order:', error);
       // Handle error (could show an error message to the user)
@@ -782,6 +761,43 @@ export default function Checkout() {
           </motion.div>
         </div>
       </div>
+
+      {/* Payment Popup Components */}
+      <VerifyingPaymentPopup
+        isOpen={showVerifyingPaymentPopup}
+        onClose={() => resetAllPopupStates()}
+      />
+
+      <PaymentSuccessPopup
+        isOpen={showPaymentSuccessPopup}
+        onClose={() => resetAllPopupStates()}
+        onContinue={() => handlePaymentSuccess(() => {
+          setOrderComplete(true);
+          clearCart();
+        })}
+      />
+
+      <PaymentFailedPopup
+        isOpen={showPaymentFailedPopup}
+        onClose={() => resetAllPopupStates()}
+        onTryAgain={() => handlePaymentRetry(() => {
+          // Retry the payment with the same payment link
+          if (orderResponse?.payment_link) {
+            initiatePayment(orderResponse.payment_link);
+          }
+        })}
+      />
+
+      <PaymentFailedProcessingPopup
+        isOpen={showPaymentFailedProcessingPopup}
+        onClose={() => resetAllPopupStates()}
+        onTryAgain={() => handlePaymentRetry(() => {
+          // Retry the payment with the same payment link
+          if (orderResponse?.payment_link) {
+            initiatePayment(orderResponse.payment_link);
+          }
+        })}
+      />
     </div>
   );
 }

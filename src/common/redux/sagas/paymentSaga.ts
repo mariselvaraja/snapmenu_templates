@@ -21,15 +21,8 @@ function* makePaymentSaga(action: PayloadAction<{table_id: string, total_amount?
     if (typeof response === 'string') {
       try {
         payment_response = JSON.parse(response);
-        if( payment_response?.paymentLink)
-        {
-          // window.location.href = payment_response.paymentLink;
-          window.open(payment_response.paymentLink, "_blank")
-        }
-        else if(payment_response?.message)
-        {
-          alert(payment_response?.message)
-        }
+        // Payment link handling is now done by the payment management system
+        // No need to open window.open here as it will be handled by usePaymentManagement hook
       } catch (parseError) {
         console.error('Failed to parse payment response:', parseError);
         throw new Error('Invalid payment response format');

@@ -105,10 +105,13 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
   // Handle payment
   const handlePayment = () => {
     if (table_id) {
+      // Dispatch the payment request first
       dispatch(makePaymentRequest({
         table_id: table_id,
         total_amount: totalAmount
       }));
+      
+      // Bill component will be closed when payment link is detected in InDiningOrders
     }
   };
   
@@ -613,6 +616,8 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
         )}
         
       </motion.div>
+
+      {/* Payment popup components are now handled globally in InDiningOrders component */}
     </motion.div>
   );
 };
