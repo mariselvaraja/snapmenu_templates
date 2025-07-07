@@ -25,6 +25,7 @@ const GET_TABLE_STATUS_PATH = import.meta.env.VITE_GET_TABLE_STATUS || "/getRest
 const GET_PAYMENT_INFO = import.meta.env.VITE_GET_PAYMENT_INFO || "/getTpnConfig";
 const MAKE_PAYMENT_PATH = import.meta.env.VITE_MAKE_PAYMENT || "/paymentGateway/inDining";
 const COMBO_API_PATH = import.meta.env.VITE_COMBO_API_PATH || "/combos";
+const PARTY_ORDERS_API_PATH = import.meta.env.VITE_PARTY_ORDERS_API_PATH || "/party";
 
 // Function to get domain from URL
 const getDomainFromUrl = () => {
@@ -98,6 +99,11 @@ export const endpoints = {
   // Combo endpoints
   combo: {
     getAll: `${API_BASE_URL}${COMBO_API_PATH}`,
+  },
+
+  // Party orders endpoints
+  partyOrders: {
+    getAll: `${API_BASE_URL}${PARTY_ORDERS_API_PATH}`,
   },
 
 };

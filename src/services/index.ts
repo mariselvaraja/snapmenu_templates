@@ -27,3 +27,6 @@ export * from './restaurantService';
 
 export { default as storeAccess } from './storeAccess';
 export * from './storeAccess';
+
+export { default as partyOrdersService } from './partyOrdersService';
+export * from './partyOrdersService';

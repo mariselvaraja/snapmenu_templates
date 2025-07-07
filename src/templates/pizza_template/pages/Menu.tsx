@@ -1,11 +1,13 @@
 import { useState, useRef, useEffect } from 'react';
-import { ShoppingCart, Plus, Minus, ChevronRight } from 'lucide-react';
+import { ShoppingCart, Plus, Minus, ChevronRight, Calendar } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector, fetchMenuRequest, MenuItem } from '../../../common/redux';
 import { fetchComboRequest } from '../../../redux/slices/comboSlice';
 import { useCart, CartItem, generateSkuId, createCartItem, normalizeModifiers } from '../context/CartContext';
 import { useCartWithToast } from '../hooks/useCartWithToast';
+import { usePartyOrders } from '../hooks/usePartyOrders';
 import ModifierModal from '../components/ModifierModal';
+import { PartyOrdersSection } from '../components';
 import _ from 'lodash';
 import { LuVegan } from 'react-icons/lu';
 import { IoLeafOutline } from 'react-icons/io5';
@@ -36,6 +38,7 @@ export default function Menu() {
     const navigate = useNavigate();
     const { addItemWithToast } = useCartWithToast();
 
+
     const { rawApiResponse } = useAppSelector(state => state.siteContent);
     // Get site content from Redux state
     const siteContent = rawApiResponse ? 
@@ -51,10 +54,21 @@ export default function Menu() {
     const { state: { items: cartItems }, removeItem, updateItemQuantity } = useCart();
     const {isPaymentAvilable} = usePayment();
     
-    // Scroll to top when component mounts
+    // Party orders hook for API call
+    const { partyOrders, loading: partyOrdersLoading, error: partyOrdersError, fetchPartyOrders } = usePartyOrders();
+    
+    // Get party orders from menu items (assuming they're part of the menu data)
+    // Extract party orders from menu items or site content
+    const partyOrdersFromMenu = items?.filter(item => item?.category === 'party_orders' || item?.level1_category === 'party_orders') || [];
+    
+    // Scroll to top and fetch data when component mounts
     useEffect(() => {
         window.scrollTo(0, 0);
-    }, []);
+        // Fetch combo data on mount
+        dispatch(fetchComboRequest());
+        // Fetch party orders data on mount
+        fetchPartyOrders();
+    }, [dispatch, fetchPartyOrders]);
     
     // Extract subcategories from 'mains' category
     const subCategories: SubCategoryType[] = items
@@ -230,6 +244,9 @@ export default function Menu() {
                     }));
             }
             return [];
+        } else if (selectedType === 'party orders') {
+            // Party orders are handled by PartyOrdersSection component
+            return [];
         } else {
             // Return regular menu items with filtering
             return items.filter(item => {
@@ -280,9 +297,17 @@ export default function Menu() {
        // Get unique values
        level1 = _.uniqBy(level1, (item: any) => item);
        
-       // Add combo category if combo data exists
+       // Add combo category if combo data exists and has enabled combos
        if (comboData && comboData.length > 0 && comboData.some(combo => combo.is_enabled)) {
            level1.push('combos');
+       }
+       
+       // Add party orders category if there are party orders from API or menu
+       const hasPartyOrdersFromAPI = partyOrders && partyOrders.length > 0 && partyOrders.some((party: any) => party?.is_enabled);
+       const hasPartyOrdersFromMenu = partyOrdersFromMenu && partyOrdersFromMenu.length > 0 && partyOrdersFromMenu.some((party: any) => party?.is_enabled);
+       
+       if (hasPartyOrdersFromAPI || hasPartyOrdersFromMenu) {
+           level1.push('party orders');
        }
        
        // Return only the categories without "all" option
@@ -347,6 +372,7 @@ export default function Menu() {
                     }}
                     menuItem={selectedMenuItem}
                 />
+
                 <div className="text-center mb-16">
                     <h1 className="text-4xl font-bold mb-4">Our Menu</h1>
                     <p className="text-xl text-gray-600">
@@ -409,8 +435,17 @@ export default function Menu() {
                     )}
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {sortedItems.map((item, index) => (
+                {selectedType === 'party orders' ? (
+                    // Use the PartyOrdersSection component with party orders data from Redux
+                    <PartyOrdersSection 
+                        showTitle={false} 
+                        partyOrders={partyOrders}
+                        loading={partyOrdersLoading}
+                        error={partyOrdersError}
+                    />
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {sortedItems.map((item, index) => (
                         <div
                             key={item.id}
                             className="bg-white rounded-lg overflow-hidden shadow-lg"
@@ -558,8 +593,9 @@ export default function Menu() {
                                 </div>}
                             </div>
                         </div>
-                    ))}
-                </div>
+                        ))}
+                    </div>
+                )}
             </div>
         </div>
     );

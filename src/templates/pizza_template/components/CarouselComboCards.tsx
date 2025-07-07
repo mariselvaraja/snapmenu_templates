@@ -123,7 +123,7 @@ export const CarouselComboCards: React.FC<CarouselComboCardsProps> = ({
                   </div>
                   
                   <div className="p-6">
-                    <h3 className="text-xl font-semibold mb-2 line-clamp-2">{combo.title}</h3>
+                    <h3 className="text-xl font-semibold mb-2 line-clamp-1">{combo.title}</h3>
                     <p className="text-gray-600 mb-4 line-clamp-3 text-sm leading-relaxed">{combo.description}</p>
                     <div className="flex items-center justify-between">
                       {/* Price Display */}
