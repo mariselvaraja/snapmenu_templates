@@ -36,6 +36,7 @@ export default function Menu() {
     const [selectedMenuItem, setSelectedMenuItem] = useState<MenuItem | null>(null);
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const navigate = useNavigate();
+    const dispatch = useAppDispatch();
     const { addItemWithToast } = useCartWithToast();
 
 
