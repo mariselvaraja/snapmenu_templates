@@ -589,7 +589,7 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
                       </div>
                     )}
                     
-                    <div className="text-xs">
+                    <div className="text-xs pt-2">
                           Qty: {item.quantity}
                         </div>
                   </div>
