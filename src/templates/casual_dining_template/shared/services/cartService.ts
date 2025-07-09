@@ -153,7 +153,7 @@ export const cartService = {
         phone: orderData.customerInfo.phone,
         email: orderData.customerInfo.email,
         special_requests: orderData.customerInfo.address || "",
-        order_type: "manual",
+        order_type: "web",
         ordered_items: orderData.items.map(item => ({
           name: item.name,
           quantity: item.quantity,

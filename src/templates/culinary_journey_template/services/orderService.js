@@ -18,7 +18,7 @@ export const orderService = {
         phone: formatPhoneNumber(orderData.customerPhone),
         email: orderData.customerEmail || null,
         special_requests: orderData.notes || '',
-        order_type: 'manual',
+        order_type: 'web',
         ordered_items: orderData.items.map(item => {
           // Ensure price is a number and convert to string with 2 decimal places
           const itemPrice = typeof item.price === 'number' 

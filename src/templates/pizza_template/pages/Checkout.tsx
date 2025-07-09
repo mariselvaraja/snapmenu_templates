@@ -229,7 +229,7 @@ export default function Checkout() {
       phone: formData.phone,
       email: formData.email,
       special_requests: formData.specialRequests.trim() || null,
-      order_type: "manual", // Keep as manual as requested
+      order_type: "web", // Keep as manual as requested
       delivery_type: activeTab, // Use the selected tab (pickup or delivery)
       ordered_items: orderedItems,
       grand_total: total?.toFixed(2)

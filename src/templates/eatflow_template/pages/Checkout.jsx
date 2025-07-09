@@ -92,7 +92,7 @@ export function Checkout() {
       "ordered_items": ordered_items,
       "grand_total": total?.toFixed(2),
       "special_requests": formData.specialRequests.trim() || "",
-      "order_type": "manual"
+      "order_type": "web"
     };
     
     try {

@@ -152,11 +152,11 @@ const PartyOrdersSection: React.FC<PartyOrdersSectionProps> = ({
                 <div className="text-center p-3 bg-red-50 rounded-lg mt-auto">
                   <div className="text-sm text-gray-600 mb-1">Place Party Order:</div>
                   <a
-                    href={`tel:${restaurantInfo?.phone ?? (restaurantInfo as any)?.customer_care_number ?? ''}`}
+                    href={`tel:${restaurantInfo?.phone ?? (restaurantInfo as any)?.phone ?? ''}`}
                     onClick={(e) => e.stopPropagation()}
                     className="text-red-500 font-bold text-lg hover:text-red-600 transition-colors"
                   >
-                    📞 {restaurantInfo?.phone ?? (restaurantInfo as any)?.customer_care_number ?? ''}
+                    📞 {restaurantInfo?.phone ?? (restaurantInfo as any)?.phone ?? ''}
                   </a>
                 </div>
               </div>
