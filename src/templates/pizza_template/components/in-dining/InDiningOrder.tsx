@@ -320,7 +320,7 @@ function InDiningOrder() {
     setQuantity(1);
   };
   
-  const handlePlaceOrder = () => {
+  const handlePlaceOrder = (specialRequest: string = '') => {
     if (cartItems.length === 0) return;
     
     // Generate a random order number
@@ -333,14 +333,14 @@ function InDiningOrder() {
     // Transform cart items to the required format
     const orderedItems = cartItems.map((item:any) => {
       // Extract spice level from selectedModifiers if it exists
-      const spiceLevel = item.selectedModifiers?.find((mod:any) => mod.name === "Spice Level")?.options[0]?.name || "Medium";
+      const spiceLevel = item.selectedModifiers?.find((mod:any) => mod.name === "Spice Level")?.options[0]?.name || "";
       let modifiers = item.selectedModifiers?.filter((mod:any) => mod.name != "Spice Level");
       let options = modifiers.flatMap((mod:any)=>mod.options);
       modifiers = options.map((option:any)=>({
         modifier_name : option.name,
         modifier_price : option.price
       }))
-      console.log("Modifiers", modifiers)
+      console.log("Modifiers",spiceLevel, modifiers)
       return {
         name: item.name,
         quantity: item.quantity,
@@ -364,6 +364,7 @@ function InDiningOrder() {
       restaurant_id,
       restaurant_parent_id,
       additional_details:'',
+      special_requests: specialRequest,
       ordered_items: orderedItems
     }));
   };

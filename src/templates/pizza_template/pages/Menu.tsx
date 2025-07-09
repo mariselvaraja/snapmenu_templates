@@ -29,12 +29,12 @@ export default function Menu() {
     const [selectedType, setSelectedType] = useState<string>('all');
     const [selectedLevel2, setSelectedLevel2] = useState<string>('all');
     const [selectedCategory, setSelectedCategory] = useState<string>('all');
-    const [sortBy, setSortBy] = useState<string>('featured');
+    const [sortBy] = useState<string>('featured');
     const [isModifierModalOpen, setIsModifierModalOpen] = useState(false);
     const [selectedMenuItem, setSelectedMenuItem] = useState<MenuItem | null>(null);
     const scrollContainerRef = useRef<HTMLDivElement>(null);
-    const dispatch = useAppDispatch();
     const navigate = useNavigate();
+    const dispatch = useAppDispatch();
     const { addItemWithToast } = useCartWithToast();
 
 

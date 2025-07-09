@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Trash2, ShoppingBag } from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux';
@@ -6,13 +6,21 @@ import { RootState, AppDispatch } from '../../../../common/store';
 import { toggleDrawer, updateItemQuantityByCharacteristics, removeItemByCharacteristics } from '../../../../common/redux/slices/inDiningCartSlice';
 
 interface InDiningCartDrawerProps {
-  onPlaceOrder?: () => void;
+  onPlaceOrder?: (specialRequest: string) => void;
 }
 
 const InDiningCartDrawer: React.FC<InDiningCartDrawerProps> = ({ onPlaceOrder }) => {
   const dispatch = useDispatch<AppDispatch>();
   const { drawerOpen, items } = useSelector((state: RootState) => state.inDiningCart);
+  const [specialRequest, setSpecialRequest] = useState('');
   const tablename = sessionStorage.getItem('Tablename');
+
+  // Clear special request when drawer opens
+  useEffect(() => {
+    if (drawerOpen) {
+      setSpecialRequest('');
+    }
+  }, [drawerOpen]);
 
   // Calculate subtotal including modifiers
   const subtotal = items.reduce((total: number, item: any) => {
@@ -300,6 +308,32 @@ const InDiningCartDrawer: React.FC<InDiningCartDrawerProps> = ({ onPlaceOrder })
             {/* Footer */}
             {items.length > 0 && (
               <div className="border-t p-4 z-10">
+                {/* Special Request Input */}
+                <div className="mb-4">
+                  <label htmlFor="specialRequest" className="block text-sm font-medium text-gray-700 mb-2">
+                    Special Request
+                  </label>
+                  <div className="flex justify-between items-center mt-[0px] mb-2">
+                    <span className="text-xs text-gray-500">
+                      {specialRequest.length}/100 characters
+                    </span>
+                  </div>
+                  <textarea
+                    id="specialRequest"
+                    value={specialRequest}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (value.length <= 100) {
+                        setSpecialRequest(value);
+                      }
+                    }}
+                    placeholder="Any special instructions for your order..."
+                    maxLength={100}
+                    rows={3}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-red-100 focus:border-red-500 resize-none"
+                  />
+                </div>
+                
                 <div className="flex justify-between mb-4">
                   <span className="font-semibold">Total</span>
                   <span className="font-semibold">${!isNaN(subtotal) ? subtotal.toFixed(2) : "0.00"}</span>
@@ -314,7 +348,7 @@ const InDiningCartDrawer: React.FC<InDiningCartDrawerProps> = ({ onPlaceOrder })
                   onClick={() => {
                     dispatch(toggleDrawer());
                     if (onPlaceOrder && items.length > 0) {
-                      onPlaceOrder();
+                      onPlaceOrder(specialRequest);
                     }
                   }}
                 >
