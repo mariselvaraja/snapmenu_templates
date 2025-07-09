@@ -41,7 +41,7 @@ export const partyOrdersService = {
   getPartyOrders: () => {
     const timestamp = Date.now();
     return api.get(
-      endpoints.partyOrders.getAll,
+      endpoints?.partyOrders?.getAll,
       {}, // options (headers will be auto-added by api service)
       {
         type: 'website',
@@ -53,7 +53,7 @@ export const partyOrdersService = {
   getPartyOrderById: (partyId: number) => {
     const timestamp = Date.now();
     return api.get(
-      endpoints.partyOrders.getAll,
+      endpoints?.partyOrders?.getAll,
       {}, // options (headers will be auto-added by api service)
       {
         type: 'website',

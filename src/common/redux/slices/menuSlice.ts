@@ -91,6 +91,7 @@ export interface MenuItem {
   prices?: { name: string; price: string }[]; // Added field for drinks pricing array
   type?: string; // Added field for drinks type (e.g., Whiskey, Beer)
   sub_type?: string; // Added field for drinks sub_type (e.g., Bourbon, IPA)
+  party_orders?: { name: string; serving: string; price: string }[]; // Added field for party order options
 }
 
 export interface MenuCategory {

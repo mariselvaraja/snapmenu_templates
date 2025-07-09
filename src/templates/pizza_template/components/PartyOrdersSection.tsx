@@ -4,8 +4,9 @@
  * Shows only enabled party orders, no cart functionality - display only
  */
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useAppSelector } from '../../../common/redux';
+import { Users } from 'lucide-react';
 
 interface PartyOrdersSectionProps {
   className?: string;
@@ -24,14 +25,14 @@ const PartyOrdersSection: React.FC<PartyOrdersSectionProps> = ({
   loading = false,
   error = null,
 }) => {
-  const [selectedPartyOrder, setSelectedPartyOrder] = useState<any>(null);
-  const [isPartyDetailModalOpen, setIsPartyDetailModalOpen] = useState(false);
+  // const [selectedPartyOrder, setSelectedPartyOrder] = useState<any>(null);
+  // const [isPartyDetailModalOpen, setIsPartyDetailModalOpen] = useState(false);
 
   // Get restaurant info from Redux store
   const restaurantInfo = useAppSelector(state => state.restaurant?.info);
 
   // Filter only enabled party orders
-  const enabledPartyOrders = partyOrders?.filter(party => party?.is_enabled) || [];
+  const enabledPartyOrders = partyOrders?.filter(party => party?.is_enabled === true) ?? [];
 
   // Don't render if no party orders
   if (!loading && enabledPartyOrders.length === 0) {
@@ -47,6 +48,7 @@ const PartyOrdersSection: React.FC<PartyOrdersSectionProps> = ({
           <p className="text-gray-600">Perfect for celebrations and gatherings</p>
         </div>
       )}
+
 
       {/* Loading State */}
       {loading && (
@@ -78,51 +80,84 @@ const PartyOrdersSection: React.FC<PartyOrdersSectionProps> = ({
       {/* Party Orders Grid */}
       {!loading && !error && enabledPartyOrders.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {enabledPartyOrders.map((party, index) => (
+          {enabledPartyOrders.map((party: any, index: number) => (
             <div
               key={party.party_id || index}
-              className="bg-white rounded-lg overflow-hidden shadow-lg cursor-pointer hover:shadow-xl transition-shadow"
-              onClick={() => {
-                setSelectedPartyOrder(party);
-                setIsPartyDetailModalOpen(true);
-              }}
+              className="bg-white rounded-lg overflow-hidden shadow-lg cursor-pointer hover:shadow-xl transition-shadow flex flex-col"
+              // onClick={() => {
+              //   setSelectedPartyOrder(party);
+              //   setIsPartyDetailModalOpen(true);
+              // }}
             >
               <div className="relative">
-                {party.image ? (
+                {party?.image ? (
                   <img
                     src={party.image}
-                    alt={party.title}
+                    alt={party?.name ?? 'Party Order'}
                     className="w-full h-64 object-cover"
                   />
                 ) : (
                   <div className="w-full h-64 bg-gradient-to-br from-red-100 to-orange-100 flex items-center justify-center">
                     <span className="text-6xl font-bold text-red-500">
-                      {party.title?.charAt(0)?.toUpperCase() || 'P'}
+                      {party?.name?.charAt(0)?.toUpperCase() ?? 'P'}
                     </span>
                   </div>
                 )}
+                
               </div>
-              <div className="p-6">
-                <div className="flex items-start justify-between mb-3">
-                  <h3 className="text-xl font-bold text-gray-900 line-clamp-2 flex-1 mr-2">
-                    {party?.title || 'Untitled Party'}
+              <div className="p-4 flex flex-col flex-grow">
+                <div className="mb-3">
+                  <h3 className="text-xl font-bold text-gray-900 line-clamp-2">
+                    {party?.name ?? ''}
                   </h3>
-                  <span className="text-xl font-bold text-red-500 whitespace-nowrap">
-                    ${party?.price || '0'}
-                  </span>
                 </div>
-                <p className="text-gray-600 mb-4 line-clamp-2 text-sm leading-relaxed">
-                  {party?.description || 'No description available'}
-                </p>
-                <div className="flex items-center justify-between text-sm">
-                  <div className="flex items-center text-gray-500">
-                    <span className="mr-1">👥</span>
-                    <span className="font-medium">{party?.no_of_serving || 0} servings</span>
+                {party?.description && (
+                  <p className="text-gray-600 mb-4 line-clamp-2 text-sm leading-relaxed">
+                    {party.description}
+                  </p>
+                )}
+                
+                {/* Available Options */}
+                {(party?.party_orders?.length ?? 0) > 0 && (
+                  <div className="mb-4 flex-grow">
+                    <h4 className="text-sm font-semibold text-gray-900 mb-2"> Party Tray:</h4>
+                    <div className="grid grid-cols-3 gap-2">
+                      {party.party_orders?.map((option: any, idx: number) => (
+                        <div key={idx} className="flex items-center justify-center bg-white rounded-md p-2 border border-gray-300 shadow-sm">
+                          <div>
+                        
+                            <span className="text-sm font-medium text-gray-900 capitalize">
+                              {option?.name ?? ''}
+                            </span>
+                            
+                          
+                          
+                          <div>
+  <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full flex items-center gap-1">
+                              <Users size={12} className="text-red-500" />
+                              {option?.serving ?? 0}
+                            </span>
+                            </div>
+                          <span className="text-sm font-bold text-red-600">
+                            ${option?.price ?? '0.00'}
+                          </span>
+                          </div>
+                        </div>
+                      )) ?? []}
+                    </div>
                   </div>
-                  {/* <div className="flex items-center text-gray-500">
-                    <span className="mr-1">📦</span>
-                    <span className="font-medium">{party?.products?.length || 0} items</span>
-                  </div> */}
+                )}
+                
+                {/* Place Order Phone Number */}
+                <div className="text-center p-3 bg-red-50 rounded-lg mt-auto">
+                  <div className="text-sm text-gray-600 mb-1">Place Party Order:</div>
+                  <a
+                    href={`tel:${restaurantInfo?.phone ?? (restaurantInfo as any)?.customer_care_number ?? ''}`}
+                    onClick={(e) => e.stopPropagation()}
+                    className="text-red-500 font-bold text-lg hover:text-red-600 transition-colors"
+                  >
+                    📞 {restaurantInfo?.phone ?? (restaurantInfo as any)?.customer_care_number ?? ''}
+                  </a>
                 </div>
               </div>
             </div>
@@ -131,12 +166,12 @@ const PartyOrdersSection: React.FC<PartyOrdersSectionProps> = ({
       )}
 
       {/* Party Orders Detail Modal */}
-      {isPartyDetailModalOpen && selectedPartyOrder && (
+      {/* {isPartyDetailModalOpen && selectedPartyOrder && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-hidden shadow-2xl">
             {/* Modal Header */}
-            <div className="flex items-center justify-between p-6 border-b bg-gray-50">
-              <h2 className="text-2xl font-bold text-gray-900">{selectedPartyOrder?.title || 'Party Order'}</h2>
+            {/* <div className="flex items-center justify-between p-6 border-b bg-gray-50">
+              <h2 className="text-2xl font-bold text-gray-900">{selectedPartyOrder?.name || 'Party Order'}</h2>
               <button
                 onClick={() => {
                   setIsPartyDetailModalOpen(false);
@@ -152,83 +187,71 @@ const PartyOrdersSection: React.FC<PartyOrdersSectionProps> = ({
             </div>
 
             {/* Modal Content */}
-            <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+            {/* <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
               <div className="w-full">
+                {/* Product Image */}
+                {/* {selectedPartyOrder?.image && (
+                  <div className="mb-6">
+                    <img
+                      src={selectedPartyOrder.image}
+                      alt={selectedPartyOrder.name}
+                      className="w-full h-64 object-cover rounded-lg"
+                    />
+                  </div>
+                )}
+
                 {/* Details Section */}
-                <div className="flex flex-col">
+                {/* <div className="flex flex-col">
                   <p className="text-gray-700 mb-6 text-lg leading-relaxed">
                     {selectedPartyOrder?.description || 'No description available'}
                   </p>
 
-                  {/* Products List */}
-                  {selectedPartyOrder?.products?.length > 0 && (
-                    <div className="flex-1">
-                      <div className="space-y-4 mb-6">
-                        {selectedPartyOrder?.products?.map((product: any, idx: number) => (
-                          <div key={idx} className="flex items-end gap-4">
-                            {/* Product Card */}
-                            <div className="bg-white border rounded-lg p-6 shadow-sm flex-1 max-w-md min-h-[120px]">
-                              <div className="flex gap-4 items-center h-full">
-                                {/* Left Section - Product Image */}
-                                <div className="flex-shrink-0">
-                                  {product?.image ? (
-                                    <img
-                                      src={product.image}
-                                      alt={product?.name || 'Product'}
-                                      className="w-20 h-20 object-cover rounded-lg"
-                                    />
-                                  ) : (
-                                    <div className="w-20 h-20 bg-gradient-to-br from-red-100 to-orange-100 flex items-center justify-center rounded-lg">
-                                      <span className="text-xl font-bold text-red-500">
-                                        {product?.name?.charAt(0)?.toUpperCase() || 'P'}
-                                      </span>
-                                    </div>
-                                  )}
-                                </div>
-
-                                {/* Right Section - Product Content */}
-                                <div className="flex-1 flex flex-col justify-center">
-                                  {/* Product Title - One Line */}
-                                  <h5 className="font-bold text-gray-900 mb-2 line-clamp-1">
-                                    {product?.name || 'Unnamed Product'}
-                                  </h5>
-
-                                  {/* Product Description - One Line */}
-                                  {product?.description && (
-                                    <p className="text-gray-600 text-sm line-clamp-2">
-                                      {product.description}
-                                    </p>
-                                  )}
-                                </div>
+                  {/* Party Order Options */}
+                  {/* {selectedPartyOrder?.party_orders?.length > 0 && (
+                    <div className="mb-6">
+                      <h3 className="text-xl font-bold text-gray-900 mb-4">Available Options:</h3>
+                      <div className="space-y-3">
+                        {selectedPartyOrder.party_orders.map((option: any, idx: number) => (
+                          <div key={idx} className="bg-gray-50 rounded-lg p-4 border">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <h4 className="text-lg font-semibold text-gray-900 capitalize">{option?.name}</h4>
+                                <p className="text-sm text-gray-600">Serves {option?.serving} people</p>
+                              </div>
+                              <div className="text-right">
+                                <span className="text-2xl font-bold text-red-500">${option?.price}</span>
                               </div>
                             </div>
-
-                            {/* Serving Count - Outside Card, Bottom Aligned */}
                           </div>
                         ))}
                       </div>
                     </div>
                   )}
 
-                  {/* Total Price - Bottom Left with Serving Count */}
-                  <div className="flex justify-between items-center mt-auto pt-4 border-t">
-                    <div className="flex-shrink-0">
-                      <span className="text-2xl font-bold text-red-500">{selectedPartyOrder?.no_of_serving || 0} servings</span>
+                  {/* Additional Product Info */}
+                  {/* {selectedPartyOrder?.ingredients?.length > 0 && (
+                    <div className="mb-6">
+                      <h3 className="text-lg font-bold text-gray-900 mb-2">Ingredients:</h3>
+                      <p className="text-gray-600">{selectedPartyOrder.ingredients.join(', ')}</p>
                     </div>
-                    <span className="text-2xl font-bold text-red-500">
-                      Total: ${selectedPartyOrder?.price || '0'}
-                    </span>
-                  </div>
+                  )}
+
+                  {selectedPartyOrder?.allergens?.length > 0 && (
+                    <div className="mb-6">
+                      <h3 className="text-lg font-bold text-gray-900 mb-2">Allergy Information:</h3>
+                      <p className="text-gray-600">{selectedPartyOrder.allergens.join(', ')}</p>
+                    </div>
+                  )}
 
                   {/* Call to Place Your Order */}
-                  <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+                  {/* <div className="mt-4 p-4 bg-gray-50 rounded-lg">
                     <div className="text-center">
-                      <h6 className="font-bold text-gray-900 mb-2">📞 Call to Place Your Order</h6>
+                      <h6 className="font-bold text-gray-900 mb-2">📞 Call to Place Your Party Order</h6>
                       <a
-                        href={`tel:${restaurantInfo?.phone || (restaurantInfo as any)?.customer_care_number || '+1234567890'}`}
+                        href={`tel:${restaurantInfo?.phone || (restaurantInfo as any)?.customer_care_number || ''}`}
                         className="text-red-500 font-bold text-lg hover:text-red-600 transition-colors"
                       >
-                        {restaurantInfo?.phone || (restaurantInfo as any)?.customer_care_number || '+1 (234) 567-8900'}
+                        {restaurantInfo?.phone || (restaurantInfo as any)?.customer_care_number || ''}
                       </a>
                     </div>
                   </div>
@@ -237,7 +260,7 @@ const PartyOrdersSection: React.FC<PartyOrdersSectionProps> = ({
             </div>
           </div>
         </div>
-      )}
+      )} */}
     </div>
   );
 };
