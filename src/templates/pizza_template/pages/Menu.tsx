@@ -231,7 +231,8 @@ export default function Menu() {
                         },
                         modifiers_list: [],
                         is_spice_applicable: 'no',
-                        available: true
+                        available: true,
+                        inventory_status: true // Combos are assumed to be in stock by default
                     }));
             }
             return [];
@@ -489,7 +490,15 @@ export default function Menu() {
                                             {item.name}
                                         </h3>
                                     </div>
-                                  { showPrice &&  <span className="text-lg font-bold text-red-500">${item.price}</span>}
+                                    <div className="flex items-center gap-2">
+                                        {/* Out of Stock indicator */}
+                                        {item.inventory_status === false && (
+                                            <span className="text-sm font-medium text-red-600 bg-red-100 px-2 py-1 rounded">
+                                                Out Of Stock
+                                            </span>
+                                        )}
+                                        { showPrice &&  <span className="text-lg font-bold text-red-500">${item.price}</span>}
+                                    </div>
                                 </div>
                                 <p 
                                     className="text-gray-600 mb-4 line-clamp-2 cursor-pointer hover:text-gray-800 transition-colors"
@@ -506,60 +515,69 @@ export default function Menu() {
                                 </p>
                              { showPrice &&  isPaymentAvilable && <div className="flex items-center justify-between">
                                     
-                                    {/* Add button or quantity controls */}
-                                    {(() => {
-                                        const expectedSkuId = generateSkuId(typeof item.pk_id === 'string' ? parseInt(item.pk_id) : (item.pk_id || 0), []);
-                                        const cartItem = cartItems.find((cartItem:any) => cartItem.sku_id === expectedSkuId);
-                                        return !cartItem || cartItem.quantity === 0;
-                                    })() ? (
+                                    {/* Add button or quantity controls - disabled if out of stock */}
+                                    {item.inventory_status === false ? (
                                         <button
-                                            className="inline-flex items-center bg-red-500 text-white px-5 py-2 rounded-full hover:bg-red-600 transition-colors text-base font-medium"
-                                            onClick={() => handleAddToCart(item)}
+                                            className="inline-flex items-center bg-gray-400 text-white px-5 py-2 rounded-full cursor-not-allowed text-base font-medium"
+                                            disabled
                                         >
-                                            <ShoppingCart className="h-5 w-5 mr-2" />
-                                            Add to Cart
+                                            Out Of Stock
                                         </button>
                                     ) : (
-                                        <div className="inline-flex items-center bg-gray-100 rounded-full px-2 py-1">
+                                        (() => {
+                                            const expectedSkuId = generateSkuId(typeof item.pk_id === 'string' ? parseInt(item.pk_id) : (item.pk_id || 0), []);
+                                            const cartItem = cartItems.find((cartItem:any) => cartItem.sku_id === expectedSkuId);
+                                            return !cartItem || cartItem.quantity === 0;
+                                        })() ? (
                                             <button
-                                                className="w-8 h-8 flex items-center justify-center bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-full transition-colors"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    const expectedSkuId = generateSkuId(typeof item.pk_id === 'string' ? parseInt(item.pk_id) : (item.pk_id || 0), []);
-                                                    const cartItem = cartItems.find((cartItem:any) => cartItem.sku_id === expectedSkuId);
-                                                    if (cartItem) {
-                                                        const newQuantity = cartItem.quantity - 1;
-                                                        if (newQuantity > 0) {
-                                                            updateItemQuantity(cartItem.sku_id, newQuantity);
-                                                        } else {
-                                                            removeItem(cartItem.sku_id);
+                                                className="inline-flex items-center bg-red-500 text-white px-5 py-2 rounded-full hover:bg-red-600 transition-colors text-base font-medium"
+                                                onClick={() => handleAddToCart(item)}
+                                            >
+                                                <ShoppingCart className="h-5 w-5 mr-2" />
+                                                Add to Cart
+                                            </button>
+                                        ) : (
+                                            <div className="inline-flex items-center bg-gray-100 rounded-full px-2 py-1">
+                                                <button
+                                                    className="w-8 h-8 flex items-center justify-center bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-full transition-colors"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        const expectedSkuId = generateSkuId(typeof item.pk_id === 'string' ? parseInt(item.pk_id) : (item.pk_id || 0), []);
+                                                        const cartItem = cartItems.find((cartItem:any) => cartItem.sku_id === expectedSkuId);
+                                                        if (cartItem) {
+                                                            const newQuantity = cartItem.quantity - 1;
+                                                            if (newQuantity > 0) {
+                                                                updateItemQuantity(cartItem.sku_id, newQuantity);
+                                                            } else {
+                                                                removeItem(cartItem.sku_id);
+                                                            }
                                                         }
-                                                    }
-                                                }}
-                                            >
-                                                <Minus className="w-3 h-3" />
-                                            </button>
-                                            <span className="mx-3 text-base font-semibold">
-                                                {cartItems.find((cartItem:any) => cartItem.sku_id === generateSkuId(typeof item.pk_id === 'string' ? parseInt(item.pk_id) : (item.pk_id || 0), []))?.quantity || 0}
-                                            </span>
-                                            <button
-                                                className="w-8 h-8 flex items-center justify-center bg-red-500 hover:bg-red-600 text-white rounded-full transition-colors"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    const expectedSkuId = generateSkuId(typeof item.pk_id === 'string' ? parseInt(item.pk_id) : (item.pk_id || 0), []);
-                                                    const cartItem = cartItems.find((cartItem:any) => cartItem.sku_id === expectedSkuId);
-                                                    if (cartItem) {
-                                                        updateItemQuantity(cartItem.sku_id, cartItem.quantity + 1);
-                                                    } else {
-                                                        // Use standardized cart item creation
-                                                        const newCartItem = createCartItem(item, [], 1);
-                                                        addItemWithToast(newCartItem);
-                                                    }
-                                                }}
-                                            >
-                                                <Plus className="w-3 h-3" />
-                                            </button>
-                                        </div>
+                                                    }}
+                                                >
+                                                    <Minus className="w-3 h-3" />
+                                                </button>
+                                                <span className="mx-3 text-base font-semibold">
+                                                    {cartItems.find((cartItem:any) => cartItem.sku_id === generateSkuId(typeof item.pk_id === 'string' ? parseInt(item.pk_id) : (item.pk_id || 0), []))?.quantity || 0}
+                                                </span>
+                                                <button
+                                                    className="w-8 h-8 flex items-center justify-center bg-red-500 hover:bg-red-600 text-white rounded-full transition-colors"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        const expectedSkuId = generateSkuId(typeof item.pk_id === 'string' ? parseInt(item.pk_id) : (item.pk_id || 0), []);
+                                                        const cartItem = cartItems.find((cartItem:any) => cartItem.sku_id === expectedSkuId);
+                                                        if (cartItem) {
+                                                            updateItemQuantity(cartItem.sku_id, cartItem.quantity + 1);
+                                                        } else {
+                                                            // Use standardized cart item creation
+                                                            const newCartItem = createCartItem(item, [], 1);
+                                                            addItemWithToast(newCartItem);
+                                                        }
+                                                    }}
+                                                >
+                                                    <Plus className="w-3 h-3" />
+                                                </button>
+                                            </div>
+                                        )
                                     )}
                                 </div>}
                             </div>

@@ -341,24 +341,40 @@ export default function Home() {
                             <div className="p-6">
                               <h3 className="text-xl font-semibold mb-2">{menuItem.name}</h3>
                               <p className="text-gray-600 mb-4 line-clamp-3">{menuItem.description}</p>
-                              <div className="flex items-center justify-between">
-                               { (!siteConfiguration?.hidePriceInWebsite)? (!siteConfiguration?.hidePriceInHome)?<span className="text-lg font-bold text-red-500">${menuItem.price}</span>:null:null}
-                               {!siteConfiguration?.hidePriceInWebsite && !siteConfiguration?.hidePriceInHome && (
-  isPaymentAvilable && (
-    <button
-      className="inline-flex items-center bg-red-500 text-white px-3 py-1 rounded-full hover:bg-red-600 transition-colors"
-      onClick={(e) => {
-        e.preventDefault();
-        handleAddToCart(menuItem);
-      }}
-    >
-      <ShoppingCart className="h-4 w-4 mr-1" />
-      Add to Cart
-    </button>
-  )
-)}
-
-                              </div>
+                                              <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-2">
+                                                  {/* Out of Stock indicator */}
+                                                  {menuItem.inventory_status === false && (
+                                                    <span className="text-xs font-medium text-red-600 bg-red-100 px-2 py-1 rounded">
+                                                      Out Of Stock
+                                                    </span>
+                                                  )}
+                                                  { (!siteConfiguration?.hidePriceInWebsite)? (!siteConfiguration?.hidePriceInHome)?<span className="text-lg font-bold text-red-500">${menuItem.price}</span>:null:null}
+                                                </div>
+                                                {!siteConfiguration?.hidePriceInWebsite && !siteConfiguration?.hidePriceInHome && (
+                                                  isPaymentAvilable && (
+                                                    menuItem.inventory_status === false ? (
+                                                      <button
+                                                        className="inline-flex items-center bg-gray-400 text-white px-3 py-1 rounded-full cursor-not-allowed text-sm"
+                                                        disabled
+                                                      >
+                                                        Out Of Stock
+                                                      </button>
+                                                    ) : (
+                                                      <button
+                                                        className="inline-flex items-center bg-red-500 text-white px-3 py-1 rounded-full hover:bg-red-600 transition-colors"
+                                                        onClick={(e) => {
+                                                          e.preventDefault();
+                                                          handleAddToCart(menuItem);
+                                                        }}
+                                                      >
+                                                        <ShoppingCart className="h-4 w-4 mr-1" />
+                                                        Add to Cart
+                                                      </button>
+                                                    )
+                                                  )
+                                                )}
+                                              </div>
                             </div>
                           </Link>
                         </div>

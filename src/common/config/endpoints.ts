@@ -51,8 +51,8 @@ const getDomainFromUrl = () => {
     }
   }
   // return "uat"
-  //  return "mayajas"; 
-  return 'annapurna'
+   return "mayajas"; 
+  // return 'annapurna'
 }; 
 
 // Endpoint configuration object

@@ -124,6 +124,12 @@ const ProductHeader: React.FC<ProductHeaderProps> = ({
                             </div>
                         )}
                         <h1 className="text-2xl sm:text-3xl lg:text-3xl font-bold">{product.name}</h1>
+                        {/* Out of Stock indicator */}
+                        {product.inventory_status === false && (
+                            <span className="text-sm font-medium text-red-600 bg-red-100 px-2 py-1 rounded ml-2">
+                                Out Of Stock
+                            </span>
+                        )}
                     </div>
                     <p className="text-gray-700 mb-2 text-sm sm:text-base">{product.description}</p>
                     
@@ -153,7 +159,14 @@ const ProductHeader: React.FC<ProductHeaderProps> = ({
                     </div>
                     
                    {showPrice && isPaymentAvilable &&   <div>
-                    {!cartItem ? (
+                    {product.inventory_status === false ? (
+                        <button
+                            className="inline-flex items-center justify-center bg-gray-400 text-white px-4 py-2 sm:px-5 sm:py-2 rounded-full cursor-not-allowed text-sm sm:text-base font-medium w-full sm:w-auto"
+                            disabled
+                        >
+                            Out Of Stock
+                        </button>
+                    ) : !cartItem ? (
                         <button
                             onClick={handleAddToCart}
                             className="inline-flex items-center justify-center bg-red-500 text-white px-4 py-2 sm:px-5 sm:py-2 rounded-full hover:bg-red-600 transition-colors text-sm sm:text-base font-medium w-full sm:w-auto"
@@ -252,6 +265,12 @@ const ProductHeader: React.FC<ProductHeaderProps> = ({
                                 </div>
                             )}
                             <h1 className="text-2xl sm:text-3xl font-bold">{product.name}</h1>
+                            {/* Out of Stock indicator for mobile */}
+                            {product.inventory_status === false && (
+                                <span className="text-xs font-medium text-red-600 bg-red-100 px-2 py-1 rounded ml-2">
+                                    Out Of Stock
+                                </span>
+                            )}
                         </div>
                     { showPrice &&    <div className="text-lg sm:text-xl font-bold text-red-500 flex-shrink-0">
                             {formatToDollar(product.price)}
@@ -280,7 +299,14 @@ const ProductHeader: React.FC<ProductHeaderProps> = ({
                         
                         {/* Add to Cart button or Quantity Controls */}
                   {   isPaymentAvilable &&   <div>
-                        {!cartItem ? (
+                        {product.inventory_status === false ? (
+                            <button
+                                className="inline-flex items-center justify-center bg-gray-400 text-white px-4 py-2 sm:px-5 sm:py-2 rounded-full cursor-not-allowed text-sm sm:text-base font-medium w-full sm:w-auto"
+                                disabled
+                            >
+                                Out Of Stock
+                            </button>
+                        ) : !cartItem ? (
                             <button
                                 onClick={handleAddToCart}
                                 className="inline-flex items-center justify-center bg-red-500 text-white px-4 py-2 sm:px-5 sm:py-2 rounded-full hover:bg-red-600 transition-colors text-sm sm:text-base font-medium w-full sm:w-auto"
