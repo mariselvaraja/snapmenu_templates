@@ -29,14 +29,32 @@ const PartyOrdersSection: React.FC<PartyOrdersSectionProps> = ({
   // const [isPartyDetailModalOpen, setIsPartyDetailModalOpen] = useState(false);
 
   // Get restaurant info from Redux store
-  const restaurantInfo = useAppSelector(state => state.restaurant?.info);
+  const restaurantInfo: any = useAppSelector(state => state.restaurant?.info);
+  const franchiseId = sessionStorage.getItem('franchise_id');
+  const phone = restaurantInfo?.find((data: any) => 
+    franchiseId === data.restaurant_id
+  )?.phone;
 
   // Filter only enabled party orders
   const enabledPartyOrders = partyOrders?.filter(party => party?.is_enabled === true) ?? [];
 
-  // Don't render if no party orders
+  // Show "No data found" if no party orders and not loading
   if (!loading && enabledPartyOrders.length === 0) {
-    return null;
+    return (
+      <div className={`party-orders-section ${className}`}>
+        {showTitle && (
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">{title}</h2>
+            <p className="text-gray-600">Perfect for celebrations and gatherings</p>
+          </div>
+        )}
+        <div className="text-center py-12">
+          <div className="text-gray-400 text-6xl mb-4">🍕</div>
+          <h3 className="text-xl font-semibold text-gray-700 mb-2">No Party Orders Available</h3>
+          <p className="text-gray-500">Check back later for exciting party order options!</p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -152,11 +170,11 @@ const PartyOrdersSection: React.FC<PartyOrdersSectionProps> = ({
                 <div className="text-center p-3 bg-red-50 rounded-lg mt-auto">
                   <div className="text-sm text-gray-600 mb-1">Place Party Order:</div>
                   <a
-                    href={`tel:${restaurantInfo?.phone ?? (restaurantInfo as any)?.phone ?? ''}`}
+                    href={`tel:${phone ? phone :''}`}
                     onClick={(e) => e.stopPropagation()}
                     className="text-red-500 font-bold text-lg hover:text-red-600 transition-colors"
                   >
-                    📞 {restaurantInfo?.phone ?? (restaurantInfo as any)?.phone ?? ''}
+                    📞 {phone ? phone :  ''}
                   </a>
                 </div>
               </div>
