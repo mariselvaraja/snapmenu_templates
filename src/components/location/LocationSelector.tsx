@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { MapPin, X, Search } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '../../common/redux/hooks';
 import { useSelector } from 'react-redux';
 import { fetchSiteContentRequest } from '../../common/redux/slices/siteContentSlice';
@@ -35,6 +36,8 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
   // Get dispatch function
   const dispatch = useAppDispatch();
   
+  // Get navigate function for routing
+  const navigate = useNavigate();
   
   // Get restaurant data from Redux
   const restaurantState = useSelector((state: any) => state.restaurant);
@@ -89,6 +92,9 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
 
     // Call the parent callback
     onSelectLocation(location);
+    
+    // Navigate to home page after location selection
+    navigate('/');
   };
 
   return (
