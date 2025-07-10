@@ -14,6 +14,7 @@ import PaymentSuccessPopup from '../PaymentSuccessPopup';
 import PaymentFailedPopup from '../PaymentFailedPopup';
 import PaymentFailedProcessingPopup from '../PaymentFailedProcessingPopup';
 import { useToast } from '../../context/ToastContext';
+import { formatCurrency } from '../../utils';
 
 // Extended interface to handle both API response formats
 interface ExtendedInDiningOrder extends Partial<InDiningOrder> {
@@ -504,7 +505,7 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
                       
                       </div>
                       <div className="text-gray-600">
-                        <span className="font-medium">${Number((item.price * item.quantity) || 0).toFixed(2)}</span>
+                        <span className="font-medium">${formatCurrency((item.price * item.quantity) || 0)}</span>
                    
                       </div>
                     </div>
@@ -528,7 +529,7 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
                             >
                               <span>{modifier.modifier_name}</span>
                               <span className="font-medium">
-                                +(${Number( modifier.modifier_price * item.quantity|| 0).toFixed(2)})
+                                +(${formatCurrency(modifier.modifier_price * item.quantity || 0)})
                               </span>
                             </div>
                           : null
@@ -607,7 +608,7 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
             <span className="font-semibold">Total</span>
             <span className="font-semibold">
               ${orders.length > 0 
-                ? Number(orders.reduce((sum, order) => sum + (order.total || 0), 0) || 0).toFixed(2) 
+                ? formatCurrency(orders.reduce((sum, order) => sum + (order.total || 0), 0) || 0)
                 : '0.00'}
             </span>
           </div>

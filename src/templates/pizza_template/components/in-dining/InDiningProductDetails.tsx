@@ -179,6 +179,7 @@ import { useLocation } from 'react-router-dom';
 import { AppDispatch, RootState } from '../../../../common/store';
 import { addItem, toggleDrawer, setTableId } from '../../../../common/redux/slices/inDiningCartSlice';
 import InDiningDrinksModifierModal from './InDiningDrinksModifierModal';
+import { formatCurrency } from '../../utils';
 
 interface InDiningProductDetailsProps {
   product: any;
@@ -397,11 +398,11 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
                 ${(() => {
                   // For drinks menu, use 0th index price from prices array
                   if (currentMenuType === "drinks" && product?.prices && Array.isArray(product.prices) && product.prices.length > 0) {
-                    return parseFloat(product.prices[0].price) || 0;
+                    return formatCurrency(parseFloat(product.prices[0].price) || 0);
                   }
                   // For food menu or fallback, use indining_price
-                  return Number(product?.indining_price || 0);
-                })().toFixed(2)}
+                  return formatCurrency(Number(product?.indining_price || 0));
+                })()}
               </p>
 
               {/* Show spice level indicator if applicable */}
