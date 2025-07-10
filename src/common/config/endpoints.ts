@@ -21,7 +21,7 @@ const PLACE_IN_DINING_ORDER_PATH = import.meta.env.VITE_PLACE_IN_DINING_ORDER ||
 const UPDATE_IN_DINING_ORDERS_PATH = import.meta.env.VITE_UPDATE_IN_DINING_ORDERS || "/updateDiningDetails";
 const GET_TABLE_AVAILABILITY_PATH = import.meta.env.VITE_GET_TABLE_AVAILABILITY || "/getAvailableTableCount";
 const MAKE_RESERVATION_PATH = import.meta.env.VITE_MAKE_RESERVATION || "/makeReservation";
-const GET_TABLE_STATUS_PATH = import.meta.env.VITE_GET_TABLE_STATUS || "/getRestaurantTables";
+const GET_TABLE_STATUS_PATH = import.meta.env.VITE_GET_TABLE_STATUS || "/table/view";
 const GET_PAYMENT_INFO = import.meta.env.VITE_GET_PAYMENT_INFO || "/getTpnConfig";
 const MAKE_PAYMENT_PATH = import.meta.env.VITE_MAKE_PAYMENT || "/paymentGateway/inDining";
 const COMBO_API_PATH = import.meta.env.VITE_COMBO_API_PATH || "/combos";
@@ -51,7 +51,7 @@ const getDomainFromUrl = () => {
     }
   }
   // return "uat"
-   return "mayajas"; 
+   return "gold"; 
   // return 'annapurna'
 }; 
 
