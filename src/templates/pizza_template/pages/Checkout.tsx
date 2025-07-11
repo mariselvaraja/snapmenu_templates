@@ -777,7 +777,7 @@ export default function Checkout() {
         })}
       />
 
-      <PaymentFailedPopup
+      {/* <PaymentFailedPopup
         isOpen={showPaymentFailedPopup}
         onClose={() => resetAllPopupStates()}
         onTryAgain={() => handlePaymentRetry(() => {
@@ -786,7 +786,7 @@ export default function Checkout() {
             initiatePayment(orderResponse.payment_link);
           }
         })}
-      />
+      /> */}
 
       <PaymentFailedProcessingPopup
         isOpen={showPaymentFailedProcessingPopup}
