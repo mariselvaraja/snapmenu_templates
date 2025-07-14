@@ -19,6 +19,7 @@ import { useNavigate } from 'react-router-dom';
 import { useCart, createCartItem, CartItem } from '../context/CartContext';
 import ModifierModal from '../components/ModifierModal';
 import { ComboSection } from '../components';
+import OrderTypePopup from '../components/OrderTypePopup';
 
 // Define interfaces for the experienceCard data structure
 interface ExperienceCardSection {
@@ -46,6 +47,7 @@ export default function Home() {
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
   const [currentPopularItemIndex, setCurrentPopularItemIndex] = useState(0);
   const [isModifierModalOpen, setIsModifierModalOpen] = useState(false);
+  const [isOrderPopupOpen, setIsOrderPopupOpen] = useState(false);
   const [selectedMenuItem, setSelectedMenuItem] = useState<any>(null);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
@@ -221,6 +223,12 @@ export default function Home() {
               >
                 View Menu <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
+              <button
+                onClick={() => setIsOrderPopupOpen(true)}
+                className="inline-flex items-center bg-transparent border-2 border-white text-white px-8 py-3 rounded-full text-lg font-semibold hover:bg-white hover:text-black transition-colors"
+              >
+                Order Online <ShoppingCart className="ml-2 h-5 w-5" />
+              </button>
             </div>
           </motion.div>
           
@@ -822,6 +830,13 @@ export default function Home() {
           }
         }}
         menuItem={selectedMenuItem}
+      />
+
+      {/* Order Type Popup */}
+      <OrderTypePopup 
+        isOpen={isOrderPopupOpen}
+        onClose={() => setIsOrderPopupOpen(false)}
+        deliveryRedirectUrl="https://ctbiryani.square.site/"
       />
     </div>
   );

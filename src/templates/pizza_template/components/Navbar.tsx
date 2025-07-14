@@ -6,12 +6,14 @@ import { openSearchModal, closeSearchModal } from '../../../redux/slices/searchS
 import { useCart } from '../context/CartContext';
 import { SearchModal } from '../../../components/search';
 import { usePayment } from '@/hooks';
+import OrderTypePopup from './OrderTypePopup';
 
 const UtensilsIcon = Utensils;
 const PizzaIcon = Pizza;
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isOrderPopupOpen, setIsOrderPopupOpen] = useState(false);
   const { rawApiResponse } = useAppSelector(state => state.siteContent);
 
   const [isCtbiriyani, setIsCtbiriyani] = useState(false);
@@ -24,7 +26,7 @@ export default function Navbar() {
 
     if (url) {
 
-      setIsCtbiriyani(url.includes('ctbiryani'));
+      setIsCtbiriyani(url.includes('ctbiryani') || url.includes('uat'));
     }
     else
     {
@@ -91,12 +93,12 @@ export default function Navbar() {
                 <Search className="h-6 w-6" />
               </button>
               
-            { isCtbiriyani &&  <a
-              href="https://ctbiryani.square.site/"
-              className="block px-3 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition-colors text-center mx-3 mt-2"
+            <button
+              onClick={() => setIsOrderPopupOpen(true)}
+              className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition-colors"
             >
               Order Online
-            </a>}
+            </button>
         {  isPaymentAvilable &&    <button
                 onClick={() => toggleDrawer()}
                 className="relative hover:text-red-500 transition-colors"
@@ -134,12 +136,15 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
-         { isCtbiriyani &&  <a
-              href="https://ctbiryani.square.site/"
+            <button
+              onClick={() => {
+                setIsOrderPopupOpen(true);
+                setIsOpen(false);
+              }}
               className="block px-3 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition-colors text-center mx-3 mt-2"
             >
               Order Online
-            </a>}
+            </button>
             <div className="flex justify-center mt-4 space-x-4">
               <button 
                 onClick={() => dispatch(openSearchModal())}
@@ -165,6 +170,13 @@ export default function Navbar() {
       <SearchModal 
         isOpen={isSearchModalOpen} 
         onClose={() => dispatch(closeSearchModal())} 
+      />
+
+      {/* Order Type Popup */}
+      <OrderTypePopup 
+        isOpen={isOrderPopupOpen}
+        onClose={() => setIsOrderPopupOpen(false)}
+        deliveryRedirectUrl="https://ctbiryani.square.site/"
       />
     </nav>
   );

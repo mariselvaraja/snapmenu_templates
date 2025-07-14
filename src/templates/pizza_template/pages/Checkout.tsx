@@ -52,6 +52,7 @@ interface OrderPayload {
   delivery_type: string;
   ordered_items: OrderedItem[];
   grand_total: string;
+  pay_later: boolean;
 }
 
 interface CartItemOption {
@@ -76,6 +77,7 @@ interface CartItem {
 export default function Checkout() {
   const { state: { items: cartItems }, clearCart } = useCart();
   const [activeTab, setActiveTab] = useState<OrderType>('pickup');
+  const [paymentTab, setPaymentTab] = useState<'pay_now' | 'pay_later'>('pay_now');
 
   // Use the new payment management hook
   const {
@@ -232,7 +234,8 @@ export default function Checkout() {
       order_type: "web", // Keep as manual as requested
       delivery_type: activeTab, // Use the selected tab (pickup or delivery)
       ordered_items: orderedItems,
-      grand_total: total?.toFixed(2)
+      grand_total: total?.toFixed(2),
+      pay_later: paymentTab === 'pay_later' // true if pay_later is selected, false if pay_now
     };
   };
 
@@ -271,6 +274,7 @@ export default function Checkout() {
           method: 'card', // Default payment method
         },
         delivery_type: activeTab, // Use the selected tab (pickup or delivery)
+        pay_later: paymentTab === 'pay_later', // true if pay_later is selected, false if pay_now
       };
 
       let restaurant_id = sessionStorage.getItem("franchise_id");
@@ -426,7 +430,7 @@ export default function Checkout() {
                 <p className="text-gray-600">Fresh, hot pizza delivered to your door or ready for pickup</p>
               </div>
 
-              {/* Tabs */}
+              {/* Order Type Tabs */}
               {   isDeliveryAvailable && 
               <div className="border-b">
                 <div className="flex">
@@ -456,6 +460,32 @@ export default function Checkout() {
                 </div>
               </div>
                       }
+
+              {/* Payment Type Tabs */}
+              <div className="border-b">
+                <div className="flex">
+                  <button
+                    onClick={() => setPaymentTab('pay_now')}
+                    className={`flex-1 flex items-center justify-center px-6 py-3 text-base font-medium transition-colors ${
+                      paymentTab === 'pay_now'
+                        ? 'bg-red-500 text-white border-b-2 border-red-500'
+                        : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+                    }`}
+                  >
+                    Pay Now
+                  </button>
+                  <button
+                    onClick={() => setPaymentTab('pay_later')}
+                    className={`flex-1 flex items-center justify-center px-6 py-3 text-base font-medium transition-colors ${
+                      paymentTab === 'pay_later'
+                        ? 'bg-red-500 text-white border-b-2 border-red-500'
+                        : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+                    }`}
+                  >
+                    Pay Later
+                  </button>
+                </div>
+              </div>
               <form onSubmit={handleSubmit} className="p-6 space-y-6">
                 <div>
                   <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
