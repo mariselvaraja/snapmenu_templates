@@ -673,7 +673,7 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
         })}
       />
 
-      <PaymentFailedPopup
+      {/* <PaymentFailedPopup
         isOpen={showPaymentFailedPopup}
         onClose={() => {
           resetAllPopupStates();
@@ -695,7 +695,7 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
             showToast('No payment link available for retry', 'error');
           }
         })}
-      />
+      /> */}
 
       <PaymentFailedProcessingPopup
         isOpen={showPaymentFailedProcessingPopup}
