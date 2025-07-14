@@ -27,7 +27,7 @@ export interface OrderData {
     expiryDate?: string;
   };
   delivery_type: 'pickup' | 'delivery';
-  pay_later?: boolean
+  pay_now?: boolean
 }
 
 /**
@@ -161,7 +161,7 @@ export const cartService = {
         special_requests: orderData.customerInfo.address || "",
         order_type: "web",
         delivery_type: orderData.delivery_type,
-        pay_now : !orderData.pay_later
+        pay_now : orderData.pay_now
       };
 
       // Add address fields for delivery orders

@@ -52,7 +52,7 @@ interface OrderPayload {
   delivery_type: string;
   ordered_items: OrderedItem[];
   grand_total: string;
-  pay_later: boolean;
+  pay_now: boolean;
 }
 
 interface CartItemOption {
@@ -235,7 +235,7 @@ export default function Checkout() {
       delivery_type: activeTab, // Use the selected tab (pickup or delivery)
       ordered_items: orderedItems,
       grand_total: total?.toFixed(2),
-      pay_later: paymentTab === 'pay_later' // true if pay_later is selected, false if pay_now
+      pay_now: paymentTab === 'pay_now' // true if pay now is selected, false if pay_now
     };
   };
 
@@ -274,7 +274,7 @@ export default function Checkout() {
           method: 'card', // Default payment method
         },
         delivery_type: activeTab, // Use the selected tab (pickup or delivery)
-        pay_later: paymentTab === 'pay_later', // true if pay_later is selected, false if pay_now
+        pay_now: paymentTab === 'pay_now', // true if pay now is selected, false if pay_now
       };
 
       let restaurant_id = sessionStorage.getItem("franchise_id");
