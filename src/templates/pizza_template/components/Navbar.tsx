@@ -93,12 +93,12 @@ export default function Navbar() {
                 <Search className="h-6 w-6" />
               </button>
               
-            <button
+           {isCtbiriyani && <button
               onClick={() => setIsOrderPopupOpen(true)}
               className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition-colors"
             >
               Order Online
-            </button>
+            </button>}
         {  isPaymentAvilable &&    <button
                 onClick={() => toggleDrawer()}
                 className="relative hover:text-red-500 transition-colors"

@@ -21,6 +21,7 @@ import ModifierModal from '../components/ModifierModal';
 import { ComboSection } from '../components';
 import OrderTypePopup from '../components/OrderTypePopup';
 
+
 // Define interfaces for the experienceCard data structure
 interface ExperienceCardSection {
   title?: string;
@@ -53,6 +54,7 @@ export default function Home() {
   const navigate = useNavigate();
   const { items: menuItems, loading: menuLoading } = useAppSelector(state => state.menu);
   const { addItemWithToast } = useCartWithToast();
+  const [isCtbiriyani, setIsCtbiriyani] = useState(false);
 
   const {isPaymentAvilable} = usePayment();
   const { rawApiResponse } = useAppSelector(state => state.siteContent);
@@ -91,6 +93,21 @@ export default function Home() {
     
     return () => clearInterval(interval);
   }, [banners.length]);
+
+
+  useEffect(() => {
+    const url = window.location.href;
+
+    if (url) {
+
+      setIsCtbiriyani(url.includes('ctbiryani') || url.includes('uat'));
+    }
+    else
+    {
+      setIsCtbiriyani(false)
+    }
+  }, []);
+
 
   // Fetch combo data when component mounts and clear localStorage
   useEffect(() => {
@@ -223,12 +240,12 @@ export default function Home() {
               >
                 View Menu <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
-              <button
+             {isCtbiriyani && <button
                 onClick={() => setIsOrderPopupOpen(true)}
                 className="inline-flex items-center bg-transparent border-2 border-white text-white px-8 py-3 rounded-full text-lg font-semibold hover:bg-white hover:text-black transition-colors"
               >
                 Order Online <ShoppingCart className="ml-2 h-5 w-5" />
-              </button>
+              </button>}
             </div>
           </motion.div>
           
