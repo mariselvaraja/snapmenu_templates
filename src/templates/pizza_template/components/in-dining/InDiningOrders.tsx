@@ -644,7 +644,7 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
       )}
 
       {/* Global Payment Popup Components - Show even when bill is closed */}
-      <VerifyingPaymentPopup
+      {/* <VerifyingPaymentPopup
         isOpen={showVerifyingPaymentPopup}
         onClose={() => {
           resetAllPopupStates();
@@ -653,7 +653,7 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
             dispatch(getOrderHistoryRequest(tableFromQuery));
           }
         }}
-      />
+      /> */}
 
       <PaymentSuccessPopup
         isOpen={showPaymentSuccessPopup}
