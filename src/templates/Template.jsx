@@ -93,7 +93,7 @@ const TemplateContent = () => {
         sessionStorage.removeItem("restaurant_id");
         sessionStorage.removeItem("franchise_id");
         sessionStorage.removeItem("table_number");
-        
+
       
         
         sessionStorage.setItem("restaurant_id", parent_id);
@@ -110,7 +110,8 @@ const TemplateContent = () => {
       {
         sessionStorage.setItem("restaurant_id", singleRestaurant.restaurant_parent_id);
         sessionStorage.setItem("franchise_id", singleRestaurant.restaurant_id);
-              
+        sessionStorage.setItem('customer_care_number', singleRestaurant.customer_care_number)
+        
       setLocationSelected(true);
       // Fetch required data
       dispatch(fetchTpnConfigRequest());
@@ -130,6 +131,7 @@ const TemplateContent = () => {
           sessionStorage.removeItem("restaurant_id");
           sessionStorage.removeItem("franchise_id");
           sessionStorage.removeItem("table_number");
+          sessionStorage.removeItem('customer_care_number')
           
         
           

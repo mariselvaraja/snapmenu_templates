@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { ArrowRight, ShoppingCart, Award, Play, Heart } from 'lucide-react';
+import { ArrowRight, ShoppingCart, Award, Play, Heart, Phone } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
 import { 
@@ -49,7 +49,10 @@ export default function Home() {
   const [currentPopularItemIndex, setCurrentPopularItemIndex] = useState(0);
   const [isModifierModalOpen, setIsModifierModalOpen] = useState(false);
   const [isOrderPopupOpen, setIsOrderPopupOpen] = useState(false);
+  const [isOrderDropdownOpen, setIsOrderDropdownOpen] = useState(false);
+  const [customerCareNumber, setCustomerCareNumber] = useState<string | null>(null);
   const [selectedMenuItem, setSelectedMenuItem] = useState<any>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { items: menuItems, loading: menuLoading } = useAppSelector(state => state.menu);
@@ -106,6 +109,24 @@ export default function Home() {
     {
       setIsCtbiriyani(false)
     }
+
+    // Get customer care number from sessionStorage
+    const careNumber = sessionStorage.getItem('customer_care_number');
+    setCustomerCareNumber(careNumber);
+  }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOrderDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, []);
 
 
@@ -240,12 +261,53 @@ export default function Home() {
               >
                 View Menu <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
-             {isCtbiriyani && <button
-                onClick={() => setIsOrderPopupOpen(true)}
-                className="inline-flex items-center bg-transparent border-2 border-white text-white px-8 py-3 rounded-full text-lg font-semibold hover:bg-white hover:text-black transition-colors"
-              >
-                Order Online <ShoppingCart className="ml-2 h-5 w-5" />
-              </button>}
+             {isCtbiriyani && (
+               <div className="relative" ref={dropdownRef}>
+                 <button
+                   onClick={() => setIsOrderDropdownOpen(!isOrderDropdownOpen)}
+                   onMouseEnter={() => setIsOrderDropdownOpen(true)}
+                   className="inline-flex items-center bg-transparent border-2 border-white text-white px-8 py-3 rounded-full text-lg font-semibold hover:bg-white hover:text-black transition-colors"
+                 >
+                   Order Online <ShoppingCart className="ml-2 h-5 w-5" />
+                 </button>
+                 
+                 {isOrderDropdownOpen && (
+                   <div 
+                     className="absolute top-full left-0 mt-2 w-48 bg-black rounded-lg shadow-lg border border-red-500 py-2 z-50"
+                     onMouseLeave={() => setIsOrderDropdownOpen(false)}
+                   >
+                     <Link
+                       to="/menu"
+                       className="block px-4 py-2 text-white hover:bg-red-500 hover:text-white transition-colors"
+                       onClick={() => setIsOrderDropdownOpen(false)}
+                     >
+                       Takeout
+                     </Link>
+                     <a
+                       href="https://ctbiryani.square.site/"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       className="block px-4 py-2 text-white hover:bg-red-500 hover:text-white transition-colors"
+                       onClick={() => setIsOrderDropdownOpen(false)}
+                     >
+                       Delivery
+                     </a>
+                     {customerCareNumber && (
+                       <a
+                         href={`tel:${customerCareNumber}`}
+                         className="block px-4 py-2 text-white hover:bg-red-500 hover:text-white transition-colors"
+                         onClick={() => setIsOrderDropdownOpen(false)}
+                       >
+                         <div className="flex items-center">
+                           <Phone className="h-4 w-4 mr-2" />
+                           Call & Order: {customerCareNumber}
+                         </div>
+                       </a>
+                     )}
+                   </div>
+                 )}
+               </div>
+             )}
             </div>
           </motion.div>
           

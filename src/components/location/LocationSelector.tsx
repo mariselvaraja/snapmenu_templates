@@ -17,6 +17,7 @@ interface Location {
   phone?: string;
   hours?: string;
   image?: string;
+  customer_care_number?: string;
 }
 
 // Default location data in case Redux data is not available
@@ -45,13 +46,14 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
   console.log("restaurantState", restaurantState)
   
   // Transform restaurant data to location format if available
-  const reduxLocations: Location[] = Array.isArray(restaurantState.info) 
+  const reduxLocations: any[] = Array.isArray(restaurantState.info) 
     ? restaurantState.info.map((restaurant: any) => ({
         id: restaurant.restaurant_id || 'default-id',
         name: restaurant.restaurant_name || 'Restaurant Location',
         address: restaurant.restaurant_address || restaurant.address || '',
         phone: restaurant.phone || '',
-        image: restaurant.logo && restaurant.logo.length > 0 ? restaurant.logo[0] : ''
+        image: restaurant.logo && restaurant.logo.length > 0 ? restaurant.logo[0] : '',
+        customer_care_number: restaurant.customer_care_number
       }))
     : [];
   
@@ -66,6 +68,8 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
   // Focus search input when component mounts
   useEffect(() => {
     sessionStorage.removeItem("franchise_id")
+    sessionStorage.removeItem('customer_care_number')
+    
     if (searchInputRef.current) {
       searchInputRef.current?.focus();
     }
@@ -80,10 +84,11 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
       );
 
   // Handle location selection
-  const handleSelectLocation = (location: Location) => {
+  const handleSelectLocation = (location: any) => {
     setSelectedLocation(location.id);
     // Save selected location to localStorage and sessionStorage
     sessionStorage.setItem('franchise_id', location.id);
+    sessionStorage.setItem('customer_care_number', location.customer_care_number)
     
     // After location is selected, fetch site content and menu data
     dispatch(fetchTpnConfigRequest())

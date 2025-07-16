@@ -50,8 +50,8 @@ const getDomainFromUrl = () => {
       }
     }
   }
-  // return "uat"
-   return "gold"; 
+  return "uat"
+  //  return "mayajas"; 
   // return 'annapurna'
 }; 
 

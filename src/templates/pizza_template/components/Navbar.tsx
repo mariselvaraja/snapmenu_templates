@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, ShoppingCart, Search, Utensils, Pizza } from 'lucide-react';
+import { Menu, X, ShoppingCart, Search, Utensils, Pizza, Phone } from 'lucide-react';
 import { useAppSelector, useAppDispatch } from '../../../redux';
 import { openSearchModal, closeSearchModal } from '../../../redux/slices/searchSlice';
 import { useCart } from '../context/CartContext';
@@ -14,6 +14,9 @@ const PizzaIcon = Pizza;
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isOrderPopupOpen, setIsOrderPopupOpen] = useState(false);
+  const [isOrderDropdownOpen, setIsOrderDropdownOpen] = useState(false);
+  const [customerCareNumber, setCustomerCareNumber] = useState<string | null>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const { rawApiResponse } = useAppSelector(state => state.siteContent);
 
   const [isCtbiriyani, setIsCtbiriyani] = useState(false);
@@ -25,13 +28,30 @@ export default function Navbar() {
     const url = window.location.href;
 
     if (url) {
-
       setIsCtbiriyani(url.includes('ctbiryani') || url.includes('uat'));
     }
     else
     {
       setIsCtbiriyani(false)
     }
+
+    // Get customer care number from sessionStorage
+    const careNumber = sessionStorage.getItem('customer_care_number');
+    setCustomerCareNumber(careNumber);
+  }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOrderDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, []);
 
   
@@ -70,7 +90,16 @@ export default function Navbar() {
                   <UtensilsIcon className="h-8 w-8 text-red-500" />
                 )}
               </div>
-              <span className="text-2xl font-bold ml-8">{brand?.logo?.text || 'Restaurant'}</span>
+              <div className="ml-8">
+                <span className="text-2xl font-bold">{brand?.logo?.text || 'Restaurant'}</span>
+                {customerCareNumber && (
+                  <div className="flex items-center text-white text-sm mt-1">
+                    
+                    <span>Call & order: </span>
+                    <a href={`tel:${customerCareNumber}`} className="ml-1 hover:text-gray-300 flex items-center ">{customerCareNumber}</a>
+                  </div>
+                )}
+              </div>
             </Link>
           </div>
 
@@ -93,12 +122,51 @@ export default function Navbar() {
                 <Search className="h-6 w-6" />
               </button>
               
-           {isCtbiriyani && <button
-              onClick={() => setIsOrderPopupOpen(true)}
-              className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition-colors"
-            >
-              Order Online
-            </button>}
+        {  isCtbiriyani && <div className="relative" ref={dropdownRef}>
+             <button
+               onClick={() => setIsOrderDropdownOpen(!isOrderDropdownOpen)}
+               onMouseEnter={() => setIsOrderDropdownOpen(true)}
+               className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition-colors"
+             >
+               Order Online
+             </button>
+             
+             {isOrderDropdownOpen && (
+               <div 
+                 className="absolute top-full left-0 mt-2 w-48 bg-black rounded-lg shadow-lg border border-red-500 py-2 z-50"
+                 onMouseLeave={() => setIsOrderDropdownOpen(false)}
+               >
+                 <Link
+                   to="/menu"
+                   className="block px-4 py-2 text-white hover:bg-red-500 hover:text-white transition-colors"
+                   onClick={() => setIsOrderDropdownOpen(false)}
+                 >
+                   Takeout
+                 </Link>
+                 <a
+                   href="https://ctbiryani.square.site/"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   className="block px-4 py-2 text-white hover:bg-red-500 hover:text-white transition-colors"
+                   onClick={() => setIsOrderDropdownOpen(false)}
+                 >
+                   Delivery
+                 </a>
+                 {customerCareNumber && (
+                   <a
+                     href={`tel:${customerCareNumber}`}
+                     className="block px-4 py-2 text-white hover:bg-red-500 hover:text-white transition-colors"
+                     onClick={() => setIsOrderDropdownOpen(false)}
+                   >
+                     <div className="flex items-center">
+                       <Phone className="h-4 w-4 mr-2" />
+                       Call & Order: {customerCareNumber}
+                     </div>
+                   </a>
+                 )}
+               </div>
+             )}
+           </div>}
         {  isPaymentAvilable &&    <button
                 onClick={() => toggleDrawer()}
                 className="relative hover:text-red-500 transition-colors"
@@ -136,15 +204,44 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
-            <button
-              onClick={() => {
-                setIsOrderPopupOpen(true);
-                setIsOpen(false);
-              }}
-              className="block px-3 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition-colors text-center mx-3 mt-2"
-            >
-              Order Online
-            </button>
+            <div className="mx-3 mt-2">
+              <button
+                onClick={() => setIsOpen(false)}
+                className="block w-full px-3 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition-colors text-center mb-2"
+              >
+                Order Online Options:
+              </button>
+              <div className="space-y-1">
+                <Link
+                  to="/menu"
+                  className="block px-3 py-2 text-white hover:text-red-500 transition-colors"
+                  onClick={() => setIsOpen(false)}
+                >
+                  Takeout
+                </Link>
+                <a
+                  href="https://ctbiryani.square.site/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block px-3 py-2 text-white hover:text-red-500 transition-colors"
+                  onClick={() => setIsOpen(false)}
+                >
+                  Delivery
+                </a>
+                {customerCareNumber && (
+                  <a
+                    href={`tel:${customerCareNumber}`}
+                    className="block px-3 py-2 text-white hover:text-red-500 transition-colors"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <div className="flex items-center">
+                      <Phone className="h-4 w-4 mr-2" />
+                      Call & Order: {customerCareNumber}
+                    </div>
+                  </a>
+                )}
+              </div>
+            </div>
             <div className="flex justify-center mt-4 space-x-4">
               <button 
                 onClick={() => dispatch(openSearchModal())}
