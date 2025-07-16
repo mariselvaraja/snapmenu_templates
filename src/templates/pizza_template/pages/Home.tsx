@@ -263,49 +263,62 @@ export default function Home() {
               </Link>
              {isCtbiriyani && (
                <div className="relative" ref={dropdownRef}>
-                 <button
-                   onClick={() => setIsOrderDropdownOpen(!isOrderDropdownOpen)}
-                   onMouseEnter={() => setIsOrderDropdownOpen(true)}
-                   className="inline-flex items-center bg-transparent border-2 border-white text-white px-8 py-3 rounded-full text-lg font-semibold hover:bg-white hover:text-black transition-colors"
-                 >
-                   Order Online <ShoppingCart className="ml-2 h-5 w-5" />
-                 </button>
-                 
-                 {isOrderDropdownOpen && (
-                   <div 
-                     className="absolute top-full left-0 mt-2 w-48 bg-black rounded-lg shadow-lg border border-red-500 py-2 z-50"
-                     onMouseLeave={() => setIsOrderDropdownOpen(false)}
+                 {/* Desktop - Show dropdown */}
+                 <div className="hidden md:block">
+                   <button
+                     onClick={() => setIsOrderDropdownOpen(!isOrderDropdownOpen)}
+                     onMouseEnter={() => setIsOrderDropdownOpen(true)}
+                     className="inline-flex items-center bg-transparent border-2 border-white text-white px-8 py-3 rounded-full text-lg font-semibold hover:bg-white hover:text-black transition-colors"
                    >
-                     <Link
-                       to="/menu"
-                       className="block px-4 py-2 text-white hover:bg-red-500 hover:text-white transition-colors"
-                       onClick={() => setIsOrderDropdownOpen(false)}
+                     Order Online <ShoppingCart className="ml-2 h-5 w-5" />
+                   </button>
+                   
+                   {isOrderDropdownOpen && (
+                     <div 
+                       className="absolute top-full left-0 mt-2 w-48 bg-black rounded-lg shadow-lg border border-red-500 py-2 z-50"
+                       onMouseLeave={() => setIsOrderDropdownOpen(false)}
                      >
-                       Takeout
-                     </Link>
-                     <a
-                       href="https://ctbiryani.square.site/"
-                       target="_blank"
-                       rel="noopener noreferrer"
-                       className="block px-4 py-2 text-white hover:bg-red-500 hover:text-white transition-colors"
-                       onClick={() => setIsOrderDropdownOpen(false)}
-                     >
-                       Delivery
-                     </a>
-                     {customerCareNumber && (
-                       <a
-                         href={`tel:${customerCareNumber}`}
+                       <Link
+                         to="/menu"
                          className="block px-4 py-2 text-white hover:bg-red-500 hover:text-white transition-colors"
                          onClick={() => setIsOrderDropdownOpen(false)}
                        >
-                         <div className="flex items-center">
-                           <Phone className="h-4 w-4 mr-2" />
-                           Call & Order: {customerCareNumber}
-                         </div>
+                         Takeout
+                       </Link>
+                       <a
+                         href="https://ctbiryani.square.site/"
+                         target="_blank"
+                         rel="noopener noreferrer"
+                         className="block px-4 py-2 text-white hover:bg-red-500 hover:text-white transition-colors"
+                         onClick={() => setIsOrderDropdownOpen(false)}
+                       >
+                         Delivery
                        </a>
-                     )}
-                   </div>
-                 )}
+                       {customerCareNumber && (
+                         <a
+                           href={`tel:${customerCareNumber}`}
+                           className="block px-4 py-2 text-white hover:bg-red-500 hover:text-white transition-colors"
+                           onClick={() => setIsOrderDropdownOpen(false)}
+                         >
+                           <div className="flex items-center">
+                             <Phone className="h-4 w-4 mr-2" />
+                             Call & Order: {customerCareNumber}
+                           </div>
+                         </a>
+                       )}
+                     </div>
+                   )}
+                 </div>
+                 
+                 {/* Mobile - Show popup button */}
+                 <div className="md:hidden">
+                   <button
+                     onClick={() => setIsOrderPopupOpen(true)}
+                     className="inline-flex items-center bg-transparent border-2 border-white text-white px-8 py-3 rounded-full text-lg font-semibold hover:bg-white hover:text-black transition-colors"
+                   >
+                     Order Online <ShoppingCart className="ml-2 h-5 w-5" />
+                   </button>
+                 </div>
                </div>
              )}
             </div>
@@ -916,6 +929,7 @@ export default function Home() {
         isOpen={isOrderPopupOpen}
         onClose={() => setIsOrderPopupOpen(false)}
         deliveryRedirectUrl="https://ctbiryani.square.site/"
+        customerCareNumber={customerCareNumber}
       />
     </div>
   );

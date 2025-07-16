@@ -80,7 +80,7 @@ export default function Navbar() {
   return (
     <nav className="bg-black text-white fixed w-full z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
+        <div className="flex items-center justify-between h-24">
           <div className="flex items-center">
             <Link to="/" className="flex items-center">
               <div className="flex items-center">
@@ -94,8 +94,7 @@ export default function Navbar() {
                 <span className="text-2xl font-bold">{brand?.logo?.text || 'Restaurant'}</span>
                 {customerCareNumber && (
                   <div className="flex items-center text-white text-sm mt-1">
-                    
-                    <span>Call & order: </span>
+                    <span>Call & Order: </span>
                     <a href={`tel:${customerCareNumber}`} className="ml-1 hover:text-gray-300 flex items-center ">{customerCareNumber}</a>
                   </div>
                 )}
@@ -204,44 +203,21 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
-            <div className="mx-3 mt-2">
-              <button
-                onClick={() => setIsOpen(false)}
-                className="block w-full px-3 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition-colors text-center mb-2"
-              >
-                Order Online Options:
-              </button>
-              <div className="space-y-1">
-                <Link
-                  to="/menu"
-                  className="block px-3 py-2 text-white hover:text-red-500 transition-colors"
-                  onClick={() => setIsOpen(false)}
+            {isCtbiriyani && (
+              <div className="mx-3 mt-2">
+                <button
+                  onClick={() => {
+                    setIsOpen(false);
+                    setIsOrderPopupOpen(true);
+                  }}
+                  className="block w-full px-3 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition-colors text-center"
                 >
-                  Takeout
-                </Link>
-                <a
-                  href="https://ctbiryani.square.site/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block px-3 py-2 text-white hover:text-red-500 transition-colors"
-                  onClick={() => setIsOpen(false)}
-                >
-                  Delivery
-                </a>
-                {customerCareNumber && (
-                  <a
-                    href={`tel:${customerCareNumber}`}
-                    className="block px-3 py-2 text-white hover:text-red-500 transition-colors"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    <div className="flex items-center">
-                      <Phone className="h-4 w-4 mr-2" />
-                      Call & Order: {customerCareNumber}
-                    </div>
-                  </a>
-                )}
+                  Order Online
+                </button>
               </div>
-            </div>
+            )}
+            
+            
             <div className="flex justify-center mt-4 space-x-4">
               <button 
                 onClick={() => dispatch(openSearchModal())}
@@ -274,6 +250,7 @@ export default function Navbar() {
         isOpen={isOrderPopupOpen}
         onClose={() => setIsOrderPopupOpen(false)}
         deliveryRedirectUrl="https://ctbiryani.square.site/"
+        customerCareNumber={customerCareNumber}
       />
     </nav>
   );
