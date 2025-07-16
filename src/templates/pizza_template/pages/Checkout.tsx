@@ -40,6 +40,7 @@ interface OrderedItem {
   modifier_price: string;
   total_item_price: string;
   spice_level?: any;
+  image: any;
 }
 
 interface OrderPayload {
@@ -214,6 +215,7 @@ export default function Checkout() {
         name: item.name,
         quantity: item.quantity,
         itemPrice: item.price?.toFixed(2),
+        image: item.image,
         modifiers: formatModifiers,
         modifier_price: "0.00",
         total_item_price: (item.price * item.quantity)?.toFixed(2)

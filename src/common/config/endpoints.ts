@@ -51,7 +51,7 @@ const getDomainFromUrl = () => {
     }
   }
   // return "uat"
-   return "uat"; 
+   return "gold"; 
   // return 'annapurna'
 }; 
 

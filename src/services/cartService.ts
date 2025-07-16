@@ -204,6 +204,7 @@ export const cartService = {
             ) || [],
             modifier_price: modifierPrice,
             spicelevel: spiceLevel,
+            image: item.image,
             total_item_price: ((itemPrice + modifierPrice) * itemQuantity).toFixed(2)
           };
         });
