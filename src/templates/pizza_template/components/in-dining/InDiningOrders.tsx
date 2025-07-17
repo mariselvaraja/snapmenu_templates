@@ -7,6 +7,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { RootState } from '../../../../common/store';
 import { InDiningOrder } from '../../../../common/redux/slices/inDiningOrderSlice';
 import { getOrderHistoryRequest } from '../../../../common/redux/slices/orderHistorySlice';
+import { clearCart } from '../../../../common/redux/slices/inDiningCartSlice';
 import { useWebSocketOrders } from '../../hooks/useWebSocketOrders';
 import usePaymentManagement from '../../hooks/usePaymentManagement';
 import VerifyingPaymentPopup from '../VerifyingPaymentPopup';
@@ -659,6 +660,8 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
         isOpen={showPaymentSuccessPopup}
         onClose={() => {
           resetAllPopupStates();
+          // Clear the cart when payment success popup is closed
+          dispatch(clearCart());
           // Refresh orders when success popup is closed
           if (tableFromQuery) {
             dispatch(getOrderHistoryRequest(tableFromQuery));
@@ -666,6 +669,8 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
         }}
         onContinue={() => handlePaymentSuccess(() => {
           showToast('Payment completed successfully!', 'success');
+          // Clear the cart when payment is successful
+          dispatch(clearCart());
           // Refresh orders after successful payment
           if (tableFromQuery) {
             dispatch(getOrderHistoryRequest(tableFromQuery));
