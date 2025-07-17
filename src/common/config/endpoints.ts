@@ -51,6 +51,7 @@ const getDomainFromUrl = () => {
     }
   }
   return "uat"
+  // return "pizza"
   //  return "mayajas"; 
   // return 'annapurna'
 }; 
@@ -105,7 +106,9 @@ export const endpoints = {
   partyOrders: {
     getAll: `${API_BASE_URL}${PARTY_ORDERS_API_PATH}`,
   },
-
+baseUrl: {
+  apiBaseUrl: API_BASE_URL
+}
 };
 
 // Environment configuration

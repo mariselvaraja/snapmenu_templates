@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Check, Truck, Store } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAppSelector } from '../../../common/redux';
+import { useAppSelector, useAppDispatch } from '../../../common/redux';
+import { clearCart as clearReduxCart } from '../../../common/redux/slices/cartSlice';
 import { useCart } from '../context/CartContext';
 import { cartService } from '../../../services';
 import usePaymentManagement from '../hooks/usePaymentManagement';
@@ -77,6 +78,8 @@ interface CartItem {
 
 export default function Checkout() {
   const { state: { items: cartItems }, clearCart } = useCart();
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<OrderType>('pickup');
   const [paymentTab, setPaymentTab] = useState<'pay_now' | 'pay_later'>('pay_now');
 
@@ -94,6 +97,13 @@ export default function Checkout() {
 
   const tpnState = useAppSelector((state) => state?.tpn?.rawApiResponse);
   const restaurant_id = sessionStorage.getItem("franchise_id");
+
+  useEffect(()=>{
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth' // or 'auto' for instant
+    });
+  },[])
   
   // Check if delivery is available based on pos_type being 'square'
   const isDeliveryAvailable = tpnState?.tpn_config?.find((c:any) => 
@@ -293,11 +303,16 @@ export default function Checkout() {
       if (response && typeof response === 'object' && 'payment_link' in response && response.payment_link) {
         console.log('Payment link detected:', response.payment_link);
         // Use the new payment management system to initiate payment
-        initiatePayment(response.payment_link);
+        // initiatePayment(response.payment_link);
+        initiatePayment("https://snapmenu.ctbiryani.com/payment/processing-square?transactionId=6Yqv01D1rqPCb5BQTV5gIwxk09bZY&orderId=uE1Awr41Q02bUoFwpXozLvD6GqUZY");
+        
+        // initiatePayment("https://snapmenuai.pages.dev/payment/processing-square?transactionId=99393&orderId=99393")
       } else {
-        // No payment link, set order as complete
-        setOrderComplete(true);
+        // No payment link, clear cart and redirect to menu
         clearCart();
+        dispatch(clearReduxCart());
+        navigate('/menu');
+        return;
       }
     } catch (error) {
       console.error('Error placing order:', error);
@@ -429,11 +444,11 @@ export default function Checkout() {
               {/* Header */}
               <div className="p-6 border-b text-center">
                 <h2 className="text-3xl font-bold mb-2">Order Online</h2>
-                <p className="text-gray-600">Fresh, hot pizza delivered to your door or ready for pickup</p>
+               
               </div>
 
               {/* Order Type Tabs */}
-              {   isDeliveryAvailable && 
+              {/* {   isDeliveryAvailable && 
               <div className="border-b">
                 <div className="flex">
                 <button
@@ -461,10 +476,10 @@ export default function Checkout() {
        
                 </div>
               </div>
-                      }
+                      } */}
 
               {/* Payment Type Tabs */}
-              <div className="border-b">
+              {/* <div className="border-b">
                 <div className="flex">
                   <button
                     onClick={() => setPaymentTab('pay_now')}
@@ -487,7 +502,7 @@ export default function Checkout() {
                     Pay Later
                   </button>
                 </div>
-              </div>
+              </div> */}
               <form onSubmit={handleSubmit} className="p-6 space-y-6">
                 <div>
                   <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
@@ -804,8 +819,9 @@ export default function Checkout() {
         isOpen={showPaymentSuccessPopup}
         onClose={() => resetAllPopupStates()}
         onContinue={() => handlePaymentSuccess(() => {
-          setOrderComplete(true);
           clearCart();
+          dispatch(clearReduxCart());
+          navigate('/menu');
         })}
       />
 

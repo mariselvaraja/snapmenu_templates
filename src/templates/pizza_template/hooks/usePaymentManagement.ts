@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { usePaymentPopup } from '../../../common/popups/usePaymentPopup';
+import endpoints from '@/config/endpoints';
 
 const usePaymentManagement = () => {
   const [showVerifyingPaymentPopup, setShowVerifyingPaymentPopup] = useState(false);
@@ -12,6 +13,10 @@ const usePaymentManagement = () => {
   const popupRef = useRef<Window | null>(null);
   const paymentRef = useRef<any>(null);
   const isPaymentInProgress = useRef(false);
+
+  const [paymentStatus, setPaymentStatus] = useState(null);
+  const [paymentStatusLoading, setPaymentStatusLoading] = useState(false);
+  const [paymentStatusError, setPaymentStatusError] = useState(null);
   
   // Function to open payment popup with payment link
   const openPaymentPopup = (paymentLink: string) => {
@@ -111,9 +116,45 @@ const usePaymentManagement = () => {
     return popup;
   };
 
+    // Payment status tracking function
+    const fetchPaymentStatus = async (order_id:any) => {
+
+      const restaurant_id = sessionStorage.getItem('franchise_id');
+      if (!restaurant_id) {
+        console.log('No restaurant_id available for payment status tracking');
+        return;
+      }
+  
+      setPaymentStatusLoading(true);
+      setPaymentStatusError(null);
+  
+      try {
+        const response = await fetch(endpoints.baseUrl.apiBaseUrl+'/pos/order/track?order_id='+order_id, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'restaurantId': restaurant_id
+          }
+        });
+  
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+  
+        const data = await response.json();
+        return data;
+      } catch (error) {
+        console.error('Error fetching payment status:', error);
+        return error;
+      } finally {
+        setPaymentStatusLoading(false);
+      }
+    };
+  
+
   // Handle OAuth popup messages
   useEffect(() => {
-    const handleMessage = (event: MessageEvent) => {
+    const handleMessage = async (event: MessageEvent) => {
       console.log("Payment EVENT", event);
       
       // Handle IPOS payment response
@@ -133,6 +174,30 @@ const usePaymentManagement = () => {
         } else {
           console.log("Payment Failed");
           setShowPaymentFailedProcessingPopup(true);
+        }
+      }
+
+            if (event.data.type === 'SQUARE_PAYMENT') {
+        const { transactionId, orderId } = event.data.payload;
+        paymentRef.current = { transactionId, orderId, paymentType: "square" };
+
+        let paymentStatus = await fetchPaymentStatus(orderId);
+
+        console.log("paymentStatus", paymentStatus)
+
+        if(paymentStatus?.status)
+        {
+        // Handle Square payment response
+        closePopup();
+        setShowVerifyingPaymentPopup(false);
+        setShowPaymentSuccessPopup(true);
+        isPaymentInProgress.current = false;
+        console.log("SUCCESS")
+        }
+        else
+        {
+          setShowPaymentFailedProcessingPopup(true);
+          setShowVerifyingPaymentPopup(false);
         }
       }
       
