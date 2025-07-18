@@ -303,8 +303,8 @@ export default function Checkout() {
       if (response && typeof response === 'object' && 'payment_link' in response && response.payment_link) {
         console.log('Payment link detected:', response.payment_link);
         // Use the new payment management system to initiate payment
-        // initiatePayment(response.payment_link);
-        initiatePayment("https://snapmenu.ctbiryani.com/payment/processing-square?transactionId=6Yqv01D1rqPCb5BQTV5gIwxk09bZY&orderId=uE1Awr41Q02bUoFwpXozLvD6GqUZY");
+        initiatePayment(response.payment_link);
+        // initiatePayment("https://snapmenu.ctbiryani.com/payment/processing-square?transactionId=6Yqv01D1rqPCb5BQTV5gIwxk09bZY&orderId=uE1Awr41Q02bUoFwpXozLvD6GqUZY");
         
         // initiatePayment("https://snapmenuai.pages.dev/payment/processing-square?transactionId=99393&orderId=99393")
       } else {
