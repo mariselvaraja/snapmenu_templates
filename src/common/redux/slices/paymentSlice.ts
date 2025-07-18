@@ -23,15 +23,19 @@ export interface PaymentResponse {
 
 interface PaymentState {
   isLoading: boolean;
+  isRequestCheckLoading: boolean;
   error: string | null;
   paymentResponse: any | null;
+  requestCheckResponse: any | null;
   currentPaymentRequest: PaymentRequest | null;
 }
 
 const initialState: PaymentState = {
   isLoading: false,
+  isRequestCheckLoading: false,
   error: null,
   paymentResponse: null,
+  requestCheckResponse: null,
   currentPaymentRequest: null,
 };
 
@@ -59,8 +63,10 @@ const paymentSlice = createSlice({
     // Reset payment state
     resetPaymentState: (state) => {
       state.isLoading = false;
+      state.isRequestCheckLoading = false;
       state.error = null;
       state.paymentResponse = null;
+      state.requestCheckResponse = null;
       state.currentPaymentRequest = null;
     },
     
@@ -74,6 +80,23 @@ const paymentSlice = createSlice({
       // This action is primarily for triggering UI notifications
       // The message can be stored temporarily if needed
     },
+
+    // Request check actions
+    makeRequestCheckRequest: (state, action: PayloadAction<{table_id: string, total_amount?: number}>) => {
+      state.isRequestCheckLoading = true;
+      state.error = null;
+      state.requestCheckResponse = null;
+    },
+    makeRequestCheckSuccess: (state, action: PayloadAction<any>) => {
+      state.isRequestCheckLoading = false;
+      state.error = null;
+      state.requestCheckResponse = action.payload;
+    },
+    makeRequestCheckFailure: (state, action: PayloadAction<string>) => {
+      state.isRequestCheckLoading = false;
+      state.error = action.payload;
+      state.requestCheckResponse = null;
+    },
   },
 });
 
@@ -84,6 +107,9 @@ export const {
   resetPaymentState,
   clearPaymentError,
   showPaymentMessage,
+  makeRequestCheckRequest,
+  makeRequestCheckSuccess,
+  makeRequestCheckFailure,
 } = paymentSlice.actions;
 
 export default paymentSlice.reducer;

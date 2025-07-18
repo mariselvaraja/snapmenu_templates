@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --mode dev",
+    "dev": "vite --mode dev --port 4000",
     "test": "vite --mode test",
     "prod": "vite --mode production",
     "build": "vite build",

@@ -80,7 +80,8 @@ export const endpoints = {
 
   payment: {
     info: `${API_BASE_URL}${GET_PAYMENT_INFO}`,
-    makePayment: `${API_BASE_URL}${MAKE_PAYMENT_PATH}`
+    makePayment: `${API_BASE_URL}${MAKE_PAYMENT_PATH}`,
+    requestCheck: `${API_BASE_URL}/pos/customer/checkoutRequest`
   },
   
   // In-dining order endpoints

@@ -31,6 +31,31 @@ export const paymentService = {
   },
 
   /**
+   * Make a request check for a table
+   */
+  makeRequestCheck: async (table_id: string, total_amount?: number): Promise<any> => {
+    try {
+      let url = endpoints.payment.requestCheck + "?table_id=" + table_id;
+      if (total_amount !== undefined) {
+        url += "&amount=" + total_amount;
+      }
+      const response = await api.get(url);
+      return response.data;
+    } catch (error: any) {
+      // Handle different error scenarios
+      if (error.response?.status === 400) {
+        throw new Error(error.response.data?.message || 'Invalid request check data');
+      } else if (error.response?.status === 401) {
+        throw new Error('Authentication required');
+      } else if (error.response?.status === 500) {
+        throw new Error('Request check service temporarily unavailable');
+      } else {
+        throw new Error('Request check failed. Please try again.');
+      }
+    }
+  },
+
+  /**
    * Get payment information/configuration
    */
   getPaymentInfo: async (): Promise<any> => {

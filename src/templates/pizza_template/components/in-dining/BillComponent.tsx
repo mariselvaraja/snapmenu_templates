@@ -3,7 +3,7 @@ import { X, Download, Phone, Mail, MapPin, Clock } from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../../../common/store';
 import { useAppSelector } from '../../../../common/redux';
-import { makePaymentRequest, resetPaymentState } from '../../../../common/redux/slices/paymentSlice';
+import { makePaymentRequest, makeRequestCheckRequest, resetPaymentState } from '../../../../common/redux/slices/paymentSlice';
 import { getInDiningOrdersRequest, clearCurrentOrder } from '../../../../common/redux/slices/inDiningOrderSlice';
 import { motion } from 'framer-motion';
 import { usePayment } from '../../../../hooks/usePayment';
@@ -44,7 +44,8 @@ interface BillComponentProps {
 
 const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
   const dispatch = useDispatch();
-  const { isLoading, error, paymentResponse } = useSelector((state: RootState) => state.payment);
+  const { isLoading, isRequestCheckLoading, error, paymentResponse, requestCheckResponse } = useSelector((state: RootState) => state.payment);
+  const [wasRequestCheckLoading, setWasRequestCheckLoading] = React.useState<boolean>(false);
   const { isPaymentAvilable } = usePayment();
   const { showToast } = useToast();
   const [previousPaymentResponse, setPreviousPaymentResponse] = React.useState<any>(null);
@@ -67,6 +68,35 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
       dispatch(clearCurrentOrder());
     };
   }, [dispatch]);
+
+  // Track loading state changes for request check
+  useEffect(() => {
+    // Track when loading starts
+    if (isRequestCheckLoading && !wasRequestCheckLoading) {
+      setWasRequestCheckLoading(true);
+    }
+    
+    // Handle when loading finishes
+    if (!isRequestCheckLoading && wasRequestCheckLoading) {
+      // Request completed, close bill and show popup
+      setTimeout(() => {
+        handleClose();
+
+          // Check if response has a status field or success field
+          showRequestCheckPopup(requestCheckResponse?.status || false, requestCheckResponse?.message);
+        setWasRequestCheckLoading(false);
+      }, 500);
+    }
+  }, [isRequestCheckLoading, wasRequestCheckLoading, error, requestCheckResponse]);
+
+  // Function to show request check popup
+  const showRequestCheckPopup = (status: boolean, message:any) => {
+    if (status) {
+      showToast(message, 'success');
+    } else {
+      showToast(message, 'error');
+    }
+  };
 
   // Handle close with order refresh
   const handleClose = () => {
@@ -112,6 +142,17 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
       }));
       
       // Bill component will be closed when payment link is detected in InDiningOrders
+    }
+  };
+
+  // Handle request check
+  const handleRequestCheck = () => {
+    if (table_id) {
+      // Dispatch the request check action
+      dispatch(makeRequestCheckRequest({
+        table_id: table_id,
+        total_amount: totalAmount
+      }));
     }
   };
   
@@ -597,21 +638,40 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
               </div>
             )}
             
-            {/* Make Payment Button */}
-            <button 
-              onClick={handlePayment}
-              disabled={isLoading}
-              className="w-full py-3 bg-red-500 text-white rounded-lg flex items-center justify-center font-medium hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isLoading ? (
-                <div className="flex items-center space-x-2">
-                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                  <span>Processing Payment...</span>
-                </div>
-              ) : (
-                'Make Payment'
-              )}
-            </button>
+            {/* Action Buttons - 1 Row, 2 Columns */}
+            <div className="grid grid-cols-2 gap-3">
+              {/* Request Check Button */}
+              <button 
+                onClick={handleRequestCheck}
+                disabled={isRequestCheckLoading}
+                className="py-3 bg-black text-white rounded-lg flex items-center justify-center font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isRequestCheckLoading ? (
+                  <div className="flex items-center space-x-2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                    <span>Requesting...</span>
+                  </div>
+                ) : (
+                  'Request Check'
+                )}
+              </button>
+              
+              {/* Make Payment Button */}
+              <button 
+                onClick={handlePayment}
+                disabled={isLoading}
+                className="py-3 bg-red-500 text-white rounded-lg flex items-center justify-center font-medium hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isLoading ? (
+                  <div className="flex items-center space-x-2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                    <span>Processing...</span>
+                  </div>
+                ) : (
+                  'Make Payment'
+                )}
+              </button>
+            </div>
           </div>
         )}
         
