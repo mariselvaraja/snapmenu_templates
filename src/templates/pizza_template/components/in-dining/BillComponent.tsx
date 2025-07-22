@@ -570,11 +570,11 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
                                     modifier.modified_price : (modifier.price || 0);
                                   const totalPrice = optionPrice * item.quantity;
                                   
-                                  return (
+                                  return modifier.modifier_price ? (
                                     <span className="font-medium">
                                      + (${Number( modifier.modifier_price * item.quantity || 0).toFixed(2)})
                                     </span>
-                                  );
+                                  ):null
                                 })()}
                               </div>
                             

@@ -529,9 +529,9 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
                               className="flex justify-between items-center py-0.5"
                             >
                               <span>{modifier.modifier_name}</span>
-                              <span className="font-medium">
+                     {     modifier.modifier_price ?    <span className="font-medium">
                                 +(${formatCurrency(modifier.modifier_price * item.quantity || 0)})
-                              </span>
+                              </span> : null}
                             </div>
                           : null
                         )}
