@@ -392,13 +392,13 @@ function InDiningOrder() {
   // Special function for drinks menu - opens modal with ML options as radio buttons or adds directly to cart
   const openDrinksModifierPopup = (product: any) => {
     // Check if drinks item needs customization (multiple price options)
-    if (needsDrinksCustomization(product)) {
+    // if (needsDrinksCustomization(product)) {
       setSelectedMenuItem(product);
       setIsDrinksModifierModalOpen(true);
-    } else {
+    // } else {
       // Add directly to cart if only one price option or no prices array
-      addDirectlyToCart(product);
-    }
+      // addDirectlyToCart(product);
+    // }
   };
 
   // Handlers for InDiningCards - use stored data and set menu type
