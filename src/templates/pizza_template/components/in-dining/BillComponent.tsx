@@ -493,13 +493,13 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
           <div className="flex justify-between items-center p-4">
             <h2 className="text-lg font-semibold">Bill Details</h2>
             <div className="flex items-center space-x-2">
-              <button
+              {/* <button
                 onClick={handleDownload}
                 className="flex items-center p-1.5 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
                 aria-label="Download Bill"
               >
                 <Download className="h-4 w-4" />
-              </button>
+              </button> */}
               <button
                 onClick={handleClose}
                 className="p-1 rounded-full hover:bg-gray-100"
