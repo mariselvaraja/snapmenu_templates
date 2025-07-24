@@ -16,6 +16,7 @@ import PaymentFailedPopup from '../PaymentFailedPopup';
 import PaymentFailedProcessingPopup from '../PaymentFailedProcessingPopup';
 import { useToast } from '../../context/ToastContext';
 import { formatCurrency } from '../../utils';
+import RenderSpice from '@/components/renderSpicelevel';
 
 // Extended interface to handle both API response formats
 interface ExtendedInDiningOrder extends Partial<InDiningOrder> {
@@ -185,7 +186,9 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
       case 'delivered':
         return 'bg-blue-50 text-blue-600 border-blue-100';
       case 'preparing':
-        return 'bg-yellow-50 text-yellow-600 border-yellow-100';
+        return 'bg-yellow-50 text-orange-600 border-yellow-100';
+        case 'ordered':
+          return 'bg-yellow-50 text-yellow-600 border-yellow-100';
       default:
         return 'bg-red-50 text-red-600 border-red-100';
     }
@@ -387,6 +390,11 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
 
   console.log("order.items", orders)
 
+  const getStatus = (status:any)=>{
+    let formatedStatus = status?.toLowerCase()
+
+   return formatedStatus
+  }
   return (
     <div className="fixed inset-0 bg-white z-50 flex flex-col">
       {/* Header */}
@@ -506,21 +514,45 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
                       
                       </div>
                       <div className="text-gray-600">
-                        <span className="font-medium">${formatCurrency((item.price * item.quantity) || 0)}</span>
+                        <span className="font-medium">${(() => {
+                          // Ensure price is a number
+                          const baseItemPrice = typeof item.price === 'number' ? item.price : 
+                            parseFloat(String(item.price || 0)) || 0;
+                          
+                          // Calculate modifier total with proper checks
+                          let modifierTotal = 0;
+                          if (item.modifiers && Array.isArray(item.modifiers) && item.modifiers.length > 0) {
+                            modifierTotal = item.modifiers.reduce((sum: number, mod: any) => {
+                              const modPrice = typeof mod.modifier_price === 'number' ? mod.modifier_price : 
+                                parseFloat(String(mod.modifier_price || 0)) || 0;
+                              return sum + modPrice;
+                            }, 0);
+                          }
+                          
+                          // Ensure quantity is a number
+                          const quantity = typeof item.quantity === 'number' ? item.quantity : 
+                            parseInt(String(item.quantity || 1)) || 1;
+                          
+                          // Calculate total price (base price + modifiers) * quantity
+                          const totalPrice = (baseItemPrice + modifierTotal) * quantity;
+                          
+                          // Use formatCurrency for consistent formatting
+                          return formatCurrency(totalPrice);
+                        })()}</span>
                    
                       </div>
                     </div>
                     
                     {/* Status Badge */}
-                    <div className="flex items-center mt-1">
-                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium border uppercase ${getStatusBadgeClasses(order.status)}`}>
-                        {order.status}
+                    <div className="flex items-center mt-1 capitalize">
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium border ${getStatusBadgeClasses(order.status)}`}>
+                        {getStatus(order.status)}
                       </span>
                     </div>
                     
                     {/* Display selected modifiers and spice level */}
                     {((item.modifiers && item.modifiers.length > 0) || item.spiceLevel) && (
-                      <div className="mt-1 mb-2 text-xs text-gray-600">
+                      <div className="mt-1 mb-2 text-xs text-gray-600 capitalize">
                         {/* First display all non-spice level modifiers */}
                         {item.modifiers && item.modifiers.length > 0 && item.modifiers.map((modifier: any) => 
                           modifier.modifier_name !== "Spice Level" ? 
@@ -530,14 +562,14 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
                             >
                               <span>{modifier.modifier_name}</span>
                      {     modifier.modifier_price ?    <span className="font-medium">
-                                +(${formatCurrency(modifier.modifier_price * item.quantity || 0)})
+                                (${formatCurrency(modifier.modifier_price * item.quantity || 0)})
                               </span> : null}
                             </div>
                           : null
                         )}
                         
                         {/* Display spice level from modifiers if available */}
-                        {item.modifiers && item.modifiers.some((modifier: any) => modifier.name === "Spice Level") && (
+                        {/* {item.modifiers && item.modifiers.some((modifier: any) => modifier.name === "Spice Level") && (
                           item.modifiers.flatMap((modifier: any) => 
                             modifier.name === "Spice Level" ? 
                               modifier.options.map((option: any, index: number) => {
@@ -563,28 +595,15 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
                               })
                             : []
                           )
-                        )}
+                        )} */}
                         
                         {/* Display spice level directly from item if not in modifiers */}
                         {item.spiceLevel && !item.modifiers?.some((modifier: any) => modifier.name === "Spice Level") && (
                           <div className="flex justify-between items-center py-0.5">
                             <span className="flex items-center">
-                              Spice Level
-                              <span className="ml-1 text-red-500">
-                                {(() => {
-                                  let chiliCount = 1; // Default to 1
-                                  if (item.spiceLevel === "Medium") chiliCount = 2;
-                                  if (item.spiceLevel === "Hot") chiliCount = 3;
-                                  
-                                  return (
-                                    <>
-                                      {chiliCount === 1 && '🌶️'}
-                                      {chiliCount === 2 && '🌶️🌶️'}
-                                      {chiliCount === 3 && '🌶️🌶️🌶️'}
-                                    </>
-                                  );
-                                })()}
-                              </span>
+    
+                              <RenderSpice spice={item.spiceLevel}/>
+                             
                             </span>
                           </div>
                         )}

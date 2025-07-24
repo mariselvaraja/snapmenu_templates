@@ -4,6 +4,7 @@ import { X, Trash2, ShoppingBag, Pencil } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import ModifierModal from './ModifierModal';
+import RenderSpice from '@/components/renderSpicelevel';
 
 export default function CartDrawer() {
   const { state: { items, drawerOpen }, toggleDrawer, removeItem, updateItemQuantity, addItem } = useCart();
@@ -166,7 +167,7 @@ export default function CartDrawer() {
                                 parseInt(String(item.quantity)) || 1;
                               
                               // Calculate total price (base price + modifiers) * quantity
-                              const totalItemPrice = (baseItemPrice ) * quantity;
+                              const totalItemPrice = (baseItemPrice + modifierTotal) * quantity;
                               
                               // Ensure we have a valid number before using toFixed
                               const formattedPrice = !isNaN(totalItemPrice) ? 
@@ -216,13 +217,7 @@ export default function CartDrawer() {
                                       key={`${modifier.name}-${option.name}-${index}`} 
                                       className="flex justify-between items-center py-0.5"
                                     >
-                                      <span className="flex items-center">
-                                        <span className="ml-1 text-red-500">
-                                          {chiliCount === 1 && '🌶️'}
-                                          {chiliCount === 2 && '🌶️🌶️'}
-                                          {chiliCount === 3 && '🌶️🌶️🌶️'}
-                                        </span>
-                                      </span>
+                                     <RenderSpice spice={option.name}/>
                                     </div>
                                   );
                                 })

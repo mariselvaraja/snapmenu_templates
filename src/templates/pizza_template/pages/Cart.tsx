@@ -5,6 +5,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAppSelector } from '../../../common/redux';
 import { useCart } from '../context/CartContext';
 import ModifierModal from '../components/ModifierModal';
+import RenderSpice from '@/components/renderSpicelevel';
 
 export default function Cart() {
   const { state: { items: cartItems }, removeItem, updateItemQuantity, addItem } = useCart();
@@ -206,7 +207,7 @@ export default function Cart() {
                                 parseInt(String(item.quantity)) || 1;
                               
                               // Calculate total price (base price + modifiers) * quantity
-                              const totalItemPrice = (baseItemPrice ) * quantity;
+                              const totalItemPrice = (baseItemPrice + modifierTotal) * quantity;
                               
                               // Ensure we have a valid number before using toFixed
                               const formattedPrice = !isNaN(totalItemPrice) ? 
@@ -231,7 +232,7 @@ export default function Cart() {
                                     <span>{option.name || modifier.name}</span>
                                     {(typeof option.price === 'number' ? option.price : parseFloat(String(option.price).replace(/[^\d.-]/g, '')) || 0) > 0 && 
                                       <span className="font-medium">
-                                        +${((typeof option.price === 'number' ? option.price : parseFloat(String(option.price).replace(/[^\d.-]/g, '')) || 0) * (typeof item.quantity === 'number' ? item.quantity : parseInt(String(item.quantity)) || 1)).toFixed(2)}
+                                        (${((typeof option.price === 'number' ? option.price : parseFloat(String(option.price).replace(/[^\d.-]/g, '')) || 0) * (typeof item.quantity === 'number' ? item.quantity : parseInt(String(item.quantity)) || 1)).toFixed(2)})
                                       </span>
                                     }
                                   </div>
@@ -252,14 +253,7 @@ export default function Cart() {
                                       key={`${modifier.name}-${option.name}-${index}`} 
                                       className="flex justify-between items-center py-0.5"
                                     >
-                                      <span className="flex items-center">
-                                        {/* Spice Level:  */}
-                                        <span className="ml-1 text-red-500">
-                                          {chiliCount === 1 && '🌶️'}
-                                          {chiliCount === 2 && '🌶️🌶️'}
-                                          {chiliCount === 3 && '🌶️🌶️🌶️'}
-                                        </span>
-                                      </span>
+                                     <RenderSpice spice={option.name}/>
                                       <div className="flex items-center">
                                         <button 
                                           className="w-6 h-6 bg-red-50 rounded-full flex items-center justify-center text-sm"

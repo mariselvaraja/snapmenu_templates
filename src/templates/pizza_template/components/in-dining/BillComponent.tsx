@@ -8,6 +8,7 @@ import { getInDiningOrdersRequest, clearCurrentOrder } from '../../../../common/
 import { motion } from 'framer-motion';
 import { usePayment } from '../../../../hooks/usePayment';
 import { useToast } from '../../context/ToastContext';
+import RenderSpice from '@/components/renderSpicelevel';
 
 interface OrderItem {
   name: string;
@@ -522,7 +523,7 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
           {/* Bill Info */}
           <div className="text-sm mb-6 border-b border-gray-200 pb-4">
             <div className="flex justify-between">
-              <p><span className="font-medium">Order #:</span> {orders.length > 0 ? orders[0].id : 'N/A'}</p>
+              <p><span className="font-medium">Ordered Item:</span> {orders.length}</p>
               <p>{orders.length > 0 ? formatDate(orders[0].date) : formatDate(new Date().toISOString())}</p>
             </div>
           </div>
@@ -547,9 +548,31 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
                     <div className="flex">
                       <span className="w-16 text-center">{item.quantity}</span>
                       <span className="w-20 text-right">
-  ${Number(
-    (item?.price || 0) * (item?.quantity || 0)
-  ).toFixed(2)}
+  ${(() => {
+    // Ensure price is a number
+    const baseItemPrice = typeof item.price === 'number' ? item.price : 
+      parseFloat(String(item.price || 0)) || 0;
+    
+    // Calculate modifier total with proper checks
+    let modifierTotal = 0;
+    if (item.modifiers && Array.isArray(item.modifiers) && item.modifiers.length > 0) {
+      modifierTotal = item.modifiers.reduce((sum, mod) => {
+        const modPrice = typeof mod.modifier_price === 'number' ? mod.modifier_price : 
+          parseFloat(String(mod.modifier_price || 0)) || 0;
+        return sum + modPrice;
+      }, 0);
+    }
+    
+    // Ensure quantity is a number
+    const quantity = typeof item.quantity === 'number' ? item.quantity : 
+      parseInt(String(item.quantity || 1)) || 1;
+    
+    // Calculate total price (base price + modifiers) * quantity
+    const totalPrice = (baseItemPrice + modifierTotal) * quantity;
+    
+    // Ensure we have a valid number before using toFixed
+    return !isNaN(totalPrice) ? totalPrice.toFixed(2) : "0.00";
+  })()}
 </span>
                     </div>
                   </div>
@@ -572,7 +595,7 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
                                   
                                   return modifier.modifier_price ? (
                                     <span className="font-medium">
-                                     + (${Number( modifier.modifier_price * item.quantity || 0).toFixed(2)})
+                                     (${Number( modifier.modifier_price * item.quantity || 0).toFixed(2)})
                                     </span>
                                   ):null
                                 })()}
@@ -585,15 +608,7 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
                   
                   {/* Spice Level (moved after modifiers) */}
                   {item.spiceLevel && (
-                    <div className="text-xs text-gray-500 mt-1">
-                      <span className="font-medium">Spice Level:</span> {' '}
-                      <span className="text-red-500">
-                        {item.spiceLevel === "Mild" && "Mild"}
-                        {item.spiceLevel === "Medium" && "Medium"}
-                        {item.spiceLevel === "Hot" && "Hot"}
-                        {!["Mild", "Medium", "Hot"].includes(item.spiceLevel) && item.spiceLevel}
-                      </span>
-                    </div>
+               <RenderSpice spice={item.spiceLevel}/>
                   )}
                 </div>
               ))

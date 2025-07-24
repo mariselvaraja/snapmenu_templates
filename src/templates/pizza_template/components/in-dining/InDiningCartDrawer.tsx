@@ -4,6 +4,7 @@ import { X, Trash2, ShoppingBag } from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../../../../common/store';
 import { toggleDrawer, updateItemQuantityByCharacteristics, removeItemByCharacteristics } from '../../../../common/redux/slices/inDiningCartSlice';
+import RenderSpice from '@/components/renderSpicelevel';
 
 interface InDiningCartDrawerProps {
   onPlaceOrder?: (specialRequest: string) => void;
@@ -140,22 +141,36 @@ const InDiningCartDrawer: React.FC<InDiningCartDrawerProps> = ({ onPlaceOrder })
                         <div className="flex justify-between items-center">
                           <h3 className="font-semibold">{item.name}</h3>
                           <div className="text-gray-600">
-                            {/* Display base item price * quantity separately */}
+                            {/* Display total item price (base + modifiers) * quantity */}
                             {(() => {
                               // Ensure price is a number
                               const baseItemPrice = typeof item.price === 'number' ? item.price : 
                                 parseFloat(String(item.price).replace(/[^\d.-]/g, '')) || 0;
                               
+                              // Calculate modifier total
+                              let modifierTotal = 0;
+                              if (item.selectedModifiers && item.selectedModifiers.length > 0) {
+                                item.selectedModifiers.forEach((modifier: any) => {
+                                  modifier.options.forEach((option: any) => {
+                                    // Ensure option price is a number
+                                    const optionPrice = typeof option.price === 'number' ? option.price : 
+                                      parseFloat(String(option.price).replace(/[^\d.-]/g, '')) || 0;
+                                    
+                                    modifierTotal += optionPrice;
+                                  });
+                                });
+                              }
+                              
                               // Ensure quantity is a number
                               const quantity = typeof item.quantity === 'number' ? item.quantity : 
                                 parseInt(String(item.quantity)) || 1;
                               
-                              // Calculate base price * quantity
-                              const totalBasePrice = baseItemPrice * quantity;
+                              // Calculate total price (base price + modifiers) * quantity
+                              const totalPrice = (baseItemPrice + modifierTotal) * quantity;
                               
                               // Ensure we have a valid number before using toFixed
-                              const formattedPrice = !isNaN(totalBasePrice) ? 
-                                totalBasePrice.toFixed(2) : "0.00";
+                              const formattedPrice = !isNaN(totalPrice) ? 
+                                totalPrice.toFixed(2) : "0.00";
                               
                               return (
                                 <span className="font-medium">${formattedPrice}</span>
@@ -167,7 +182,7 @@ const InDiningCartDrawer: React.FC<InDiningCartDrawerProps> = ({ onPlaceOrder })
                         {/* Display selected modifiers one by one with name on left and price on right */}
                         {item.selectedModifiers && item.selectedModifiers.length > 0 && (
                           <div className="mt-1 mb-2 text-xs text-gray-600">
-                            {/* First display all non-spice level modifiers */}
+                            {/* First display all non-spice level modifiers with their prices */}
                             {item.selectedModifiers.flatMap((modifier: any) => 
                               modifier.name !== "Spice Level" ? 
                                 modifier.options.map((option: any, index: number) => (
@@ -186,7 +201,7 @@ const InDiningCartDrawer: React.FC<InDiningCartDrawerProps> = ({ onPlaceOrder })
                                       // Always show price, even if it's $0.00
                                       return totalPrice > 0 ? (
                                         <span className="font-medium">
-                                          +${totalPrice.toFixed(2)}
+                                          (${totalPrice.toFixed(2)})
                                         </span>
                                       ) : "";
                                     })()}
@@ -208,14 +223,7 @@ const InDiningCartDrawer: React.FC<InDiningCartDrawerProps> = ({ onPlaceOrder })
                                       key={`${modifier.name}-${option.name}-${index}`} 
                                       className="flex justify-between items-center py-0.5"
                                     >
-                                      <span className="flex items-center">
-                                        {/* Spice Level:  */}
-                                        <span className="ml-1 text-red-500">
-                                          {chiliCount === 1 && '🌶️'}
-                                          {chiliCount === 2 && '🌶️🌶️'}
-                                          {chiliCount === 3 && '🌶️🌶️🌶️'}
-                                        </span>
-                                      </span>
+                                     <RenderSpice spice={option.name}/>
                                       
                                       {/* Quantity controls moved to right side of spice level */}
                                       <div className="flex items-center">
