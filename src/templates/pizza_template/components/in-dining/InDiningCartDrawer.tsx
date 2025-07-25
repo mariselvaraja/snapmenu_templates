@@ -5,6 +5,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../../../../common/store';
 import { toggleDrawer, updateItemQuantityByCharacteristics, removeItemByCharacteristics } from '../../../../common/redux/slices/inDiningCartSlice';
 import RenderSpice from '@/components/renderSpicelevel';
+import { formatCurrency } from '../../utils';
 
 interface InDiningCartDrawerProps {
   onPlaceOrder?: (specialRequest: string) => void;
@@ -143,39 +144,42 @@ const InDiningCartDrawer: React.FC<InDiningCartDrawerProps> = ({ onPlaceOrder })
                           <div className="text-gray-600">
                             {/* Display total item price (base + modifiers) * quantity */}
                             {(() => {
-                              // Ensure price is a number
-                              const baseItemPrice = typeof item.price === 'number' ? item.price : 
-                                parseFloat(String(item.price).replace(/[^\d.-]/g, '')) || 0;
-                              
-                              // Calculate modifier total
-                              let modifierTotal = 0;
-                              if (item.selectedModifiers && item.selectedModifiers.length > 0) {
-                                item.selectedModifiers.forEach((modifier: any) => {
-                                  modifier.options.forEach((option: any) => {
-                                    // Ensure option price is a number
-                                    const optionPrice = typeof option.price === 'number' ? option.price : 
-                                      parseFloat(String(option.price).replace(/[^\d.-]/g, '')) || 0;
-                                    
-                                    modifierTotal += optionPrice;
-                                  });
-                                });
-                              }
-                              
-                              // Ensure quantity is a number
-                              const quantity = typeof item.quantity === 'number' ? item.quantity : 
-                                parseInt(String(item.quantity)) || 1;
-                              
-                              // Calculate total price (base price + modifiers) * quantity
-                              const totalPrice = (baseItemPrice + modifierTotal) * quantity;
-                              
-                              // Ensure we have a valid number before using toFixed
-                              const formattedPrice = !isNaN(totalPrice) ? 
-                                totalPrice.toFixed(2) : "0.00";
-                              
-                              return (
-                                <span className="font-medium">${formattedPrice}</span>
-                              );
-                            })()}
+  // Determine base item price using fallback logic similar to product.prices
+  let baseItemPrice = 0;
+  if (Array.isArray(item?.prices) && item.prices.length > 0) {
+    baseItemPrice = Number(item.prices[0].price) || 0;
+  } else {
+    baseItemPrice = Number(item?.indining_price || item?.price || 0);
+  }
+
+  // Calculate modifier total
+  let modifierTotal = 0;
+  if (item.selectedModifiers && item.selectedModifiers.length > 0) {
+    item.selectedModifiers.forEach((modifier: any) => {
+      modifier.options.forEach((option: any) => {
+        const optionPrice = typeof option.price === 'number'
+          ? option.price
+          : parseFloat(String(option.price).replace(/[^\d.-]/g, '')) || 0;
+        modifierTotal += optionPrice;
+      });
+    });
+  }
+
+  // Ensure quantity is a number
+  const quantity = typeof item.quantity === 'number'
+    ? item.quantity
+    : parseInt(String(item.quantity)) || 1;
+
+  // Calculate total price
+  const totalPrice = (baseItemPrice + modifierTotal) * quantity;
+
+  return (
+    <span className="font-medium">
+      {formatCurrency(!isNaN(totalPrice) ? totalPrice : 0)}
+    </span>
+  );
+})()}
+
                           </div>
                         </div>
                         

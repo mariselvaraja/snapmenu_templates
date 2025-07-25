@@ -381,6 +381,17 @@ export default function ModifierModal({ isOpen, onClose, menuItem }: ModifierMod
 
               {/* Modifiers */}
               <div className="flex-grow overflow-y-auto p-4">
+                {/* Check if no modifiers are available */}
+                {!shouldShowSpiceLevel() && 
+                 (!extraToppingsModifiers || extraToppingsModifiers.length === 0 || 
+                  extraToppingsModifiers.every(modifier => 
+                    !modifier.options || modifier.options.every(option => option.isEnabled === false)
+                  )) && (
+                  <div className="text-center py-6 text-gray-500">
+                    <p className="mb-2">No Customizations Available</p>
+                    <p>Proceed to add this item to the cart</p>
+                  </div>
+                )}
                 {/* Sort modifiers - required first, then non-required */}
                 {/* Spice Level Modifier - Only show if spice is applicable */}
                 {shouldShowSpiceLevel() && spiceLevelModifier.is_forced?.toLowerCase() === 'yes' && (
@@ -447,7 +458,12 @@ export default function ModifierModal({ isOpen, onClose, menuItem }: ModifierMod
                 {/* Required Extra Toppings Modifiers */}
                 {extraToppingsModifiers
                   .filter(modifier => modifier.is_forced?.toLowerCase() === 'yes')
-                  .map((modifier) => (
+                  .map((modifier) => {
+                    const enabledOptions = modifier.options?.filter(option => option.isEnabled !== false) || [];
+                    
+                    if (enabledOptions.length === 0) return null;
+                    
+                    return (
                     <div key={modifier.name} className="mb-6">
                       <h3 className="font-semibold mb-2">
                         {modifier.name}
@@ -491,7 +507,8 @@ export default function ModifierModal({ isOpen, onClose, menuItem }: ModifierMod
                         <div className="text-red-500 text-sm mt-2">Please select at least one option</div>
                       )}
                     </div>
-                  ))}
+                  );
+                })}
 
                 {/* Non-required Spice Level Modifier */}
                 {shouldShowSpiceLevel() && spiceLevelModifier.is_forced?.toLowerCase() !== 'yes' && (
@@ -553,48 +570,55 @@ export default function ModifierModal({ isOpen, onClose, menuItem }: ModifierMod
 
                 {/* Non-required Extra Toppings Modifiers */}
                 {extraToppingsModifiers
-                  .filter(modifier => modifier.is_forced?.toLowerCase() !== 'yes')
-                  .map((modifier) => (
-                    <div key={modifier.name} className="mb-6">
-                    <h3 className="font-semibold mb-2">
-                      {modifier.name}
-                      <span className="text-gray-500 text-xs ml-1">
-                        {/* ({modifier.is_multi_select?.toLowerCase() === 'yes' ? 'Select multiple' : 'Select one'}) */}
-                      </span>
-                    </h3>
-                    <div className="grid grid-cols-1 gap-2">
-                      {modifier.options.filter(option => option.isEnabled !== false).map((option) => (
-                        <button
-                          key={option.name}
-                          onClick={() => handleOptionToggle(modifier.name, option)}
-                          className={`p-2 rounded-lg border text-left transition-colors flex items-center gap-2 ${
-                            isOptionSelected(modifier.name, option.name)
-                              ? 'border-red-500 bg-red-50'
-                              : 'border-gray-200 hover:border-gray-300'
-                          }`}
-                        >
-                          <div className="mr-2">
-                            {modifier.is_multi_select?.toLowerCase() === 'yes' ? (
-                              <div className={`w-4 h-4 border rounded ${isOptionSelected(modifier.name, option.name) ? 'bg-red-500 border-red-500' : 'border-gray-400'} flex items-center justify-center`}>
-                                {isOptionSelected(modifier.name, option.name) && <Check className="h-3 w-3 text-white" />}
-                              </div>
-                            ) : (
-                              <div className={`w-4 h-4 border rounded-full ${isOptionSelected(modifier.name, option.name) ? 'border-red-500' : 'border-gray-400'} flex items-center justify-center`}>
-                                {isOptionSelected(modifier.name, option.name) && <div className="w-2 h-2 rounded-full bg-red-500"></div>}
-                              </div>
-                            )}
-                          </div>
-                          <div className="font-medium flex items-center justify-center line-clamp-1">
-                            {option.name}
-                          </div>
-                          {showPrice && option.price !== undefined && (
-                            <div className="text-sm text-gray-600 ml-auto">(+{typeof option.price === 'number' ? "$"+option.price?.toFixed(2) : option.price})</div>
-                          )}
-                        </button>
-                      ))}
-                    </div>
+  .filter(modifier => modifier.is_forced?.toLowerCase() !== 'yes')
+  .map((modifier) => {
+    const enabledOptions = modifier.options?.filter(option => option.isEnabled !== false) || [];
+
+    if (enabledOptions.length === 0) return null;
+
+    return (
+      <div key={modifier.name} className="mb-6">
+        <h3 className="font-semibold mb-2">
+          {modifier.name}
+          <span className="text-gray-500 text-xs ml-1">
+            {/* ({modifier.is_multi_select?.toLowerCase() === 'yes' ? 'Select multiple' : 'Select one'}) */}
+          </span>
+        </h3>
+        <div className="grid grid-cols-1 gap-2">
+          {enabledOptions.map((option) => (
+            <button
+              key={option.name}
+              onClick={() => handleOptionToggle(modifier.name, option)}
+              className={`p-2 rounded-lg border text-left transition-colors flex items-center gap-2 ${
+                isOptionSelected(modifier.name, option.name)
+                  ? 'border-red-500 bg-red-50'
+                  : 'border-gray-200 hover:border-gray-300'
+              }`}
+            >
+              <div className="mr-2">
+                {modifier.is_multi_select?.toLowerCase() === 'yes' ? (
+                  <div className={`w-4 h-4 border rounded ${isOptionSelected(modifier.name, option.name) ? 'bg-red-500 border-red-500' : 'border-gray-400'} flex items-center justify-center`}>
+                    {isOptionSelected(modifier.name, option.name) && <Check className="h-3 w-3 text-white" />}
                   </div>
-                ))}
+                ) : (
+                  <div className={`w-4 h-4 border rounded-full ${isOptionSelected(modifier.name, option.name) ? 'border-red-500' : 'border-gray-400'} flex items-center justify-center`}>
+                    {isOptionSelected(modifier.name, option.name) && <div className="w-2 h-2 rounded-full bg-red-500"></div>}
+                  </div>
+                )}
+              </div>
+              <div className="font-medium flex items-center justify-center line-clamp-1">
+                {option.name}
+              </div>
+              {showPrice && option.price !== undefined && (
+                <div className="text-sm text-gray-600 ml-auto">(+{typeof option.price === 'number' ? "$" + option.price?.toFixed(2) : option.price})</div>
+              )}
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  })}
+
               </div>
 
               {/* Footer */}

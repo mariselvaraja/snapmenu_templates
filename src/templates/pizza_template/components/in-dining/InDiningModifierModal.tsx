@@ -380,6 +380,17 @@ export default function InDiningModifierModal({ isOpen, onClose, menuItem }: InD
 
               {/* Modifiers */}
               <div className="flex-grow overflow-y-auto p-4">
+                {/* Check if no modifiers are available */}
+                {!shouldShowSpiceLevel() && 
+                 (!extraToppingsModifiers || extraToppingsModifiers.length === 0 || 
+                  extraToppingsModifiers.every(modifier => 
+                    !modifier.options || modifier.options.every(option => option.isEnabled === false)
+                  )) && (
+                  <div className="text-center py-6 text-gray-500">
+                    <p className="mb-2">No Customizations Available</p>
+                    <p>Proceed to add this item to the cart</p>
+                  </div>
+                )}
                 {/* Sort modifiers - required first, then non-required */}
                 {/* Spice Level Modifier - Only show if spice is applicable */}
                 {shouldShowSpiceLevel() && spiceLevelModifier.is_forced?.toLowerCase() === 'yes' && (
@@ -443,7 +454,12 @@ export default function InDiningModifierModal({ isOpen, onClose, menuItem }: InD
                 {/* Required Extra Toppings Modifiers */}
                 {extraToppingsModifiers
                   .filter(modifier => modifier.is_forced?.toLowerCase() === 'yes')
-                  .map((modifier) => (
+                  .map((modifier) => {
+                    const enabledOptions = modifier.options?.filter(option => option.isEnabled !== false) || [];
+                    
+                    if (enabledOptions.length === 0) return null;
+                    
+                    return (
                     <div key={modifier.name} className="mb-6">
                       <h3 className="font-semibold mb-2">
                         {modifier.name}
@@ -484,7 +500,8 @@ export default function InDiningModifierModal({ isOpen, onClose, menuItem }: InD
                         <div className="text-red-500 text-sm mt-2">Please select at least one option</div>
                       )}
                     </div>
-                  ))}
+                  );
+                })}
 
                 {/* Non-required Spice Level Modifier */}
                 {shouldShowSpiceLevel() && spiceLevelModifier.is_forced?.toLowerCase() !== 'yes' && (
@@ -544,7 +561,12 @@ export default function InDiningModifierModal({ isOpen, onClose, menuItem }: InD
                 {/* Non-required Extra Toppings Modifiers */}
                 {extraToppingsModifiers
                   .filter(modifier => modifier.is_forced?.toLowerCase() !== 'yes')
-                  .map((modifier) => (
+                  .map((modifier) => {
+                    const enabledOptions = modifier.options?.filter(option => option.isEnabled !== false) || [];
+                    
+                    if (enabledOptions.length === 0) return null;
+                    
+                    return (
                     <div key={modifier.name} className="mb-6">
                     <h3 className="font-semibold mb-2">
                       {modifier.name}
@@ -581,7 +603,8 @@ export default function InDiningModifierModal({ isOpen, onClose, menuItem }: InD
                       ))}
                     </div>
                   </div>
-                ))}
+                );
+              })}
               </div>
 
               {/* Footer */}
@@ -590,7 +613,7 @@ export default function InDiningModifierModal({ isOpen, onClose, menuItem }: InD
                   onClick={handleAddToCart}
                   className="w-full bg-red-500 text-white py-3 rounded-full font-semibold hover:bg-red-600 transition-colors"
                 >
-                  {menuItem.selectedModifiers ? 'Update Item' : 'Add to Cart'} - ${(Number(menuItem.indining_price) || 0).toFixed(2)}{calculateAdditionalPrice() > 0 && ` + $${calculateAdditionalPrice().toFixed(2)}`}
+                  {menuItem.selectedModifiers ? 'Update Item' : 'Add to Cart'} - ${(Number(menuItem.indining_price) || Number(menuItem.price) || 0).toFixed(2)}{calculateAdditionalPrice() > 0 && ` + $${calculateAdditionalPrice().toFixed(2)}`}
                 </button>
               </div>
             </div>

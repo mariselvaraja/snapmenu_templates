@@ -248,7 +248,7 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
     const cartItem = {
       id: product.id,
       name: product.name,
-      price: typeof (product.indining_price || product.price) === 'number' ? (product.indining_price || product.price) : 0,
+      price: Number(product.indining_price || product.price || 0),
       image: product.image || '',
       quantity: 1,
       selectedModifiers: []
@@ -395,14 +395,12 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
                 <h2 className="text-2xl font-bold text-gray-800">{product.name}</h2>
               </div>
               <p className="text-xl font-bold text-red-500 mb-2">
-                ${(() => {
-                  // For drinks menu, use 0th index price from prices array
-                  if (currentMenuType === "drinks" && product?.prices && Array.isArray(product.prices) && product.prices.length > 0) {
-                    return formatCurrency(parseFloat(product.prices[0].price) || 0);
-                  }
-                  // For food menu or fallback, use indining_price
-                  return formatCurrency(Number(product?.indining_price || 0));
-                })()}
+              ${formatCurrency(
+  Array.isArray(product?.prices) && product.prices.length > 0
+    ? Number(product.prices[0].price) || 0
+    : Number(product?.indining_price || product?.price || 0)
+)}
+
               </p>
 
               {/* Show spice level indicator if applicable */}
@@ -517,8 +515,8 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
                               if (currentMenuType === "drinks" && item?.prices && Array.isArray(item.prices) && item.prices.length > 0) {
                                 return parseFloat(item.prices[0].price) || 0;
                               }
-                              // For food menu or fallback, use indining_price
-                              return Number(item?.indining_price || 0);
+                              // For food menu or fallback, use indining_price or regular price as fallback
+                              return Number(item?.indining_price || item?.price || 0);
                             })()}
                           </p>
                         </div>

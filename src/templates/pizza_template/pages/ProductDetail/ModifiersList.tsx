@@ -199,8 +199,13 @@ const ModifiersList: React.FC<ModifiersListProps> = ({
             )}
 
             {/* Required Modifiers */}
-            {requiredModifiers?.map((modifier, modIndex) => (
-                <div key={`required-${modIndex}`} className="mb-6 border rounded-lg overflow-hidden">
+            {requiredModifiers?.map((modifier, modIndex) => {
+                const enabledOptions = modifier.options?.filter(option => option.isEnabled !== false) || [];
+                
+                if (enabledOptions.length === 0) return null;
+                
+                return (
+                    <div key={`required-${modIndex}`} className="mb-6 border rounded-lg overflow-hidden">
                     <div 
                         className="flex justify-between items-center p-3 bg-gray-50 cursor-pointer"
                         onClick={() => toggleModifier(`required-${modIndex}`)}
@@ -263,14 +268,20 @@ const ModifiersList: React.FC<ModifiersListProps> = ({
                             )}
                         </div>
                     )}
-                </div>
-            ))}
+                    </div>
+                );
+            })}
 
             {/* Optional Modifiers */}
             {optionalModifiers?.length > 0 && (
                 <div className="mb-4">
-                    {optionalModifiers.map((modifier, modIndex) => (
-                        <div key={`optional-${modIndex}`} className="mb-4 border rounded-lg overflow-hidden">
+                    {optionalModifiers.map((modifier, modIndex) => {
+                        const enabledOptions = modifier.options?.filter(option => option.isEnabled !== false) || [];
+                        
+                        if (enabledOptions.length === 0) return null;
+                        
+                        return (
+                            <div key={`optional-${modIndex}`} className="mb-4 border rounded-lg overflow-hidden">
                             <div 
                                 className="flex justify-between items-center p-3 bg-gray-50 cursor-pointer"
                                 onClick={() => toggleModifier(`optional-${modIndex}`)}
@@ -329,8 +340,9 @@ const ModifiersList: React.FC<ModifiersListProps> = ({
                                     </div>
                                 </div>
                             )}
-                        </div>
-                    ))}
+                            </div>
+                        );
+                    })}
                 </div>
             )}
         </div>

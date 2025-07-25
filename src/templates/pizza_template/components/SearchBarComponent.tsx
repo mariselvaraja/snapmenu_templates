@@ -339,8 +339,12 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
   };
 
   // Format price to display with currency symbol
-  const formatPrice = (price: number): string => {
-    return `$${price?.toFixed(2)}`;
+  const formatPrice = (item: any): string => {
+    const price = Array.isArray(item?.prices) && item.prices.length > 0
+      ? Number(item.prices[0].price) || 0
+      : Number(item?.indining_price || item?.price || 0);
+    
+    return `$${price.toFixed(2)}`;
   };
 
   // Render highlighted text
@@ -441,7 +445,7 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
               
               {/* Price and Add to Order */}
               <div className="flex justify-between items-center mt-auto">
-                <p className="text-sm font-bold text-red-500">{formatPrice(item.price)}</p>
+                <p className="text-sm font-bold text-red-500">{formatPrice(item)}</p>
                 <button 
                   onClick={(e) => {
                     e.stopPropagation(); // Prevent card click event
@@ -924,13 +928,14 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
           product={selectedProduct}
           onClose={closeProductDetails}
           menuItems={menuItems}
+          currentMenuType="food"
         />
       )}
       
       {/* InDiningCartDrawer - Only shown in in-dining context */}
       {isInDiningContext && (
         <InDiningCartDrawer onPlaceOrder={() => {
-          // Handle place order if needed
+          
           console.log('Order placed from SearchBarComponent');
         }} />
       )}
