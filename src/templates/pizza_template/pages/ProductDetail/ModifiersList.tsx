@@ -156,7 +156,7 @@ const ModifiersList: React.FC<ModifiersListProps> = ({
                         <span className="text-red-500 text-sm ml-1">*</span>
                     </h3>
                     <div className="grid grid-cols-3 gap-2">
-                        {spiceLevelModifier.options.map((option, index) => (
+                        {spiceLevelModifier.options.filter(option => option.isEnabled !== false).map((option, index) => (
                             <button
                                 key={option.name}
                                 onClick={() => handleSpiceLevelSelect(index + 1)}

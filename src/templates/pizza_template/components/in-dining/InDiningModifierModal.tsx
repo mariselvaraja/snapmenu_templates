@@ -389,7 +389,7 @@ export default function InDiningModifierModal({ isOpen, onClose, menuItem }: InD
                       <span className="text-red-500 text-sm ml-1">*</span>
                     </h3>
                     <div className="grid grid-cols-3 gap-2">
-                      {spiceLevelModifier.options.map((option) => (
+                      {spiceLevelModifier.options.filter(option => option.isEnabled !== false).map((option) => (
                         <button
                           key={option.name}
                           onClick={() => handleOptionToggle(spiceLevelModifier.name, option)}
@@ -493,7 +493,7 @@ export default function InDiningModifierModal({ isOpen, onClose, menuItem }: InD
                       {spiceLevelModifier.name}
                     </h3>
                     <div className="grid grid-cols-3 gap-2">
-                      {spiceLevelModifier.options.map((option) => (
+                      {spiceLevelModifier.options.filter(option => option.isEnabled !== false).map((option) => (
                         <button
                           key={option.name}
                           onClick={() => handleOptionToggle(spiceLevelModifier.name, option)}

@@ -393,7 +393,7 @@ export default function ModifierModal({ isOpen, onClose, menuItem }: ModifierMod
                       </span>
                     </h3>
                     <div className="grid grid-cols-3 gap-2">
-                      {spiceLevelModifier.options.map((option) => (
+                      {spiceLevelModifier.options.filter(option => option.isEnabled !== false).map((option) => (
                         <button
                           key={option.name}
                           onClick={() => handleOptionToggle(spiceLevelModifier.name, option)}
@@ -503,7 +503,7 @@ export default function ModifierModal({ isOpen, onClose, menuItem }: ModifierMod
                       </span>
                     </h3>
                     <div className="grid grid-cols-3 gap-2">
-                      {spiceLevelModifier.options.map((option) => (
+                      {spiceLevelModifier.options.filter(option => option.isEnabled !== false).map((option) => (
                         <button
                           key={option.name}
                           onClick={() => handleOptionToggle(spiceLevelModifier.name, option)}
