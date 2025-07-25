@@ -297,6 +297,7 @@ function InDiningOrder() {
   };
 
   const handleProductClick = (product: any) => {
+    console.log("dproduct")
     setSelectedProduct(product);
     setIsProductDetailsOpen(true);
     
@@ -436,7 +437,7 @@ function InDiningOrder() {
 
   // If search is active, render only the SearchBarComponent
   if (isSearchActive) {
-    return <SearchBarComponent onClose={() => setIsSearchActive(false)} />;
+    return <SearchBarComponent onClose={() => setIsSearchActive(false)} onPlaceOrder={handlePlaceOrder} />;
   }
 
   return (

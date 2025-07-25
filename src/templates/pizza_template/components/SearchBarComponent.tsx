@@ -20,9 +20,10 @@ declare global {
 
 interface SearchBarComponentProps {
   onClose: () => void;
+  onPlaceOrder?: (specialRequest: string) => void;
 }
 
-const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
+const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose, onPlaceOrder }) => {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
   
@@ -50,6 +51,8 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
   const lastClickTimeRef = useRef<number>(0);
+
+  const currentMenuType = useSelector((state: RootState) => state.menu.currentMenuType);
 
   // Focus input on mount and load all menu items initially
   useEffect(() => {
@@ -183,20 +186,21 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
     lastClickTimeRef.current = currentTime;
     
     if (isInDiningContext) {
-      // In in-dining context, show the product details popup
+  
       setSelectedProduct(item);
       setIsProductDetailsOpen(true);
-    } else {
-      // In other contexts, navigate to the product route
-      setIsNavigating(true);
-      onClose();
-      navigate(`/product/${item.pk_id || item.id}`);
+    } 
+    // else {
       
-      // Reset navigation state after a delay
-      setTimeout(() => {
-        setIsNavigating(false);
-      }, 1000);
-    }
+    //   setIsNavigating(true);
+    //   onClose();
+    //   navigate(`/product/${item.pk_id || item.id}`);
+      
+      
+    //   setTimeout(() => {
+    //     setIsNavigating(false);
+    //   }, 1000);
+    // }
   };
 
   // Close product details
@@ -443,30 +447,7 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
                 </div>
               )}
               
-              {/* Price and Add to Order */}
-              <div className="flex justify-between items-center mt-auto">
-                <p className="text-sm font-bold text-red-500">{formatPrice(item)}</p>
-                <button 
-                  onClick={(e) => {
-                    e.stopPropagation(); // Prevent card click event
-                    dispatch(addItem({
-                      id: item.id,
-                      name: item.name,
-                      price: item.price,
-                      quantity: 1,
-                      image: item.image || ''
-                    }));
-                    
-                    // Open cart drawer when in placeindiningorder context
-                    if (isInDiningContext) {
-                      dispatch(toggleDrawer(true));
-                    }
-                  }}
-                  className="text-xs flex items-center gap-2 bg-red-500 text-white px-2 py-1 rounded-full hover:bg-red-600 transition-colors"
-                >
-                  Add <Plus className='text-xs'/>
-                </button>
-              </div>
+ 
             </div>
           </div>
         ))}
@@ -928,16 +909,17 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose }) => {
           product={selectedProduct}
           onClose={closeProductDetails}
           menuItems={menuItems}
-          currentMenuType="food"
+          currentMenuType={currentMenuType}
+          onProductSelect={(product) => {
+            setSelectedProduct(product);
+            // Keep the product details modal open with the new product
+          }}
         />
       )}
       
       {/* InDiningCartDrawer - Only shown in in-dining context */}
       {isInDiningContext && (
-        <InDiningCartDrawer onPlaceOrder={() => {
-          
-          console.log('Order placed from SearchBarComponent');
-        }} />
+        <InDiningCartDrawer onPlaceOrder={onPlaceOrder} />
       )}
     </div>
   );
