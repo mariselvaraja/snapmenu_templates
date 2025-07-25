@@ -12,7 +12,7 @@ import searchService, { SearchState as SearchServiceState } from '../../../servi
  * SearchBarComponent for the eatflow template
  * This component provides a full-screen search experience
  */
-const SearchBarComponent = ({ onClose }) => {
+const SearchBarComponent = ({ onClose, handleOrder }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   
@@ -86,6 +86,7 @@ const SearchBarComponent = ({ onClose }) => {
     return Array.from(expandedTerms).join(' ');
   };
 
+
   // Perform search with debounce and enhanced query processing
   useEffect(() => {
     if (!query) {
@@ -93,6 +94,8 @@ const SearchBarComponent = ({ onClose }) => {
       setIsSearching(false);
       return;
     }
+
+    
 
     console.log('Search query changed:', query);
     console.log('Current search state:', searchState);
@@ -228,6 +231,7 @@ const SearchBarComponent = ({ onClose }) => {
       }
     }
   }, [selectedIndex]);
+
 
   // Handle input change
   const handleInputChange = (e) => {
@@ -886,10 +890,7 @@ const SearchBarComponent = ({ onClose }) => {
       
       {/* InDiningCartDrawer - Only shown in in-dining context */}
       {isInDiningContext && (
-        <InDiningCartDrawer onPlaceOrder={() => {
-          // Handle place order if needed
-          console.log('Order placed from SearchBarComponent');
-        }} />
+       <InDiningCartDrawer onPlaceOrder={handleOrder} />
       )}
     </div>
   );
