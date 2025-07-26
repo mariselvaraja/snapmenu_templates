@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { Utensils, Trash2, Plus, X, Minus, Search, UtensilsCrossed, Pizza, ArrowLeft, ShoppingCart, ClipboardList, Filter, Check, ChevronRight, Wine } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { FaPepperHot } from "react-icons/fa";
 import InDiningModifierModal from './InDiningModifierModal';
 import InDiningDrinksModifierModal from './InDiningDrinksModifierModal';
@@ -45,6 +46,7 @@ function InDiningOrder() {
   
   // Get table number from URL
   const location = useLocation();
+  const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const tableStatus = useSelector((state:any)=>state.tableStatus?.tables);
 
@@ -297,22 +299,13 @@ function InDiningOrder() {
   };
 
   const handleProductClick = (product: any) => {
-    console.log("dproduct")
-    setSelectedProduct(product);
-    setIsProductDetailsOpen(true);
-    
-    // Check if product is in cart to set initial quantity
-    const cartItem = cartItems.find((item:any) => item.id === product.id);
-    setQuantity(cartItem ? cartItem.quantity : 1);
+    // Navigate to the product details route
+    navigate(`/placeindiningorder/${tableFromQuery}/product/${product.id || product.pk_id}`);
   };
 
   const handleDrinksProduct = (product: any) => {
-    setSelectedProduct(product);
-    setIsProductDetailsOpen(true);
-    
-    // Check if product is in cart to set initial quantity
-    const cartItem = cartItems.find((item:any) => item.id === product.id);
-    setQuantity(cartItem ? cartItem.quantity : 1);
+    // Navigate to the product details route
+    navigate(`/placeindiningorder/${tableFromQuery}/product/${product.id || product.pk_id}`);
   };
   
   const closeProductDetails = () => {
@@ -435,10 +428,7 @@ function InDiningOrder() {
     );
   }
 
-  // If search is active, render only the SearchBarComponent
-  if (isSearchActive) {
-    return <SearchBarComponent onClose={() => setIsSearchActive(false)} onPlaceOrder={handlePlaceOrder} />;
-  }
+  // Remove the inline search component rendering - it's now handled by routing
 
   return (
     <div className="pt-0 pb-20 sm:pb-24">
@@ -461,14 +451,14 @@ function InDiningOrder() {
             <div className="flex items-center space-x-4">
               {/* Search Icon with Tooltip */}
               <div className="relative group">
-                <button 
-                  onClick={() => {
-                    setIsSearchActive(true);
-                    dispatch(setSearchQuery(''));
-                  }}
-                  className="p-2 rounded-full hover:bg-black hover:bg-opacity-50"
-                  aria-label="Search"
-                >
+              <button 
+                onClick={() => {
+                  // Navigate to the search route
+                  navigate(`/placeindiningorder/${tableFromQuery}/search`);
+                }}
+                className="p-2 rounded-full hover:bg-black hover:bg-opacity-50"
+                aria-label="Search"
+              >
                   <Search className="h-6 w-6 text-red-500" />
                 </button>
                 <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
@@ -730,7 +720,7 @@ function InDiningOrder() {
                         <button
                           key={category}
                           onClick={() => {
-                            setSelectedCategory(category);
+                            setSelectedCategory(category || '');
                             setSelectedSubcategory('All');
                             sessionStorage.setItem('selectedCategory', 'All');
                           }}
@@ -777,7 +767,7 @@ function InDiningOrder() {
                         <button
                           key={subcategory}
                           onClick={() => {
-                            setSelectedSubcategory(subcategory);
+                            setSelectedSubcategory(subcategory || '');
                           }}
                           className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex items-center ${
                             selectedSubcategory === subcategory
@@ -1080,20 +1070,7 @@ function InDiningOrder() {
       </>
       )}
       
-      {/* Product Details Component */}
-      {isProductDetailsOpen && selectedProduct && (
-        <InDiningProductDetails
-          product={selectedProduct}
-          currentMenuType = {currentMenuType}
-          onClose={closeProductDetails}
-          menuItems={menuItems}
-          onProductSelect={(product) => {
-            setSelectedProduct(product);
-            // Keep the product details modal open with the new product
-          }}
-          onViewOrders={() => setShowOrders(true)}
-        />
-      )}
+      {/* Product Details Component - Now handled through routing */}
       
       {/* Cart Drawer Component */}
       <InDiningCartDrawer onPlaceOrder={handlePlaceOrder} />

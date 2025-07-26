@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Search, X, ArrowLeft, Plus, Filter, Loader, Mic } from 'lucide-react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import InDiningProductDetails from './in-dining/InDiningProductDetails';
+import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import InDiningCartDrawer from './in-dining/InDiningCartDrawer';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../../../common/store';
@@ -36,8 +35,6 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose, onPlac
   // Local state
   const [isSearching, setIsSearching] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
-  const [selectedProduct, setSelectedProduct] = useState<any>(null);
-  const [isProductDetailsOpen, setIsProductDetailsOpen] = useState<boolean>(false);
   const [isListening, setIsListening] = useState(false);
   const [speechError, setSpeechError] = useState<string | null>(null);
   const [isNavigating, setIsNavigating] = useState(false);
@@ -153,6 +150,7 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose, onPlac
 
   // Get location from react-router
   const location = useLocation();
+  const { table } = useParams<{ table: string }>();
   
   // Check if we're in the in-dining context
   const isInDiningContext = location.pathname.includes('placeindiningorder');
@@ -174,10 +172,14 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose, onPlac
     
     lastClickTimeRef.current = currentTime;
     
-    if (isInDiningContext) {
-  
-      setSelectedProduct(item);
-      setIsProductDetailsOpen(true);
+    if (isInDiningContext && table) {
+      // Navigate to the product details route
+      setIsNavigating(true);
+      navigate(`/placeindiningorder/${table}/product/${item.id || item.pk_id}`);
+      
+      setTimeout(() => {
+        setIsNavigating(false);
+      }, 1000);
     } 
     // else {
       
@@ -190,12 +192,6 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose, onPlac
     //     setIsNavigating(false);
     //   }, 1000);
     // }
-  };
-
-  // Close product details
-  const closeProductDetails = () => {
-    setIsProductDetailsOpen(false);
-    setSelectedProduct(null);
   };
 
   // Get filtered items for keyboard navigation
@@ -584,20 +580,6 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose, onPlac
         </div>
       </div>
 
-      {/* Product Details Component - Only shown in in-dining context */}
-      {isInDiningContext && isProductDetailsOpen && selectedProduct && (
-        <InDiningProductDetails
-          product={selectedProduct}
-          onClose={closeProductDetails}
-          menuItems={menuItems}
-          currentMenuType={currentMenuType}
-          onProductSelect={(product) => {
-            setSelectedProduct(product);
-            // Keep the product details modal open with the new product
-          }}
-        />
-      )}
-      
       {/* InDiningCartDrawer - Only shown in in-dining context */}
       {isInDiningContext && (
         <InDiningCartDrawer onPlaceOrder={onPlaceOrder} />
