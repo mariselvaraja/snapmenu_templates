@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { X, Plus, Minus, ArrowLeft, Heart, ShoppingCart, Check, Activity, ChevronDown, ChevronUp, Box, AlertTriangle, ClipboardList } from 'lucide-react';
 import { FaPepperHot } from "react-icons/fa";
@@ -207,6 +207,90 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
   // Get table number from URL
   const location = useLocation();
   const tableNumber = sessionStorage.getItem('Tablename');
+  
+  // Refs for URL bar hiding on mobile
+  const isMobileRef = useRef(false);
+  const isComponentMountedRef = useRef(false);
+  
+  // Function to hide URL bar on mobile
+  const hideUrlBar = useRef(() => {
+    if (isMobileRef.current && isComponentMountedRef.current) {
+      // For fixed positioned elements, we need to temporarily change the body height
+      // to allow scrolling and then hide the URL bar
+      const originalHeight = document.body.style.height;
+      const originalOverflow = document.body.style.overflow;
+      
+      // Temporarily make body scrollable
+      document.body.style.height = '101vh';
+      document.body.style.overflow = 'auto';
+      
+      // Scroll to hide URL bar
+      window.scrollTo(0, 1);
+      
+      // Restore original styles after a short delay
+      setTimeout(() => {
+        document.body.style.height = originalHeight;
+        document.body.style.overflow = originalOverflow;
+      }, 100);
+    }
+  }).current;
+
+  // Check if device is mobile and set up URL bar hiding
+  useEffect(() => {
+    isComponentMountedRef.current = true;
+    
+    const checkMobile = () => {
+      isMobileRef.current = window.innerWidth <= 768;
+      if (isMobileRef.current) {
+        hideUrlBar();
+      }
+    };
+    
+    // Handle scroll events to hide URL bar
+    const handleScroll = () => {
+      if (isMobileRef.current && isComponentMountedRef.current) {
+        hideUrlBar();
+      }
+    };
+    
+    // Check on mount
+    checkMobile();
+    
+    // Set up event listeners
+    window.addEventListener('resize', checkMobile);
+    window.addEventListener('load', hideUrlBar);
+    window.addEventListener('resize', hideUrlBar);
+    window.addEventListener('orientationchange', hideUrlBar);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('touchmove', handleScroll, { passive: true });
+    
+    // Get the scrollable container and add scroll listeners
+    const scrollContainer = document.querySelector('.product-details-scroll-container');
+    if (scrollContainer) {
+      scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
+      scrollContainer.addEventListener('touchmove', handleScroll, { passive: true });
+    }
+    
+    // Initial attempts to hide URL bar with different timing
+    setTimeout(hideUrlBar, 100);
+    setTimeout(hideUrlBar, 300);
+    setTimeout(hideUrlBar, 1000);
+    
+    return () => {
+      isComponentMountedRef.current = false;
+      window.removeEventListener('resize', checkMobile);
+      window.removeEventListener('load', hideUrlBar);
+      window.removeEventListener('resize', hideUrlBar);
+      window.removeEventListener('orientationchange', hideUrlBar);
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('touchmove', handleScroll);
+      
+      if (scrollContainer) {
+        scrollContainer.removeEventListener('scroll', handleScroll);
+        scrollContainer.removeEventListener('touchmove', handleScroll);
+      }
+    };
+  }, [hideUrlBar]);
 
 
   // Helper function to check if spice level should be shown based on is_spice_applicable
@@ -303,13 +387,13 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
   if (!product) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex flex-col">
       <motion.div
         initial={{ opacity: 0, y: 100, scale: 1 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 100, scale: 1 }}
         transition={{ duration: 0.3 }}
-        className="bg-white w-full h-[100vh] overflow-y-auto relative product-details-scroll-container"
+        className="bg-white w-full h-full flex flex-col relative"
       >
         <div className="relative">
           {/* Title Bar - Visible on all screen sizes */}
@@ -378,6 +462,7 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
             )}
           </div>
 
+          <div className="flex-1 overflow-y-auto product-details-scroll-container">
           <div className="grid grid-cols-1 md:grid-cols-2 pb-28 md:pb-0">
             {/* Product Details - Left Side */}
             <div className="p-6">
@@ -526,6 +611,7 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
                 </div>
               </div>
             </div>
+          </div>
           </div>
         </div>
         
