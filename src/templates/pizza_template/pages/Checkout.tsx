@@ -107,9 +107,7 @@ export default function Checkout() {
   },[])
   
   // Check if delivery is available based on pos_type being 'square'
-  const isDeliveryAvailable = tpnState?.tpn_config?.find((c:any) => 
-    c?.restaurant_id == restaurant_id && c?.pos_type === 'square'
-  );
+  const isDeliveryAvailable = (restaurant_id == "8bfe9cff-a86d-4573-8a63-eb4569c7d245"); // Put Only for Pizza Texas
   
   // Calculate cart totals including modifiers
   const subtotal = cartItems.reduce((total: number, item: any) => {
@@ -466,7 +464,7 @@ export default function Checkout() {
               </div>
 
               {/* Order Type Tabs */}
-              {/* {   isDeliveryAvailable && 
+              {   isDeliveryAvailable && 
               <div className="border-b">
                 <div className="flex">
                 <button
@@ -478,7 +476,7 @@ export default function Checkout() {
                     }`}
                   >
                     <Store className="h-5 w-5 mr-2" />
-                    Pickup
+                    Takeout
                   </button>
        <button
                     onClick={() => setActiveTab('delivery')}
@@ -494,7 +492,7 @@ export default function Checkout() {
        
                 </div>
               </div>
-                      } */}
+                      }
 
               <form onSubmit={handleSubmit} className="p-6 space-y-6">
                 <div>
@@ -679,8 +677,8 @@ export default function Checkout() {
                 </div>
 
                 {/* Order Method Buttons */}
-                <div className="pt-4 grid grid-cols-2 gap-3">
-                  <button
+                <div className={`pt-4 grid gap-3 ${activeTab == 'delivery' ? 'grid-cols-1' : 'grid-cols-2'}`}>
+                 {activeTab !== 'delivery' && <button
                     type="submit"
                     onClick={(e) => {
                       e.preventDefault();
@@ -693,7 +691,7 @@ export default function Checkout() {
                   >
                     <Store className="h-5 w-5 mr-2" />
                     {isSubmitting && submittingMethod === 'takeout' ? 'Processing...' : cartItems.length === 0 ? 'Cart Empty' : 'Takeout'}
-                  </button>
+                  </button>}
                   
                   <button
                     type="submit"
@@ -707,7 +705,7 @@ export default function Checkout() {
                     }`}
                   >
                     <CreditCard className="h-5 w-5 mr-2" />
-                    {isSubmitting && submittingMethod === 'pay_online' ? 'Processing...' : cartItems.length === 0 ? 'Cart Empty' : 'Pay Online'}
+                    {isSubmitting && submittingMethod === 'pay_online' ? 'Processing...' : cartItems.length === 0 ? 'Cart Empty' : 'Pay Now'}
                   </button>
                 </div>
               </form>

@@ -166,12 +166,15 @@ export const cartService = {
 
       // Add address fields for delivery orders
       if (orderData.delivery_type === 'delivery') {
-        formattedPayload.address_line_1 = orderData.customerInfo.address_line_1 || "";
-        formattedPayload.address_line_2 = orderData.customerInfo.address_line_2 || "";
-        formattedPayload.locality = orderData.customerInfo.locality || "";
-        formattedPayload.administrative_district_level_1 = orderData.customerInfo.administrative_district_level_1 || "";
-        formattedPayload.postal_code = orderData.customerInfo.postal_code || "";
-        formattedPayload.country = orderData.customerInfo.country || "US";
+        formattedPayload.delivery_address = {
+          address_line_1: orderData.customerInfo.address_line_1 || "",
+          address_line_2: orderData.customerInfo.address_line_2 || "",
+          locality: orderData.customerInfo.locality || "",
+          administrative_district_level_1: orderData.customerInfo.administrative_district_level_1 || "",
+          postal_code: orderData.customerInfo.postal_code || "",
+          country: orderData.customerInfo.country || "US"
+        };
+        formattedPayload.pay_now = true;
       }
 
       // Add ordered items and grand total

@@ -92,12 +92,18 @@ export default function Navbar() {
               </div>
               <div className="ml-8">
                 <span className="text-2xl font-bold">{brand?.logo?.text || 'Restaurant'}</span>
-                {customerCareNumber && (
-                  <div className="flex items-center text-white text-sm mt-1">
-                    <span>Call & Order: </span>
-                    <a href={`tel:${customerCareNumber}`} className="ml-1 hover:text-gray-300 flex items-center ">{customerCareNumber}</a>
-                  </div>
-                )}
+                {customerCareNumber && customerCareNumber !== "null" && customerCareNumber !== "undefined" && (
+  <div className="flex items-center text-white text-sm mt-1">
+    <span>Call & Order: </span>
+    <a
+      href={`tel:${customerCareNumber}`}
+      className="ml-1 hover:text-gray-300 flex items-center"
+    >
+      {customerCareNumber}
+    </a>
+  </div>
+)}
+
               </div>
             </Link>
           </div>
@@ -151,18 +157,19 @@ export default function Navbar() {
                  >
                    Delivery
                  </a>
-                 {customerCareNumber && (
-                   <a
-                     href={`tel:${customerCareNumber}`}
-                     className="block px-4 py-2 text-white hover:bg-red-500 hover:text-white transition-colors"
-                     onClick={() => setIsOrderDropdownOpen(false)}
-                   >
-                     <div className="flex items-center">
-                       <Phone className="h-4 w-4 mr-2" />
-                       Call & Order: {customerCareNumber}
-                     </div>
-                   </a>
-                 )}
+                 {customerCareNumber && customerCareNumber !== "null" && customerCareNumber !== "undefined" && (
+  <a
+    href={`tel:${customerCareNumber}`}
+    className="block px-4 py-2 text-white hover:bg-red-500 hover:text-white transition-colors"
+    onClick={() => setIsOrderDropdownOpen(false)}
+  >
+    <div className="flex items-center">
+      <Phone className="h-4 w-4 mr-2" />
+      Call & Order: {customerCareNumber}
+    </div>
+  </a>
+)}
+
                </div>
              )}
            </div>}
