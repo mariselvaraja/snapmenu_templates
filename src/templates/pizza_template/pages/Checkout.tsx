@@ -82,6 +82,7 @@ export default function Checkout() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<OrderType>('pickup');
   const [paymentTab, setPaymentTab] = useState<'pay_now' | 'pay_later'>('pay_now');
+  const [orderMethod, setOrderMethod] = useState<'takeout' | 'pay_online'>('pay_online');
 
   // Use the new payment management hook
   const {
@@ -247,7 +248,7 @@ export default function Checkout() {
       delivery_type: activeTab, // Use the selected tab (pickup or delivery)
       ordered_items: orderedItems,
       grand_total: total?.toFixed(2),
-      pay_now: paymentTab === 'pay_now' // true if pay now is selected, false if pay_now
+      pay_now: orderMethod === 'pay_online' // true if pay online is selected, false if takeout
     };
   };
 
@@ -286,7 +287,7 @@ export default function Checkout() {
           method: 'card', // Default payment method
         },
         delivery_type: activeTab, // Use the selected tab (pickup or delivery)
-        pay_now: paymentTab === 'pay_now', // true if pay now is selected, false if pay_now
+        pay_now: orderMethod === 'pay_online', // true if pay online is selected, false if takeout
       };
 
       let restaurant_id = sessionStorage.getItem("franchise_id");
@@ -478,31 +479,33 @@ export default function Checkout() {
               </div>
                       } */}
 
-              {/* Payment Type Tabs */}
-              {/* <div className="border-b">
+              {/* Order Method Buttons */}
+              <div className="border-b">
                 <div className="flex">
                   <button
-                    onClick={() => setPaymentTab('pay_now')}
+                    type="button"
+                    onClick={() => setOrderMethod('takeout')}
                     className={`flex-1 flex items-center justify-center px-6 py-3 text-base font-medium transition-colors ${
-                      paymentTab === 'pay_now'
+                      orderMethod === 'takeout'
                         ? 'bg-red-500 text-white border-b-2 border-red-500'
                         : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
                     }`}
                   >
-                    Pay Now
+                    Takeout
                   </button>
                   <button
-                    onClick={() => setPaymentTab('pay_later')}
+                    type="button"
+                    onClick={() => setOrderMethod('pay_online')}
                     className={`flex-1 flex items-center justify-center px-6 py-3 text-base font-medium transition-colors ${
-                      paymentTab === 'pay_later'
+                      orderMethod === 'pay_online'
                         ? 'bg-red-500 text-white border-b-2 border-red-500'
                         : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
                     }`}
                   >
-                    Pay Later
+                    Pay Online
                   </button>
                 </div>
-              </div> */}
+              </div>
               <form onSubmit={handleSubmit} className="p-6 space-y-6">
                 <div>
                   <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
