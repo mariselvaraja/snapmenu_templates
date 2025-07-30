@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Check, Truck, Store } from 'lucide-react';
+import { ArrowLeft, Check, Truck, Store, CreditCard } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '../../../common/redux';
 import { clearCart as clearReduxCart } from '../../../common/redux/slices/cartSlice';
@@ -156,8 +156,10 @@ export default function Checkout() {
 
   const [errors, setErrors] = useState<Partial<FormData>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submittingMethod, setSubmittingMethod] = useState<'takeout' | 'pay_online' | null>(null);
   const [orderComplete, setOrderComplete] = useState(false);
   const [orderResponse, setOrderResponse] = useState<{ message?: string, payment_link?: string } | null>(null);
+  const [showTakeoutSuccessPopup, setShowTakeoutSuccessPopup] = useState(false);
 
   
 
@@ -215,7 +217,7 @@ export default function Checkout() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const createOrderPayload = (): OrderPayload => {
+  const createOrderPayload = (method: 'takeout' | 'pay_online'): OrderPayload => {
     const orderedItems: OrderedItem[] = cartItems.map((item:any) => {
       console.log("ITEM", item)
 
@@ -248,21 +250,30 @@ export default function Checkout() {
       delivery_type: activeTab, // Use the selected tab (pickup or delivery)
       ordered_items: orderedItems,
       grand_total: total?.toFixed(2),
-      pay_now: orderMethod === 'pay_online' // true if pay online is selected, false if takeout
+      pay_now: method === 'pay_online' // true if pay online is selected, false if takeout
     };
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent, method?: 'takeout' | 'pay_online') => {
     e.preventDefault();
+    
+    // If method is provided, set it before proceeding
+    if (method) {
+      setOrderMethod(method);
+    }
     
     if (!validateForm()) {
       return;
     }
     
     setIsSubmitting(true);
+    setSubmittingMethod(method || orderMethod);
+    
+    // Use the method parameter if provided, otherwise use the current orderMethod state
+    const currentMethod = method || orderMethod;
     
     // Create the order payload
-    const orderPayload = createOrderPayload();
+    const orderPayload = createOrderPayload(currentMethod);
     
     try {
       // Call the placeOrder API endpoint
@@ -287,7 +298,7 @@ export default function Checkout() {
           method: 'card', // Default payment method
         },
         delivery_type: activeTab, // Use the selected tab (pickup or delivery)
-        pay_now: orderMethod === 'pay_online', // true if pay online is selected, false if takeout
+        pay_now: currentMethod === 'pay_online', // true if pay online is selected, false if takeout
       };
 
       let restaurant_id = sessionStorage.getItem("franchise_id");
@@ -309,10 +320,15 @@ export default function Checkout() {
         
         // initiatePayment("https://snapmenuai.pages.dev/payment/processing-square?transactionId=99393&orderId=99393")
       } else {
-        // No payment link, clear cart and redirect to menu
-        clearCart();
-        dispatch(clearReduxCart());
-        navigate('/menu');
+        // No payment link - this is a takeout order
+        if (currentMethod === 'takeout') {
+          setShowTakeoutSuccessPopup(true);
+        } else {
+          // For other cases, clear cart and redirect to menu
+          clearCart();
+          dispatch(clearReduxCart());
+          navigate('/menu');
+        }
         return;
       }
     } catch (error) {
@@ -320,6 +336,7 @@ export default function Checkout() {
       // Handle error (could show an error message to the user)
     } finally {
       setIsSubmitting(false);
+      setSubmittingMethod(null);
     }
   };
 
@@ -479,33 +496,6 @@ export default function Checkout() {
               </div>
                       } */}
 
-              {/* Order Method Buttons */}
-              <div className="border-b">
-                <div className="flex">
-                  <button
-                    type="button"
-                    onClick={() => setOrderMethod('takeout')}
-                    className={`flex-1 flex items-center justify-center px-6 py-3 text-base font-medium transition-colors ${
-                      orderMethod === 'takeout'
-                        ? 'bg-red-500 text-white border-b-2 border-red-500'
-                        : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
-                    }`}
-                  >
-                    Takeout
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setOrderMethod('pay_online')}
-                    className={`flex-1 flex items-center justify-center px-6 py-3 text-base font-medium transition-colors ${
-                      orderMethod === 'pay_online'
-                        ? 'bg-red-500 text-white border-b-2 border-red-500'
-                        : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
-                    }`}
-                  >
-                    Pay Online
-                  </button>
-                </div>
-              </div>
               <form onSubmit={handleSubmit} className="p-6 space-y-6">
                 <div>
                   <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
@@ -688,15 +678,36 @@ export default function Checkout() {
                   />
                 </div>
 
-                <div className="pt-4">
+                {/* Order Method Buttons */}
+                <div className="pt-4 grid grid-cols-2 gap-3">
                   <button
                     type="submit"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleSubmit(e, 'takeout');
+                    }}
                     disabled={isSubmitting || cartItems.length === 0}
-                    className={`w-full bg-red-500 text-white py-3 rounded-full font-semibold hover:bg-red-600 transition-colors ${
+                    className={`flex items-center justify-center bg-red-500 text-white py-3 px-4 rounded-full font-semibold hover:bg-red-600 transition-colors ${
                       (isSubmitting || cartItems.length === 0) ? 'opacity-70 cursor-not-allowed' : ''
                     }`}
                   >
-                    {isSubmitting ? 'Processing...' : cartItems.length === 0 ? 'Your Cart is Empty' : `Place ${activeTab === 'delivery' ? 'Delivery' : 'Pickup'} Order`}
+                    <Store className="h-5 w-5 mr-2" />
+                    {isSubmitting && submittingMethod === 'takeout' ? 'Processing...' : cartItems.length === 0 ? 'Cart Empty' : 'Takeout'}
+                  </button>
+                  
+                  <button
+                    type="submit"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleSubmit(e, 'pay_online');
+                    }}
+                    disabled={isSubmitting || cartItems.length === 0}
+                    className={`flex items-center justify-center bg-red-500 text-white py-3 px-4 rounded-full font-semibold hover:bg-red-600 transition-colors ${
+                      (isSubmitting || cartItems.length === 0) ? 'opacity-70 cursor-not-allowed' : ''
+                    }`}
+                  >
+                    <CreditCard className="h-5 w-5 mr-2" />
+                    {isSubmitting && submittingMethod === 'pay_online' ? 'Processing...' : cartItems.length === 0 ? 'Cart Empty' : 'Pay Online'}
                   </button>
                 </div>
               </form>
@@ -849,6 +860,36 @@ export default function Checkout() {
           }
         })}
       />
+
+      {/* Takeout Success Popup */}
+      {showTakeoutSuccessPopup && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white rounded-lg shadow-xl p-8 max-w-md w-full text-center"
+          >
+            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Check className="h-10 w-10 text-green-500" />
+            </div>
+            
+            <h2 className="text-2xl font-bold mb-4">Takeout Order Placed Successfully!</h2>
+            <p className="text-gray-600 mb-8">Your order has been received and will be ready for pickup.</p>
+            
+            <button
+              onClick={() => {
+                setShowTakeoutSuccessPopup(false);
+                clearCart();
+                dispatch(clearReduxCart());
+                navigate('/menu');
+              }}
+              className="bg-red-500 text-white px-8 py-3 rounded-full font-semibold hover:bg-red-600 transition-colors"
+            >
+              Continue
+            </button>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }
