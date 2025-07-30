@@ -161,7 +161,7 @@ const usePaymentManagement = () => {
       if (event.data.type === 'IPOS_PAYMENT') {
         const { responseMessage, transactionReferenceId, responseCode, amount } = event.data.payload;
         paymentRef.current = { responseMessage, transactionReferenceId, responseCode, amount, paymentType: "ipos" };
-        
+        console.log("IPOS PAYMENT", responseCode)
         // Handle iPos payment response
         closePopup();
         setShowVerifyingPaymentPopup(false);
@@ -169,6 +169,24 @@ const usePaymentManagement = () => {
         
         // Check if payment is successful (response code 200 only)
         if (responseCode == 200) {
+          console.log("Payment Success");
+          setShowPaymentSuccessPopup(true);
+        } else {
+          console.log("Payment Failed");
+          setShowPaymentFailedProcessingPopup(true);
+        }
+      }
+      if (event.data.type === 'CLOVER_PAYMENT') {
+        const { payment_status } = event.data.payload;
+        paymentRef.current = { payment_status, paymentType: "clover" };
+        
+        // Handle iPos payment response
+        closePopup();
+        setShowVerifyingPaymentPopup(false);
+        isPaymentInProgress.current = false;
+        
+        // Check if payment is successful (response code 200 only)
+        if (payment_status?.toLowerCase() == 'success') {
           console.log("Payment Success");
           setShowPaymentSuccessPopup(true);
         } else {
