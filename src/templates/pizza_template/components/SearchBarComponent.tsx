@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Search, X, ArrowLeft, Plus, Filter, Loader, Mic } from 'lucide-react';
-import { useNavigate, useLocation, useParams } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import InDiningProductDetails from './in-dining/InDiningProductDetails';
 import InDiningCartDrawer from './in-dining/InDiningCartDrawer';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../../../common/store';
@@ -35,6 +36,8 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose, onPlac
   // Local state
   const [isSearching, setIsSearching] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
+  const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [isProductDetailsOpen, setIsProductDetailsOpen] = useState<boolean>(false);
   const [isListening, setIsListening] = useState(false);
   const [speechError, setSpeechError] = useState<string | null>(null);
   const [isNavigating, setIsNavigating] = useState(false);
@@ -127,30 +130,40 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose, onPlac
     return Array.from(expandedTerms).join(' ');
   };
 
-  // Simple filtering based on query - no search service
-  const filteredMenuItems = useMemo(() => {
-    if (!query || !menuItems) {
-      return menuItems || [];
+  // Perform search with debounce and enhanced query processing
+  useEffect(() => {
+    if (!query) {
+      dispatch(setSearchResults({ results: [], grouped: {} }));
+      setIsSearching(false);
+      return;
     }
 
-    const searchTerms = query.toLowerCase().split(/\s+/).filter(term => term.length > 0);
-    
-    return menuItems.filter(item => {
-      const itemText = [
-        item.name || '',
-        item.description || '',
-        item.category || '',
-        ...(item.tags || [])
-      ].join(' ').toLowerCase();
-      
-      // Check if all search terms are found in the item text
-      return searchTerms.every(term => itemText.includes(term));
-    });
-  }, [query, menuItems]);
+    const timeoutId = setTimeout(async () => {
+      if (searchState !== SearchServiceState.READY) {
+        return;
+      }
+
+      setIsSearching(true);
+      try {
+        // Expand health-related terms for better semantic matching
+        const expandedQuery = expandHealthTerms(query);
+        console.log('Expanded query:', expandedQuery);
+        
+        // Perform search with expanded query
+        const searchResults = await searchService.search(expandedQuery);
+        dispatch(setSearchResults(searchResults));
+      } catch (error) {
+        console.error('Search error:', error);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 150);
+
+    return () => clearTimeout(timeoutId);
+  }, [query, searchState, dispatch]);
 
   // Get location from react-router
   const location = useLocation();
-  const { table } = useParams<{ table: string }>();
   
   // Check if we're in the in-dining context
   const isInDiningContext = location.pathname.includes('placeindiningorder');
@@ -172,14 +185,10 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose, onPlac
     
     lastClickTimeRef.current = currentTime;
     
-    if (isInDiningContext && table) {
-      // Navigate to the product details route
-      setIsNavigating(true);
-      navigate(`/placeindiningorder/${table}/product/${item.id || item.pk_id}`);
-      
-      setTimeout(() => {
-        setIsNavigating(false);
-      }, 1000);
+    if (isInDiningContext) {
+  
+      setSelectedProduct(item);
+      setIsProductDetailsOpen(true);
     } 
     // else {
       
@@ -194,13 +203,25 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose, onPlac
     // }
   };
 
-  // Get filtered items for keyboard navigation
+  // Close product details
+  const closeProductDetails = () => {
+    setIsProductDetailsOpen(false);
+    setSelectedProduct(null);
+  };
+
+  // Get flattened list of all items for keyboard navigation
   const allItems = React.useMemo(() => {
-    let items = query ? filteredMenuItems : (menuItems || []);
+    if (!results.grouped) return [];
+    
+    // Get all items first
+    let items = Object.values(results.grouped)
+      .flat()
+      .sort((a: any, b: any) => b.similarity - a.similarity);
     
     // Apply dietary filters if any are active
     if (filters.vegetarian || filters.vegan || filters.glutenFree) {
-      items = items.filter((item: any) => {
+      items = items.filter((result: any) => {
+        const item = result.item;
         if (!item) return false;
         
         // If item doesn't have dietary info, include it in results
@@ -214,7 +235,7 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose, onPlac
     }
     
     return items;
-  }, [query, filteredMenuItems, menuItems, filters]);
+  }, [results.grouped, filters]);
 
   // Handle keyboard navigation
   useEffect(() => {
@@ -233,7 +254,7 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose, onPlac
         case 'Enter':
           e.preventDefault();
           if (selectedIndex >= 0 && allItems[selectedIndex]) {
-            handleItemSelect(allItems[selectedIndex]);
+            handleItemSelect(allItems[selectedIndex].item);
           }
           break;
         case 'Escape':
@@ -434,14 +455,244 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose, onPlac
     );
   };
 
+  // State to control the loading skeleton for no results
+  const [showNoResultsSkeleton, setShowNoResultsSkeleton] = useState(false);
+  const [showNoResultsMessage, setShowNoResultsMessage] = useState(false);
 
-  // Simple render of filtered items
-  const renderFilteredItems = () => {
-    let itemsToRender = query ? filteredMenuItems : menuItems;
+  // Render results by category
+  const renderResultsByCategory = () => {
+    console.log('Rendering search results, grouped:', results?.grouped);
+    
+    // If no results or empty results, try a fallback to show all menu items that match the query
+    if (!results?.grouped || typeof results.grouped !== 'object' || Object.keys(results.grouped).length === 0) {
+      console.log('No grouped results, trying fallback search');
+      
+      // If we're still searching, don't show the fallback search yet
+      if (isSearching) {
+        return null; // Return null to let the parent component show the loading skeleton
+      }
+      
+      // Simple text-based search as fallback
+      const matchingItems = menuItems.filter(item => {
+        const searchTerms = [
+          item.name,
+          item.description || '',
+          item.category || '',
+          ...(item.tags || [])
+        ].join(' ').toLowerCase();
+        
+        return query.toLowerCase().split(/\s+/).some(word => 
+          word.length > 1 && searchTerms.includes(word.toLowerCase())
+        );
+      });
+      
+      console.log('Fallback search found', matchingItems.length, 'items');
+      
+      if (matchingItems.length > 0) {
+        // Group items by category
+        const groupedByCategory: Record<string, any[]> = {};
+        matchingItems.forEach(item => {
+          const category = item.category || 'Other';
+          if (!groupedByCategory[category]) {
+            groupedByCategory[category] = [];
+          }
+          groupedByCategory[category].push(item);
+        });
+        
+        // Render the fallback results
+        return Object.entries(groupedByCategory).map(([category, items]) => (
+          <div key={category} className="mb-6">
+            <h3 className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100">
+              {category.charAt(0).toUpperCase() + category.slice(1)}
+            </h3>
+            {renderMenuItemsGrid(items, true)}
+          </div>
+        ));
+      }
+      
+      // For placeindiningorder context, always show skeleton for 3 seconds before showing "no results" message
+      if (isInDiningContext) {
+        if (!showNoResultsSkeleton && !showNoResultsMessage) {
+          setShowNoResultsSkeleton(true);
+          setTimeout(() => {
+            setShowNoResultsSkeleton(false);
+            setShowNoResultsMessage(true);
+          }, 3000);
+        }
+        
+        if (showNoResultsSkeleton) {
+          // Show skeleton loader
+          return (
+            <div className="p-8">
+              {/* Skeleton Loader */}
+              <div className="animate-pulse space-y-8">
+                {/* Skeleton Category */}
+                <div className="space-y-4">
+                  <div className="h-6 bg-gray-200 rounded w-1/4"></div>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {[...Array(4)].map((_, index) => (
+                      <div key={index} className="bg-white rounded-lg shadow-md overflow-hidden">
+                        <div className="h-32 bg-gray-200"></div>
+                        <div className="p-3 space-y-2">
+                          <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                          <div className="h-3 bg-gray-100 rounded w-full"></div>
+                          <div className="h-3 bg-gray-100 rounded w-1/2"></div>
+                          <div className="flex justify-between items-center pt-2">
+                            <div className="h-4 bg-red-200 rounded w-1/4"></div>
+                            <div className="h-6 bg-red-200 rounded-full w-16"></div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        }
+        
+        if (showNoResultsMessage) {
+          // Show no results message
+          return (
+            <div className="flex flex-col items-center justify-center py-16 px-4">
+              <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mb-6">
+                <Search className="h-10 w-10 text-red-400" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-800 mb-2">No matches found</h3>
+              <p className="text-gray-500 text-center max-w-md mb-6">
+                We couldn't find any items matching your search. Try using different keywords or browse our menu categories.
+              </p>
+              <button
+                onClick={() => dispatch(setSearchQuery(''))}
+                className="px-6 py-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors flex items-center"
+              >
+                View All Items
+              </button>
+            </div>
+          );
+        }
+      } else {
+        // For non-placeindiningorder context, show the no results message immediately
+        return (
+          <div className="flex flex-col items-center justify-center py-16 px-4">
+            <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mb-6">
+              <Search className="h-10 w-10 text-red-400" />
+            </div>
+            <h3 className="text-xl font-semibold text-gray-800 mb-2">No matches found</h3>
+            <p className="text-gray-500 text-center max-w-md mb-6">
+              We couldn't find any items matching your search. Try using different keywords or browse our menu categories.
+            </p>
+            <button
+              onClick={() => dispatch(setSearchQuery(''))}
+              className="px-6 py-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors flex items-center"
+            >
+              View All Items
+            </button>
+          </div>
+        );
+      }
+      
+      // Default return while states are being set
+      return null;
+    }
 
-    // Apply dietary filters
+    // Apply filters to each category's items
+    const filteredGrouped: Record<string, any[]> = {};
+    Object.entries(results.grouped).forEach(([category, items]: [string, any]) => {
+      if (!Array.isArray(items)) return;
+      
+      let filteredItems = items;
+      
+      // Apply dietary filters if any are active
+      if (filters.vegetarian || filters.vegan || filters.glutenFree) {
+        filteredItems = items.filter((result: any) => {
+          const item = result.item;
+          if (!item) return false;
+          
+          // If item doesn't have dietary info, include it in results
+          if (!item.dietary) return true;
+          
+          // OR condition - show item if it matches ANY active filter
+          return (filters.vegetarian && item.dietary.isVegetarian) || 
+                 (filters.vegan && item.dietary.isVegan) || 
+                 (filters.glutenFree && item.dietary.isGlutenFree);
+        });
+      }
+      
+      if (filteredItems.length > 0) {
+        filteredGrouped[category] = filteredItems;
+      }
+    });
+
+    const categories = Object.entries(filteredGrouped)
+      .filter(([_, items]: [string, unknown]) => Array.isArray(items) && items.length > 0)
+      .sort(([a]: [string, unknown], [b]: [string, unknown]) => a.localeCompare(b));
+
+    if (categories.length === 0) {
+      return (
+        <div className="flex flex-col items-center justify-center py-16 px-4">
+          <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mb-6">
+            <Search className="h-10 w-10 text-red-400" />
+          </div>
+          <h3 className="text-xl font-semibold text-gray-800 mb-2">No matches found</h3>
+          <p className="text-gray-500 text-center max-w-md mb-6">
+            We couldn't find any items matching your search. Try using different keywords or browse our menu categories.
+          </p>
+          <button
+            onClick={() => dispatch(setSearchQuery(''))}
+            className="px-6 py-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors flex items-center"
+          >
+            View All Items
+          </button>
+        </div>
+      );
+    }
+
+    return categories.map(([category, items]: [string, unknown]) => {
+      // Type guard to ensure items is an array
+      if (!Array.isArray(items)) return null;
+      // Only render category if it has items
+      if (!items || items.length === 0) {
+        return null;
+      }
+
+      // Sort items by score within each category
+      const sortedItems = [...items].sort((a: any, b: any) => b.similarity - a.similarity);
+      const mappedItems = sortedItems.map(result => result.item);
+
+      return (
+        <div key={category} className="mb-6">
+          <h3 className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100">
+            {category.charAt(0).toUpperCase() + category.slice(1)}
+          </h3>
+          {renderMenuItemsGrid(mappedItems, true)}
+        </div>
+      );
+    }).filter(Boolean); // Remove null categories
+  };
+
+  // Render all menu items in a single list
+  const renderAllMenuItems = () => {
+    if (!menuItems || menuItems.length === 0) {
+      return (
+        <div className="flex flex-col items-center justify-center py-16 px-4">
+          <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mb-6">
+            <Search className="h-10 w-10 text-red-400" />
+          </div>
+          <h3 className="text-xl font-semibold text-gray-800 mb-2">No menu items available</h3>
+          <p className="text-gray-500 text-center max-w-md mb-6">
+            We're currently updating our menu. Please check back soon for delicious options.
+          </p>
+        </div>
+      );
+    }
+
+    // Apply dietary filters to all menu items
+    let filteredItems = [...menuItems];
+    
+    // Apply dietary filters if any are active
     if (filters.vegetarian || filters.vegan || filters.glutenFree) {
-      itemsToRender = itemsToRender.filter((item) => {
+      filteredItems = menuItems.filter((item) => {
         if (!item) return false;
         
         // If item doesn't have dietary info, include it in results
@@ -454,31 +705,29 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose, onPlac
       });
     }
 
-    if (itemsToRender.length === 0) {
+    if (filteredItems.length === 0) {
       return (
         <div className="flex flex-col items-center justify-center py-16 px-4">
           <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mb-6">
             <Search className="h-10 w-10 text-red-400" />
           </div>
-          <h3 className="text-xl font-semibold text-gray-800 mb-2">No matches found</h3>
+          <h3 className="text-xl font-semibold text-gray-800 mb-2">No matching items</h3>
           <p className="text-gray-500 text-center max-w-md mb-6">
-            {query 
-              ? "We couldn't find any items matching your search. Try using different keywords."
-              : "No items match your dietary preferences. Try adjusting your filters."}
+            No items match your dietary preferences. Try adjusting your filters.
           </p>
-          <button
-            onClick={() => dispatch(setSearchQuery(''))}
-            className="px-6 py-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors flex items-center"
-          >
-            Clear Search
-          </button>
         </div>
       );
     }
 
-    return renderMenuItemsGrid(itemsToRender, !!query);
-  };
+    // Limit initial display to 12 items
+    const limitedItems = filteredItems.slice(0, 12);
 
+    return (
+      <div className="mb-4">
+        {renderMenuItemsGrid(limitedItems)}
+      </div>
+    );
+  };
 
   return (
     <div className="flex flex-col h-screen bg-white">
@@ -505,13 +754,13 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose, onPlac
                   onChange={handleInputChange}
                   placeholder={isListening ? "Listening..." : "Type or speak to search..."}
                   className="w-full py-2 pl-10 pr-16 bg-transparent text-white focus:outline-none"
-                  disabled={isListening}
+                  disabled={searchState !== SearchServiceState.READY || isListening}
                 />
                 
                 {/* Voice search button */}
                 <button
                   onClick={startVoiceSearch}
-                  disabled={isListening}
+                  disabled={isListening || searchState !== SearchServiceState.READY}
                   className={`absolute right-10 top-1/2 transform -translate-y-1/2 p-1 rounded-full 
                     ${isListening 
                       ? 'bg-red-500 text-white' 
@@ -530,6 +779,11 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose, onPlac
                   </button>
                 )}
                 
+                {searchState === SearchServiceState.LOADING && !isListening && (
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                    <Loader className="h-5 w-5 text-gray-400 animate-spin" />
+                  </div>
+                )}
               </div>
               
               {/* Speech error message */}
@@ -575,11 +829,94 @@ const SearchBarComponent: React.FC<SearchBarComponentProps> = ({ onClose, onPlac
       
       {/* Results */}
       <div className="flex-1 overflow-y-auto">
-        <div ref={resultsRef} className="pb-16">
-          {renderFilteredItems()}
-        </div>
+        {isSearching ? (
+          <div className="p-8">
+            {/* Skeleton Loader */}
+            <div className="animate-pulse space-y-8">
+              {/* Skeleton Category */}
+              <div className="space-y-4">
+                <div className="h-6 bg-gray-200 rounded w-1/4"></div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {[...Array(4)].map((_, index) => (
+                    <div key={index} className="bg-white rounded-lg shadow-md overflow-hidden">
+                      <div className="h-32 bg-gray-200"></div>
+                      <div className="p-3 space-y-2">
+                        <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                        <div className="h-3 bg-gray-100 rounded w-full"></div>
+                        <div className="h-3 bg-gray-100 rounded w-1/2"></div>
+                        <div className="flex justify-between items-center pt-2">
+                          <div className="h-4 bg-red-200 rounded w-1/4"></div>
+                          <div className="h-6 bg-red-200 rounded-full w-16"></div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              {/* Second Skeleton Category */}
+              <div className="space-y-4">
+                <div className="h-6 bg-gray-200 rounded w-1/3"></div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {[...Array(4)].map((_, index) => (
+                    <div key={index} className="bg-white rounded-lg shadow-md overflow-hidden">
+                      <div className="h-32 bg-gray-200"></div>
+                      <div className="p-3 space-y-2">
+                        <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                        <div className="h-3 bg-gray-100 rounded w-full"></div>
+                        <div className="h-3 bg-gray-100 rounded w-1/2"></div>
+                        <div className="flex justify-between items-center pt-2">
+                          <div className="h-4 bg-red-200 rounded w-1/4"></div>
+                          <div className="h-6 bg-red-200 rounded-full w-16"></div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : error ? (
+          <div className="flex flex-col items-center justify-center py-16 px-4">
+            <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mb-6">
+              <X className="h-10 w-10 text-red-500" />
+            </div>
+            <h3 className="text-xl font-semibold text-gray-800 mb-2">Oops! Something went wrong</h3>
+            <p className="text-gray-500 text-center max-w-md mb-6">
+              {error || "We encountered an error while searching. Please try again later."}
+            </p>
+            <button
+              onClick={() => dispatch(setSearchQuery(''))}
+              className="px-6 py-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors flex items-center"
+            >
+              View All Items
+            </button>
+          </div>
+        ) : query ? (
+          <div ref={resultsRef} className="pb-16">
+            {renderResultsByCategory()}
+          </div>
+        ) : (
+          <div className="pb-16">
+            {renderAllMenuItems()}
+          </div>
+        )}
       </div>
 
+      {/* Product Details Component - Only shown in in-dining context */}
+      {isInDiningContext && isProductDetailsOpen && selectedProduct && (
+        <InDiningProductDetails
+          product={selectedProduct}
+          onClose={closeProductDetails}
+          menuItems={menuItems}
+          currentMenuType={currentMenuType}
+          onProductSelect={(product) => {
+            setSelectedProduct(product);
+            // Keep the product details modal open with the new product
+          }}
+        />
+      )}
+      
       {/* InDiningCartDrawer - Only shown in in-dining context */}
       {isInDiningContext && (
         <InDiningCartDrawer onPlaceOrder={onPlaceOrder} />

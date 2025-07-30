@@ -27,8 +27,6 @@ export const commonRoutePaths = {
   order: '/order',
   inDiningOrder: '/placeindiningorder',
   inDiningOrderWithTable: '/placeindiningorder/:table',
-  inDiningProductDetail: '/placeindiningorder/:table/product/:productId',
-  inDiningSearch: '/placeindiningorder/:table/search',
   events: '/events',
   gallery: '/gallery',
   blog: '/blog',

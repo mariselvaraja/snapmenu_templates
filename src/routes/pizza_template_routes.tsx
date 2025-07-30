@@ -20,8 +20,6 @@ import ComboDetail from '../templates/pizza_template/pages/ComboDetail';
 import Checkout from '../templates/pizza_template/pages/Checkout';
 import PartyOrders from '../templates/pizza_template/pages/PartyOrders';
 import { InDiningOrder } from '../templates/pizza_template/components/in-dining';
-import InDiningProductDetailsPage from '../templates/pizza_template/pages/InDiningProductDetailsPage';
-import InDiningSearchPage from '../templates/pizza_template/pages/InDiningSearchPage';
 /**
  * Define routes for the pizza template
  * These routes are used in the pizza_template/App.tsx file
@@ -37,8 +35,6 @@ const PizzaTemplateRoutes = [
   <Route key="order" path={commonRoutePaths.order} element={<Order />} />,
   <Route key="in-dining-order" path={commonRoutePaths.inDiningOrder} element={<InDiningOrder />} />,
   <Route key="in-dining-order-with-table" path={commonRoutePaths.inDiningOrderWithTable} element={<InDiningOrder />} />,
-  <Route key="in-dining-product-detail" path={commonRoutePaths.inDiningProductDetail} element={<InDiningProductDetailsPage />} />,
-  <Route key="in-dining-search" path={commonRoutePaths.inDiningSearch} element={<InDiningSearchPage />} />,
   <Route key="events" path={commonRoutePaths.events} element={<Events />} />,
   <Route key="gallery" path={commonRoutePaths.gallery} element={<Gallery />} />,
   <Route key="blog" path={commonRoutePaths.blog} element={<Blog />} />,

@@ -386,6 +386,20 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
 
   if (!product) return null;
 
+  // Add styles to prevent body scroll when modal is open
+  useEffect(() => {
+    // Save current body overflow style
+    const originalStyle = window.getComputedStyle(document.body).overflow;
+    
+    // Prevent body scroll
+    document.body.style.overflow = 'hidden';
+    
+    // Restore body scroll on unmount
+    return () => {
+      document.body.style.overflow = originalStyle;
+    };
+  }, []);
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex flex-col">
       <motion.div
@@ -393,11 +407,10 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 100, scale: 1 }}
         transition={{ duration: 0.3 }}
-        className="bg-white w-full h-full flex flex-col relative"
+        className="bg-white w-full h-full flex flex-col relative overflow-hidden"
       >
-        <div className="relative">
-          {/* Title Bar - Visible on all screen sizes */}
-          <div className="sticky top-0 z-40 bg-black bg-opacity-90 backdrop-blur-sm shadow-md px-4 py-3 flex items-center justify-between">
+        {/* Fixed Title Bar - Visible on all screen sizes */}
+        <div className="absolute top-0 left-0 right-0 z-10 bg-black bg-opacity-90 backdrop-blur-sm shadow-md px-4 py-3 flex items-center justify-between">
             <div className="flex items-center">
               <button
                 onClick={onClose}
@@ -424,8 +437,10 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
             </button>
           </div>
 
+        {/* Scrollable Content Container - with padding top for fixed header */}
+        <div className="flex-1 overflow-y-auto pt-[60px]">
           {/* Product Image with Dietary Information */}
-          <div className="h-56 sm:h-64 md:h-80 relative">
+          <div className="h-56 sm:h-64 md:h-80 relative flex-shrink-0">
             {product.image ? (
               <img
                 src={product.image}
@@ -462,8 +477,8 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
             )}
           </div>
 
-          <div className="flex-1 overflow-y-auto product-details-scroll-container">
-          <div className="grid grid-cols-1 md:grid-cols-2 pb-28 md:pb-0">
+          {/* Content Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 pb-28 md:pb-20">
             {/* Product Details - Left Side */}
             <div className="p-6">
               <div className="flex items-center gap-2 mb-2">
@@ -611,7 +626,6 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
                 </div>
               </div>
             </div>
-          </div>
           </div>
         </div>
         
