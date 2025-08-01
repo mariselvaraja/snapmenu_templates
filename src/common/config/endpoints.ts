@@ -19,7 +19,7 @@ const GET_IN_DINING_ORDERS_PATH = import.meta.env.VITE_GET_IN_DINING_ORDERS || "
 const GET_INDINING_ORDERS_HISTORY_PATH = import.meta.env.VITE_GET_INDINING_ORDERS || "/getDiningOrder";
 const PLACE_IN_DINING_ORDER_PATH = import.meta.env.VITE_PLACE_IN_DINING_ORDER || "/makeDiningOrders";
 const UPDATE_IN_DINING_ORDERS_PATH = import.meta.env.VITE_UPDATE_IN_DINING_ORDERS || "/updateDiningDetails";
-const GET_TABLE_AVAILABILITY_PATH = import.meta.env.VITE_GET_TABLE_AVAILABILITY || "/getAvailableTableCount";
+const GET_TABLE_AVAILABILITY_PATH = import.meta.env.VITE_GET_TABLE_AVAILABILITY || "/table/available";
 const MAKE_RESERVATION_PATH = import.meta.env.VITE_MAKE_RESERVATION || "/makeReservation";
 const GET_TABLE_STATUS_PATH = import.meta.env.VITE_GET_TABLE_STATUS || "/table/view";
 const GET_PAYMENT_INFO = import.meta.env.VITE_GET_PAYMENT_INFO || "/getTpnConfig";
@@ -51,6 +51,7 @@ const getDomainFromUrl = () => {
     }
   }
   // return "uat"
+  // return "spanish"
   return "pizza"
   //  return "mayajas"; 
   // return 'annapurna'
