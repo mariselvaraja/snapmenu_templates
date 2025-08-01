@@ -11,57 +11,9 @@ export default function Reservation() {
     (typeof rawApiResponse === 'string' ? JSON.parse(rawApiResponse) : rawApiResponse) : 
     {};
   const contact = siteContent?.contact;
-  const reservation = siteContent?.reservation || {
-    header: {
-      title: "Reserve a Table",
-      description: "Book your dining experience with us"
-    },
-    info: {
-      hours: {
-        weekdays: {
-          label: "Monday - Thursday",
-          time: "5:00 PM - 10:00 PM"
-        },
-        weekends: {
-          label: "Friday - Saturday",
-          time: "5:00 PM - 11:00 PM"
-        },
-        sunday: {
-          label: "Sunday",
-          time: "5:00 PM - 9:00 PM"
-        }
-      },
-      location: {
-        street: "123 Main Street",
-        area: "Downtown",
-        city: "New York",
-        state: "NY",
-        zip: "10001"
-      },
-      contact: {
-        phone: "(212) 555-1234"
-      },
-      note: "Reservations recommended. Please call us for parties of 6 or more."
-    },
-    form: {
-      labels: {
-        date: "Date",
-        time: "Time",
-        guests: "Number of Guests",
-        name: "Name",
-        email: "Email",
-        phone: "Phone",
-        specialRequests: "Special Requests"
-      },
-      placeholders: {
-        name: "Your full name",
-        email: "your@email.com",
-        phone: "(123) 456-7890",
-        specialRequests: "Any special requests or dietary restrictions?"
-      }
-    }
-  };
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const reservation = siteContent?.reservation;
+  console.log("reservation", reservation.info.hours)
+   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [selectedTime, setSelectedTime] = useState(new Date().toTimeString().slice(0, 5));
 
   // Scroll to top when component mounts
@@ -82,6 +34,49 @@ export default function Reservation() {
   const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSelectedTime(e.target.value);
   };
+
+ // Convert 24-hour time to 12-hour format
+ function to12Hour(time: string): string {
+  if (!time) return '';
+  const [hourStr, minuteStr] = time.split(':');
+  const hour = parseInt(hourStr, 10);
+  const minute = parseInt(minuteStr, 10);
+  const suffix = hour >= 12 ? 'PM' : 'AM';
+  const hour12 = ((hour + 11) % 12) + 1;
+  return `${hour12.toString().padStart(2, '0')}:${minuteStr} ${suffix}`;
+}
+
+// Convert schedule object to { [day]: "hh:mm AM to hh:mm PM" }
+function convertScheduleTo12HourFormat(schedule: any): any {
+  const result: any = {};
+  for (const day in schedule) {
+    const { firstHalf, secondHalf } = schedule[day] || {};
+    const first = firstHalf?.start && firstHalf?.end
+      ? `${to12Hour(firstHalf.start)} to ${to12Hour(firstHalf.end)}`
+      : '';
+    const second = secondHalf?.start && secondHalf?.end
+      ? ` - ${to12Hour(secondHalf.start)} to ${to12Hour(secondHalf.end)}`
+      : '';
+    result[day] = first + second || 'Closed';
+  }
+  return result;
+}
+
+// Prepare formatted operating hours
+const rawHours = reservation?.info?.hours;
+const scheduleConverted = convertScheduleTo12HourFormat(
+  Object.fromEntries(
+    Object.entries(rawHours || {}).map(([day, data]: any) => [
+      day,
+      data
+    ])
+  )
+);
+
+const operatingHoursFormatted = Object.entries(scheduleConverted).map(([day, hours]) => ({
+  day: rawHours?.[day]?.label || day.charAt(0).toUpperCase() + day.slice(1),
+  hours
+}));
 
   return (
     <div className="">
@@ -105,15 +100,7 @@ export default function Reservation() {
               ? contact.infoCards.email.addresses[0]
               : "info@pizzarestaurant.com",
             address: `${contact?.infoCards?.address?.street || "123 Main Street"}, ${contact?.infoCards?.address?.city || "Anytown"}${contact?.infoCards?.address?.state ? `, ${contact.infoCards.address.state}` : ""} ${contact?.infoCards?.address?.zip || ""}`,
-            operatingHours: [
-              { day: reservation?.info?.hours?.monday?.label || "Monday", hours: reservation?.info?.hours?.monday?.time || "11:00 AM - 10:00 PM" },
-              { day: reservation?.info?.hours?.tuesday?.label || "Tuesday", hours: reservation?.info?.hours?.tuesday?.time || "11:00 AM - 10:00 PM" },
-              { day: reservation?.info?.hours?.wednesday?.label || "Wednesday", hours: reservation?.info?.hours?.wednesday?.time || "11:00 AM - 10:00 PM" },
-              { day: reservation?.info?.hours?.thursday?.label || "Thursday", hours: reservation?.info?.hours?.thursday?.time || "11:00 AM - 10:00 PM" },
-              { day: reservation?.info?.hours?.friday?.label || "Friday", hours: reservation?.info?.hours?.friday?.time || "11:00 AM - 11:00 PM" },
-              { day: reservation?.info?.hours?.saturday?.label || "Saturday", hours: reservation?.info?.hours?.saturday?.time || "11:00 AM - 11:00 PM" },
-              { day: reservation?.info?.hours?.sunday?.label || "Sunday", hours: reservation?.info?.hours?.sunday?.time || "12:00 PM - 9:00 PM" }
-            ]
+            operatingHours: operatingHoursFormatted
           }}
         />
 

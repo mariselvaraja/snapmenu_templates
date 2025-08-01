@@ -24,10 +24,7 @@ interface TableReservationProps {
     phone: string;
     email: string;
     address: string;
-    operatingHours: {
-      day: string;
-      hours: string;
-    }[];
+    operatingHours: any;
   };
 }
 
@@ -50,11 +47,7 @@ export default function TableReservation({
     phone: "+1 (555) 123-4569",
     email: "info@pizzarestaurant.com",
     address: "123 Main Street, Anytown, USA",
-    operatingHours: [
-      { day: "Monday - Thursday", hours: "11:00 AM - 10:00 PM" },
-      { day: "Friday - Saturday", hours: "11:00 AM - 11:00 PM" },
-      { day: "Sunday", hours: "12:00 PM - 9:00 PM" }
-    ]
+    operatingHours: []
   }
 }: TableReservationProps) {
   const dispatch = useDispatch();
@@ -186,7 +179,8 @@ export default function TableReservation({
       phone: phone,
       email: email,
       reservation_start_time: date.startTime,
-      reservation_end_time: date.endTime
+      reservation_end_time: date.endTime,
+      notes: specialRequest
     };
     
 
@@ -203,7 +197,7 @@ export default function TableReservation({
     
     // Find the matching operating hours
     let operatingHoursForDay = restaurantInfo.operatingHours.find(
-      item => item.day.includes(dayName)
+      (item:any) => item.day.includes(dayName)
     );
     
     // Default to first entry if no match found
@@ -316,7 +310,7 @@ export default function TableReservation({
        
                 <div>
                   <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                    Names
+                    Names <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -332,7 +326,7 @@ export default function TableReservation({
                 {/* Party Size Field */}
                 <div>
                   <label htmlFor="partySize" className="block text-sm font-medium text-gray-700 mb-1">
-                    <Users className="inline-block mr-1 h-4 w-4" /> Party Size
+                    <Users className="inline-block mr-1 h-4 w-4" /> Party Size <span className="text-red-500">*</span>
                   </label>
                   <select
                     id="partySize"
@@ -353,7 +347,7 @@ export default function TableReservation({
               {/* Date Field */}
               <div>
                 <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-1">
-                  <Calendar className="inline-block mr-1 h-4 w-4" /> Date
+                  <Calendar className="inline-block mr-1 h-4 w-4" /> Date <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="date"
@@ -369,7 +363,7 @@ export default function TableReservation({
               {/* Time Slots */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  <Clock className="inline-block mr-1 h-4 w-4" /> Preferred Time
+                  <Clock className="inline-block mr-1 h-4 w-4" /> Preferred Time <span className="text-red-500">*</span>
                 </label>
                 
                 {timeSlots && timeSlots.length > 0 ? (
@@ -411,7 +405,7 @@ export default function TableReservation({
                 {/* Phone Number Field */}
                 <div>
                   <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-                    <Phone className="inline-block mr-1 h-4 w-4" /> Phone Number
+                    <Phone className="inline-block mr-1 h-4 w-4" /> Phone Number <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="tel"
@@ -427,7 +421,7 @@ export default function TableReservation({
                 {/* Email Field */}
                 <div>
                   <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                    <Mail className="inline-block mr-1 h-4 w-4" /> Email
+                    <Mail className="inline-block mr-1 h-4 w-4" /> Email <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="email"
@@ -444,7 +438,7 @@ export default function TableReservation({
               {/* Special Request Field */}
               <div>
                 <label htmlFor="specialRequest" className="block text-sm font-medium text-gray-700 mb-1">
-                  Special Request
+                  Special Request <span className="text-gray-500 text-sm">(Optional)</span>
                 </label>
                 <textarea
                   id="specialRequest"
@@ -509,7 +503,7 @@ export default function TableReservation({
             <div>
               <h3 className="text-lg font-semibold mb-4 text-gray-700">Operating Hours</h3>
               <div className="grid grid-cols-2 gap-4">
-                {restaurantInfo.operatingHours.map((item, index) => (
+                {restaurantInfo.operatingHours.map((item:any, index:any) => (
                   <div key={index} className="flex flex-col border border-gray-200 rounded-md p-3 bg-white">
                     <span className="font-medium text-gray-800">{item.day}</span>
                     <span className="text-gray-600">{item.hours}</span>
