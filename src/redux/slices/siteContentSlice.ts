@@ -61,6 +61,7 @@ export interface SiteContent {
 interface SiteContentState {
   content: SiteContent | null;
   rawApiResponse: any | null; // Store the raw API response
+  sectionOrder: string[]; // Store section order directly
   loading: boolean;
   error: string | null;
 }
@@ -68,6 +69,7 @@ interface SiteContentState {
 const initialState: SiteContentState = {
   content: null,
   rawApiResponse: null,
+  sectionOrder: [],
   loading: false,
   error: null,
 };
@@ -89,6 +91,7 @@ export const siteContentSlice = createSlice({
     fetchSiteContentSuccess: (state, action: PayloadAction<{transformedData: SiteContent, rawApiResponse: any}>) => {
       state.content = action.payload.transformedData;
       state.rawApiResponse = action.payload.rawApiResponse;
+      state.sectionOrder = action.payload.rawApiResponse?.homepage?.sectionOrder || [];
       state.loading = false;
     },
     fetchSiteContentFailure: (state, action: PayloadAction<string>) => {
@@ -104,5 +107,8 @@ export const {
   fetchSiteContentSuccess,
   fetchSiteContentFailure,
 } = siteContentSlice.actions;
+
+// Selector to get section order from Redux state
+export const selectSectionOrder = (state: any) => state.siteContent.sectionOrder;
 
 export default siteContentSlice.reducer;
