@@ -246,8 +246,9 @@ export class WebSocketService {
   /**
    * Handle updated_orders format from WebSocket
    * Format: { updated_orders: [{dining_id: 107, status: 'preparing'}] }
+   * Also handles: { updated_order: [{dining_id: ["607"], status: 'pending'}] }
    */
-  private handleUpdatedOrders(updatedOrders: Array<{dining_id: number, status: string}>): void {
+  private handleUpdatedOrders(updatedOrders: Array<{dining_id: number | string | string[], status: string}>): void {
     try {
       console.log(`🔄 Processing ${updatedOrders.length} order status updates`);
       
@@ -264,15 +265,28 @@ export class WebSocketService {
       const newOrdersToCreate: InDiningOrder[] = [];
       
       updatedOrders.forEach(update => {
+        // Extract dining_id from various formats
+        let diningId: number;
+        if (Array.isArray(update.dining_id)) {
+          // Handle array format ["607"]
+          diningId = parseInt(update.dining_id[0]);
+        } else if (typeof update.dining_id === 'string') {
+          // Handle string format "607"
+          diningId = parseInt(update.dining_id);
+        } else {
+          // Handle number format 607
+          diningId = update.dining_id;
+        }
+
         // Find existing order by dining_id
         const existingOrderIndex = updatedOrdersList.findIndex(order => {
           // First check if order has a dining_id field directly
           if ((order as any).dining_id !== undefined) {
-            return (order as any).dining_id === update.dining_id;
+            return (order as any).dining_id === diningId;
           }
           // Fallback: check if order.id matches dining_id (as string or number)
           const orderId = typeof order.id === 'string' ? parseInt(order.id) : order.id;
-          return orderId === update.dining_id;
+          return orderId === diningId;
         });
         
         // Validate and cast status to proper type
@@ -289,13 +303,13 @@ export class WebSocketService {
           };
         } else {
           // Create placeholder order for orders that don't exist locally
-          console.log(`🆕 Creating placeholder order for dining_id ${update.dining_id} with status '${update.status}'`);
+          console.log(`🆕 Creating placeholder order for dining_id ${diningId} with status '${update.status}'`);
           const placeholderOrder: InDiningOrder = {
-            id: update.dining_id.toString(),
+            id: diningId.toString(),
             table_id: sessionStorage.getItem('table_id') || sessionStorage.getItem('Tablename') || 'unknown',
             items: [{
               id: Date.now(), // Temporary ID
-              name: `Order #${update.dining_id}`,
+              name: `Order #${diningId}`,
               price: 0,
               quantity: 1,
               image: ''
@@ -317,10 +331,20 @@ export class WebSocketService {
       
       // Emit events for each status update
       updatedOrders.forEach(update => {
+        // Extract dining_id from various formats
+        let diningId: number;
+        if (Array.isArray(update.dining_id)) {
+          diningId = parseInt(update.dining_id[0]);
+        } else if (typeof update.dining_id === 'string') {
+          diningId = parseInt(update.dining_id);
+        } else {
+          diningId = update.dining_id;
+        }
+        
         this.emitEvent('order_status_change', {
-          dining_id: update.dining_id,
+          dining_id: diningId,
           status: update.status,
-          orderId: update.dining_id.toString()
+          orderId: diningId.toString()
         });
       });
       

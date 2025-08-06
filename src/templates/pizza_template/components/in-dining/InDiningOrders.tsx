@@ -300,7 +300,9 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
   // Transform orderHistory to match the expected Order interface
   const orders = orderHistory ? orderHistory.map((orderData:any) => {
     // Cast to ExtendedInDiningOrder to handle both data formats
-    const order = orderData as ExtendedInDiningOrder;
+    const order = orderData as any;
+
+   
     
     // Check if the order has ordered_items (from the sample data structure)
     const items = order.ordered_items 
@@ -314,17 +316,18 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
           spiceLevel: item.spiceLevel || null
         }))
       : order.items || []; // Fallback to order.items if ordered_items doesn't exist
-
-      
     
     return {
       id: order.id || (order.dining_id ? order.dining_id.toString() : '') || '',
       date: order.createdAt || order.created_date || new Date().toISOString(),
-      status: order.status || order.dining_status || 'pending',
+      status: order?.status?.toLowerCase() == "processing" ? "Preparing" : order?.status || "Pending",
       total: order.totalAmount || (order.total_amount ? parseFloat(order.total_amount) : 0) || 0,
-      items: items
+      items: items,
+      void_reason : order?.void_reason || ''
     };
   }) : [];
+
+  console.log("orderData", orders)
   
   // Define the order interface to match the component's expectations
   interface Order {
@@ -332,6 +335,7 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
     date: string;
     status: string;
     total: number;
+    void_reason?: string;
     items: OrderItem[] | any[]; // Allow any[] to handle both OrderItem[] and InDiningOrderItem[]
   }
 
@@ -488,7 +492,7 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
           <ul className="divide-y">
             {orders.map((order: Order, orderIndex: number) => (
               order.items && order.items.map((item: any, index: number) => (
-                <li key={`${orderIndex}-${index}`} className="p-4 flex">
+                <li key={`${orderIndex}-${index}`} className={`p-4 flex ${order.status?.toLowerCase() === 'void' ? 'opacity-60 grayscale' : ''}`}>
                   {/* Product Image */}
                   {item.image ? (
                     <img
@@ -548,6 +552,12 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
                       <span className={`px-2 py-0.5 rounded-full text-xs font-medium border ${getStatusBadgeClasses(order.status)}`}>
                         {getStatus(order.status)}
                       </span>
+                      {/* Show void reason if order is void */}
+                      {order.status?.toLowerCase() === 'void' && order.void_reason && (
+                        <span className="ml-2 text-xs text-gray-500">
+                          ({order.void_reason})
+                        </span>
+                      )}
                     </div>
                     
                     {/* Display selected modifiers and spice level */}
