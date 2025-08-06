@@ -108,8 +108,11 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
   // Convert single order to array if needed
   const orders = Array.isArray(order) ? order : [order];
   
-  // Calculate total amount from all orders including modifiers
-  const totalAmount = orders.reduce((sum, order) => {
+  // Filter out void orders
+  const nonVoidOrders = orders.filter(order => order.status?.toLowerCase() !== 'void');
+  
+  // Calculate total amount from all non-void orders including modifiers
+  const totalAmount = nonVoidOrders.reduce((sum, order) => {
     // Base order total
     let orderTotal = order.total || 0;
     
@@ -228,8 +231,8 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
 
       // Generate bill content as text
       const generateBillText = () => {
-        const billDate = orders.length > 0 ? formatDate(orders[0].date) : formatDate(new Date().toISOString());
-        const orderId = orders.length > 0 ? orders[0].id : 'N/A';
+        const billDate = nonVoidOrders.length > 0 ? formatDate(nonVoidOrders[0].date) : formatDate(new Date().toISOString());
+        const orderId = nonVoidOrders.length > 0 ? nonVoidOrders[0].id : 'N/A';
         
         let billText = `${tablename || 'Table'}\n`;
         billText += `Order #: ${orderId} | ${billDate}\n`;
@@ -238,7 +241,7 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
         billText += `${'Item'.padEnd(20)} ${'Qty'.padStart(5)} ${'Price'.padStart(10)}\n`;
         billText += `${'-'.repeat(40)}\n`;
         
-        orders.forEach(order => {
+        nonVoidOrders.forEach(order => {
           if (order.items) {
             order.items.forEach((item: OrderItem) => {
               const itemName = item.name.length > 18 ? item.name.substring(0, 18) + '..' : item.name;
@@ -289,8 +292,8 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
             return;
           }
 
-          const billDate = orders.length > 0 ? formatDate(orders[0].date) : formatDate(new Date().toISOString());
-          const orderId = orders.length > 0 ? orders[0].id : 'N/A';
+          const billDate = nonVoidOrders.length > 0 ? formatDate(nonVoidOrders[0].date) : formatDate(new Date().toISOString());
+          const orderId = nonVoidOrders.length > 0 ? nonVoidOrders[0].id : 'N/A';
 
           printWindow.document.write(`
             <!DOCTYPE html>
@@ -381,7 +384,7 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
                   </div>
                 </div>
                 
-                ${orders.map(order => 
+                ${nonVoidOrders.map(order => 
                   order.items ? order.items.map((item: OrderItem) => `
                     <div style="margin-bottom: 10px;">
                       <div class="item-row">
@@ -523,8 +526,8 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
           {/* Bill Info */}
           <div className="text-sm mb-6 border-b border-gray-200 pb-4">
             <div className="flex justify-between">
-              <p><span className="font-medium">Ordered Item:</span> {orders.length}</p>
-              <p>{orders.length > 0 ? formatDate(orders[0].date) : formatDate(new Date().toISOString())}</p>
+              <p><span className="font-medium">Ordered Item:</span> {nonVoidOrders.length}</p>
+              <p>{nonVoidOrders.length > 0 ? formatDate(nonVoidOrders[0].date) : formatDate(new Date().toISOString())}</p>
             </div>
           </div>
           
@@ -540,7 +543,7 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
               </div>
             </div>
             
-            {orders.map((order, orderIndex) => (
+            {nonVoidOrders.map((order, orderIndex) => (
               order.items && order.items.map((item: OrderItem, index: number) => (
                 <div key={`${orderIndex}-${index}`} className="py-2 border-b border-gray-100 last:border-b-0">
                   <div className="flex justify-between">

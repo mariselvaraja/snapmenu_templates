@@ -518,32 +518,33 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
                       
                       </div>
                       <div className="text-gray-600">
-                        <span className="font-medium">${(() => {
-                          // Ensure price is a number
-                          const baseItemPrice = typeof item.price === 'number' ? item.price : 
-                            parseFloat(String(item.price || 0)) || 0;
-                          
-                          // Calculate modifier total with proper checks
-                          let modifierTotal = 0;
-                          if (item.modifiers && Array.isArray(item.modifiers) && item.modifiers.length > 0) {
-                            modifierTotal = item.modifiers.reduce((sum: number, mod: any) => {
-                              const modPrice = typeof mod.modifier_price === 'number' ? mod.modifier_price : 
-                                parseFloat(String(mod.modifier_price || 0)) || 0;
-                              return sum + modPrice;
-                            }, 0);
-                          }
-                          
-                          // Ensure quantity is a number
-                          const quantity = typeof item.quantity === 'number' ? item.quantity : 
-                            parseInt(String(item.quantity || 1)) || 1;
-                          
-                          // Calculate total price (base price + modifiers) * quantity
-                          const totalPrice = (baseItemPrice + modifierTotal) * quantity;
-                          
-                          // Use formatCurrency for consistent formatting
-                          return formatCurrency(totalPrice);
-                        })()}</span>
-                   
+                        {order.status?.toLowerCase() !== 'void' && (
+                          <span className="font-medium">${(() => {
+                            // Ensure price is a number
+                            const baseItemPrice = typeof item.price === 'number' ? item.price : 
+                              parseFloat(String(item.price || 0)) || 0;
+                            
+                            // Calculate modifier total with proper checks
+                            let modifierTotal = 0;
+                            if (item.modifiers && Array.isArray(item.modifiers) && item.modifiers.length > 0) {
+                              modifierTotal = item.modifiers.reduce((sum: number, mod: any) => {
+                                const modPrice = typeof mod.modifier_price === 'number' ? mod.modifier_price : 
+                                  parseFloat(String(mod.modifier_price || 0)) || 0;
+                                return sum + modPrice;
+                              }, 0);
+                            }
+                            
+                            // Ensure quantity is a number
+                            const quantity = typeof item.quantity === 'number' ? item.quantity : 
+                              parseInt(String(item.quantity || 1)) || 1;
+                            
+                            // Calculate total price (base price + modifiers) * quantity
+                            const totalPrice = (baseItemPrice + modifierTotal) * quantity;
+                            
+                            // Use formatCurrency for consistent formatting
+                            return formatCurrency(totalPrice);
+                          })()}</span>
+                        )}
                       </div>
                     </div>
                     
@@ -571,9 +572,11 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
                               className="flex justify-between items-center py-0.5"
                             >
                               <span>{modifier.modifier_name}</span>
-                     {     modifier.modifier_price ?    <span className="font-medium">
-                                (${formatCurrency(modifier.modifier_price * item.quantity || 0)})
-                              </span> : null}
+                              {modifier.modifier_price && order.status?.toLowerCase() !== 'void' ? (
+                                <span className="font-medium">
+                                  (${formatCurrency(modifier.modifier_price * item.quantity || 0)})
+                                </span>
+                              ) : null}
                             </div>
                           : null
                         )}
@@ -638,7 +641,7 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
             <span className="font-semibold">Total</span>
             <span className="font-semibold">
               ${orders.length > 0 
-                ? formatCurrency(orders.reduce((sum, order) => sum + (order.total || 0), 0) || 0)
+                ? formatCurrency(orders.filter(order => order.status?.toLowerCase() !== 'void').reduce((sum, order) => sum + (order.total || 0), 0) || 0)
                 : '0.00'}
             </span>
           </div>
