@@ -730,7 +730,7 @@ function InDiningOrder() {
                         <button
                           key={category}
                           onClick={() => {
-                            setSelectedCategory(category);
+                            setSelectedCategory(category || '');
                             setSelectedSubcategory('All');
                             sessionStorage.setItem('selectedCategory', 'All');
                           }}
@@ -914,7 +914,7 @@ function InDiningOrder() {
                           <p className="text-lg font-bold text-red-500">${item?.indining_price || 0.00}</p>
                         )}
                        
-                        {item?.out_of_stock == "true" ? (
+                        {(item?.out_of_stock == "true" || item?.inventory_status === false) ? (
                           <div className="px-4 sm:px-6 py-2 rounded-full bg-gray-200 text-gray-600 text-sm sm:text-base font-medium">
                             Out of Stock
                           </div>
@@ -1055,7 +1055,7 @@ function InDiningOrder() {
                           })()}
                         </p>
 
-                        {item?.out_of_stock == "true" ? (
+                        {(item?.out_of_stock == "true" || item?.inventory_status === false) ? (
                           <div className="px-4 sm:px-6 py-2 rounded-full bg-gray-200 text-gray-600 text-sm sm:text-base font-medium">
                             Out of Stock
                           </div>
