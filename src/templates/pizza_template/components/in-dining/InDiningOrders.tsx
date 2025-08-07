@@ -637,30 +637,52 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
       {/* Footer */}
       {orders.length > 0 && (
         <div className="border-t p-4 z-10">
-          <div className="flex justify-between mb-4">
-            <span className="font-semibold">Total</span>
-            <span className="font-semibold">
-              ${orders.length > 0 
-                ? formatCurrency(orders.filter(order => order.status?.toLowerCase() !== 'void').reduce((sum, order) => sum + (order.total || 0), 0) || 0)
-                : '0.00'}
-            </span>
-          </div>
-          
-          {/* Action Buttons */}
-          <div className="flex space-x-3">
-            <button 
-              className="flex-1 bg-red-500 text-white py-3 rounded-full font-medium hover:bg-red-600 transition-colors"
-              onClick={handleContinue}
-            >
-              Continue
-            </button>
-            <button 
-              className="flex-1 bg-gray-800 text-white py-3 rounded-full font-medium hover:bg-gray-900 transition-colors"
-              onClick={() => setShowBill(true)}
-            >
-              Pay Bill
-            </button>
-          </div>
+          {/* Check if all orders are void */}
+          {(() => {
+            const allOrdersVoid = orders.every(order => order.status?.toLowerCase() === 'void');
+            
+            if (allOrdersVoid) {
+              // If all orders are void, only show Continue button
+              return (
+                <button 
+                  className="w-full bg-red-500 text-white py-3 rounded-full font-medium hover:bg-red-600 transition-colors"
+                  onClick={handleContinue}
+                >
+                  Continue
+                </button>
+              );
+            } else {
+              // If not all orders are void, show total and both buttons
+              return (
+                <>
+                  <div className="flex justify-between mb-4">
+                    <span className="font-semibold">Total</span>
+                    <span className="font-semibold">
+                      ${orders.length > 0 
+                        ? formatCurrency(orders.filter(order => order.status?.toLowerCase() !== 'void').reduce((sum, order) => sum + (order.total || 0), 0) || 0)
+                        : '0.00'}
+                    </span>
+                  </div>
+                  
+                  {/* Action Buttons */}
+                  <div className="flex space-x-3">
+                    <button 
+                      className="flex-1 bg-red-500 text-white py-3 rounded-full font-medium hover:bg-red-600 transition-colors"
+                      onClick={handleContinue}
+                    >
+                      Continue
+                    </button>
+                    <button 
+                      className="flex-1 bg-gray-800 text-white py-3 rounded-full font-medium hover:bg-gray-900 transition-colors"
+                      onClick={() => setShowBill(true)}
+                    >
+                      Pay Bill
+                    </button>
+                  </div>
+                </>
+              );
+            }
+          })()}
         </div>
       )}
       
