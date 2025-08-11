@@ -446,13 +446,15 @@ function InDiningOrder() {
               onSearchChange={(value) => setSearchQuery(value)}
             />
             
-            {/* Menu Type Selector */}
-            <MenuTypeSelector
-              currentMenuType={currentMenuType || 'cards'}
-              showCategories={showCategories}
-              onFoodClick={handleFoodMenuClick}
-              onDrinksClick={handleDrinksMenuClick}
-            />
+            {/* Menu Type Selector - Hide when searching */}
+            {!searchQuery && (
+              <MenuTypeSelector
+                currentMenuType={currentMenuType || 'cards'}
+                showCategories={showCategories}
+                onFoodClick={handleFoodMenuClick}
+                onDrinksClick={handleDrinksMenuClick}
+              />
+            )}
           </div>
           
           {/* Scrollable Category Grid */}

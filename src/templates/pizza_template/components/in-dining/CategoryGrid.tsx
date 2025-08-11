@@ -13,7 +13,7 @@ interface CategoryGridProps {
 export default function CategoryGrid({ categories, onCategoryClick }: CategoryGridProps) {
   return (
     <div className="w-full px-4 py-6">
-      <h2 className="text-xl font-semibold text-gray-800 mb-6">Choose your favorite category</h2>
+      {/* <h2 className="text-xl font-semibold text-gray-800 mb-6">Choose your favorite category</h2> */}
       
       <div className="grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-3 lg:grid-cols-4">
         {categories.map((category, index) => (
