@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion';
 import  { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useLocation } from 'react-router-dom';
@@ -23,6 +24,8 @@ import Navbar from './Navbar';
 import FoodMenuItem from './FoodMenuItem';
 import DrinksMenuItem from './DrinksMenuItem';
 import EmptyState from './EmptyState';
+import HeroBanner from './HeroBanner';
+import InDiningCards from './InDiningCards';
 
 function InDiningOrder() {
   const [orderPlaced, setOrderPlaced] = useState<boolean>(false);
@@ -81,6 +84,10 @@ function InDiningOrder() {
   const navigationBar = siteContent?.navigationBar || { brand: { logo: {} }, navigation: [] };
   const homepage = siteContent.homepage;
   const { brand } = homepage;
+  const heroData = homepage?.hero;
+  
+  // Use heroData.banners if available, otherwise use empty array
+  const banners = heroData?.banners?.length > 0 ? heroData.banners : [];
   const table_name = sessionStorage.getItem('Tablename');
   const searchParams = new URLSearchParams(location.search);
   const tableFromQuery:any = searchParams.get('table');
@@ -97,6 +104,10 @@ function InDiningOrder() {
   const loading = useSelector((state: RootState) => state.menu.loading);
   const showMenuItems = useSelector((state: RootState) => state.menu.showMenuItems);
   const currentMenuType = useSelector((state: RootState) => state.menu.currentMenuType);
+  
+  // Determine whether to show cards or directly show menu
+  const shouldShowCards = foodItems.length > 0 && drinksItems.length > 0;
+  const shouldDirectlyShowMenu = (foodItems.length > 0 && drinksItems.length === 0) || (foodItems.length === 0 && drinksItems.length > 0);
 
   
   useEffect(()=>{
@@ -151,10 +162,11 @@ function InDiningOrder() {
   // Set menu type based on available data when page loads
   useEffect(() => {
     if (!loading && (foodItems.length > 0 || drinksItems.length > 0)) {
-      // Default to food menu
-      if (foodItems.length > 0) {
+      // Only auto-show menu if there's only one type available
+      if (foodItems.length > 0 && drinksItems.length === 0) {
+        // Only food menu has data
         dispatch(setCurrentMenuType('food'));
-        setShowCategories(true); // Show categories directly
+        setShowCategories(true);
         dispatch(setShowMenuItems(false));
       } else if (drinksItems.length > 0 && foodItems.length === 0) {
         // Only drinks menu has data
@@ -162,6 +174,7 @@ function InDiningOrder() {
         setShowCategories(true);
         dispatch(setShowMenuItems(false));
       }
+      // If both menus have data, don't auto-show either - let user choose
     }
   }, [loading, foodItems, drinksItems]);
 
@@ -371,17 +384,19 @@ function InDiningOrder() {
     // }
   };
 
-  // Handlers for menu type selection
+  // Handlers for InDiningCards - show categories first
   const handleFoodMenuClick = () => {
-    dispatch(setCurrentMenuType('food'));
-    setShowCategories(true);
+    dispatch(setCurrentMenuType('food')); // Set current menu type
+    setShowCategories(true); // Show categories
+    dispatch(setShowMenuItems(false)); // Don't show menu items yet
     setSelectedCategory('All');
     setSelectedSubcategory('All');
   };
 
   const handleDrinksMenuClick = () => {
-    dispatch(setCurrentMenuType('drinks'));
-    setShowCategories(true);
+    dispatch(setCurrentMenuType('drinks')); // Set current menu type
+    setShowCategories(true); // Show categories
+    dispatch(setShowMenuItems(false)); // Don't show menu items yet
     setSelectedCategory('All');
     setSelectedSubcategory('All');
   };
@@ -433,20 +448,52 @@ function InDiningOrder() {
           setSelectedCategory('All');
           setSelectedSubcategory('All');
         }}
+        onBackClick={(showCategories || showMenuItems) ? (() => {
+          // If in menu items view, go back to categories
+          if (showMenuItems) {
+            dispatch(setShowMenuItems(false));
+            setShowCategories(true);
+            setSelectedCategory('All');
+            setSelectedSubcategory('All');
+          } 
+          // If in categories view, go back to cards (if both menus exist)
+          else if (showCategories && shouldShowCards) {
+            setShowCategories(false);
+            dispatch(setCurrentMenuType(null));
+          }
+          // Otherwise just reset
+          else {
+            dispatch(setShowMenuItems(false));
+            setShowCategories(false);
+            setSelectedCategory('All');
+            setSelectedSubcategory('All');
+          }
+        }) : undefined}
       />
       
-      {/* Show categories directly without cards */}
+      {/* Hero Banner Section - Hide when showing categories or menu items */}
+      {!showCategories && !showMenuItems && <HeroBanner banners={banners} />}
+      
+      {/* Show InDiningCards if both menus have data - Hide when showing categories or menu items */}
+      {!showMenuItems && !showCategories && shouldShowCards && (
+        <InDiningCards 
+          onFoodMenuClick={handleFoodMenuClick}
+          onDrinksMenuClick={handleDrinksMenuClick}
+        />
+      )}
+      
+      {/* Show categories after selecting from cards or when only one menu type exists */}
       {!showMenuItems && showCategories && (foodItems.length > 0 || drinksItems.length > 0) && (
         <div className="flex flex-col h-screen">
           {/* Fixed Header Section */}
-          <div className="sticky top-16 z-30 bg-white">
+          <div className="sticky top-24 z-30 bg-white">
             {/* Search Bar */}
             <SearchBar 
               searchQuery={searchQuery}
               onSearchChange={(value) => setSearchQuery(value)}
             />
             
-            {/* Menu Type Selector - Hide when searching */}
+            {/* Menu Type Selector - Hidden
             {!searchQuery && (
               <MenuTypeSelector
                 currentMenuType={currentMenuType || 'cards'}
@@ -455,6 +502,7 @@ function InDiningOrder() {
                 onDrinksClick={handleDrinksMenuClick}
               />
             )}
+            */}
           </div>
           
           {/* Scrollable Category Grid */}
@@ -544,33 +592,12 @@ function InDiningOrder() {
       {/* Menu Items - Directly show without filters */}
       {showMenuItems && (
       <>
-      {/* Header with back button, category name and item count */}
-      <div className="bg-white border-b border-gray-200 sticky top-16 z-30">
+      {/* Header with category name and item count */}
+      <div className="bg-white border-b border-gray-200 sticky top-24 z-30">
         <div className="mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
-            {/* Left side - Back button and category name */}
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => {
-                  dispatch(setShowMenuItems(false));
-                  setShowCategories(true);
-                }}
-                className="p-2 rounded-full hover:bg-gray-100 transition-colors"
-              >
-                <svg 
-                  className="w-6 h-6" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  viewBox="0 0 24 24"
-                >
-                  <path 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round" 
-                    strokeWidth={2} 
-                    d="M15 19l-7-7 7-7" 
-                  />
-                </svg>
-              </button>
+            {/* Left side - Category name */}
+            <div className="flex items-center">
               <h2 className="text-xl font-semibold text-gray-900">
                 {selectedCategory === 'All' ? 'All Items' : selectedCategory}
               </h2>

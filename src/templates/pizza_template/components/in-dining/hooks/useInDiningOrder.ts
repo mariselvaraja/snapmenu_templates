@@ -94,9 +94,9 @@ export const useInDiningOrder = () => {
     dispatch(fetchTableStatusRequest(tableFromQuery));
   }, [location]);
 
-  useEffect(() => {
-    dispatch(getInDiningOrdersRequest());
-  }, [dispatch]);
+  // useEffect(() => {
+  //   dispatch(getInDiningOrdersRequest());
+  // }, [dispatch]);
 
   useEffect(() => {
     if (!loading && (foodItems.length > 0 || drinksItems.length > 0)) {

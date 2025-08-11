@@ -8,6 +8,7 @@ import { RootState } from '../../../../common/store';
 import { InDiningOrder } from '../../../../common/redux/slices/inDiningOrderSlice';
 import { getOrderHistoryRequest } from '../../../../common/redux/slices/orderHistorySlice';
 import { clearCart } from '../../../../common/redux/slices/inDiningCartSlice';
+import { resetPaymentState } from '../../../../common/redux/slices/paymentSlice';
 import { useWebSocketOrders } from '../../hooks/useWebSocketOrders';
 import usePaymentManagement from '../../hooks/usePaymentManagement';
 import VerifyingPaymentPopup from '../VerifyingPaymentPopup';
@@ -88,7 +89,7 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
   const [previousPaymentResponse, setPreviousPaymentResponse] = useState<any>(null);
 
   useEffect(() => {
-    if (paymentState.paymentResponse && paymentState.paymentResponse !== previousPaymentResponse) {
+    if (paymentState.paymentResponse) {
       console.log('Global payment response received:', paymentState.paymentResponse);
       setPreviousPaymentResponse(paymentState.paymentResponse);
       
@@ -107,13 +108,12 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
         
         // Then use the new payment management system
         initiatePayment(paymentLink);
+        dispatch(resetPaymentState())
       } else if (paymentState.paymentResponse?.message) {
         // Handle direct payment response without link
         if (paymentState.paymentResponse?.success === true) {
           showToast('Payment completed successfully!', 'success');
-        } else {
-          showToast(paymentState.paymentResponse.message || 'Payment failed', 'error');
-        }
+        } 
       }
     }
   }, [paymentState.paymentResponse, previousPaymentResponse, initiatePayment, showToast, showBill]);
@@ -138,7 +138,7 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
       // Show brief update indicator
       setShowUpdateIndicator(true);
       setTimeout(() => setShowUpdateIndicator(false), 2000);
-      
+      console.log("tableFromQuery", tableFromQuery)
       // Refresh orders data when order is updated
       if (tableFromQuery) {
         dispatch(getOrderHistoryRequest(tableFromQuery));
@@ -691,7 +691,12 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
         <BillComponent 
           onClose={() => {
             setShowBill(false);
-            // Don't refresh orders when bill component is closed manually
+            // Clear payment state when bill is closed manually
+            dispatch(resetPaymentState());
+            // Refresh orders when bill is closed
+            if (tableFromQuery) {
+              dispatch(getOrderHistoryRequest(tableFromQuery));
+            }
           }} 
           order={orders} 
           tableNumber={tableNumber}
@@ -699,21 +704,24 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
       )}
 
       {/* Global Payment Popup Components - Show even when bill is closed */}
-      {/* <VerifyingPaymentPopup
+      <VerifyingPaymentPopup
         isOpen={showVerifyingPaymentPopup}
         onClose={() => {
           resetAllPopupStates();
+          dispatch(resetPaymentState())
           // Refresh orders when verifying popup is closed
           if (tableFromQuery) {
             dispatch(getOrderHistoryRequest(tableFromQuery));
           }
         }}
-      /> */}
+      />
 
       <PaymentSuccessPopup
         isOpen={showPaymentSuccessPopup}
         onClose={() => {
           resetAllPopupStates();
+          // Clear payment state
+          dispatch(resetPaymentState());
           // Clear the cart when payment success popup is closed
           dispatch(clearCart());
           // Refresh orders when success popup is closed
@@ -723,6 +731,8 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
         }}
         onContinue={() => handlePaymentSuccess(() => {
           showToast('Payment completed successfully!', 'success');
+          // Clear payment state
+          dispatch(resetPaymentState());
           // Clear the cart when payment is successful
           dispatch(clearCart());
           // Refresh orders after successful payment
@@ -760,12 +770,16 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
         isOpen={showPaymentFailedProcessingPopup}
         onClose={() => {
           resetAllPopupStates();
+          // Clear payment state
+          dispatch(resetPaymentState());
           // Refresh orders when processing failed popup is closed
           if (tableFromQuery) {
             dispatch(getOrderHistoryRequest(tableFromQuery));
           }
         }}
         onTryAgain={() => handlePaymentRetry(() => {
+          // Clear payment state before retry
+          dispatch(resetPaymentState());
           // Retry the payment with the same payment link
           if (paymentState.paymentResponse?.paymentLink || 
               paymentState.paymentResponse?.payment_link || 

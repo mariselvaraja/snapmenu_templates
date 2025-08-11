@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShoppingCart } from 'lucide-react';
+import { ShoppingCart, ArrowLeft } from 'lucide-react';
 import { useDispatch } from 'react-redux';
 import { toggleDrawer } from '../../../../common/redux/slices/inDiningCartSlice';
 
@@ -8,31 +8,45 @@ interface NavbarProps {
   tableName: string;
   cartItems: any[];
   onLogoClick: () => void;
+  onBackClick?: () => void;
 }
 
 const Navbar: React.FC<NavbarProps> = ({
   brand,
   tableName,
   cartItems,
-  onLogoClick
+  onLogoClick,
+  onBackClick
 }) => {
   const dispatch = useDispatch();
 
   return (
     <div className="sticky top-0 z-40 bg-black bg-opacity-90 backdrop-blur-sm shadow-md">
       <div className="mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Main navbar row */}
         <div className="flex justify-between items-center h-16">
-          {/* Restaurant Name with Icon and Table Number */}
-          <div 
-            className="flex-shrink-0 flex items-center cursor-pointer"
-            onClick={onLogoClick}
-          >
-            <img src={brand.logo.icon} alt={brand.name || 'Restaurant'} className="h-8 w-auto" />
-            <div className='ml-5'>
-              <h1 className="text-xl font-bold text-white hover:text-gray-200 transition-colors">{brand?.name}</h1>
-              <p className="text-xs text-gray-300">
-                Table Number: {tableName}
-              </p>
+          {/* Left section with back arrow and restaurant info */}
+          <div className="flex items-center">
+            {/* Back Arrow */}
+            {onBackClick && (
+              <button
+                onClick={onBackClick}
+                className="p-2 rounded-full hover:bg-gray-800 transition-colors mr-3"
+                aria-label="Go back"
+              >
+                <ArrowLeft className="h-6 w-6 text-white" />
+              </button>
+            )}
+            
+            {/* Restaurant Name with Icon */}
+            <div 
+              className="flex items-center cursor-pointer"
+              onClick={onLogoClick}
+            >
+              <img src={brand.logo.icon} alt={brand.name || 'Restaurant'} className="h-12 w-auto" />
+              <div className='ml-5'>
+                <h1 className="text-2xl font-bold text-white hover:text-gray-200 transition-colors">{brand?.name}</h1>
+              </div>
             </div>
           </div>
           
@@ -56,6 +70,13 @@ const Navbar: React.FC<NavbarProps> = ({
               </div>
             </div>
           </div>
+        </div>
+        
+        {/* Table name row */}
+        <div className="text-center pb-3">
+          <p className="text-xl font-semibold text-white">
+            {tableName}
+          </p>
         </div>
       </div>
     </div>
