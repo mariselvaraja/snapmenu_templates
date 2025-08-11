@@ -13,9 +13,8 @@ interface CategoryGridProps {
 export default function CategoryGrid({ categories, onCategoryClick }: CategoryGridProps) {
   return (
     <div className="w-full px-4 py-6">
-      {/* <h2 className="text-xl font-semibold text-gray-800 mb-6">Choose your favorite category</h2> */}
       
-      <div className="grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-3 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
         {categories.map((category, index) => (
           <motion.div
             key={category.name}
@@ -25,33 +24,14 @@ export default function CategoryGrid({ categories, onCategoryClick }: CategoryGr
             onClick={() => onCategoryClick(category.name)}
             className="cursor-pointer group"
           >
-            <div className="flex flex-col items-center">
-              {/* Circular Image Container */}
-              <div className="relative w-24 h-24 sm:w-32 sm:h-32 mb-3">
-                <div className="absolute inset-0 bg-gray-100 rounded-full overflow-hidden group-hover:ring-4 group-hover:ring-red-100 transition-all duration-200">
-                  {category.image ? (
-                    <img
-                      src={category.image}
-                      alt={category.name}
-                      className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-300"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-red-50">
-                      <span className="text-2xl sm:text-3xl font-bold text-red-400">
-                        {category.name.charAt(0)}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
-              
+            <div className="bg-white rounded-lg border-2 border-red-500 p-4 text-center hover:bg-red-50 hover:shadow-lg transition-all duration-200 h-full flex flex-col justify-center min-h-[100px]">
               {/* Category Name */}
-              <h3 className="text-sm sm:text-base font-medium text-gray-800 text-center group-hover:text-red-500 transition-colors">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-800 group-hover:text-red-600 transition-colors mb-1">
                 {category.name}
               </h3>
               
-              {/* Item Count (optional) */}
-              <p className="text-xs text-gray-500 mt-1">
+              {/* Item Count */}
+              <p className="text-sm text-gray-600">
                 {category.itemCount} items
               </p>
             </div>

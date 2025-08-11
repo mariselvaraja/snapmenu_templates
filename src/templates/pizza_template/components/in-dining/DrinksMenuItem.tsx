@@ -25,7 +25,7 @@ const DrinksMenuItem: React.FC<DrinksMenuItemProps> = ({ item, onProductClick, o
   return (
     <motion.div
       initial={{ opacity: 1, y: 0 }}
-      className="bg-white rounded-xl shadow-sm p-3 flex items-center gap-3 hover:shadow-md transition-shadow"
+      className="bg-white p-2 flex items-center gap-3 border-b border-gray-100 hover:bg-gray-50 transition-all m-0"
     >
       {/* Image */}
       <div 

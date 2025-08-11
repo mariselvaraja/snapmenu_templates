@@ -4,3 +4,4 @@ export { default as InDiningProductDetails } from './InDiningProductDetails';
 export { default as InDiningOrders } from './InDiningOrders';
 export { default as BillComponent } from './BillComponent';
 export { default as FilterDrawer } from './FilterDrawer';
+export { default as Banner } from './Banner';

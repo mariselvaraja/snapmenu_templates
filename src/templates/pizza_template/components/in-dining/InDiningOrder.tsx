@@ -462,7 +462,7 @@ function InDiningOrder() {
             {searchQuery ? (
             // Show filtered items when searching
             <div className="mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="grid grid-cols-1 gap-3">
+              <div className="grid grid-cols-1 gap-0">
                 {(() => {
                   // Search in both food and drinks
                   const foodSearchResults = foodItems.filter(item => 
@@ -585,11 +585,11 @@ function InDiningOrder() {
       </div>
 
       <div className="mt-3 mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 gap-3">
+        <div className="grid grid-cols-1 gap-0">
           {/* Menu Items */}
           {currentMenuType === "food" &&
             <div>
-              <div className="space-y-4 sm:space-y-6">
+              <div className="space-y-0">
                 {loading ? (
                   <div className="text-center py-8">
                     <p>Loading menu items...</p>
@@ -619,7 +619,7 @@ function InDiningOrder() {
 
           {currentMenuType === "drinks" &&
             <div>
-              <div className="space-y-4 sm:space-y-6">
+              <div className="space-y-0">
                 {loading ? (
                   <div className="text-center py-8">
                     <p>Loading menu items...</p>

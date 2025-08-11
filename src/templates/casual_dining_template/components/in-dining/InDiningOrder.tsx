@@ -7,7 +7,7 @@ import { useDispatch } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 import { addItem, updateItemQuantity, removeItem, toggleDrawer } from '../../../../common/redux/slices/cartSlice';
 import { setSearchQuery } from '../../../../common/redux/slices/searchSlice';
-import { InDiningProductDetails, InDiningCartDrawer, InDiningOrders, FilterDrawer } from './index';
+import { InDiningProductDetails, InDiningCartDrawer, InDiningOrders, FilterDrawer, Banner } from './index';
 import SearchBarComponent from '../SearchBarComponent';
 
 export default function InDiningOrder() {
@@ -92,18 +92,13 @@ export default function InDiningOrder() {
     )
   ).sort();
   
-  // Calculate total price
-  const totalPrice = cartItems.reduce(
-    (total, item) => total + item.price * item.quantity, 
-    0
-  );
 
   const handleProductClick = (product: any) => {
     setSelectedProduct(product);
     setIsProductDetailsOpen(true);
     
     // Check if product is in cart to set initial quantity
-    const cartItem = cartItems.find(item => item.id === product.id);
+    const cartItem = cartItems.find((item:any) => item.id === product.id);
     setQuantity(cartItem ? cartItem.quantity : 1);
   };
   
@@ -134,7 +129,7 @@ export default function InDiningOrder() {
   const resetOrder = () => {
     setOrderPlaced(false);
     // Clear cart items
-    cartItems.forEach(item => {
+    cartItems.forEach((item:any) => {
       dispatch(removeItem(item.id));
     });
   };
@@ -220,7 +215,7 @@ export default function InDiningOrder() {
                   <ShoppingCart className="h-6 w-6 text-amber-500" />
                   {cartItems.length > 0 && (
                     <span className="absolute -top-1 -right-1 bg-amber-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                      {cartItems.reduce((total, item) => total + item.quantity, 0)}
+                      {cartItems.reduce((total:any, item:any) => total + item.quantity, 0)}
                     </span>
                   )}
                 </button>
@@ -246,6 +241,13 @@ export default function InDiningOrder() {
           </div>
         </div>
       </div>
+      
+      {/* Banner */}
+      <Banner 
+        message="Welcome! Enjoy 10% off on all orders today!"
+        type="promotional"
+        dismissible={true}
+      />
       
       {/* Menu Item Count and Categories */}
       <div className="sticky top-16">
