@@ -1,30 +1,28 @@
-import { motion } from 'framer-motion';
-import { useState, useEffect } from 'react';
-import { Utensils, Trash2, Plus, X, Minus, Search, UtensilsCrossed, Pizza, ArrowLeft, ShoppingCart, ClipboardList, Filter, Check, ChevronRight, Wine } from 'lucide-react';
-import { FaPepperHot } from "react-icons/fa";
-import InDiningModifierModal from './InDiningModifierModal';
-import InDiningDrinksModifierModal from './InDiningDrinksModifierModal';
-import { LuVegan } from 'react-icons/lu';
-import { IoLeafOutline } from 'react-icons/io5';
-import { CiWheat } from 'react-icons/ci';
-import { GoDotFill } from 'react-icons/go';
-import { useSelector } from 'react-redux';
-import { RootState, AppDispatch } from '../../../../common/store';
-import { useDispatch } from 'react-redux';
+import  { useState, useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import { useLocation } from 'react-router-dom';
-import { addItem, removeItem, toggleDrawer, setTableId } from '../../../../common/redux/slices/inDiningCartSlice';
+import { RootState, AppDispatch } from '../../../../common/store';
+import { addItem, removeItem, toggleDrawer } from '../../../../common/redux/slices/inDiningCartSlice';
 import { setSearchQuery } from '../../../../common/redux/slices/searchSlice';
 import { getInDiningOrdersRequest, placeInDiningOrderRequest } from '../../../../common/redux/slices/inDiningOrderSlice';
 import { setShowMenuItems, setMenuItems, setCurrentMenuType } from '../../../../common/redux/slices/menuSlice';
+import { fetchTableStatusRequest } from '../../../../common/redux/slices/tableStatusSlice';
+import { getOrderHistoryRequest } from '../../../../common/redux/slices/orderHistorySlice';
+import { useAppSelector } from '../../../../redux';
 import SearchBarComponent from '../SearchBarComponent';
 import InDiningProductDetails from './InDiningProductDetails';
 import InDiningCartDrawer from './InDiningCartDrawer';
 import InDiningOrders from './InDiningOrders';
 import OrdersBottomBar from './OrdersBottomBar';
-import { fetchTableStatusRequest } from '@/common/redux/slices/tableStatusSlice';
-import { useAppSelector } from '@/redux';
-import { getOrderHistoryRequest } from '@/common/redux/slices/orderHistorySlice';
-import InDiningCards from './InDiningCards';
+import CategoryGrid from './CategoryGrid';
+import SearchBar from './SearchBar';
+import MenuTypeSelector from './MenuTypeSelector';
+import InDiningModifierModal from './InDiningModifierModal';
+import InDiningDrinksModifierModal from './InDiningDrinksModifierModal';
+import Navbar from './Navbar';
+import FoodMenuItem from './FoodMenuItem';
+import DrinksMenuItem from './DrinksMenuItem';
+import EmptyState from './EmptyState';
 
 function InDiningOrder() {
   const [orderPlaced, setOrderPlaced] = useState<boolean>(false);
@@ -41,7 +39,33 @@ function InDiningOrder() {
   const [isModifierModalOpen, setIsModifierModalOpen] = useState<boolean>(false);
   const [isDrinksModifierModalOpen, setIsDrinksModifierModalOpen] = useState<boolean>(false);
   const [selectedMenuItem, setSelectedMenuItem] = useState<any>(null);
-  const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
+  const [showCategories, setShowCategories] = useState<boolean>(false);
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  
+  // Helper function to get categories with first item image
+  const getCategoriesWithImages = (items: any[], menuType: string) => {
+    const categoryMap = new Map();
+    
+    items.forEach(item => {
+      const categoryName = menuType === 'drinks' ? item.type : item.category;
+      if (categoryName && !categoryMap.has(categoryName)) {
+        categoryMap.set(categoryName, {
+          name: categoryName,
+          image: item.image || '',
+          itemCount: 1
+        });
+      } else if (categoryName && categoryMap.has(categoryName)) {
+        const cat = categoryMap.get(categoryName);
+        cat.itemCount++;
+        // Use first available image
+        if (!cat.image && item.image) {
+          cat.image = item.image;
+        }
+      }
+    });
+    
+    return Array.from(categoryMap.values()).sort((a, b) => a.name.localeCompare(b.name));
+  };
   
   // Get table number from URL
   const location = useLocation();
@@ -57,10 +81,6 @@ function InDiningOrder() {
   const navigationBar = siteContent?.navigationBar || { brand: { logo: {} }, navigation: [] };
   const homepage = siteContent.homepage;
   const { brand } = homepage;
-  const heroData = homepage?.hero;
-
-  // Use heroData.banners if available, otherwise use empty array
-  const banners = heroData?.banners?.length > 0 ? heroData.banners : [];
   const table_name = sessionStorage.getItem('Tablename');
   const searchParams = new URLSearchParams(location.search);
   const tableFromQuery:any = searchParams.get('table');
@@ -77,10 +97,6 @@ function InDiningOrder() {
   const loading = useSelector((state: RootState) => state.menu.loading);
   const showMenuItems = useSelector((state: RootState) => state.menu.showMenuItems);
   const currentMenuType = useSelector((state: RootState) => state.menu.currentMenuType);
-  
-  // Determine whether to show cards or directly show menu
-  const shouldShowCards = foodItems.length > 0 && drinksItems.length > 0;
-  const shouldDirectlyShowMenu = (foodItems.length > 0 && drinksItems.length === 0) || (foodItems.length === 0 && drinksItems.length > 0);
 
   
   useEffect(()=>{
@@ -126,18 +142,6 @@ function InDiningOrder() {
     dispatch(fetchTableStatusRequest(tableFromQuery))
   }, [location]);
   
-  // Auto-rotate carousel
-  useEffect(() => {
-    if (banners.length > 1) {
-      const interval = setInterval(() => {
-        setCurrentBannerIndex((prevIndex) => 
-          (prevIndex + 1) % banners.length
-        );
-      }, 5000); // Change slide every 5 seconds
-      
-      return () => clearInterval(interval);
-    }
-  }, [banners.length]);
   
   // Fetch in-dining orders when component mounts
   useEffect(() => {
@@ -147,54 +151,19 @@ function InDiningOrder() {
   // Set menu type based on available data when page loads
   useEffect(() => {
     if (!loading && (foodItems.length > 0 || drinksItems.length > 0)) {
-      // Determine menu type based on available data
-      if (foodItems.length > 0 && drinksItems.length === 0) {
-        // Only food menu has data
+      // Default to food menu
+      if (foodItems.length > 0) {
         dispatch(setCurrentMenuType('food'));
+        setShowCategories(true); // Show categories directly
+        dispatch(setShowMenuItems(false));
       } else if (drinksItems.length > 0 && foodItems.length === 0) {
         // Only drinks menu has data
         dispatch(setCurrentMenuType('drinks'));
-      } else if (foodItems.length > 0 && drinksItems.length > 0) {
-        // Both have data - set to cards if not already set
-        if (!currentMenuType) {
-          dispatch(setCurrentMenuType('cards'));
-        }
+        setShowCategories(true);
+        dispatch(setShowMenuItems(false));
       }
     }
   }, [loading, foodItems, drinksItems]);
-
-  // Auto-show menu if only one type has data OR restore from session storage
-  useEffect(() => {
-    if (!loading) {
-      switch (currentMenuType) {
-        case 'food':
-          if (foodItems.length > 0) {
-            dispatch(setShowMenuItems(true));
-            dispatch(setMenuItems(foodItems));
-            dispatch(setCurrentMenuType('food'));
-          }
-          break;
-        case 'drinks':
-          if (drinksItems.length > 0) {
-            dispatch(setShowMenuItems(true));
-            dispatch(setMenuItems(drinksItems));
-            dispatch(setCurrentMenuType('drinks'));
-          }
-          break;
-        default:
-          break;
-      }
-
-      if (!showMenuItems && shouldDirectlyShowMenu) {
-        dispatch(setShowMenuItems(true));
-        if (foodItems.length > 0 && drinksItems.length === 0) {
-          dispatch(setMenuItems(foodItems));
-        } else if (drinksItems.length > 0 && foodItems.length === 0) {
-          dispatch(setMenuItems(drinksItems));
-        }
-      }
-    }
-  }, [loading, currentMenuType, foodItems, drinksItems]);
 
   
   // Filter menu items by selected category and subcategory
@@ -402,21 +371,32 @@ function InDiningOrder() {
     // }
   };
 
-  // Handlers for InDiningCards - use stored data and set menu type
+  // Handlers for menu type selection
   const handleFoodMenuClick = () => {
-    dispatch(setShowMenuItems(true));
-    dispatch(setMenuItems(foodItems)); // Use stored food items
-    dispatch(setCurrentMenuType('food')); // Set current menu type
+    dispatch(setCurrentMenuType('food'));
+    setShowCategories(true);
     setSelectedCategory('All');
     setSelectedSubcategory('All');
   };
 
   const handleDrinksMenuClick = () => {
-    dispatch(setShowMenuItems(true));
-    dispatch(setMenuItems(drinksItems)); // Use stored drinks items
-    dispatch(setCurrentMenuType('drinks')); // Set current menu type
+    dispatch(setCurrentMenuType('drinks'));
+    setShowCategories(true);
     setSelectedCategory('All');
     setSelectedSubcategory('All');
+  };
+
+  // Handler for category selection
+  const handleCategoryClick = (categoryName: string) => {
+    const items = currentMenuType === 'food' ? foodItems : drinksItems;
+    const filteredItems = items.filter(item => 
+      currentMenuType === 'drinks' ? item.type === categoryName : item.category === categoryName
+    );
+    
+    dispatch(setMenuItems(filteredItems));
+    dispatch(setShowMenuItems(true));
+    setShowCategories(false);
+    setSelectedCategory(categoryName);
   };
 
   // Show orders view if showOrders is true
@@ -443,362 +423,167 @@ function InDiningOrder() {
   return (
     <div className="pt-0 pb-20 sm:pb-24">
       {/* Navbar */}
-      <div className="sticky top-0 z-40 bg-black bg-opacity-90 backdrop-blur-sm shadow-md">
-        <div className=" mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            {/* Restaurant Name with Icon and Table Number */}
-            <div className="flex-shrink-0 flex items-center">
-              <img src={brand.logo.icon} alt={brand.name || 'Restaurant'} className="h-8 w-auto" />
-              <div className='ml-5'>
-                <h1 className="text-xl font-bold text-white">{brand?.name}</h1>
-                <p className="text-xs text-gray-300">
-                  Table Number: {tableName}
-                </p>
-              </div>
-            </div>
+      <Navbar
+        brand={brand}
+        tableName={tableName}
+        cartItems={cartItems}
+        onLogoClick={() => {
+          dispatch(setShowMenuItems(false));
+          setShowCategories(true);
+          setSelectedCategory('All');
+          setSelectedSubcategory('All');
+        }}
+      />
+      
+      {/* Show categories directly without cards */}
+      {!showMenuItems && showCategories && (foodItems.length > 0 || drinksItems.length > 0) && (
+        <div className="flex flex-col h-screen">
+          {/* Fixed Header Section */}
+          <div className="sticky top-16 z-30 bg-white">
+            {/* Search Bar */}
+            <SearchBar 
+              searchQuery={searchQuery}
+              onSearchChange={(value) => setSearchQuery(value)}
+            />
             
-            {/* Icons on right */}
-            <div className="flex items-center space-x-4">
-              {/* Search Icon with Tooltip */}
-              <div className="relative group">
-                <button 
-                  onClick={() => {
-                    setIsSearchActive(true);
-                    dispatch(setSearchQuery(''));
-                  }}
-                  className="p-2 rounded-full hover:bg-black hover:bg-opacity-50"
-                  aria-label="Search"
-                >
-                  <Search className="h-6 w-6 text-red-500" />
-                </button>
-                <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
-                  Search
-                </div>
-              </div>
-              
-              {/* Cart Icon with Tooltip */}
-              <div className="relative group">
-                <button 
-                  onClick={() => dispatch(toggleDrawer())}
-                  className="p-2 rounded-full hover:bg-black hover:bg-opacity-50 relative"
-                  aria-label="Cart"
-                >
-                  <ShoppingCart className="h-6 w-6 text-red-500" />
-                  {cartItems.length > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                      {cartItems.reduce((total:any, item:any) => total + item.quantity, 0)}
-                    </span>
-                  )}
-                </button>
-                <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
-                  {cartItems.length > 0 ? `Cart (${cartItems.length})` : 'Cart'}
-                </div>
+            {/* Menu Type Selector */}
+            <MenuTypeSelector
+              currentMenuType={currentMenuType || 'cards'}
+              showCategories={showCategories}
+              onFoodClick={handleFoodMenuClick}
+              onDrinksClick={handleDrinksMenuClick}
+            />
+          </div>
+          
+          {/* Scrollable Category Grid */}
+          <div className="flex-1 overflow-y-auto pb-20">
+            {searchQuery ? (
+            // Show filtered items when searching
+            <div className="mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="grid grid-cols-1 gap-3">
+                {(() => {
+                  // Search in both food and drinks
+                  const foodSearchResults = foodItems.filter(item => 
+                    item.name.toLowerCase().includes(searchQuery.toLowerCase())
+                  );
+                  const drinksSearchResults = drinksItems.filter(item => 
+                    item.name.toLowerCase().includes(searchQuery.toLowerCase())
+                  );
+                  
+                  const totalResults = foodSearchResults.length + drinksSearchResults.length;
+                  
+                  if (totalResults === 0) {
+                    return (
+                      <div className="text-center py-8">
+                        <p className="text-gray-500">No items found matching "{searchQuery}"</p>
+                      </div>
+                    );
+                  }
+                  
+                  return (
+                    <>
+                      {/* Food Results */}
+                      {foodSearchResults.length > 0 && (
+                        <>
+                          <div className="text-sm font-medium text-gray-600 mt-2">
+                            Food ({foodSearchResults.length})
+                          </div>
+                          {foodSearchResults.map((item) => (
+                            <FoodMenuItem
+                              key={item.id}
+                              item={item}
+                              onProductClick={handleProductClick}
+                              onAddClick={openModifiersPopup}
+                            />
+                          ))}
+                        </>
+                      )}
+                      
+                      {/* Drinks Results */}
+                      {drinksSearchResults.length > 0 && (
+                        <>
+                          <div className="text-sm font-medium text-gray-600 mt-4">
+                            Drinks ({drinksSearchResults.length})
+                          </div>
+                          {drinksSearchResults.map((item) => (
+                            <DrinksMenuItem
+                              key={item.id}
+                              item={item}
+                              onProductClick={handleProductClick}
+                              onAddClick={openDrinksModifierPopup}
+                            />
+                          ))}
+                        </>
+                      )}
+                    </>
+                  );
+                })()}
               </div>
             </div>
+          ) : (
+            // Show category grid when not searching
+            <CategoryGrid
+              categories={getCategoriesWithImages(
+                currentMenuType === 'food' ? foodItems : drinksItems,
+                currentMenuType || 'food'
+              )}
+              onCategoryClick={handleCategoryClick}
+            />
+          )}
           </div>
         </div>
-      </div>
-      
-      {/* Hero Banner Section with Carousel - Only render if banners exist */}
-      {banners && banners.length > 0 && (
-        <section className="relative h-64 sm:h-80 flex items-center overflow-hidden">
-          <div className="absolute inset-0 z-0">
-            {banners.map((banner: { image: string }, index: number) => (
-              <motion.div
-                key={index}
-                className="absolute inset-0"
-                initial={{ opacity: 0 }}
-                animate={{ 
-                  opacity: index === currentBannerIndex ? 1 : 0,
-                  zIndex: index === currentBannerIndex ? 1 : 0
-                }}
-                transition={{ duration: 0.8 }}
-                style={{
-                  backgroundImage: `url('${banner.image}')`,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                }}
-              >
-                <div className="absolute inset-0 bg-black bg-opacity-40"></div>
-              </motion.div>
-            ))}
-          </div>
-
-          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-white w-full">
-            <motion.div
-              key={currentBannerIndex}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-              className="text-center"
-            >
-              <h1 className="text-3xl md:text-5xl font-bold mb-4">
-                {banners[currentBannerIndex]?.title || 'Welcome to Our Restaurant'}
-              </h1>
-              <p className="text-lg md:text-xl mb-6 max-w-2xl mx-auto">
-                {banners[currentBannerIndex]?.subtitle || 'Discover our delicious menu'}
-              </p>
-            </motion.div>
-            
-            {/* Carousel indicators */}
-            {banners.length > 1 && (
-              <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
-                {banners.map((_: any, index: number) => (
-                  <button
-                    key={index}
-                    onClick={() => setCurrentBannerIndex(index)}
-                    className={`w-3 h-3 rounded-full transition-colors ${
-                      index === currentBannerIndex ? 'bg-white' : 'bg-white bg-opacity-50'
-                    }`}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-        </section>
-      )}
-
-      {/* Show InDiningCards if both menus have data */}
-      {!showMenuItems && shouldShowCards && (
-        <InDiningCards 
-          onFoodMenuClick={handleFoodMenuClick}
-          onDrinksMenuClick={handleDrinksMenuClick}
-        />
       )}
       
       {/* Show empty state if both menus are empty */}
       {!loading && !showMenuItems && foodItems.length === 0 && drinksItems.length === 0 && (
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="text-center max-w-md px-4">
-            <div className="w-24 h-24 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6">
-              <UtensilsCrossed className="h-12 w-12 text-red-400" style={{ color: '#ef4421' }} />
-            </div>
-            <h3 className="text-xl font-semibold text-black-800 mb-3">No Menu Available</h3>
-            <p className="text-black-600 mb-8 text-sm">
-              We're currently updating our menu. Please check back later or contact our staff for assistance.
-            </p>
-          </div>
-        </div>
+        <EmptyState isMenuEmpty={true} />
       )}
       
-      {/* Menu Item Count and Categories - Only show when menu items should be displayed */}
+      {/* Menu Items - Directly show without filters */}
       {showMenuItems && (
       <>
-      <div className="sticky top-16 z-30">
-        <div className="bg-white shadow-sm">
-          <div className="mx-auto px-4 sm:px-6 lg:px-8">
-            {/* Desktop View */}
-            <div className="hidden sm:flex py-3 justify-between items-center pt-5">
-                <div className="flex items-center gap-4">
-                  {shouldShowCards &&
-                    <button
-                      onClick={() => dispatch(setShowMenuItems(false))}
-                      className="flex items-center gap-2 px-3 py-1 rounded-full bg-gray-100 hover:bg-gray-200 text-black-700 text-sm font-medium transition-colors"
-                    >
-                      <ArrowLeft className="h-4 w-4" />
-                      Back to Menu
-                    </button>
-                   }
-                  <div className="text-sm font-medium text-gray-700">
-                    Showing {filteredMenuItems.length} menu items
-                  </div>
-                </div>
-             
-              <div className="overflow-x-auto">
-                <div className="flex space-x-2">
-                  {selectedCategory === 'All' ? (
-                    <>
-                      {/* All Category */}
-                      <button
-                        key="All"
-                        onClick={() => {
-                          setSelectedCategory('All');
-                          setSelectedSubcategory('All');
-                        }}
-                        className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex items-center ${
-                          selectedCategory === 'All'
-                            ? 'bg-red-500 text-white'
-                            : 'bg-gray-300 text-gray-800 hover:bg-gray-400'
-                        }`}
-                      >
-                        All
-                      </button>
-                      
-                      {/* Main categories */}
-                      {uniqueCategories.map((category) => (
-                        <button
-                          key={category}
-                          onClick={() => {
-                            setSelectedCategory(category || '');
-                            setSelectedSubcategory('All');
-                          }}
-                          className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex items-center gap-1 ${
-                            selectedCategory === category
-                              ? 'bg-red-500 text-white'
-                              : 'bg-gray-300 text-gray-800 hover:bg-gray-400'
-                          }`}
-                        >
-                          {category}
-                          <ChevronRight className="h-3 w-3" />
-                        </button>
-                      ))}
-                    </>
-                  ) : (
-                    <>
-                      {/* Show All Categories button */}
-                      <button
-                        onClick={() => {
-                          setSelectedCategory('All');
-                          setSelectedSubcategory('All');
-                        }}
-                        className="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex items-center bg-gray-300 text-gray-800 hover:bg-gray-400"
-                      >
-                        All
-                      </button>
-                      
-                      {/* All Subcategories for selected category */}
-                      <button
-                        onClick={() => {
-                          setSelectedSubcategory('All');
-                        }}
-                        className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex items-center ${
-                          selectedSubcategory === 'All'
-                            ? 'bg-red-500 text-white'
-                            : 'bg-gray-300 text-gray-800 hover:bg-gray-400'
-                        }`}
-                      >
-                        All {selectedCategory}
-                      </button>
-                      
-                      {/* Subcategories for selected category */}
-                      {uniqueSubcategories.map((subcategory) => (
-                        <button
-                          key={subcategory}
-                          onClick={() => {
-                            setSelectedSubcategory(subcategory || '');
-                          }}
-                          className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex items-center ${
-                            selectedSubcategory === subcategory
-                              ? 'bg-red-500 text-white'
-                              : 'bg-gray-300 text-gray-800 hover:bg-gray-400'
-                          }`}
-                        >
-                          {subcategory}
-                        </button>
-                      ))}
-                    </>
-                  )}
-                </div>
-              </div>
+      {/* Header with back button, category name and item count */}
+      <div className="bg-white border-b border-gray-200 sticky top-16 z-30">
+        <div className="mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex justify-between items-center">
+            {/* Left side - Back button and category name */}
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => {
+                  dispatch(setShowMenuItems(false));
+                  setShowCategories(true);
+                }}
+                className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+              >
+                <svg 
+                  className="w-6 h-6" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    strokeWidth={2} 
+                    d="M15 19l-7-7 7-7" 
+                  />
+                </svg>
+              </button>
+              <h2 className="text-xl font-semibold text-gray-900">
+                {selectedCategory === 'All' ? 'All Items' : selectedCategory}
+              </h2>
             </div>
             
-            {/* Mobile View */}
-            <div className="sm:hidden py-2">
-              {shouldShowCards &&
-                <div className="my-6">
-                  <button
-                    onClick={() => dispatch(setShowMenuItems(false))}
-                    className="flex items-center gap-2 p-2 rounded-full bg-gray-100 hover:bg-gray-200 text-black-700 text-sm font-medium transition-colors"
-                  >
-                    <ArrowLeft className="h-4 w-4" />
-                    Back to Menu
-                  </button>
-                </div>
-              }
-              <div className="overflow-x-auto">
-                <div className="flex space-x-2">
-                  {selectedCategory === 'All' ? (
-                    <>
-                      {/* All Category */}
-                      <button
-                        key="All"
-                        onClick={() => {
-                          setSelectedCategory('All');
-                          setSelectedSubcategory('All');
-                        }}
-                        className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex items-center ${
-                          selectedCategory === 'All'
-                            ? 'bg-red-500 text-white'
-                            : 'bg-gray-300 text-gray-800 hover:bg-gray-400'
-                        }`}
-                      >
-                        All
-                      </button>
-                      
-                      {/* Main categories - show all in mobile */}
-                      {uniqueCategories.map((category) => (
-                        <button
-                          key={category}
-                          onClick={() => {
-                            setSelectedCategory(category || '');
-                            setSelectedSubcategory('All');
-                            sessionStorage.setItem('selectedCategory', 'All');
-                          }}
-                          className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex items-center gap-1 ${
-                            selectedCategory === category
-                              ? 'bg-red-500 text-white'
-                              : 'bg-gray-300 text-gray-800 hover:bg-gray-400'
-                          }`}
-                        >
-                          {category}
-                          <ChevronRight className="h-3 w-3" />
-                        </button>
-                      ))}
-                    </>
-                  ) : (
-                    <>
-                      {/* Show All Categories button */}
-                      <button
-                        onClick={() => {
-                          setSelectedCategory('All');
-                          setSelectedSubcategory('All');
-                        }}
-                        className="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex items-center bg-gray-300 text-gray-800 hover:bg-gray-400"
-                      >
-                         All 
-                      </button>
-                      
-                      {/* All Subcategories for selected category */}
-                      <button
-                        onClick={() => {
-                          setSelectedSubcategory('All');
-                        }}
-                        className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex items-center ${
-                          selectedSubcategory === 'All'
-                            ? 'bg-red-500 text-white'
-                            : 'bg-gray-300 text-gray-800 hover:bg-gray-400'
-                        }`}
-                      >
-                        All {selectedCategory}
-                      </button>
-                      
-                      {/* Subcategories for selected category */}
-                      {uniqueSubcategories.map((subcategory) => (
-                        <button
-                          key={subcategory}
-                          onClick={() => {
-                            setSelectedSubcategory(subcategory);
-                          }}
-                          className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex items-center ${
-                            selectedSubcategory === subcategory
-                              ? 'bg-red-500 text-white'
-                              : 'bg-gray-300 text-gray-800 hover:bg-gray-400'
-                          }`}
-                        >
-                          {subcategory}
-                        </button>
-                      ))}
-                    </>
-                  )}
-                </div>
-              </div>
+            {/* Right side - Item count */}
+            <div className="text-sm text-gray-600">
+              {filteredMenuItems.length} {filteredMenuItems.length === 1 ? 'item' : 'items'}
             </div>
           </div>
         </div>
       </div>
-      
-      <div className=" mt-3 mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 gap-6 sm:gap-8">
+
+      <div className="mt-3 mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 gap-3">
           {/* Menu Items */}
           {currentMenuType === "food" &&
             <div>
@@ -812,123 +597,18 @@ function InDiningOrder() {
                     <p>No menu items available</p>
                   </div>
                 ) : filteredMenuItems.length === 0 ? (
-                  <div className="flex items-center justify-center h-[50vh]">
-                    <div className="text-center max-w-md">
-                      <div className="w-24 h-24 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                        <UtensilsCrossed className="h-12 w-12 text-red-400" />
-                      </div>
-                      <h3 className="text-2xl font-semibold text-gray-800 mb-3">No Items Available</h3>
-                      <p className="text-gray-600 mb-8 px-4">
-                        There are no items available in the "{selectedCategory}" category at the moment.
-                      </p>
-                      <button
-                        onClick={() => setSelectedCategory('All')}
-                        className="px-8 py-3 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors flex items-center mx-auto"
-                      >
-                        
-                        View All Menu Items
-                      </button>
-                    </div>
-                  </div>
+                  <EmptyState 
+                    selectedCategory={selectedCategory}
+                    onViewAll={() => setSelectedCategory('All')}
+                  />
                 ) : (
-                  filteredMenuItems.map((item, index) => (
-                  <motion.div
-                    key={item.name}
-                    initial={{ opacity: 1, y: 0 }}
-                    className="bg-white rounded-lg shadow-md overflow-hidden flex flex-row"
-                  >
-                    <div className="relative w-1/3">
-                      {item.image ? (
-                        <img
-                          src={item.image}
-                          alt={item.name}
-                          className="h-[200px] w-full object-cover cursor-pointer"
-                          onClick={() => handleProductClick(item)}
-                        />
-                      ) : (
-                        <div 
-                          className="w-full bg-red-100 flex items-center justify-center cursor-pointer h-[200px]"
-                          onClick={() => handleProductClick(item)}
-                        >
-                          <span className="text-4xl font-bold text-red-500">
-                            {item.name.charAt(0)}
-                          </span>
-                        </div>
-                      )}
-                      
-                      {/* Dietary Information Icons */}
-                      {item.dietary && (
-                        <div className="absolute top-2 right-2 flex flex-wrap gap-1 justify-end">
-                          {item.dietary.isVegetarian && (
-                            <div className="bg-green-500 text-white w-7 h-7 rounded-full flex items-center justify-center">
-                              <IoLeafOutline className="w-4 h-4" />
-                            </div>
-                          )}
-                          {item.dietary.isVegan && (
-                            <div className="bg-green-600 text-white w-7 h-7 rounded-full flex items-center justify-center">
-                              <LuVegan className="w-4 h-4" />
-                            </div>
-                          )}
-                          {item.dietary.isGlutenFree && (
-                            <div className="bg-blue-500 text-white w-7 h-7 rounded-full flex items-center justify-center">
-                              <CiWheat className="w-4 h-4" />
-                            </div>
-                          )}
-                        </div>
-                      )}
-
-                    </div>
-                    <div className="p-4 sm:p-6 flex-1 flex flex-col justify-between">
-                      {/* Product name with left-right alignment on mobile */}
-                      <div className="flex justify-between items-start mb-2">
-                        <div className="flex items-center gap-2">
-                          {item.dietary && (item.dietary.isVegetarian || item.dietary.isVegan) ? (
-                              <div className="bg-white w-4 h-4 rounded-sm flex items-center justify-center border border-green-600 flex-shrink-0">
-                              <GoDotFill className="w-2 h-2 text-green-600" />
-                            </div>
-                          ) : (
-                            <div className="bg-white w-4 h-4 rounded-sm flex items-center justify-center border border-red-600 flex-shrink-0">
-                              <GoDotFill className="w-2 h-2 text-red-600" />
-                            </div>
-                          )}
-                          <h3 
-                            className="text-lg sm:text-xl font-semibold cursor-pointer hover:text-red-500"
-                            onClick={() => handleProductClick(item)}
-                          >
-                            {item.name}
-                          </h3>
-                        </div>
-                      </div>
-                      
-                      
-                      {/* Description with line clamp */}
-                      <p className="text-gray-600 mb-3 sm:mb-4 text-sm sm:text-base line-clamp-2 overflow-hidden cursor-pointer hover:text-gray-800"
-                        onClick={() => handleProductClick(item)}
-                      >
-                        {item.description}
-                      </p>
-                      
-                      {/* Price on bottom left and Add to Order/Out of Stock on bottom right */}
-                      <div className="flex justify-between items-center mt-auto">
-                        {currentMenuType === "food" && (
-                          <p className="text-lg font-bold text-red-500">${item?.indining_price || 0.00}</p>
-                        )}
-                       
-                        {(item?.out_of_stock == "true" || item?.inventory_status === false) ? (
-                          <div className="px-4 sm:px-6 py-2 rounded-full bg-gray-200 text-gray-600 text-sm sm:text-base font-medium">
-                            Out of Stock
-                          </div>
-                        ) : (
-                          <button 
-                            onClick={() => openModifiersPopup(item)}
-                            className="flex items-center gap-2 bg-red-500 text-white px-4 sm:px-6 py-2 rounded-full hover:bg-red-600 transition-colors text-sm sm:text-base"
-                          >
-                            Add <Plus/>
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  </motion.div>
+                  filteredMenuItems.map((item) => (
+                    <FoodMenuItem
+                      key={item.name}
+                      item={item}
+                      onProductClick={handleProductClick}
+                      onAddClick={openModifiersPopup}
+                    />
                   ))
                 )}
               </div>
@@ -947,129 +627,18 @@ function InDiningOrder() {
                     <p>No menu items available</p>
                   </div>
                 ) : filteredMenuItems.length === 0 ? (
-                  <div className="flex items-center justify-center h-[50vh]">
-                    <div className="text-center max-w-md">
-                      <div className="w-24 h-24 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                        <UtensilsCrossed className="h-12 w-12 text-red-400" />
-                      </div>
-                      <h3 className="text-2xl font-semibold text-gray-800 mb-3">No Items Available</h3>
-                      <p className="text-gray-600 mb-8 px-4">
-                        There are no items available in the "{selectedCategory}" category at the moment.
-                      </p>
-                      <button
-                        onClick={() => setSelectedCategory('All')}
-                        className="px-8 py-3 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors flex items-center mx-auto"
-                      >
-                        
-                        View All Menu Items
-                      </button>
-                    </div>
-                  </div>
+                  <EmptyState 
+                    selectedCategory={selectedCategory}
+                    onViewAll={() => setSelectedCategory('All')}
+                  />
                 ) : (
-                  filteredMenuItems.map((item, index) => (
-                  <motion.div
-                    key={item.name}
-                    initial={{ opacity: 1, y: 0 }}
-                    className="bg-white rounded-lg shadow-md overflow-hidden flex flex-row"
-                  >
-                    <div className="relative w-1/3">
-                      {item.image ? (
-                        <img
-                          src={item.image}
-                          alt={item.name}
-                          className="h-[200px] w-full object-cover cursor-pointer"
-                          onClick={() => handleProductClick(item)}
-                        />
-                      ) : (
-                        <div className="w-full bg-red-100 flex items-center justify-center cursor-pointer h-[200px]"
-                          onClick={() => handleProductClick(item)}
-                        >
-                          <span className="text-4xl font-bold text-red-500">
-                            {item.name.charAt(0)}
-                          </span>
-                        </div>
-                      )}
-                      
-                      {item.dietary && (
-                        <div className="absolute top-2 right-2 flex flex-wrap gap-1 justify-end">
-                          {item.dietary.isVegetarian && (
-                            <div className="bg-green-500 text-white w-7 h-7 rounded-full flex items-center justify-center">
-                              <IoLeafOutline className="w-4 h-4" />
-                            </div>
-                          )}
-                          {item.dietary.isVegan && (
-                            <div className="bg-green-600 text-white w-7 h-7 rounded-full flex items-center justify-center">
-                              <LuVegan className="w-4 h-4" />
-                            </div>
-                          )}
-                          {item.dietary.isGlutenFree && (
-                            <div className="bg-blue-500 text-white w-7 h-7 rounded-full flex items-center justify-center">
-                              <CiWheat className="w-4 h-4" />
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="p-4 sm:p-6 flex-1 flex flex-col justify-between">
-                      {/* Product name with left-right alignment on mobile */}
-                      <div className="flex justify-between items-start mb-2">
-                        <div className="flex items-center gap-2 pb-2 sm:pb-0">
-                          <Wine className='w-5 h-5 text-red-500' />
-                          <h3 
-                            className="text-sm  sm:text-xl  font-semibold cursor-pointer hover:text-red-500"
-                            onClick={() => handleProductClick(item)}
-                          >
-                            {item.name}
-                          </h3>
-                        </div>
-                      </div>
-                      
-                      {/* Price badges for drinks menu - show all available prices */}
-                      {item?.prices && Array.isArray(item.prices) && item.prices.length > 0 && (
-                        <div className="mb-3">
-                          <div className="flex flex-wrap gap-2">
-                            {item.prices.map((priceOption, index) => (
-                              <div 
-                                key={index}
-                                className="inline-flex items-center px-2 py-1 rounded-full text-[8px] sm:text-xs font-medium bg-red-100 text-red-800 border border-red-200"
-                              >
-                                <span className="font-semibold">{priceOption.name}</span>&nbsp;-
-                                <span className="ml-1">${parseFloat(priceOption.price) || 0}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                      
-                      {/* Price on bottom left and Add to Order/Out of Stock on bottom right */}
-                      <div className="flex justify-between items-center mt-auto">
-                        <p className="text-lg font-bold text-red-500">
-                          ${(() => {
-                            // Check if item has prices array and use 0th index
-                            if (item?.prices && Array.isArray(item.prices) && item.prices.length > 0) {
-                              return parseFloat(item.prices[0].price) || 0;
-                            }
-                            // Fallback to other price properties
-                            return parseFloat(String(item?.indining_price || item?.price || 0)) || 0;
-                          })()}
-                        </p>
-
-                        {(item?.out_of_stock == "true" || item?.inventory_status === false) ? (
-                          <div className="px-4 sm:px-6 py-2 rounded-full bg-gray-200 text-gray-600 text-sm sm:text-base font-medium">
-                            Out of Stock
-                          </div>
-                        ) : (
-                          <button 
-                            onClick={() => openDrinksModifierPopup(item)}
-                            className="flex items-center gap-2 bg-red-500 text-white px-4 sm:px-6 py-2 rounded-full hover:bg-red-600 transition-colors text-sm sm:text-base"
-                          >
-                            Add <Plus className='w-5 h-5'/>
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  </motion.div>
+                  filteredMenuItems.map((item) => (
+                    <DrinksMenuItem
+                      key={item.name}
+                      item={item}
+                      onProductClick={handleProductClick}
+                      onAddClick={openDrinksModifierPopup}
+                    />
                   ))
                 )}
               </div>

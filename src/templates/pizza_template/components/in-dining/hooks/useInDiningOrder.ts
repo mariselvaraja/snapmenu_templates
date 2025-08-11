@@ -2,10 +2,11 @@ import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 import { RootState, AppDispatch } from '../../../../../common/store';
-import { addItem, removeItem, toggleDrawer } from '../../../../../common/redux/slices/cartSlice';
-import { setSearchQuery } from '../../../../../common/redux/slices/searchSlice';
+import { addItem, removeItem } from '../../../../../common/redux/slices/inDiningCartSlice';
 import { getInDiningOrdersRequest, placeInDiningOrderRequest } from '../../../../../common/redux/slices/inDiningOrderSlice';
+import { setShowMenuItems, setMenuItems, setCurrentMenuType } from '../../../../../common/redux/slices/menuSlice';
 import { fetchTableStatusRequest } from '../../../../../common/redux/slices/tableStatusSlice';
+import { getOrderHistoryRequest } from '../../../../../common/redux/slices/orderHistorySlice';
 import { useAppSelector } from '../../../../../redux';
 
 export const useInDiningOrder = () => {
@@ -19,44 +20,74 @@ export const useInDiningOrder = () => {
   const [selectedSubcategory, setSelectedSubcategory] = useState<string>('All');
   const [isSearchActive, setIsSearchActive] = useState<boolean>(false);
   const [showOrders, setShowOrders] = useState<boolean>(false);
-  const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState<boolean>(false);
   const [tableName, setTableName] = useState('');
   const [isModifierModalOpen, setIsModifierModalOpen] = useState<boolean>(false);
+  const [isDrinksModifierModalOpen, setIsDrinksModifierModalOpen] = useState<boolean>(false);
   const [selectedMenuItem, setSelectedMenuItem] = useState<any>(null);
-  const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
+  const [showCategories, setShowCategories] = useState<boolean>(false);
 
-  // Redux setup
+  // Redux hooks
   const location = useLocation();
   const dispatch = useDispatch<AppDispatch>();
   const tableStatus = useSelector((state: any) => state.tableStatus?.tables);
   const { rawApiResponse } = useAppSelector(state => state.siteContent);
-  
-  // Get site content from Redux state
+
+  // Redux selectors
+  const orderHistoryState = useSelector((state: RootState) => state.orderHistory);
+  const cartItems = useSelector((state: RootState) => state.inDiningCart.items);
+  const menuItems = useSelector((state: RootState) => state.menu.items);
+  const foodItems = useSelector((state: RootState) => state.menu.foodItems);
+  const drinksItems = useSelector((state: RootState) => state.menu.drinksItems);
+  const loading = useSelector((state: RootState) => state.menu.loading);
+  const showMenuItems = useSelector((state: RootState) => state.menu.showMenuItems);
+  const currentMenuType = useSelector((state: RootState) => state.menu.currentMenuType);
+
+  // Parse site content
   const siteContent = rawApiResponse ? 
     (typeof rawApiResponse === 'string' ? JSON.parse(rawApiResponse) : rawApiResponse) : 
     { navigationBar: { brand: { logo: {} }, navigation: [] } };
-  const navigationBar = siteContent?.navigationBar || { brand: { logo: {} }, navigation: [] };
   const homepage = siteContent.homepage;
-  const { brand } = homepage;
-  const heroData = homepage?.hero;
-  
-  // Use heroData.banners if available, otherwise use empty array
-  const banners = heroData?.banners?.length > 0 ? heroData.banners : [];
+  const brand = homepage?.brand;
 
-  // Get table number from URL
+  // Get table info
   const searchParams = new URLSearchParams(location.search);
-  const tableFromQuery = searchParams.get('table');
+  const tableFromQuery: any = searchParams.get('table');
+  const table_name = sessionStorage.getItem('Tablename');
 
-  // Redux selectors
-  const cartItems = useSelector((state: RootState) => state.cart.items);
-  const menuItems = useSelector((state: RootState) => state.menu.items);
-  const loading = useSelector((state: RootState) => state.menu.loading);
+  // Transform order history
+  const orders = orderHistoryState.orders ? orderHistoryState.orders.map((orderData: any) => {
+    const order = orderData as any;
+    const items = order.ordered_items 
+      ? order.ordered_items.map((item: any) => ({
+          name: item.name,
+          quantity: item.quantity,
+          status: item.status,
+          price: item?.indining_price || item.itemPrice || 0.00,
+          image: item.image || '',
+          modifiers: item.modifiers || [],
+          spiceLevel: item.spiceLevel || null
+        }))
+      : order.items || [];
+    
+    return {
+      id: order.id || (order.dining_id ? order.dining_id.toString() : '') || '',
+      date: order.createdAt || order.created_date || new Date().toISOString(),
+      status: order.status || order.dining_status || 'pending',
+      total: order.totalAmount || (order.total_amount ? parseFloat(order.total_amount) : 0) || 0,
+      items: items
+    };
+  }) : [];
 
   // Effects
   useEffect(() => {
-    let tabledata = tableStatus?.find((table: any) => table.table_id == tableFromQuery);
-    sessionStorage.setItem('Tablename', tabledata?.table_name);
-    setTableName(tabledata?.table_name);
+    const tabledata = tableStatus?.find((table: any) => table.table_id == tableFromQuery);
+    if (tableFromQuery) {
+      dispatch(getOrderHistoryRequest(tableFromQuery));
+    }
+    if (tabledata?.table_name) {
+      sessionStorage.setItem('Tablename', tabledata.table_name);
+      setTableName(tabledata.table_name);
+    }
   }, [tableFromQuery, tableStatus]);
 
   useEffect(() => {
@@ -67,97 +98,64 @@ export const useInDiningOrder = () => {
     dispatch(getInDiningOrdersRequest());
   }, [dispatch]);
 
-  // Filter menu items by selected category and subcategory
-  const filteredMenuItems = selectedCategory === 'All' 
-    ? (selectedSubcategory === 'All' 
-        ? menuItems 
-        : menuItems.filter(item => item.level2_category === selectedSubcategory))
-    : (selectedSubcategory === 'All'
-        ? menuItems.filter(item => item.category === selectedCategory)
-        : menuItems.filter(item => item.category === selectedCategory && item.level2_category === selectedSubcategory));
-
-  // Extract unique main categories directly from menu items
-  const uniqueCategories = Array.from(
-    new Set(menuItems.map(item => item.category))
-  ).filter(Boolean).sort();
-
-  // Extract unique subcategories based on selected main category
-  const uniqueSubcategories = Array.from(
-    new Set(
-      selectedCategory === 'All'
-        ? menuItems.map(item => item.level2_category).filter((cat): cat is string => !!cat)
-        : menuItems
-            .filter(item => item.category === selectedCategory)
-            .map(item => item.level2_category)
-            .filter((cat): cat is string => !!cat)
-    )
-  ).sort();
-
-  // Calculate total price
-  const totalPrice = cartItems.reduce(
-    (total: any, item: any) => total + item.price * item.quantity, 
-    0
-  );
-
-  // Helper functions
-  const shouldShowSpiceLevel = (product: any) => {
-    if (product?.is_spice_applicable?.toLowerCase() === 'yes') {
-      return true;
-    }
-    if (product?.raw_api_data) {
-      try {
-        const rawData = typeof product.raw_api_data === 'string' 
-          ? JSON.parse(product.raw_api_data) 
-          : product.raw_api_data;
-        if (rawData?.is_spice_applicable?.toLowerCase() === 'yes') {
-          return true;
-        }
-      } catch (e) {
-        // If parsing fails, continue with other checks
+  useEffect(() => {
+    if (!loading && (foodItems.length > 0 || drinksItems.length > 0)) {
+      if (foodItems.length > 0) {
+        dispatch(setCurrentMenuType('food'));
+        setShowCategories(true);
+        dispatch(setShowMenuItems(false));
+      } else if (drinksItems.length > 0 && foodItems.length === 0) {
+        dispatch(setCurrentMenuType('drinks'));
+        setShowCategories(true);
+        dispatch(setShowMenuItems(false));
       }
     }
-    return false;
-  };
+  }, [loading, foodItems, drinksItems]);
 
-  const hasModifiers = (product: any) => {
-    return product?.modifiers_list && product.modifiers_list.length > 0;
-  };
-
-  const needsCustomization = (product: any) => {
-    return hasModifiers(product) || shouldShowSpiceLevel(product);
-  };
-
-  const addDirectlyToCart = (product: any) => {
-    if (!product) return;
-
-    const cartItem = {
-      id: product.id,
-      name: product.name,
-      price: typeof product.price === 'number' ? product.price : 0,
-      image: product.image || '',
-      quantity: 1,
-      selectedModifiers: []
-    };
-
-    dispatch(addItem(cartItem));
-    dispatch(toggleDrawer(true));
-  };
-
-  const handleProductClick = (product: any) => {
-    setSelectedProduct(product);
-    setIsProductDetailsOpen(true);
+  // Helper functions
+  const getCategoriesWithImages = (items: any[], menuType: string) => {
+    const categoryMap = new Map();
     
-    const cartItem = cartItems.find((item: any) => item.id === product.id);
-    setQuantity(cartItem ? cartItem.quantity : 1);
+    items.forEach(item => {
+      const categoryName = menuType === 'drinks' ? item.type : item.category;
+      if (categoryName && !categoryMap.has(categoryName)) {
+        categoryMap.set(categoryName, {
+          name: categoryName,
+          image: item.image || '',
+          itemCount: 1
+        });
+      } else if (categoryName && categoryMap.has(categoryName)) {
+        const cat = categoryMap.get(categoryName);
+        cat.itemCount++;
+        if (!cat.image && item.image) {
+          cat.image = item.image;
+        }
+      }
+    });
+    
+    return Array.from(categoryMap.values()).sort((a, b) => a.name.localeCompare(b.name));
   };
 
-  const closeProductDetails = () => {
-    setIsProductDetailsOpen(false);
-    setSelectedProduct(null);
-    setQuantity(1);
+  const handleCategoryClick = (categoryName: string) => {
+    const items = currentMenuType === 'food' ? foodItems : drinksItems;
+    const filteredItems = items.filter(item => 
+      currentMenuType === 'drinks' ? item.type === categoryName : item.category === categoryName
+    );
+    
+    dispatch(setMenuItems(filteredItems));
+    dispatch(setShowMenuItems(true));
+    setShowCategories(false);
+    setSelectedCategory(categoryName);
   };
 
-  const handlePlaceOrder = () => {
+  const handleNavbarClick = () => {
+    dispatch(setShowMenuItems(false));
+    setShowCategories(true);
+    setSelectedCategory('All');
+    setSelectedSubcategory('All');
+  };
+
+  const handlePlaceOrder = (specialRequest: string = '') => {
     if (cartItems.length === 0) return;
     
     const randomOrderNumber = Math.floor(10000 + Math.random() * 90000).toString();
@@ -165,26 +163,34 @@ export const useInDiningOrder = () => {
     setShowOrders(true);
     
     const orderedItems = cartItems.map((item: any) => {
-      const spiceLevel = item.selectedModifiers?.find((mod: any) => mod.name === "Spice Level")?.options[0]?.name || "Medium";
-      const modifiers = item.selectedModifiers?.filter((mod: any) => mod.name != "Spice Level");
+      const spiceLevel = item.selectedModifiers?.find((mod: any) => mod.name === "Spice Level")?.options[0]?.name || "";
+      let modifiers = item.selectedModifiers?.filter((mod: any) => mod.name != "Spice Level");
+      let options = modifiers.flatMap((mod: any) => mod.options);
+      modifiers = options.map((option: any) => ({
+        modifier_name: option.name,
+        modifier_price: option.price
+      }));
+      
       return {
         name: item.name,
         quantity: item.quantity,
-        itemPrice: item.price,
+        itemPrice: item?.indining_price || item.price || 0,
         image: item.image || '',
+        table_name,
         modifiers: modifiers || [],
         spiceLevel: spiceLevel
       };
     });
     
-    let restaurant_id = sessionStorage.getItem("franchise_id");
-    let restaurant_parent_id = sessionStorage.getItem("restaurant_id");
+    const restaurant_id = sessionStorage.getItem("franchise_id");
+    const restaurant_parent_id = sessionStorage.getItem("restaurant_id");
     
     dispatch(placeInDiningOrderRequest({
       table_id: tableFromQuery,
       restaurant_id,
       restaurant_parent_id,
       additional_details: '',
+      special_requests: specialRequest,
       ordered_items: orderedItems
     }));
   };
@@ -196,41 +202,15 @@ export const useInDiningOrder = () => {
     });
   };
 
-  const openModifiersPopup = (product: any) => {
-    if (needsCustomization(product)) {
-      setSelectedMenuItem(product);
-      setIsModifierModalOpen(true);
-    } else {
-      addDirectlyToCart(product);
-    }
-  };
-
-  // Category handlers
-  const handleCategoryChange = (category: string) => {
-    setSelectedCategory(category);
-  };
-
-  const handleSubcategoryChange = (subcategory: string) => {
-    setSelectedSubcategory(subcategory);
-  };
-
-  const handleViewAllItems = () => {
+  const handleMenuTypeSelection = (type: 'food' | 'drinks') => {
+    dispatch(setCurrentMenuType(type));
+    setShowCategories(true);
     setSelectedCategory('All');
-  };
-
-  // Navigation handlers
-  const handleSearchClick = () => {
-    setIsSearchActive(true);
-    dispatch(setSearchQuery(''));
-  };
-
-  const handleOrdersClick = () => {
-    setShowOrders(true);
+    setSelectedSubcategory('All');
   };
 
   return {
     // State
-    orderPlaced,
     orderNumber,
     selectedProduct,
     isProductDetailsOpen,
@@ -239,56 +219,40 @@ export const useInDiningOrder = () => {
     selectedSubcategory,
     isSearchActive,
     showOrders,
-    isFilterDrawerOpen,
     tableName,
     isModifierModalOpen,
+    isDrinksModifierModalOpen,
     selectedMenuItem,
-    currentBannerIndex,
+    showCategories,
     
-    // Data
+    // Redux state
+    brand,
     cartItems,
     menuItems,
+    foodItems,
+    drinksItems,
     loading,
-    filteredMenuItems,
-    uniqueCategories,
-    uniqueSubcategories,
-    totalPrice,
-    banners,
-    brand,
-    tableFromQuery,
+    showMenuItems,
+    currentMenuType,
+    orders,
+    orderHistoryState,
     
     // Setters
-    setOrderPlaced,
-    setOrderNumber,
     setSelectedProduct,
     setIsProductDetailsOpen,
     setQuantity,
-    setSelectedCategory,
-    setSelectedSubcategory,
     setIsSearchActive,
     setShowOrders,
-    setIsFilterDrawerOpen,
-    setTableName,
     setIsModifierModalOpen,
+    setIsDrinksModifierModalOpen,
     setSelectedMenuItem,
-    setCurrentBannerIndex,
     
     // Handlers
-    handleProductClick,
-    closeProductDetails,
+    getCategoriesWithImages,
+    handleCategoryClick,
+    handleNavbarClick,
     handlePlaceOrder,
     resetOrder,
-    openModifiersPopup,
-    handleCategoryChange,
-    handleSubcategoryChange,
-    handleViewAllItems,
-    handleSearchClick,
-    handleOrdersClick,
-    
-    // Helper functions
-    shouldShowSpiceLevel,
-    hasModifiers,
-    needsCustomization,
-    addDirectlyToCart
+    handleMenuTypeSelection
   };
 };
