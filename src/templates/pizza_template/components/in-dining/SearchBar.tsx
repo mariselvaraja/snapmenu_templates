@@ -6,9 +6,20 @@ interface SearchBarProps {
   onSearchChange: (value: string) => void;
   onBack?: () => void;
   showBackButton?: boolean;
+  menuType?: string | null;
 }
 
-export default function SearchBar({ searchQuery, onSearchChange, onBack, showBackButton = false }: SearchBarProps) {
+export default function SearchBar({ searchQuery, onSearchChange, onBack, showBackButton = false, menuType }: SearchBarProps) {
+  // Determine placeholder text based on menu type
+  const getPlaceholderText = () => {
+    if (menuType === 'drinks') {
+      return 'Search for drinks...';
+    } else if (menuType === 'food') {
+      return 'Search for dishes...';
+    }
+    return 'Search for items...';
+  };
+
   return (
     <div className="bg-white px-4 py-3 shadow-sm">
       <div className="flex items-center gap-3">
@@ -21,7 +32,7 @@ export default function SearchBar({ searchQuery, onSearchChange, onBack, showBac
             type="text"
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="Search for dishes..."
+            placeholder={getPlaceholderText()}
             className="w-full pl-10 pr-4 py-2 bg-gray-100 rounded-full text-gray-900 placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:bg-white"
           />
         </div>

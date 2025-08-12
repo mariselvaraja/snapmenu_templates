@@ -5,7 +5,7 @@ import { useLocation } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { RootState, AppDispatch } from '../../../../common/store';
 import { addItem, removeItem, toggleDrawer } from '../../../../common/redux/slices/inDiningCartSlice';
-import { setSearchQuery } from '../../../../common/redux/slices/searchSlice';
+import { setSearchQuery as setReduxSearchQuery } from '../../../../common/redux/slices/searchSlice';
 import { getInDiningOrdersRequest, placeInDiningOrderRequest } from '../../../../common/redux/slices/inDiningOrderSlice';
 import { setShowMenuItems, setMenuItems, setCurrentMenuType } from '../../../../common/redux/slices/menuSlice';
 import { fetchTableStatusRequest } from '../../../../common/redux/slices/tableStatusSlice';
@@ -159,6 +159,9 @@ function InDiningOrder() {
   // Fetch in-dining orders when component mounts and reset menu state
   useEffect(() => {
     dispatch(getInDiningOrdersRequest());
+    
+    // Clear any existing search query from Redux when component mounts
+    dispatch(setReduxSearchQuery(''));
     
     // Reset menu state to show cards view on page load/refresh
     dispatch(setShowMenuItems(false));
@@ -417,6 +420,7 @@ function InDiningOrder() {
     dispatch(setShowMenuItems(false)); // Don't show menu items yet
     setSelectedCategory('All');
     setSelectedSubcategory('All');
+    setSearchQuery(''); // Clear search when selecting menu type
   };
 
   const handleDrinksMenuClick = () => {
@@ -425,6 +429,7 @@ function InDiningOrder() {
     dispatch(setShowMenuItems(false)); // Don't show menu items yet
     setSelectedCategory('All');
     setSelectedSubcategory('All');
+    setSearchQuery(''); // Clear search when selecting menu type
   };
 
   // Handler for category selection
@@ -438,6 +443,7 @@ function InDiningOrder() {
     dispatch(setShowMenuItems(true));
     setShowCategories(false);
     setSelectedCategory(categoryName);
+    setSearchQuery(''); // Clear search when selecting a category
   };
 
   // Show orders view if showOrders is true
@@ -479,6 +485,7 @@ function InDiningOrder() {
           dispatch(setShowMenuItems(false));
           setSelectedCategory('All');
           setSelectedSubcategory('All');
+          setSearchQuery(''); // Clear search when coming back from orders
         }}
         newOrderNumber={orderNumber}
       />
@@ -502,6 +509,7 @@ function InDiningOrder() {
           setShowCategories(true);
           setSelectedCategory('All');
           setSelectedSubcategory('All');
+          setSearchQuery(''); // Clear search when clicking logo
         }}
       />
       
@@ -528,6 +536,7 @@ function InDiningOrder() {
                   onClick={() => {
                     setShowCategories(false);
                     dispatch(setCurrentMenuType(null));
+                    setSearchQuery(''); // Clear search when going back
                   }}
                   className="text-gray-700 hover:text-gray-900 flex items-center gap-1 text-sm font-medium"
                 >
@@ -540,6 +549,7 @@ function InDiningOrder() {
             <SearchBar 
               searchQuery={searchQuery}
               onSearchChange={(value) => setSearchQuery(value)}
+              menuType={currentMenuType}
             />
           </div>
           
@@ -622,6 +632,7 @@ function InDiningOrder() {
                 setShowCategories(true);
                 setSelectedCategory('All');
                 setSelectedSubcategory('All');
+                setSearchQuery(''); // Clear search when going back
               }}
               className="text-gray-700 hover:text-gray-900 flex items-center gap-1 text-sm font-medium"
             >
@@ -633,6 +644,7 @@ function InDiningOrder() {
           <SearchBar 
             searchQuery={searchQuery}
             onSearchChange={(value) => setSearchQuery(value)}
+            menuType={currentMenuType}
           />
           
           {/* Category name and item count - Hide when searching */}
