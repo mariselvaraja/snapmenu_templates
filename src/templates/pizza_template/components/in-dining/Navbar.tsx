@@ -62,22 +62,10 @@ const Navbar: React.FC<NavbarProps> = ({
         </div>
         
         {/* Table name row */}
-        <div className="pb-3 px-4 flex items-center justify-center h-10">
-          <div className="w-full max-w-6xl relative flex items-center">
-            {onBackClick && (
-              <button
-                onClick={onBackClick}
-                className="absolute left-0 text-white hover:text-gray-300 transition-colors flex items-center gap-1 text-xl font-bold"
-                aria-label="Go back"
-              >
-                <ArrowLeft className="h-5 w-5" /> Back
-                {/* <span>Go Back</span> */}
-              </button>
-            )}
-            <p className="text-xl font-bold text-white mx-auto">
-              {tableName}
-            </p>
-          </div>
+        <div className="pb-3 px-4 text-center">
+          <p className="text-xl font-bold text-white">
+            {tableName}
+          </p>
         </div>
       </div>
     </div>

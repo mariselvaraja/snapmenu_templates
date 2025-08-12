@@ -18,13 +18,16 @@ const FoodMenuItem: React.FC<FoodMenuItemProps> = ({ item, onProductClick, onAdd
   return (
     <motion.div
       initial={{ opacity: 1, y: 0 }}
-      className="bg-white p-2 flex items-center gap-3 border-b border-gray-100 hover:bg-gray-50 transition-all"
+      className="bg-white p-2 flex items-center gap-3 border-b border-gray-100 hover:bg-gray-50 transition-all cursor-pointer"
+      onClick={(e) => {
+        // Only trigger product click if the add button wasn't clicked
+        if (!(e.target as HTMLElement).closest('.add-button-area')) {
+          onProductClick(item);
+        }
+      }}
     >
       {/* Image */}
-      <div 
-        className="relative w-16 h-16 flex-shrink-0 cursor-pointer"
-        onClick={() => onProductClick(item)}
-      >
+      <div className="relative w-16 h-16 flex-shrink-0">
         {item.image ? (
           <img
             src={item.image}
@@ -58,10 +61,7 @@ const FoodMenuItem: React.FC<FoodMenuItemProps> = ({ item, onProductClick, onAdd
 
       {/* Content */}
       <div className="flex-1 min-w-0">
-        <h3 
-          className="font-semibold text-gray-900 text-base cursor-pointer hover:text-red-500 truncate"
-          onClick={() => onProductClick(item)}
-        >
+        <h3 className="font-semibold text-gray-900 text-base hover:text-red-500 truncate">
           {item.name}
         </h3>
         <p className="text-sm font-semibold text-red-500 mt-1">
@@ -70,7 +70,7 @@ const FoodMenuItem: React.FC<FoodMenuItemProps> = ({ item, onProductClick, onAdd
       </div>
 
       {/* Add Button */}
-      <div className="flex items-center">
+      <div className="flex items-center add-button-area">
         {(item?.out_of_stock == "true" || item?.inventory_status === false) ? (
           <div className="text-sm text-gray-500">Out of Stock</div>
         ) : (

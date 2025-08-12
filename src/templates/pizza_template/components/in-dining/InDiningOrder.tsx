@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import  { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useLocation } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 import { RootState, AppDispatch } from '../../../../common/store';
 import { addItem, removeItem, toggleDrawer } from '../../../../common/redux/slices/inDiningCartSlice';
 import { setSearchQuery } from '../../../../common/redux/slices/searchSlice';
@@ -502,27 +503,6 @@ function InDiningOrder() {
           setSelectedCategory('All');
           setSelectedSubcategory('All');
         }}
-        onBackClick={(showCategories || showMenuItems) ? (() => {
-          // If in menu items view, go back to categories
-          if (showMenuItems) {
-            dispatch(setShowMenuItems(false));
-            setShowCategories(true);
-            setSelectedCategory('All');
-            setSelectedSubcategory('All');
-          } 
-          // If in categories view, go back to cards (if both menus exist)
-          else if (showCategories && shouldShowCards) {
-            setShowCategories(false);
-            dispatch(setCurrentMenuType(null));
-          }
-          // Otherwise just reset
-          else {
-            dispatch(setShowMenuItems(false));
-            setShowCategories(false);
-            setSelectedCategory('All');
-            setSelectedSubcategory('All');
-          }
-        }) : undefined}
       />
       
       {/* Hero Banner Section - Hide when showing categories or menu items */}
@@ -541,6 +521,21 @@ function InDiningOrder() {
         <div>
           {/* Fixed Header Section */}
           <div className="sticky top-24 z-30 bg-white">
+            {/* Back Button */}
+            {shouldShowCards && (
+              <div className="px-4 pt-3 pb-2">
+                <button
+                  onClick={() => {
+                    setShowCategories(false);
+                    dispatch(setCurrentMenuType(null));
+                  }}
+                  className="text-gray-700 hover:text-gray-900 flex items-center gap-1 text-sm font-medium"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  <span>back</span>
+                </button>
+              </div>
+            )}
             {/* Search Bar */}
             <SearchBar 
               searchQuery={searchQuery}
@@ -551,21 +546,17 @@ function InDiningOrder() {
           {/* Category Grid */}
           <div className="pb-20">
             {searchQuery ? (
-            // Show filtered items when searching
+            // Show filtered items when searching - filter only current menu type
             <div className="mx-auto px-4 sm:px-6 lg:px-8">
               <div className="grid grid-cols-1 gap-0">
                 {(() => {
-                  // Search in both food and drinks
-                  const foodSearchResults = foodItems.filter(item => 
-                    item.name.toLowerCase().includes(searchQuery.toLowerCase())
-                  );
-                  const drinksSearchResults = drinksItems.filter(item => 
+                  // Filter only within the current menu type
+                  const itemsToSearch = currentMenuType === 'food' ? foodItems : drinksItems;
+                  const searchResults = itemsToSearch.filter(item => 
                     item.name.toLowerCase().includes(searchQuery.toLowerCase())
                   );
                   
-                  const totalResults = foodSearchResults.length + drinksSearchResults.length;
-                  
-                  if (totalResults === 0) {
+                  if (searchResults.length === 0) {
                     return (
                       <div className="text-center py-8">
                         <p className="text-gray-500">No items found matching "{searchQuery}"</p>
@@ -573,43 +564,28 @@ function InDiningOrder() {
                     );
                   }
                   
-                  return (
-                    <>
-                      {/* Food Results */}
-                      {foodSearchResults.length > 0 && (
-                        <>
-                          <div className="text-sm font-medium text-gray-600 mt-2">
-                            Food ({foodSearchResults.length})
-                          </div>
-                          {foodSearchResults.map((item) => (
-                            <FoodMenuItem
-                              key={item.id}
-                              item={item}
-                              onProductClick={handleProductClick}
-                              onAddClick={openModifiersPopup}
-                            />
-                          ))}
-                        </>
-                      )}
-                      
-                      {/* Drinks Results */}
-                      {drinksSearchResults.length > 0 && (
-                        <>
-                          <div className="text-sm font-medium text-gray-600 mt-4">
-                            Drinks ({drinksSearchResults.length})
-                          </div>
-                          {drinksSearchResults.map((item) => (
-                            <DrinksMenuItem
-                              key={item.id}
-                              item={item}
-                              onProductClick={handleProductClick}
-                              onAddClick={openDrinksModifierPopup}
-                            />
-                          ))}
-                        </>
-                      )}
-                    </>
-                  );
+                  // Render results based on current menu type
+                  return searchResults.map((item) => {
+                    if (currentMenuType === 'drinks') {
+                      return (
+                        <DrinksMenuItem
+                          key={item.id}
+                          item={item}
+                          onProductClick={handleProductClick}
+                          onAddClick={openDrinksModifierPopup}
+                        />
+                      );
+                    } else {
+                      return (
+                        <FoodMenuItem
+                          key={item.id}
+                          item={item}
+                          onProductClick={handleProductClick}
+                          onAddClick={openModifiersPopup}
+                        />
+                      );
+                    }
+                  });
                 })()}
               </div>
             </div>
@@ -637,7 +613,22 @@ function InDiningOrder() {
       <>
       {/* Header with search bar and category name */}
       <div className="bg-white border-b border-gray-200 sticky top-24 z-30">
-        <div className="mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div className="px-4 pt-3 pb-2">
+          {/* Back Button */}
+          <div className="mb-3">
+            <button
+              onClick={() => {
+                dispatch(setShowMenuItems(false));
+                setShowCategories(true);
+                setSelectedCategory('All');
+                setSelectedSubcategory('All');
+              }}
+              className="text-gray-700 hover:text-gray-900 flex items-center gap-1 text-sm font-medium"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span>back</span>
+            </button>
+          </div>
           {/* Search Bar */}
           <SearchBar 
             searchQuery={searchQuery}
@@ -665,11 +656,12 @@ function InDiningOrder() {
           {searchQuery && (
             <div className="text-sm text-gray-600 mt-3 text-center">
               {(() => {
-                // When searching, count across ALL items (both food and drinks)
-                const allSearchResults = [...foodItems, ...drinksItems].filter(item => 
+                // When searching, filter only within current menu type
+                const itemsToSearch = currentMenuType === 'food' ? foodItems : drinksItems;
+                const searchResults = itemsToSearch.filter(item => 
                   item.name.toLowerCase().includes(searchQuery.toLowerCase())
                 );
-                return `${allSearchResults.length} ${allSearchResults.length === 1 ? 'result' : 'results'} found`;
+                return `${searchResults.length} ${searchResults.length === 1 ? 'result' : 'results'} found`;
               })()}
             </div>
           )}
@@ -697,13 +689,13 @@ function InDiningOrder() {
                   />
                 ) : (
                   (() => {
-                    // When searching, search across ALL items (both food and drinks)
+                    // When searching, filter only within current menu type (food items only)
                     if (searchQuery) {
-                      const allSearchResults = [...foodItems, ...drinksItems].filter(item => 
+                      const searchResults = foodItems.filter(item => 
                         item.name.toLowerCase().includes(searchQuery.toLowerCase())
                       );
                       
-                      if (allSearchResults.length === 0) {
+                      if (searchResults.length === 0) {
                         return (
                           <div className="text-center py-8">
                             <p className="text-gray-500">No items found matching "{searchQuery}"</p>
@@ -711,31 +703,15 @@ function InDiningOrder() {
                         );
                       }
                       
-                      // Display all matching items without food/drinks labels
-                      return allSearchResults.map((item) => {
-                        // Check if it's a drinks item
-                        const isDrinks = drinksItems.some(drink => drink.id === item.id);
-                        
-                        if (isDrinks) {
-                          return (
-                            <DrinksMenuItem
-                              key={item.id}
-                              item={item}
-                              onProductClick={handleProductClick}
-                              onAddClick={openDrinksModifierPopup}
-                            />
-                          );
-                        } else {
-                          return (
-                            <FoodMenuItem
-                              key={item.id}
-                              item={item}
-                              onProductClick={handleProductClick}
-                              onAddClick={openModifiersPopup}
-                            />
-                          );
-                        }
-                      });
+                      // Display only food items
+                      return searchResults.map((item) => (
+                        <FoodMenuItem
+                          key={item.id}
+                          item={item}
+                          onProductClick={handleProductClick}
+                          onAddClick={openModifiersPopup}
+                        />
+                      ));
                     }
                     
                     // When not searching, show filtered menu items
@@ -771,13 +747,13 @@ function InDiningOrder() {
                   />
                 ) : (
                   (() => {
-                    // When searching, search across ALL items (both food and drinks)
+                    // When searching, filter only within current menu type (drinks items only)
                     if (searchQuery) {
-                      const allSearchResults = [...foodItems, ...drinksItems].filter(item => 
+                      const searchResults = drinksItems.filter(item => 
                         item.name.toLowerCase().includes(searchQuery.toLowerCase())
                       );
                       
-                      if (allSearchResults.length === 0) {
+                      if (searchResults.length === 0) {
                         return (
                           <div className="text-center py-8">
                             <p className="text-gray-500">No items found matching "{searchQuery}"</p>
@@ -785,31 +761,15 @@ function InDiningOrder() {
                         );
                       }
                       
-                      // Display all matching items without food/drinks labels
-                      return allSearchResults.map((item) => {
-                        // Check if it's a drinks item
-                        const isDrinks = drinksItems.some(drink => drink.id === item.id);
-                        
-                        if (isDrinks) {
-                          return (
-                            <DrinksMenuItem
-                              key={item.id}
-                              item={item}
-                              onProductClick={handleProductClick}
-                              onAddClick={openDrinksModifierPopup}
-                            />
-                          );
-                        } else {
-                          return (
-                            <FoodMenuItem
-                              key={item.id}
-                              item={item}
-                              onProductClick={handleProductClick}
-                              onAddClick={openModifiersPopup}
-                            />
-                          );
-                        }
-                      });
+                      // Display only drinks items
+                      return searchResults.map((item) => (
+                        <DrinksMenuItem
+                          key={item.id}
+                          item={item}
+                          onProductClick={handleProductClick}
+                          onAddClick={openDrinksModifierPopup}
+                        />
+                      ));
                     }
                     
                     // When not searching, show filtered menu items
