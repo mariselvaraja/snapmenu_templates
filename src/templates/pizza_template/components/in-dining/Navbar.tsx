@@ -30,7 +30,7 @@ const Navbar: React.FC<NavbarProps> = ({
             {/* Restaurant Name with Icon */}
             <div 
               className="flex items-center cursor-pointer"
-              onClick={onLogoClick}
+              // onClick={onLogoClick}
             >
               <img src={brand.logo.icon} alt={brand.name || 'Restaurant'} className="h-12 w-auto" />
               <div className='ml-5'>
