@@ -1,6 +1,7 @@
 import { store } from '../store';
 import { refreshOrderHistorySilent } from '../redux/slices/orderHistorySlice';
 import { InDiningOrder } from '../redux/slices/inDiningOrderSlice';
+import { clearCart } from '../redux/slices/inDiningCartSlice';
 
 export interface WebSocketMessage {
   type: 'order_update' | 'order_status_change' | 'new_order' | 'error';
@@ -178,6 +179,18 @@ export class WebSocketService {
         timestamp: new Date().toISOString()
       });
 
+      // Handle payment status updated - clear cart and orders
+      if (rawData === 'Payment Status updated' || (typeof rawData === 'object' && rawData.message === 'Payment Status updated')) {
+        console.log(`💳 Processing PAYMENT STATUS UPDATED for restaurant ID: ${this.restaurantId}`);
+        // Clear the in-dining cart
+        store.dispatch(clearCart());
+        // Clear the order history
+        store.dispatch(refreshOrderHistorySilent([]));
+        // Emit payment completed event
+        this.emitEvent('payment_completed', { restaurantId: this.restaurantId });
+        return;
+      }
+
       // Handle the updated_order format: { updated_order: [{dining_id: 107, status: 'ready'}] }
       if (rawData.updated_order && Array.isArray(rawData.updated_order)) {
         console.log(`🔄 Processing UPDATED_ORDER for restaurant ID: ${this.restaurantId}`);
@@ -250,11 +263,21 @@ export class WebSocketService {
    */
   private handleUpdatedOrders(updatedOrders: Array<{dining_id: number | string | string[], status: string}>): void {
     try {
+      // Handle empty or invalid data
+      if (!updatedOrders || !Array.isArray(updatedOrders) || updatedOrders.length === 0) {
+        console.log('🔄 No orders to update or empty data received');
+        // If explicitly empty, clear the orders
+        if (Array.isArray(updatedOrders) && updatedOrders.length === 0) {
+          store.dispatch(refreshOrderHistorySilent([]));
+        }
+        return;
+      }
+      
       console.log(`🔄 Processing ${updatedOrders.length} order status updates`);
       
       // Get current orders from Redux store
       const currentState = store.getState();
-      const currentOrders = currentState.orderHistory.orders;
+      const currentOrders = currentState.orderHistory.orders || [];
       
       // Valid status values for type safety
       const validStatuses = ['pending', 'processing', 'completed', 'cancelled', 'preparing', 'ready', 'delivered'] as const;
@@ -265,17 +288,43 @@ export class WebSocketService {
       const newOrdersToCreate: InDiningOrder[] = [];
       
       updatedOrders.forEach(update => {
+        // Skip if update is malformed
+        if (!update || update.dining_id === undefined || update.dining_id === null) {
+          console.warn('Skipping malformed update:', update);
+          return;
+        }
+        
         // Extract dining_id from various formats
         let diningId: number;
         if (Array.isArray(update.dining_id)) {
           // Handle array format ["607"]
-          diningId = parseInt(update.dining_id[0]);
+          if (update.dining_id.length === 0) {
+            console.warn('Empty dining_id array, skipping update');
+            return;
+          }
+          
+          const firstElement = update.dining_id[0];
+          if (firstElement === null || firstElement === undefined) {
+            console.warn('Null or undefined dining_id in array, skipping update');
+            return;
+          }
+          
+          diningId = parseInt(String(firstElement));
         } else if (typeof update.dining_id === 'string') {
           // Handle string format "607"
           diningId = parseInt(update.dining_id);
-        } else {
+        } else if (typeof update.dining_id === 'number') {
           // Handle number format 607
           diningId = update.dining_id;
+        } else {
+          console.warn('Invalid dining_id type:', typeof update.dining_id, update.dining_id);
+          return;
+        }
+        
+        // Validate dining_id
+        if (isNaN(diningId)) {
+          console.warn('Invalid dining_id after parsing:', update.dining_id);
+          return;
         }
 
         // Find existing order by dining_id
@@ -331,19 +380,40 @@ export class WebSocketService {
       
       // Emit events for each status update
       updatedOrders.forEach(update => {
+        // Skip if update is malformed
+        if (!update || update.dining_id === undefined || update.dining_id === null) {
+          return;
+        }
+        
         // Extract dining_id from various formats
         let diningId: number;
         if (Array.isArray(update.dining_id)) {
-          diningId = parseInt(update.dining_id[0]);
+          if (update.dining_id.length === 0) {
+            return;
+          }
+          
+          const firstElement = update.dining_id[0];
+          if (firstElement === null || firstElement === undefined) {
+            return;
+          }
+          
+          diningId = parseInt(String(firstElement));
         } else if (typeof update.dining_id === 'string') {
           diningId = parseInt(update.dining_id);
-        } else {
+        } else if (typeof update.dining_id === 'number') {
           diningId = update.dining_id;
+        } else {
+          return;
+        }
+        
+        // Skip if diningId is invalid
+        if (isNaN(diningId)) {
+          return;
         }
         
         this.emitEvent('order_status_change', {
           dining_id: diningId,
-          status: update.status,
+          status: update.status || 'pending',
           orderId: diningId.toString()
         });
       });

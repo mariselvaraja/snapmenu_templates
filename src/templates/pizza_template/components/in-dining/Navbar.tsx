@@ -25,19 +25,8 @@ const Navbar: React.FC<NavbarProps> = ({
       <div className="mx-auto px-4 sm:px-6 lg:px-8">
         {/* Main navbar row */}
         <div className="flex justify-between items-center h-16">
-          {/* Left section with back arrow and restaurant info */}
+          {/* Left section with restaurant info */}
           <div className="flex items-center">
-            {/* Back Arrow */}
-            {onBackClick && (
-              <button
-                onClick={onBackClick}
-                className="p-2 rounded-full hover:bg-gray-800 transition-colors mr-3"
-                aria-label="Go back"
-              >
-                <ArrowLeft className="h-6 w-6 text-white" />
-              </button>
-            )}
-            
             {/* Restaurant Name with Icon */}
             <div 
               className="flex items-center cursor-pointer"
@@ -73,10 +62,22 @@ const Navbar: React.FC<NavbarProps> = ({
         </div>
         
         {/* Table name row */}
-        <div className="text-center pb-3">
-          <p className="text-xl font-semibold text-white">
-            {tableName}
-          </p>
+        <div className="pb-3 px-4 flex items-center justify-center h-10">
+          <div className="w-full max-w-6xl relative flex items-center">
+            {onBackClick && (
+              <button
+                onClick={onBackClick}
+                className="absolute left-0 text-white hover:text-gray-300 transition-colors flex items-center gap-1 text-xl font-bold"
+                aria-label="Go back"
+              >
+                <ArrowLeft className="h-5 w-5" /> Back
+                {/* <span>Go Back</span> */}
+              </button>
+            )}
+            <p className="text-xl font-bold text-white mx-auto">
+              {tableName}
+            </p>
+          </div>
         </div>
       </div>
     </div>

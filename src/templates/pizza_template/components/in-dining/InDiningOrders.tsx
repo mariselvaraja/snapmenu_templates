@@ -635,10 +635,19 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
       </div>
       
       {/* Footer */}
-      {orders.length > 0 && (
-        <div className="border-t p-4 z-10">
-          {/* Check if all orders are void */}
-          {(() => {
+      <div className="border-t p-4 z-10">
+        {/* Always show Continue button */}
+        {orders.length === 0 ? (
+          // When no orders (e.g., after payment), only show Continue button
+          <button 
+            className="w-full bg-red-500 text-white py-3 rounded-full font-medium hover:bg-red-600 transition-colors"
+            onClick={handleContinue}
+          >
+            Continue
+          </button>
+        ) : (
+          // When there are orders, show appropriate buttons
+          (() => {
             const allOrdersVoid = orders.every(order => order.status?.toLowerCase() === 'void');
             
             if (allOrdersVoid) {
@@ -682,9 +691,9 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
                 </>
               );
             }
-          })()}
-        </div>
-      )}
+          })()
+        )}
+      </div>
       
       {/* Bill Popup */}
       {showBill && orders.length > 0 && (

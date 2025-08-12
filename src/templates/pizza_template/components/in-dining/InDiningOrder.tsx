@@ -11,6 +11,7 @@ import { fetchTableStatusRequest } from '../../../../common/redux/slices/tableSt
 import { getOrderHistoryRequest } from '../../../../common/redux/slices/orderHistorySlice';
 import { useAppSelector } from '../../../../redux';
 import SearchBarComponent from '../SearchBarComponent';
+import { webSocketService } from '../../../../common/services/websocketService';
 import InDiningProductDetails from './InDiningProductDetails';
 import InDiningCartDrawer from './InDiningCartDrawer';
 import InDiningOrders from './InDiningOrders';
@@ -154,10 +155,34 @@ function InDiningOrder() {
   }, [location]);
   
   
-  // Fetch in-dining orders when component mounts
+  // Fetch in-dining orders when component mounts and reset menu state
   useEffect(() => {
     dispatch(getInDiningOrdersRequest());
+    
+    // Reset menu state to show cards view on page load/refresh
+    dispatch(setShowMenuItems(false));
+    dispatch(setCurrentMenuType(null));
+    setShowCategories(false);
+    setSelectedCategory('All');
+    setSelectedSubcategory('All');
   }, [dispatch]);
+
+  // Listen for payment completed event from WebSocket
+  useEffect(() => {
+    const handlePaymentCompleted = (data: any) => {
+      console.log('💳 Payment completed event received:', data);
+      // Navigate to orders view when payment is completed
+      setShowOrders(true);
+    };
+
+    // Add event listener for payment completed
+    webSocketService.addEventListener('payment_completed', handlePaymentCompleted);
+
+    // Cleanup: remove event listener on unmount
+    return () => {
+      webSocketService.removeEventListener('payment_completed', handlePaymentCompleted);
+    };
+  }, []);
 
   // Set menu type based on available data when page loads
   useEffect(() => {
@@ -174,9 +199,9 @@ function InDiningOrder() {
         setShowCategories(true);
         dispatch(setShowMenuItems(false));
       }
-      // If both menus have data, don't auto-show either - let user choose
+      // If both menus have data, show cards view first
     }
-  }, [loading, foodItems, drinksItems]);
+  }, [loading, foodItems, drinksItems, dispatch]);
 
   
   // Filter menu items by selected category and subcategory
@@ -423,7 +448,36 @@ function InDiningOrder() {
           // If we just placed an order, reset the cart
           if (orderNumber) {
             resetOrder();
+            setOrderNumber(''); // Clear order number
           }
+          
+          // When coming back from orders, check if a menu type was previously selected
+          if (currentMenuType) {
+            // If a menu type was selected (food or drinks), go back to that category view
+            setShowCategories(true);
+            dispatch(setShowMenuItems(false));
+            // Keep the currentMenuType as it is (don't reset it)
+          } else {
+            // If no menu type was selected, show appropriate view based on available menus
+            if (shouldShowCards) {
+              // If both menus exist, show the cards view
+              setShowCategories(false);
+              dispatch(setCurrentMenuType(null));
+            } else if (foodItems.length > 0 && drinksItems.length === 0) {
+              // If only food menu exists, show food categories
+              dispatch(setCurrentMenuType('food'));
+              setShowCategories(true);
+            } else if (drinksItems.length > 0 && foodItems.length === 0) {
+              // If only drinks menu exists, show drinks categories
+              dispatch(setCurrentMenuType('drinks'));
+              setShowCategories(true);
+            }
+          }
+          
+          // Reset only the selection states, not the menu type
+          dispatch(setShowMenuItems(false));
+          setSelectedCategory('All');
+          setSelectedSubcategory('All');
         }}
         newOrderNumber={orderNumber}
       />
@@ -484,7 +538,7 @@ function InDiningOrder() {
       
       {/* Show categories after selecting from cards or when only one menu type exists */}
       {!showMenuItems && showCategories && (foodItems.length > 0 || drinksItems.length > 0) && (
-        <div className="flex flex-col h-screen">
+        <div>
           {/* Fixed Header Section */}
           <div className="sticky top-24 z-30 bg-white">
             {/* Search Bar */}
@@ -492,21 +546,10 @@ function InDiningOrder() {
               searchQuery={searchQuery}
               onSearchChange={(value) => setSearchQuery(value)}
             />
-            
-            {/* Menu Type Selector - Hidden
-            {!searchQuery && (
-              <MenuTypeSelector
-                currentMenuType={currentMenuType || 'cards'}
-                showCategories={showCategories}
-                onFoodClick={handleFoodMenuClick}
-                onDrinksClick={handleDrinksMenuClick}
-              />
-            )}
-            */}
           </div>
           
-          {/* Scrollable Category Grid */}
-          <div className="flex-1 overflow-y-auto pb-20">
+          {/* Category Grid */}
+          <div className="pb-20">
             {searchQuery ? (
             // Show filtered items when searching
             <div className="mx-auto px-4 sm:px-6 lg:px-8">
@@ -592,22 +635,44 @@ function InDiningOrder() {
       {/* Menu Items - Directly show without filters */}
       {showMenuItems && (
       <>
-      {/* Header with category name and item count */}
+      {/* Header with search bar and category name */}
       <div className="bg-white border-b border-gray-200 sticky top-24 z-30">
         <div className="mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-center">
-            {/* Left side - Category name */}
-            <div className="flex items-center">
-              <h2 className="text-xl font-semibold text-gray-900">
-                {selectedCategory === 'All' ? 'All Items' : selectedCategory}
-              </h2>
+          {/* Search Bar */}
+          <SearchBar 
+            searchQuery={searchQuery}
+            onSearchChange={(value) => setSearchQuery(value)}
+          />
+          
+          {/* Category name and item count - Hide when searching */}
+          {!searchQuery && (
+            <div className="flex justify-between items-center mt-3">
+              {/* Left side - Category name */}
+              <div className="flex items-center">
+                <h2 className="text-lg font-semibold text-gray-900">
+                  {selectedCategory === 'All' ? 'All Items' : selectedCategory}
+                </h2>
+              </div>
+              
+              {/* Right side - Item count */}
+              <div className="text-sm text-gray-600">
+                {`${filteredMenuItems.length} ${filteredMenuItems.length === 1 ? 'item' : 'items'}`}
+              </div>
             </div>
-            
-            {/* Right side - Item count */}
-            <div className="text-sm text-gray-600">
-              {filteredMenuItems.length} {filteredMenuItems.length === 1 ? 'item' : 'items'}
+          )}
+          
+          {/* Search results count - Show only when searching */}
+          {searchQuery && (
+            <div className="text-sm text-gray-600 mt-3 text-center">
+              {(() => {
+                // When searching, count across ALL items (both food and drinks)
+                const allSearchResults = [...foodItems, ...drinksItems].filter(item => 
+                  item.name.toLowerCase().includes(searchQuery.toLowerCase())
+                );
+                return `${allSearchResults.length} ${allSearchResults.length === 1 ? 'result' : 'results'} found`;
+              })()}
             </div>
-          </div>
+          )}
         </div>
       </div>
 
@@ -631,14 +696,58 @@ function InDiningOrder() {
                     onViewAll={() => setSelectedCategory('All')}
                   />
                 ) : (
-                  filteredMenuItems.map((item) => (
-                    <FoodMenuItem
-                      key={item.name}
-                      item={item}
-                      onProductClick={handleProductClick}
-                      onAddClick={openModifiersPopup}
-                    />
-                  ))
+                  (() => {
+                    // When searching, search across ALL items (both food and drinks)
+                    if (searchQuery) {
+                      const allSearchResults = [...foodItems, ...drinksItems].filter(item => 
+                        item.name.toLowerCase().includes(searchQuery.toLowerCase())
+                      );
+                      
+                      if (allSearchResults.length === 0) {
+                        return (
+                          <div className="text-center py-8">
+                            <p className="text-gray-500">No items found matching "{searchQuery}"</p>
+                          </div>
+                        );
+                      }
+                      
+                      // Display all matching items without food/drinks labels
+                      return allSearchResults.map((item) => {
+                        // Check if it's a drinks item
+                        const isDrinks = drinksItems.some(drink => drink.id === item.id);
+                        
+                        if (isDrinks) {
+                          return (
+                            <DrinksMenuItem
+                              key={item.id}
+                              item={item}
+                              onProductClick={handleProductClick}
+                              onAddClick={openDrinksModifierPopup}
+                            />
+                          );
+                        } else {
+                          return (
+                            <FoodMenuItem
+                              key={item.id}
+                              item={item}
+                              onProductClick={handleProductClick}
+                              onAddClick={openModifiersPopup}
+                            />
+                          );
+                        }
+                      });
+                    }
+                    
+                    // When not searching, show filtered menu items
+                    return filteredMenuItems.map((item) => (
+                      <FoodMenuItem
+                        key={item.name}
+                        item={item}
+                        onProductClick={handleProductClick}
+                        onAddClick={openModifiersPopup}
+                      />
+                    ));
+                  })()
                 )}
               </div>
             </div>
@@ -661,14 +770,58 @@ function InDiningOrder() {
                     onViewAll={() => setSelectedCategory('All')}
                   />
                 ) : (
-                  filteredMenuItems.map((item) => (
-                    <DrinksMenuItem
-                      key={item.name}
-                      item={item}
-                      onProductClick={handleProductClick}
-                      onAddClick={openDrinksModifierPopup}
-                    />
-                  ))
+                  (() => {
+                    // When searching, search across ALL items (both food and drinks)
+                    if (searchQuery) {
+                      const allSearchResults = [...foodItems, ...drinksItems].filter(item => 
+                        item.name.toLowerCase().includes(searchQuery.toLowerCase())
+                      );
+                      
+                      if (allSearchResults.length === 0) {
+                        return (
+                          <div className="text-center py-8">
+                            <p className="text-gray-500">No items found matching "{searchQuery}"</p>
+                          </div>
+                        );
+                      }
+                      
+                      // Display all matching items without food/drinks labels
+                      return allSearchResults.map((item) => {
+                        // Check if it's a drinks item
+                        const isDrinks = drinksItems.some(drink => drink.id === item.id);
+                        
+                        if (isDrinks) {
+                          return (
+                            <DrinksMenuItem
+                              key={item.id}
+                              item={item}
+                              onProductClick={handleProductClick}
+                              onAddClick={openDrinksModifierPopup}
+                            />
+                          );
+                        } else {
+                          return (
+                            <FoodMenuItem
+                              key={item.id}
+                              item={item}
+                              onProductClick={handleProductClick}
+                              onAddClick={openModifiersPopup}
+                            />
+                          );
+                        }
+                      });
+                    }
+                    
+                    // When not searching, show filtered menu items
+                    return filteredMenuItems.map((item) => (
+                      <DrinksMenuItem
+                        key={item.name}
+                        item={item}
+                        onProductClick={handleProductClick}
+                        onAddClick={openDrinksModifierPopup}
+                      />
+                    ));
+                  })()
                 )}
               </div>
             </div>
