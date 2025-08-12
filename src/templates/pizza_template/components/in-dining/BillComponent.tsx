@@ -94,8 +94,6 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
   const showRequestCheckPopup = (status: boolean, message:any) => {
     if (status) {
       showToast(message, 'success');
-    } else {
-      showToast(message, 'error');
     }
   };
 
