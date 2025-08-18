@@ -2,7 +2,8 @@ import { motion } from 'framer-motion';
 import  { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useLocation } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Check } from 'lucide-react';
+import { LuVegan } from 'react-icons/lu';
 import { RootState, AppDispatch } from '../../../../common/store';
 import { addItem, removeItem, toggleDrawer } from '../../../../common/redux/slices/inDiningCartSlice';
 import { setSearchQuery as setReduxSearchQuery } from '../../../../common/redux/slices/searchSlice';
@@ -46,12 +47,43 @@ function InDiningOrder() {
   const [selectedMenuItem, setSelectedMenuItem] = useState<any>(null);
   const [showCategories, setShowCategories] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [isVegan, setisVegan] = useState<boolean>(false);
+  const [isVeg, setisVeg] = useState<boolean>(false);
   
+  // Helper function to filter items based on vegan/vegetarian selection
+  const getFilteredItems = (items: any[], menuType: string) => {
+    // Only apply dietary filters for food menu, not drinks menu
+    if (menuType === 'drinks' || (!isVegan && !isVeg)) {
+      // No filters selected or drinks menu, return all items
+      return items;
+    }
+    
+    return items.filter(item => {
+      const foodType = item.food_type?.toLowerCase();
+      
+      if (isVegan && isVeg) {
+        // Both filters selected - show vegan OR vegetarian items
+        return foodType === 'vegan' || foodType === 'vegetarian' || foodType === 'veg';
+      } else if (isVegan) {
+        // Only vegan filter selected
+        return foodType === 'vegan';
+      } else if (isVeg) {
+        // Only vegetarian filter selected
+        return foodType === 'vegetarian' || foodType === 'veg';
+      }
+      
+      return true;
+    });
+  };
+
   // Helper function to get categories with first item image
   const getCategoriesWithImages = (items: any[], menuType: string) => {
+    // First filter items based on vegan/vegetarian selection (only for food menu)
+    const filteredItems = getFilteredItems(items, menuType);
+    
     const categoryMap = new Map();
     
-    items.forEach(item => {
+    filteredItems.forEach(item => {
       const categoryName = menuType === 'drinks' ? item.type : item.category;
       if (categoryName && !categoryMap.has(categoryName)) {
         categoryMap.set(categoryName, {
@@ -435,7 +467,10 @@ function InDiningOrder() {
   // Handler for category selection
   const handleCategoryClick = (categoryName: string) => {
     const items = currentMenuType === 'food' ? foodItems : drinksItems;
-    const filteredItems = items.filter(item => 
+    // First apply vegan/vegetarian filtering (only for food menu)
+    const dietFilteredItems = getFilteredItems(items, currentMenuType || 'food');
+    // Then filter by category
+    const filteredItems = dietFilteredItems.filter(item => 
       currentMenuType === 'drinks' ? item.type === categoryName : item.category === categoryName
     );
     
@@ -562,7 +597,9 @@ function InDiningOrder() {
                 {(() => {
                   // Filter only within the current menu type
                   const itemsToSearch = currentMenuType === 'food' ? foodItems : drinksItems;
-                  const searchResults = itemsToSearch.filter(item => 
+                  // Apply vegan/vegetarian filtering first, then search (only for food menu)
+                  const dietFilteredItems = getFilteredItems(itemsToSearch, currentMenuType || 'food');
+                  const searchResults = dietFilteredItems.filter(item => 
                     item.name.toLowerCase().includes(searchQuery.toLowerCase())
                   );
                   
@@ -601,13 +638,68 @@ function InDiningOrder() {
             </div>
           ) : (
             // Show category grid when not searching
-            <CategoryGrid
-              categories={getCategoriesWithImages(
-                currentMenuType === 'food' ? foodItems : drinksItems,
-                currentMenuType || 'food'
+            <>
+              {/* Filter Toggle Buttons - Only show on food menu */}
+              {currentMenuType === 'food' && (
+                <FilterToggleButtons
+                  isVeganFilter={isVegan}
+                  isVegetarianFilter={isVeg}
+                  onVeganToggle={() => setisVegan(!isVegan)}
+                  onVegetarianToggle={() => {
+                    const newVegState = !isVeg;
+                    setisVeg(newVegState);
+                    setisVegan(newVegState);
+                  }}
+                />
               )}
-              onCategoryClick={handleCategoryClick}
-            />
+              
+              {(() => {
+                const categories = getCategoriesWithImages(
+                  currentMenuType === 'food' ? foodItems : drinksItems,
+                  currentMenuType || 'food'
+                );
+                
+                // Check if dietary filters are active and no categories are available
+                if ((isVegan || isVeg) && categories.length === 0) {
+                  return (
+                    <div className="px-4 py-12 text-center">
+                      <div className="max-w-md mx-auto">
+                        <div className="mb-4">
+                          <div className="w-16 h-16 mx-auto bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                            <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6-4h6m2 5.291A7.962 7.962 0 0112 15c-2.87 0-5.431.58-7.543 1.501A1.994 1.994 0 014 18.014V19a1 1 0 001 1h14a1 1 0 001-1v-.986a1.994 1.994 0 00-.457-1.513z" />
+                            </svg>
+                          </div>
+                        </div>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                          {isVegan && isVeg ? 'Vegetarian & Vegan Options' : isVegan ? 'Vegan Options' : 'Vegetarian Options'} Unavailable
+                        </h3>
+                        <p className="text-gray-600 mb-6 leading-relaxed">
+                          We apologize, but {isVegan && isVeg ? 'vegetarian and vegan dishes' : isVegan ? 'vegan dishes' : 'vegetarian dishes'} are not available at this moment. 
+                          Please explore our other delicious restaurant favorites and signature dishes.
+                        </p>
+                        <button
+                          onClick={() => {
+                            setisVegan(false);
+                            setisVeg(false);
+                          }}
+                          className="inline-flex items-center text-sm px-4 py-2 border border-transparent text-base font-normal rounded-3xl text-white bg-orange-600 hover:bg-orange-600 "
+                        >
+                          View All Menu Items
+                        </button>
+                      </div>
+                    </div>
+                  );
+                }
+                
+                return (
+                  <CategoryGrid
+                    categories={categories}
+                    onCategoryClick={handleCategoryClick}
+                  />
+                );
+              })()}
+            </>
           )}
           </div>
         </div>
@@ -703,7 +795,9 @@ function InDiningOrder() {
                   (() => {
                     // When searching, filter only within current menu type (food items only)
                     if (searchQuery) {
-                      const searchResults = foodItems.filter(item => 
+                      // Apply vegan/vegetarian filtering first, then search (only for food menu)
+                      const dietFilteredItems = getFilteredItems(foodItems, 'food');
+                      const searchResults = dietFilteredItems.filter(item => 
                         item.name.toLowerCase().includes(searchQuery.toLowerCase())
                       );
                       
@@ -761,7 +855,9 @@ function InDiningOrder() {
                   (() => {
                     // When searching, filter only within current menu type (drinks items only)
                     if (searchQuery) {
-                      const searchResults = drinksItems.filter(item => 
+                      // Apply vegan/vegetarian filtering first, then search (no dietary filters for drinks)
+                      const dietFilteredItems = getFilteredItems(drinksItems, 'drinks');
+                      const searchResults = dietFilteredItems.filter(item => 
                         item.name.toLowerCase().includes(searchQuery.toLowerCase())
                       );
                       
@@ -860,5 +956,119 @@ function InDiningOrder() {
     </div>
   );
 }
+
+// Filter Toggle Buttons Component
+const FilterToggleButtons = ({ 
+  isVeganFilter, 
+  isVegetarianFilter, 
+  onVeganToggle, 
+  onVegetarianToggle 
+}: {
+  isVeganFilter: boolean;
+  isVegetarianFilter: boolean;
+  onVeganToggle: () => void;
+  onVegetarianToggle: () => void;
+}) => {
+  return (
+    <div className="px-5 py-5 bg-white">
+      <div className="flex gap-4">
+        {/* Vegan Toggle */}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={onVeganToggle}
+            className={`relative w-12 h-6 rounded-full border-2 transition-all duration-500 ease-in-out transform hover:scale-105 ${
+              isVeganFilter
+                ? 'bg-green-100 border-green-300 shadow-md'
+                : 'bg-gray-100 border-gray-300'
+            }`}
+          >
+            {/* Toggle Slider */}
+            <motion.div 
+              className={`absolute top-0 w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                isVeganFilter
+                  ? 'bg-white border-green-500 shadow-lg'
+                  : 'bg-white border-gray-400'
+              }`}
+              animate={{
+                x: isVeganFilter ? 24 : 0,
+                scale: isVeganFilter ? 1.1 : 1,
+              }}
+              transition={{
+                type: "spring",
+                stiffness: 500,
+                damping: 30,
+                duration: 0.3
+              }}
+            >
+              {/* Vegan Icon (LuVegan) with fade animation */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ 
+                  opacity: isVeganFilter ? 1 : 0,
+                  scale: isVeganFilter ? 1 : 0,
+                  rotate: isVeganFilter ? 0 : 180
+                }}
+                transition={{ 
+                  duration: 0.2,
+                  delay: isVeganFilter ? 0.1 : 0
+                }}
+              >
+                <LuVegan className="w-3 h-3 text-green-500" />
+              </motion.div>
+            </motion.div>
+          </button>
+          <span className="text-sm font-medium text-gray-700">Vegan</span>
+        </div>
+
+        {/* Vegetarian Toggle */}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={onVegetarianToggle}
+            className={`relative w-12 h-6 rounded-full border-2 transition-all duration-500 ease-in-out transform hover:scale-105 ${
+              isVegetarianFilter
+                ? 'bg-green-100 border-green-300 shadow-md'
+                : 'bg-gray-100 border-gray-300'
+            }`}
+          >
+            {/* Toggle Slider */}
+            <motion.div 
+              className={`absolute top-0 w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                isVegetarianFilter
+                  ? 'bg-white border-green-500 shadow-lg'
+                  : 'bg-white border-gray-400'
+              }`}
+              animate={{
+                x: isVegetarianFilter ? 24 : 0,
+                scale: isVegetarianFilter ? 1.1 : 1,
+              }}
+              transition={{
+                type: "spring",
+                stiffness: 500,
+                damping: 30,
+                duration: 0.3
+              }}
+            >
+              {/* Vegetarian Icon (Green Circle) with fade animation */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ 
+                  opacity: isVegetarianFilter ? 1 : 0,
+                  scale: isVegetarianFilter ? 1 : 0,
+                }}
+                transition={{ 
+                  duration: 0.2,
+                  delay: isVegetarianFilter ? 0.1 : 0
+                }}
+              >
+                <div className="w-3 h-3 rounded-full bg-green-500"></div>
+              </motion.div>
+            </motion.div>
+          </button>
+          <span className="text-sm font-medium text-gray-700">Vegetarian</span>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export default InDiningOrder;
