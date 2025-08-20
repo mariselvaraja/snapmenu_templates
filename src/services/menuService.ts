@@ -46,6 +46,21 @@ export const menuService = {
         return 0;
       }
       
+      // Helper function to determine dietary properties
+      function getDietaryProperties(item: any): { isVegan: boolean; isVegetarian: boolean } {
+        const isVegan = item.is_vegan === true || item.is_vegan === "true" || item.is_vegan === "yes";
+        const foodType = (item.food_type || "").toLowerCase();
+        const isVegFoodType = foodType === "veg" || foodType === "vegan" || foodType === "vegetarian";
+        
+        if (isVegan) {
+          return { isVegan: true, isVegetarian: false };
+        } else if (!isVegan && isVegFoodType) {
+          return { isVegan: false, isVegetarian: true };
+        } else {
+          return { isVegan: false, isVegetarian: false };
+        }
+      }
+      
       // Helper function to add category
       function addCategory(item: any, categories: MenuCategory[], categoryMap: { [key: string]: boolean }) {
         // Add category if not already added
@@ -77,6 +92,7 @@ export const menuService = {
         // Process food menu items
         if (Array.isArray(menuData.foodMenu)) {
           menuData.foodMenu.forEach((item: any) => {
+            const dietaryProps = getDietaryProperties(item);
             const rawItem = {
               ...item,
               id: item.id || item.pk_id || Math.random().toString(36).substr(2, 9),
@@ -85,6 +101,11 @@ export const menuService = {
               price: parsePrice(item.price),
               image: item.image || '',
               category: item.category || item.level1_category || 'Food',
+              dietary: {
+                ...item.dietary,
+                isVegan: dietaryProps.isVegan,
+                isVegetarian: dietaryProps.isVegetarian,
+              },
               raw_api_data: JSON.stringify(item, null, 2),
             };
             foodMenu.push(rawItem as any);
@@ -96,6 +117,7 @@ export const menuService = {
         // Process drinks menu items
         if (Array.isArray(menuData.drinksMenu)) {
           menuData.drinksMenu.forEach((item: any) => {
+            const dietaryProps = getDietaryProperties(item);
             const rawItem = {
               ...item,
               id: item.id || item.pk_id || Math.random().toString(36).substr(2, 9),
@@ -104,6 +126,11 @@ export const menuService = {
               price: parsePrice(item.price),
               image: item.image || '',
               category: item.category || item.level1_category || 'Drinks',
+              dietary: {
+                ...item.dietary,
+                isVegan: dietaryProps.isVegan,
+                isVegetarian: dietaryProps.isVegetarian,
+              },
               raw_api_data: JSON.stringify(item, null, 2),
             };
             drinksMenu.push(rawItem as any);
@@ -114,6 +141,7 @@ export const menuService = {
       } else if (menuData && Array.isArray(menuData)) {
         // If response is a direct array of menu items
         menuData.forEach((item: any) => {
+          const dietaryProps = getDietaryProperties(item);
           // Store the raw item data
           const rawItem = {
             ...item,
@@ -123,6 +151,11 @@ export const menuService = {
             price: parsePrice(item.price),
             image: item.image || '',
             category: item.category || item.level1_category || 'Uncategorized',
+            dietary: {
+              ...item.dietary,
+              isVegan: dietaryProps.isVegan,
+              isVegetarian: dietaryProps.isVegetarian,
+            },
             raw_api_data: JSON.stringify(item, null, 2), // Store the raw API data
           };
           items.push(rawItem as any);
@@ -133,6 +166,7 @@ export const menuService = {
       } else if (menuData && Array.isArray(menuData.menu_items)) {
         // If response has a menu_items array
         menuData.menu_items.forEach((item: any) => {
+          const dietaryProps = getDietaryProperties(item);
           // Store the raw item data
           const rawItem = {
             ...item,
@@ -142,6 +176,11 @@ export const menuService = {
             price: parsePrice(item.price),
             image: item.image || '',
             category: item.category || item.level1_category || 'Uncategorized',
+            dietary: {
+              ...item.dietary,
+              isVegan: dietaryProps.isVegan,
+              isVegetarian: dietaryProps.isVegetarian,
+            },
             raw_api_data: JSON.stringify(item, null, 2), // Store the raw API data
           };
           items.push(rawItem as any);
@@ -152,6 +191,7 @@ export const menuService = {
       } else if (menuData && menuData.menu && Array.isArray(menuData.menu)) {
         // If response has a menu array
         menuData.menu.forEach((item: any) => {
+          const dietaryProps = getDietaryProperties(item);
           // Store the raw item data
           const rawItem = {
             ...item,
@@ -161,6 +201,11 @@ export const menuService = {
             price: parsePrice(item.price),
             image: item.image || '',
             category: item.category || item.level1_category || 'Uncategorized',
+            dietary: {
+              ...item.dietary,
+              isVegan: dietaryProps.isVegan,
+              isVegetarian: dietaryProps.isVegetarian,
+            },
             raw_api_data: JSON.stringify(item, null, 2), // Store the raw API data
           };
           items.push(rawItem as any);
@@ -175,6 +220,7 @@ export const menuService = {
             menuData[category].forEach((item: any) => {
               // Add category to the item if not present
               const itemWithCategory = { ...item, category: category };
+              const dietaryProps = getDietaryProperties(item);
               
               // Store the raw item data
               const rawItem = {
@@ -185,6 +231,11 @@ export const menuService = {
                 price: parsePrice(item.price),
                 image: item.image || '',
                 category: category,
+                dietary: {
+                  ...item.dietary,
+                  isVegan: dietaryProps.isVegan,
+                  isVegetarian: dietaryProps.isVegetarian,
+                },
                 raw_api_data: JSON.stringify(itemWithCategory, null, 2), // Store the raw API data
               };
               items.push(rawItem as any);
