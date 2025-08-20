@@ -12,6 +12,7 @@ import { IoLeafOutline } from 'react-icons/io5';
 import { CiWheat } from 'react-icons/ci';
 import { GoDotFill } from 'react-icons/go';
 import { usePayment } from '@/hooks';
+import { TbTriangleFilled } from 'react-icons/tb';
 
 // Define types for category and subcategory
 interface CategoryType {
@@ -52,6 +53,8 @@ export default function Menu() {
     const { data: comboData, loading: comboLoading, error: comboError } = useAppSelector(state => state.combo);
     const { state: { items: cartItems }, removeItem, updateItemQuantity } = useCart();
     const {isPaymentAvilable} = usePayment();
+
+    console.log("items", items)
     
     
     // Scroll to top and fetch data when component mounts
@@ -468,12 +471,12 @@ export default function Menu() {
                                     <div className="flex items-center gap-2">
                                         {/* Food Type Icons - Veg/Non-Veg */}
                                         {item.dietary && (item.dietary.isVegetarian || item.dietary.isVegan) ? (
-                                            <div className="bg-white w-4 h-4 rounded-sm flex items-center justify-center border border-green-600 flex-shrink-0">
-                                                <GoDotFill className="w-2 h-2 text-green-600" />
+                                            <div className="bg-white w-6 h-6 rounded-sm flex items-center justify-center border-2 border-green-600 flex-shrink-0">
+                                                <GoDotFill className="w-4 h-4 text-green-600" />
                                             </div>
                                         ) : (
-                                            <div className="bg-white w-4 h-4 rounded-sm flex items-center justify-center border border-red-600 flex-shrink-0">
-                                                <GoDotFill className="w-2 h-2 text-red-600" />
+                                            <div className="bg-white w-6 h-6 rounded-sm flex items-center justify-center border-2 border-red-600 flex-shrink-0">
+                                                <TbTriangleFilled className="w-3 h-3 text-red-600" />
                                             </div>
                                         )}
                                         <h3 

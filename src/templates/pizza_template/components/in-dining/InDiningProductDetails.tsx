@@ -180,6 +180,7 @@ import { AppDispatch, RootState } from '../../../../common/store';
 import { addItem, toggleDrawer, setTableId } from '../../../../common/redux/slices/inDiningCartSlice';
 import InDiningDrinksModifierModal from './InDiningDrinksModifierModal';
 import { formatCurrency } from '../../utils';
+import { TbTriangleFilled } from 'react-icons/tb';
 
 interface InDiningProductDetailsProps {
   product: any;
@@ -484,12 +485,12 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
               <div className="flex items-center gap-2 mb-2">
                 {/* Food Type Icons - Veg/Non-Veg */}
                 {product.dietary && (product.dietary.isVegetarian || product.dietary.isVegan) ? (
-                  <div className="bg-white w-4 h-4 rounded-sm flex items-center justify-center border border-green-600 flex-shrink-0">
-                    <GoDotFill className="w-2 h-2 text-green-600" />
+                  <div className="bg-white w-6 h-6 rounded-sm flex items-center justify-center border border-green-600 flex-shrink-0">
+                    <GoDotFill className="w-4 h-4 text-green-600" />
                   </div>
                 ) : (
-                  <div className="bg-white w-4 h-4 rounded-sm flex items-center justify-center border border-red-600 flex-shrink-0">
-                    <GoDotFill className="w-2 h-2 text-red-600" />
+                  <div className="bg-white w-6 h-6 rounded-sm flex items-center justify-center border border-red-600 flex-shrink-0">
+                    <TbTriangleFilled className="w-3 h-3 text-red-600" />
                   </div>
                 )}
                 <h2 className="text-2xl font-bold text-gray-800">{product.name}</h2>

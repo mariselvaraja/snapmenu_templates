@@ -5,6 +5,7 @@ import { LuVegan } from 'react-icons/lu';
 import { IoLeafOutline } from 'react-icons/io5';
 import { CiWheat } from 'react-icons/ci';
 import { GoDotFill } from 'react-icons/go';
+import { TbTriangleFilled } from 'react-icons/tb';
 
 interface MenuItemsListProps {
   items: any[];
@@ -112,12 +113,12 @@ export default function MenuItemsList({
                   <Wine className='w-5 h-5 text-red-500' />
                 ) : (
                   item.dietary && (item.dietary.isVegetarian || item.dietary.isVegan) ? (
-                    <div className="bg-white w-4 h-4 rounded-sm flex items-center justify-center border border-green-600 flex-shrink-0">
-                      <GoDotFill className="w-2 h-2 text-green-600" />
+                    <div className="bg-white w-6 h-6 rounded-sm flex items-center justify-center border border-green-600 flex-shrink-0">
+                      <GoDotFill className="w-4 h-4 text-green-600" />
                     </div>
                   ) : (
-                    <div className="bg-white w-4 h-4 rounded-sm flex items-center justify-center border border-red-600 flex-shrink-0">
-                      <GoDotFill className="w-2 h-2 text-red-600" />
+                    <div className="bg-white w-6 h-6 rounded-sm flex items-center justify-center border border-red-600 flex-shrink-0">
+                      <TbTriangleFilled className="w-3 h-3 text-red-600" />
                     </div>
                   )
                 )}

@@ -45,12 +45,14 @@ export const menuService = {
         }
         return 0;
       }
+
+    // 
       
       // Helper function to determine dietary properties
       function getDietaryProperties(item: any): { isVegan: boolean; isVegetarian: boolean } {
-        const isVegan = item.is_vegan === true || item.is_vegan === "true" || item.is_vegan === "yes";
+        const isVegan = item.is_vegan === true || item.is_vegan?.toLowerCase() === "true" || item.is_vegan?.toLowerCase() === "yes";
         const foodType = (item.food_type || "").toLowerCase();
-        const isVegFoodType = foodType === "veg" || foodType === "vegan" || foodType === "vegetarian";
+        const isVegFoodType = foodType === "veg" || foodType === "vegetarian";
         
         if (isVegan) {
           return { isVegan: true, isVegetarian: false };
