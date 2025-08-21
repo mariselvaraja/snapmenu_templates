@@ -44,7 +44,7 @@ export class WebSocketService {
       this.isConnecting = true;
       this.restaurantId = restaurantId;
 
-      const wsUrl = `wss://restaurant-view.raghavan-7fc.workers.dev/websocketForOrders?restaurant_id=${restaurantId}&type=indining`;
+      const wsUrl = `wss://websocket.genaiembed.ai?restaurant_id=${restaurantId}`;
       
       try {
         this.ws = new WebSocket(wsUrl);
