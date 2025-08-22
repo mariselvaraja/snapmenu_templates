@@ -36,8 +36,12 @@ const OrdersBottomBar: React.FC<any> = ({ onViewOrders, orders, historyLoading, 
               )}
             </div>
             <div className="flex items-center space-x-2 text-sm font-semibold">
-              <span>${totalOrderPrice.toFixed(2)}</span>
-              <span>|</span>
+              {totalOrderPrice > 0 && (
+                <>
+                  <span>${totalOrderPrice.toFixed(2)}</span>
+                  <span>|</span>
+                </>
+              )}
               <span>{totalItemLength} Item(s)</span>
             </div>
           </div>
