@@ -144,31 +144,43 @@ function InDiningOrder() {
     tableId: tableName || undefined,
     autoConnect: true,
     onOrderUpdate: (data) => {
-      console.log('Order updated via WebSocket:', data);
+      console.log('📨 WebSocket MESSAGE RECEIVED for restaurant ID:', franchiseId, '- Order updated:', data);
+      
+      // Refresh orders when WebSocket message received for restaurant ID
+      if (tableFromQuery) {
+        console.log('🔄 Refreshing orders for table:', tableFromQuery);
+        dispatch(getOrderHistoryRequest(tableFromQuery));
+      }
+      
       // Show brief update indicator
       setShowUpdateIndicator(true);
       setTimeout(() => setShowUpdateIndicator(false), 2000);
-      
-      // No need to refetch data - WebSocket service already updated Redux store
-      console.log('✅ Order data updated via WebSocket - no API call needed');
     },
     onOrderStatusChange: (data) => {
-      console.log('Order status changed via WebSocket:', data);
+      console.log('📨 WebSocket MESSAGE RECEIVED for restaurant ID:', franchiseId, '- Order status changed:', data);
+      
+      // Refresh orders when WebSocket message received for restaurant ID
+      if (tableFromQuery) {
+        console.log('🔄 Refreshing orders for table:', tableFromQuery);
+        dispatch(getOrderHistoryRequest(tableFromQuery));
+      }
+      
       // Show brief update indicator
       setShowUpdateIndicator(true);
       setTimeout(() => setShowUpdateIndicator(false), 2000);
-      
-      // No need to refetch data - WebSocket service already updated Redux store
-      console.log('✅ Order status updated via WebSocket - no API call needed');
     },
     onNewOrder: (data) => {
-      console.log('New order received via WebSocket:', data);
+      console.log('📨 WebSocket MESSAGE RECEIVED for restaurant ID:', franchiseId, '- New order:', data);
+      
+      // Refresh orders when WebSocket message received for restaurant ID
+      if (tableFromQuery) {
+        console.log('🔄 Refreshing orders for table:', tableFromQuery);
+        dispatch(getOrderHistoryRequest(tableFromQuery));
+      }
+      
       // Show brief update indicator
       setShowUpdateIndicator(true);
       setTimeout(() => setShowUpdateIndicator(false), 2000);
-      
-      // No need to refetch data - WebSocket service already updated Redux store
-      console.log('✅ New order added via WebSocket - no API call needed');
       
       // Clear cart and reset states when new order is received
       cartItems.forEach((item: any) => {
