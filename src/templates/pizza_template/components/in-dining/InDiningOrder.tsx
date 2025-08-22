@@ -14,6 +14,7 @@ import { getOrderHistoryRequest } from '../../../../common/redux/slices/orderHis
 import { useAppSelector } from '../../../../redux';
 import SearchBarComponent from '../SearchBarComponent';
 import { webSocketService } from '../../../../common/services/websocketService';
+import { useWebSocketOrders } from '../../hooks/useWebSocketOrders';
 import InDiningProductDetails from './InDiningProductDetails';
 import InDiningCartDrawer from './InDiningCartDrawer';
 import InDiningOrders from './InDiningOrders';
@@ -49,6 +50,7 @@ function InDiningOrder() {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [isVegan, setisVegan] = useState<boolean>(false);
   const [isVeg, setisVeg] = useState<boolean>(false);
+  const [showUpdateIndicator, setShowUpdateIndicator] = useState<boolean>(false);
   
   // Helper function to filter items based on vegan/vegetarian selection
   const getFilteredItems = (items: any[], menuType: string) => {
@@ -125,6 +127,65 @@ function InDiningOrder() {
   const table_name = sessionStorage.getItem('Tablename');
   const searchParams = new URLSearchParams(location.search);
   const tableFromQuery:any = searchParams.get('table');
+
+  // Get franchise ID from session storage (restaurant_id for websocket)
+  const franchiseId = sessionStorage.getItem('franchise_id') || sessionStorage.getItem('restaurantId') || 'default-franchise';
+
+  // WebSocket integration
+  const {
+    connectionStatus,
+    isConnected,
+    isConnecting,
+    error: wsError,
+    connect: connectWebSocket,
+    disconnect: disconnectWebSocket
+  } = useWebSocketOrders({
+    restaurantId: franchiseId,
+    tableId: tableName || undefined,
+    autoConnect: true,
+    onOrderUpdate: (data) => {
+      console.log('Order updated via WebSocket:', data);
+      // Show brief update indicator
+      setShowUpdateIndicator(true);
+      setTimeout(() => setShowUpdateIndicator(false), 2000);
+      
+      // No need to refetch data - WebSocket service already updated Redux store
+      console.log('✅ Order data updated via WebSocket - no API call needed');
+    },
+    onOrderStatusChange: (data) => {
+      console.log('Order status changed via WebSocket:', data);
+      // Show brief update indicator
+      setShowUpdateIndicator(true);
+      setTimeout(() => setShowUpdateIndicator(false), 2000);
+      
+      // No need to refetch data - WebSocket service already updated Redux store
+      console.log('✅ Order status updated via WebSocket - no API call needed');
+    },
+    onNewOrder: (data) => {
+      console.log('New order received via WebSocket:', data);
+      // Show brief update indicator
+      setShowUpdateIndicator(true);
+      setTimeout(() => setShowUpdateIndicator(false), 2000);
+      
+      // No need to refetch data - WebSocket service already updated Redux store
+      console.log('✅ New order added via WebSocket - no API call needed');
+      
+      // Clear cart and reset states when new order is received
+      cartItems.forEach((item: any) => {
+        dispatch(removeItem(item.id));
+      });
+      
+      // Reset order states
+      setOrderPlaced(false);
+      setOrderNumber('');
+      
+      // Don't automatically redirect to orders view - let user stay on current screen
+      // setShowOrders(true); // Removed automatic redirect
+    },
+    onConnectionChange: (status) => {
+      console.log('WebSocket connection status changed:', status);
+    }
+  });
 
   const orderHistoryState = useSelector((state: RootState) => state.orderHistory);
   const historyLoading = orderHistoryState.loading;

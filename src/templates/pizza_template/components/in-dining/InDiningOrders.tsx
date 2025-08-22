@@ -9,7 +9,6 @@ import { InDiningOrder } from '../../../../common/redux/slices/inDiningOrderSlic
 import { getOrderHistoryRequest } from '../../../../common/redux/slices/orderHistorySlice';
 import { clearCart } from '../../../../common/redux/slices/inDiningCartSlice';
 import { resetPaymentState } from '../../../../common/redux/slices/paymentSlice';
-import { useWebSocketOrders } from '../../hooks/useWebSocketOrders';
 import usePaymentManagement from '../../hooks/usePaymentManagement';
 import VerifyingPaymentPopup from '../VerifyingPaymentPopup';
 import PaymentSuccessPopup from '../PaymentSuccessPopup';
@@ -67,7 +66,6 @@ interface InDiningOrdersProps {
 const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber }) => {
   const [showNotification, setShowNotification] = useState(!!newOrderNumber);
   const [showBill, setShowBill] = useState(false);
-  const [showUpdateIndicator, setShowUpdateIndicator] = useState(false);
   const navigate = useNavigate();
   let tablename = sessionStorage.getItem('Tablename');
   const { showToast } = useToast();
@@ -118,64 +116,6 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
     }
   }, [paymentState.paymentResponse, previousPaymentResponse, initiatePayment, showToast, showBill]);
 
-  // Get franchise ID from session storage (restaurant_id for websocket)
-  const franchiseId = sessionStorage.getItem('franchise_id') || sessionStorage.getItem('restaurantId') || 'default-franchise';
-  
-  // WebSocket integration
-  const {
-    connectionStatus,
-    isConnected,
-    isConnecting,
-    error: wsError,
-    connect: connectWebSocket,
-    disconnect: disconnectWebSocket
-  } = useWebSocketOrders({
-    restaurantId: franchiseId,
-    tableId: tablename || undefined,
-    autoConnect: true,
-    onOrderUpdate: (data) => {
-      console.log('Order updated via WebSocket:', data);
-      // Show brief update indicator
-      setShowUpdateIndicator(true);
-      setTimeout(() => setShowUpdateIndicator(false), 2000);
-      console.log("tableFromQuery", tableFromQuery)
-      // Refresh orders data when order is updated
-      if (tableFromQuery) {
-        dispatch(getOrderHistoryRequest(tableFromQuery));
-      }
-    },
-    onOrderStatusChange: (data) => {
-      console.log('Order status changed via WebSocket:', data);
-      // Show brief update indicator
-      setShowUpdateIndicator(true);
-      setTimeout(() => setShowUpdateIndicator(false), 2000);
-      // Show notification for status changes
-      if (data.status === 'ready') {
-        setShowNotification(true);
-      }
-      
-      // Refresh orders data when order status changes
-      if (tableFromQuery) {
-        dispatch(getOrderHistoryRequest(tableFromQuery));
-      }
-    },
-    onNewOrder: (data) => {
-      console.log('New order received via WebSocket:', data);
-      setShowNotification(true);
-      // Show brief update indicator
-      setShowUpdateIndicator(true);
-      setTimeout(() => setShowUpdateIndicator(false), 2000);
-      
-      // Refresh orders data when new order is received
-      if (tableFromQuery) {
-        dispatch(getOrderHistoryRequest(tableFromQuery));
-      }
-    },
-    onConnectionChange: (status) => {
-      console.log('WebSocket connection status changed:', status);
-    }
-  });
-  
   // Function to get status badge colors
   const getStatusBadgeClasses = (status: string) => {
     const normalizedStatus = status.toLowerCase();
@@ -187,8 +127,10 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
         return 'bg-blue-50 text-blue-600 border-blue-100';
       case 'preparing':
         return 'bg-yellow-50 text-orange-600 border-yellow-100';
-        case 'ordered':
-          return 'bg-yellow-50 text-yellow-600 border-yellow-100';
+      case 'ordered':
+        return 'bg-yellow-50 text-yellow-600 border-yellow-100';
+      case 'void':
+        return 'bg-gray-50 text-gray-600 border-gray-100';
       default:
         return 'bg-red-50 text-red-600 border-red-100';
     }
@@ -383,13 +325,9 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
     }
   }, [location]);
 
-  // Calculate item count
+  // Calculate item count (same logic as bottom bar - count number of items, not quantities)
   const itemCount = orders.reduce((total: number, order: Order) => {
-    return total + (order.items?.reduce((orderTotal: number, item: any) => {
-      const quantity = typeof item.quantity === 'number' ? item.quantity : 
-        parseInt(String(item.quantity)) || 1;
-      return orderTotal + quantity;
-    }, 0) || 0);
+    return total + (order.items?.length || 0);
   }, 0);
 
   console.log("order.items", orders)
@@ -412,23 +350,6 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
             <p className="text-xs text-gray-500">
               Table Number: {tablename}
             </p>
-            {/* WebSocket Connection Status */}
-            <div className="flex items-center space-x-1">
-              {isConnected ? (
-                <Wifi className="h-3 w-3 text-green-500" />
-              ) : isConnecting ? (
-                <div className="h-3 w-3 border border-gray-300 border-t-blue-500 rounded-full animate-spin" />
-              ) : (
-                <WifiOff className="h-3 w-3 text-red-500" />
-              )}
-              <span className={`text-xs ${
-                isConnected ? 'text-green-600' : 
-                isConnecting ? 'text-blue-600' : 
-                'text-red-600'
-              }`}>
-                {isConnected ? 'Live' : isConnecting ? 'Connecting...' : 'Offline'}
-              </span>
-            </div>
           </div>
         </div>
         <button
@@ -718,10 +639,8 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
         onClose={() => {
           resetAllPopupStates();
           dispatch(resetPaymentState())
-          // Refresh orders when verifying popup is closed
-          if (tableFromQuery) {
-            dispatch(getOrderHistoryRequest(tableFromQuery));
-          }
+          // No need to refresh orders - WebSocket service handles updates
+          console.log('✅ VerifyingPayment popup closed - WebSocket will handle order updates');
         }}
       />
 
@@ -733,10 +652,8 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
           dispatch(resetPaymentState());
           // Clear the cart when payment success popup is closed
           dispatch(clearCart());
-          // Refresh orders when success popup is closed
-          if (tableFromQuery) {
-            dispatch(getOrderHistoryRequest(tableFromQuery));
-          }
+          // No need to refresh orders - WebSocket service handles updates
+          console.log('✅ PaymentSuccess popup closed - WebSocket will handle order updates');
         }}
         onContinue={() => handlePaymentSuccess(() => {
           showToast('Payment completed successfully!', 'success');
@@ -744,10 +661,8 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
           dispatch(resetPaymentState());
           // Clear the cart when payment is successful
           dispatch(clearCart());
-          // Refresh orders after successful payment
-          if (tableFromQuery) {
-            dispatch(getOrderHistoryRequest(tableFromQuery));
-          }
+          // No need to refresh orders - WebSocket service handles updates
+          console.log('✅ PaymentSuccess continue - WebSocket will handle order updates');
         })}
       />
 
@@ -755,10 +670,8 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
         isOpen={showPaymentFailedPopup}
         onClose={() => {
           resetAllPopupStates();
-          // Refresh orders when failed popup is closed
-          if (tableFromQuery) {
-            dispatch(getOrderHistoryRequest(tableFromQuery));
-          }
+          // No need to refresh orders - WebSocket service handles updates
+          console.log('✅ PaymentFailed popup closed - WebSocket will handle order updates');
         }}
         onTryAgain={() => handlePaymentRetry(() => {
           // Retry the payment with the same payment link
@@ -781,10 +694,8 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
           resetAllPopupStates();
           // Clear payment state
           dispatch(resetPaymentState());
-          // Refresh orders when processing failed popup is closed
-          if (tableFromQuery) {
-            dispatch(getOrderHistoryRequest(tableFromQuery));
-          }
+          // No need to refresh orders - WebSocket service handles updates
+          console.log('✅ PaymentFailedProcessing popup closed - WebSocket will handle order updates');
         }}
         onTryAgain={() => handlePaymentRetry(() => {
           // Clear payment state before retry

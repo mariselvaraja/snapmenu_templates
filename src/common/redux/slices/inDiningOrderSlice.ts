@@ -19,7 +19,7 @@ export interface InDiningOrder {
   id?: string;
   table_id: string;
   items: InDiningOrderItem[];
-  status: 'pending' | 'processing' | 'completed' | 'cancelled' | 'preparing' | 'ready' | 'delivered';
+  status: 'pending' | 'processing' | 'completed' | 'cancelled' | 'preparing' | 'ready' | 'delivered' | 'void';
   totalAmount: number;
   createdAt?: string;
   updatedAt?: string;

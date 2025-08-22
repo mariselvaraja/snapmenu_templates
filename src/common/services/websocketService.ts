@@ -191,6 +191,13 @@ export class WebSocketService {
         return;
       }
 
+      // Handle the new_orders format: { new_orders: [order1, order2, ...], type: 'dining', restaurantId: 'xxx' }
+      if (rawData.new_orders && Array.isArray(rawData.new_orders)) {
+        console.log(`🆕 Processing NEW_ORDERS for restaurant ID: ${this.restaurantId}`, rawData.new_orders);
+        this.handleNewOrders(rawData.new_orders);
+        return;
+      }
+
       // Handle the updated_order format: { updated_order: [{dining_id: 107, status: 'ready'}] }
       if (rawData.updated_order && Array.isArray(rawData.updated_order)) {
         console.log(`🔄 Processing UPDATED_ORDER for restaurant ID: ${this.restaurantId}`);
@@ -280,7 +287,7 @@ export class WebSocketService {
       const currentOrders = currentState.orderHistory.orders || [];
       
       // Valid status values for type safety
-      const validStatuses = ['pending', 'processing', 'completed', 'cancelled', 'preparing', 'ready', 'delivered'] as const;
+      const validStatuses = ['pending', 'processing', 'completed', 'cancelled', 'preparing', 'ready', 'delivered', 'void'] as const;
       type ValidStatus = typeof validStatuses[number];
       
       // Track which orders were updated and which need to be created
@@ -423,6 +430,48 @@ export class WebSocketService {
       
     } catch (error) {
       console.error('Error handling updated_orders:', error);
+    }
+  }
+
+  /**
+   * Handle new_orders format from WebSocket
+   * Format: { new_orders: [order1, order2, ...], type: 'dining', restaurantId: 'xxx' }
+   */
+  private handleNewOrders(newOrders: any[]): void {
+    try {
+      console.log(`🆕 Processing ${newOrders.length} new orders`);
+      
+      // Get current orders from Redux store
+      const currentState = store.getState();
+      const currentOrders = currentState.orderHistory.orders || [];
+      
+      // Merge new orders with existing ones, avoiding duplicates
+      const existingOrderIds = new Set(currentOrders.map(order => order.id));
+      const genuinelyNewOrders = newOrders.filter(order => 
+        !existingOrderIds.has(order.id || order.dining_id?.toString())
+      );
+      
+      if (genuinelyNewOrders.length > 0) {
+        // Add new orders to the beginning of the existing orders list
+        const updatedOrders = [...genuinelyNewOrders as InDiningOrder[], ...currentOrders];
+        store.dispatch(refreshOrderHistorySilent(updatedOrders));
+        
+        console.log(`🆕 Added ${genuinelyNewOrders.length} new orders to existing ${currentOrders.length} orders`);
+      } else {
+        console.log(`🆕 No new orders to add (all already exist)`);
+      }
+      
+      // Emit new order event for each genuinely new order
+      genuinelyNewOrders.forEach((order, index) => {
+        console.log(`🆕 Emitting new order event for order ${index + 1}:`, order);
+        this.emitEvent('new_order', { order, orders: genuinelyNewOrders });
+      });
+      
+      // Emit generic order update event
+      this.emitEvent('order_update', { new_orders: genuinelyNewOrders });
+      
+    } catch (error) {
+      console.error('Error handling new_orders:', error);
     }
   }
 
