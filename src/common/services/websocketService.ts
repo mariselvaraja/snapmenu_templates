@@ -192,16 +192,28 @@ export class WebSocketService {
       }
 
       // Handle the new_orders format: { new_orders: [order1, order2, ...], type: 'dining', restaurantId: 'xxx' }
-      if (rawData.new_orders && Array.isArray(rawData.new_orders)) {
-        console.log(`🆕 Processing NEW_ORDERS for restaurant ID: ${this.restaurantId}`, rawData.new_orders);
+      if (rawData.new_orders && Array.isArray(rawData.new_orders) && rawData.type === 'dining') {
+        console.log(`🆕 Processing NEW_ORDERS (dining) for restaurant ID: ${this.restaurantId}`, rawData.new_orders);
         this.handleNewOrders(rawData.new_orders);
         return;
       }
 
       // Handle the updated_order format: { updated_order: [{dining_id: 107, status: 'ready'}] }
-      if (rawData.updated_order && Array.isArray(rawData.updated_order)) {
-        console.log(`🔄 Processing UPDATED_ORDER for restaurant ID: ${this.restaurantId}`);
+      // Only process if type is 'dining' or if type is not specified (backward compatibility)
+      if (rawData.updated_order && Array.isArray(rawData.updated_order) && (!rawData.type || rawData.type === 'dining')) {
+        console.log(`🔄 Processing UPDATED_ORDER (dining) for restaurant ID: ${this.restaurantId}`);
         this.handleUpdatedOrders(rawData.updated_order);
+        return;
+      }
+
+      // Skip processing if new_orders or updated_order exist but type is not 'dining'
+      if (rawData.new_orders && Array.isArray(rawData.new_orders) && rawData.type !== 'dining') {
+        console.log(`⏭️ Skipping NEW_ORDERS (type: ${rawData.type}) for restaurant ID: ${this.restaurantId} - not dining orders`);
+        return;
+      }
+
+      if (rawData.updated_order && Array.isArray(rawData.updated_order) && rawData.type && rawData.type !== 'dining') {
+        console.log(`⏭️ Skipping UPDATED_ORDER (type: ${rawData.type}) for restaurant ID: ${this.restaurantId} - not dining orders`);
         return;
       }
 
