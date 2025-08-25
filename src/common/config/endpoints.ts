@@ -26,6 +26,7 @@ const GET_PAYMENT_INFO = import.meta.env.VITE_GET_PAYMENT_INFO || "/getTpnConfig
 const MAKE_PAYMENT_PATH = import.meta.env.VITE_MAKE_PAYMENT || "/paymentGateway/inDining";
 const COMBO_API_PATH = import.meta.env.VITE_COMBO_API_PATH || "/combos";
 const PARTY_ORDERS_API_PATH = import.meta.env.VITE_PARTY_ORDERS_API_PATH || "/party";
+const WEBSOCKET_BASE_URL = import.meta.env.VITE_WEBSOCKET_BASE_URL || "wss://restaurant-view.raghavan-7fc.workers.dev/websocketForOrders";
 
 // Function to get domain from URL
 const getDomainFromUrl = () => {
@@ -52,8 +53,8 @@ const getDomainFromUrl = () => {
   }
   // return "uat"
   // return "spanish"
-  return "pizza"
-  //  return "mayajas"; 
+  // return "pizza"
+   return "mayajas"; 
   // return 'annapurna'
 }; 
 
@@ -108,6 +109,12 @@ export const endpoints = {
   partyOrders: {
     getAll: `${API_BASE_URL}${PARTY_ORDERS_API_PATH}`,
   },
+
+  // WebSocket endpoints
+  webSocket: {
+    getNewOrdersV2: WEBSOCKET_BASE_URL,
+  },
+
 baseUrl: {
   apiBaseUrl: API_BASE_URL
 }

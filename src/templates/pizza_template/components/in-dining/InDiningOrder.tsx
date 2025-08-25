@@ -13,8 +13,7 @@ import { fetchTableStatusRequest } from '../../../../common/redux/slices/tableSt
 import { getOrderHistoryRequest } from '../../../../common/redux/slices/orderHistorySlice';
 import { useAppSelector } from '../../../../redux';
 import SearchBarComponent from '../SearchBarComponent';
-import { webSocketService } from '../../../../common/services/websocketService';
-import { useWebSocketOrders } from '../../hooks/useWebSocketOrders';
+import OrderListener from '../../../../components/orderListener';
 import InDiningProductDetails from './InDiningProductDetails';
 import InDiningCartDrawer from './InDiningCartDrawer';
 import InDiningOrders from './InDiningOrders';
@@ -126,76 +125,6 @@ function InDiningOrder() {
   const searchParams = new URLSearchParams(location.search);
   const tableFromQuery:any = searchParams.get('table');
 
-  // Get franchise ID from session storage (restaurant_id for websocket)
-  const franchiseId = sessionStorage.getItem('franchise_id') || sessionStorage.getItem('restaurantId') || 'default-franchise';
-
-  // WebSocket integration
-  const {
-    connectionStatus,
-    isConnected,
-    isConnecting,
-    error: wsError,
-    connect: connectWebSocket,
-    disconnect: disconnectWebSocket
-  } = useWebSocketOrders({
-    restaurantId: franchiseId,
-    tableId: tableName || undefined,
-    autoConnect: true,
-    onOrderUpdate: (data) => {
-      console.log('📨 WebSocket MESSAGE RECEIVED for restaurant ID:', franchiseId, '- Order updated:', data);
-      
-      // Refresh orders when WebSocket message received for restaurant ID
-      if (tableFromQuery) {
-        console.log('🔄 Refreshing orders for table:', tableFromQuery);
-        dispatch(getOrderHistoryRequest(tableFromQuery));
-      }
-      
-      // Show brief update indicator
-      setShowUpdateIndicator(true);
-      setTimeout(() => setShowUpdateIndicator(false), 2000);
-    },
-    onOrderStatusChange: (data) => {
-      console.log('📨 WebSocket MESSAGE RECEIVED for restaurant ID:', franchiseId, '- Order status changed:', data);
-      
-      // Refresh orders when WebSocket message received for restaurant ID
-      if (tableFromQuery) {
-        console.log('🔄 Refreshing orders for table:', tableFromQuery);
-        dispatch(getOrderHistoryRequest(tableFromQuery));
-      }
-      
-      // Show brief update indicator
-      setShowUpdateIndicator(true);
-      setTimeout(() => setShowUpdateIndicator(false), 2000);
-    },
-    onNewOrder: (data) => {
-      console.log('📨 WebSocket MESSAGE RECEIVED for restaurant ID:', franchiseId, '- New order:', data);
-      
-      // Refresh orders when WebSocket message received for restaurant ID
-      if (tableFromQuery) {
-        console.log('🔄 Refreshing orders for table:', tableFromQuery);
-        dispatch(getOrderHistoryRequest(tableFromQuery));
-      }
-      
-      // Show brief update indicator
-      setShowUpdateIndicator(true);
-      setTimeout(() => setShowUpdateIndicator(false), 2000);
-      
-      // Clear cart and reset states when new order is received
-      cartItems.forEach((item: any) => {
-        dispatch(removeItem(item.id));
-      });
-      
-      // Reset order states
-      setOrderPlaced(false);
-      setOrderNumber('');
-      
-      // Don't automatically redirect to orders view - let user stay on current screen
-      // setShowOrders(true); // Removed automatic redirect
-    },
-    onConnectionChange: (status) => {
-      console.log('WebSocket connection status changed:', status);
-    }
-  });
 
   const orderHistoryState = useSelector((state: RootState) => state.orderHistory);
   const historyLoading = orderHistoryState.loading;
@@ -274,22 +203,8 @@ function InDiningOrder() {
     setSelectedSubcategory('All');
   }, [dispatch]);
 
-  // Listen for payment completed event from WebSocket
-  useEffect(() => {
-    const handlePaymentCompleted = (data: any) => {
-      console.log('💳 Payment completed event received:', data);
-      // Navigate to orders view when payment is completed
-      setShowOrders(true);
-    };
-
-    // Add event listener for payment completed
-    webSocketService.addEventListener('payment_completed', handlePaymentCompleted);
-
-    // Cleanup: remove event listener on unmount
-    return () => {
-      webSocketService.removeEventListener('payment_completed', handlePaymentCompleted);
-    };
-  }, []);
+  // Payment completed event is now handled by OrderListener component
+  // No need for additional WebSocket event listeners here
 
   // Set menu type based on available data when page loads
   useEffect(() => {
@@ -605,6 +520,9 @@ function InDiningOrder() {
 
   return (
     <div className="pt-0 pb-20 sm:pb-24">
+      {/* OrderListener Component for WebSocket handling */}
+      <OrderListener />
+      
       {/* Navbar */}
       <Navbar
         brand={brand}

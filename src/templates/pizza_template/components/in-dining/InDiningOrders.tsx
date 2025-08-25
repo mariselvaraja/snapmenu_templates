@@ -17,6 +17,7 @@ import PaymentFailedProcessingPopup from '../PaymentFailedProcessingPopup';
 import { useToast } from '../../context/ToastContext';
 import { formatCurrency } from '../../utils';
 import RenderSpice from '@/components/renderSpicelevel';
+import OrderListener from '../../../../components/orderListener';
 
 // Extended interface to handle both API response formats
 interface ExtendedInDiningOrder extends Partial<InDiningOrder> {
@@ -339,6 +340,9 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
   }
   return (
     <div className="fixed inset-0 bg-white z-50 flex flex-col">
+      {/* OrderListener Component for WebSocket handling */}
+      <OrderListener />
+      
       {/* Header */}
       <div className="flex items-center justify-between border-b p-4">
         <div>
