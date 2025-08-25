@@ -153,7 +153,7 @@ function InDiningOrder() {
       setTableName(tabledata?.table_name)
   },[tableFromQuery, tableStatus])
 
-
+  console.log("orderHistory", orderHistory) 
   // Transform orderHistory to match the expected Order interface
   const orders = orderHistory ? orderHistory.map((orderData:any) => {
     const order = orderData as any;
@@ -932,8 +932,8 @@ function InDiningOrder() {
         menuItem={selectedMenuItem}
       />
       
-      {/* Fixed Bottom Bar - Orders - Only show if there are active (non-voided) orders */}
-      {orders.length > 0 && orders.some((order: any) => order.status?.toLowerCase() !== 'void') &&
+      {/* Fixed Bottom Bar - Orders - Show if there are any orders */}
+      {orders.length > 0 &&
         <OrdersBottomBar
           onViewOrders={() => setShowOrders(true)}
           onPlaceOrder={handlePlaceOrder}

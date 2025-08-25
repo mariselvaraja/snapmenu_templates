@@ -1,10 +1,44 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { ChevronRight } from 'lucide-react';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../../../common/store';
 
+interface OrdersBottomBarProps {
+  onViewOrders: () => void;
+}
 
-
-const OrdersBottomBar: React.FC<any> = ({ onViewOrders, orders, historyLoading, historyError }) => {
+const OrdersBottomBar: React.FC<OrdersBottomBarProps> = ({ onViewOrders }) => {
+  // Get raw orders from Redux state - orderListener handles WebSocket updates
+  const { orders: rawOrders, loading: historyLoading, error: historyError } = useSelector((state: RootState) => state.orderHistory);
+  
+  // Transform orderHistory to match the same logic as InDiningOrders component
+  const orders = rawOrders ? rawOrders.map((orderData: any) => {
+    const order = orderData as any;
+    
+    // Check if the order has ordered_items (from the sample data structure)
+    const items = order.ordered_items 
+      ? order.ordered_items.map((item: any) => ({
+          name: item.name,
+          quantity: item.quantity,
+          status: item.status,
+          price: item.itemPrice || 0,
+          image: item.image || '',
+          modifiers: item.modifiers || [],
+          spiceLevel: item.spiceLevel || null
+        }))
+      : order.items || []; // Fallback to order.items if ordered_items doesn't exist
+    
+    return {
+      id: order.id || (order.dining_id ? order.dining_id.toString() : '') || '',
+      date: order.createdAt || order.created_date || new Date().toISOString(),
+      status: order?.status?.toLowerCase() === "processing" ? "Preparing" : order?.status || "Pending",
+      total: order.totalAmount || (order.total_amount ? parseFloat(order.total_amount) : 0) || 0,
+      items: items,
+      void_reason: order?.void_reason || ''
+    };
+  }) : [];
+  
   // Filter out voided orders for price calculation only
   const activeOrders = orders.filter((order: any) => order.status?.toLowerCase() !== 'void');
   
@@ -13,8 +47,8 @@ const OrdersBottomBar: React.FC<any> = ({ onViewOrders, orders, historyLoading, 
     return total + (order.total || 0);
   }, 0);
 
-  // Calculate total number of items across ALL orders (including voided ones)
-  const totalItemLength = orders.reduce((total: number, order: any) => {
+  // Calculate item count (same logic as InDiningOrders - count number of items, not quantities)
+  const itemCount = orders.reduce((total: number, order: any) => {
     return total + (order.items?.length || 0);
   }, 0);
 
@@ -31,9 +65,9 @@ const OrdersBottomBar: React.FC<any> = ({ onViewOrders, orders, historyLoading, 
               {/* <span className="text-sm text-gray-600">
                 {orders.length} {orders.length === 1 ? 'Order' : 'Orders'}
               </span> */}
-              {historyLoading && (
+              {/* {historyLoading && (
                 <span className="text-xs text-blue-500">Loading...</span>
-              )}
+              )} */}
               {historyError && (
                 <span className="text-xs text-red-500">Error loading orders</span>
               )}
@@ -45,7 +79,7 @@ const OrdersBottomBar: React.FC<any> = ({ onViewOrders, orders, historyLoading, 
                   <span>|</span>
                 </>
               )}
-              <span>{totalItemLength} Item(s)</span>
+              <span>{itemCount} Item(s)</span>
             </div>
           </div>
           {/* View Orders Button */}

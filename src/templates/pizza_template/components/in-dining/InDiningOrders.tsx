@@ -239,6 +239,8 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
   const historyLoading = orderHistoryState.loading;
   const historyError = orderHistoryState.error;
   const orderHistory = orderHistoryState.orders;
+
+  
   
   // Transform orderHistory to match the expected Order interface
   const orders = orderHistory ? orderHistory.map((orderData:any) => {

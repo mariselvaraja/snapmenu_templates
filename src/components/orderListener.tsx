@@ -42,6 +42,8 @@ const OrderListener: React.FC = () => {
   
   // Get WebSocket URL from endpoints configuration
   const websocketUrl = endpoints.webSocket.getNewOrdersV2+"?restaurant_id="+restaurant_id;
+  const searchParams = new URLSearchParams(location.search);
+  const tableFromQuery = searchParams.get('table');
   
 
   // Function to connect to WebSocket
@@ -109,20 +111,8 @@ const OrderListener: React.FC = () => {
     try {
       console.log(`🆕 Processing ${newOrders.length} new orders`);
       
-      // Merge new orders with existing ones, avoiding duplicates
-      const existingOrderIds = new Set(currentOrders.map(order => order.id));
-      const genuinelyNewOrders = newOrders.filter(order => 
-        !existingOrderIds.has(order.id || order.dining_id?.toString() || '')
-      );
-      
-      if (genuinelyNewOrders.length > 0) {
-        // Add new orders to the beginning of the existing orders list
-        const updatedOrders = [...genuinelyNewOrders as any, ...currentOrders];
-        dispatch(refreshOrderHistorySilent(updatedOrders));
-        
-        console.log(`🆕 Added ${genuinelyNewOrders.length} new orders to existing ${currentOrders.length} orders`);
-      } else {
-        console.log(`🆕 No new orders to add (all already exist)`);
+      if (tableFromQuery) {
+        dispatch(getOrderHistoryRequest(tableFromQuery));
       }
       
     } catch (error) {
@@ -140,10 +130,8 @@ const OrderListener: React.FC = () => {
       // Handle empty or invalid data
       if (!updatedOrders || !Array.isArray(updatedOrders) || updatedOrders.length === 0) {
         console.log('🔄 No orders to update or empty data received');
-        // If explicitly empty, clear the orders
-        if (Array.isArray(updatedOrders) && updatedOrders.length === 0) {
-          dispatch(refreshOrderHistorySilent([]));
-        }
+        // Don't clear orders when receiving empty updates - this can happen with void status updates
+        // The order history should remain intact
         return;
       }
       
@@ -161,7 +149,9 @@ const OrderListener: React.FC = () => {
         if (update && update.status === 'Payment Status updated') {
           console.log('💳 Processing PAYMENT STATUS UPDATED - refreshing API data');
           dispatch(clearCart());
-          dispatch(getOrderHistoryRequest(restaurant_id || ''));
+          if (tableFromQuery) {
+            dispatch(getOrderHistoryRequest(tableFromQuery));
+          }
           return;
         }
         
@@ -247,7 +237,9 @@ const OrderListener: React.FC = () => {
           if (newStatus === 'void') {
             console.log(`🔄 Order ${diningId} voided - refreshing from API for complete data`);
             setTimeout(() => {
-              dispatch(getOrderHistoryRequest(restaurant_id || ''));
+              if (tableFromQuery) {
+                dispatch(getOrderHistoryRequest(tableFromQuery));
+              }
             }, 500); // Small delay to ensure WebSocket processing completes first
           }
         } else {
@@ -281,7 +273,9 @@ const OrderListener: React.FC = () => {
           if (newStatus === 'void') {
             console.log(`🔄 Placeholder order ${diningId} voided - refreshing from API for complete data`);
             setTimeout(() => {
-              dispatch(getOrderHistoryRequest(restaurant_id || ''));
+              if (tableFromQuery) {
+                dispatch(getOrderHistoryRequest(tableFromQuery));
+              }
             }, 500); // Small delay to ensure WebSocket processing completes first
           }
         }
@@ -308,7 +302,9 @@ const OrderListener: React.FC = () => {
       // Clear the in-dining cart
       dispatch(clearCart());
       // Refresh order history from API
-      dispatch(getOrderHistoryRequest(restaurant_id || ''));
+      if (tableFromQuery) {
+        dispatch(getOrderHistoryRequest(tableFromQuery));
+      }
       return;
     }
 
