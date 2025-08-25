@@ -932,8 +932,8 @@ function InDiningOrder() {
         menuItem={selectedMenuItem}
       />
       
-      {/* Fixed Bottom Bar - Orders */}
-      {orders.length != 0 &&
+      {/* Fixed Bottom Bar - Orders - Only show if there are active (non-voided) orders */}
+      {orders.length > 0 && orders.some((order: any) => order.status?.toLowerCase() !== 'void') &&
         <OrdersBottomBar
           onViewOrders={() => setShowOrders(true)}
           onPlaceOrder={handlePlaceOrder}
