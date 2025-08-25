@@ -138,154 +138,23 @@ const OrderListener: React.FC = () => {
       console.log(`🔄 Processing ${updatedOrders.length} order status updates`);
       
       // Valid status values for type safety
-      const validStatuses = ['pending', 'processing', 'completed', 'cancelled', 'preparing', 'ready', 'delivered', 'void'];
+      // const validStatuses = ['pending', 'processing', 'completed', 'cancelled', 'preparing', 'ready', 'delivered', 'void'];
       
       // Track which orders were updated and which need to be created
       const updatedOrdersList = [...currentOrders];
       const newOrdersToCreate: ExtendedOrder[] = [];
-      
+      if (tableFromQuery) {
+        dispatch(getOrderHistoryRequest(tableFromQuery));
+      }
       updatedOrders.forEach(update => {
         // Handle payment status updates - special case
         if (update && update.status === 'Payment Status updated') {
           console.log('💳 Processing PAYMENT STATUS UPDATED - refreshing API data');
           dispatch(clearCart());
-          if (tableFromQuery) {
-            dispatch(getOrderHistoryRequest(tableFromQuery));
-          }
+         
           return;
         }
-        
-        // Skip if update is malformed
-        if (!update || update.dining_id === undefined || update.dining_id === null) {
-          console.warn('Skipping malformed update:', update);
-          return;
-        }
-        
-        // Extract dining_id from various formats
-        let diningId: number;
-        if (Array.isArray(update.dining_id)) {
-          // Handle array format ["607"]
-          if (update.dining_id.length === 0) {
-            console.warn('Empty dining_id array, skipping update');
-            return;
-          }
-          
-          const firstElement = update.dining_id[0];
-          if (firstElement === null || firstElement === undefined) {
-            console.warn('Null or undefined dining_id in array, skipping update');
-            return;
-          }
-          
-          diningId = parseInt(String(firstElement));
-        } else if (typeof update.dining_id === 'string') {
-          // Handle string format "607"
-          diningId = parseInt(update.dining_id);
-        } else if (typeof update.dining_id === 'number') {
-          // Handle number format 607
-          diningId = update.dining_id;
-        } else {
-          console.warn('Invalid dining_id type:', typeof update.dining_id, update.dining_id);
-          return;
-        }
-        
-        // Validate dining_id
-        if (isNaN(diningId)) {
-          console.warn('Invalid dining_id after parsing:', update.dining_id);
-          return;
-        }
-
-        // Find existing order by dining_id - use type assertion for dining_id access
-        const existingOrderIndex = updatedOrdersList.findIndex(order => {
-          // First check if order has a dining_id field directly
-          const extendedOrder = order as any;
-          if (extendedOrder.dining_id !== undefined) {
-            return extendedOrder.dining_id === diningId;
-          }
-          // Fallback: check if order.id matches dining_id (as string or number)
-          const orderId = typeof order.id === 'string' ? parseInt(order.id) : order.id;
-          return orderId === diningId;
-        });
-        
-        // Validate and cast status to proper type
-        const newStatus = validStatuses.includes(update.status) 
-          ? update.status as 'pending' | 'processing' | 'completed' | 'cancelled' | 'preparing' | 'ready' | 'delivered' | 'void'
-          : 'pending'; // Default fallback
-        
-        if (existingOrderIndex >= 0) {
-          // Update existing order status and void reason if applicable
-          console.log(`📋 Updating existing order ${updatedOrdersList[existingOrderIndex].id} status from '${updatedOrdersList[existingOrderIndex].status}' to '${update.status}'`);
-          
-          const updatedOrder = {
-            ...updatedOrdersList[existingOrderIndex],
-            status: newStatus
-          };
-
-          // Add void reason if the order is being voided
-          if (newStatus === 'void' && update.void_reason) {
-            console.log(`🚫 Adding void reason to order ${updatedOrder.id}: ${update.void_reason}`);
-            (updatedOrder as any).void_reason = update.void_reason;
-          }
-          // Clear void reason if order status is changed from void to something else
-          else if (newStatus !== 'void' && (updatedOrdersList[existingOrderIndex] as any).void_reason) {
-            console.log(`✅ Clearing void reason from order ${updatedOrder.id} as status changed to ${newStatus}`);
-            (updatedOrder as any).void_reason = undefined;
-          }
-
-          updatedOrdersList[existingOrderIndex] = updatedOrder;
-          
-          // If order is being voided, refresh from API to get complete void data
-          if (newStatus === 'void') {
-            console.log(`🔄 Order ${diningId} voided - refreshing from API for complete data`);
-            setTimeout(() => {
-              if (tableFromQuery) {
-                dispatch(getOrderHistoryRequest(tableFromQuery));
-              }
-            }, 500); // Small delay to ensure WebSocket processing completes first
-          }
-        } else {
-          // Create placeholder order for orders that don't exist locally
-          console.log(`🆕 Creating placeholder order for dining_id ${diningId} with status '${update.status}'`);
-          const placeholderOrder: ExtendedOrder = {
-            id: diningId.toString(),
-            dining_id: diningId,
-            table_id: sessionStorage.getItem('table_id') || sessionStorage.getItem('Tablename') || 'unknown',
-            items: [{
-              id: Date.now(), // Temporary ID
-              name: `Order #${diningId}`,
-              price: 0,
-              quantity: 1,
-              image: ''
-            }],
-            status: newStatus,
-            totalAmount: 0,
-            createdAt: new Date().toISOString()
-          };
-
-          // Add void reason if the order is being voided
-          if (newStatus === 'void' && update.void_reason) {
-            console.log(`🚫 Adding void reason to placeholder order ${diningId}: ${update.void_reason}`);
-            placeholderOrder.void_reason = update.void_reason;
-          }
-          
-          newOrdersToCreate.push(placeholderOrder);
-          
-          // If placeholder order is voided, refresh from API to get complete data
-          if (newStatus === 'void') {
-            console.log(`🔄 Placeholder order ${diningId} voided - refreshing from API for complete data`);
-            setTimeout(() => {
-              if (tableFromQuery) {
-                dispatch(getOrderHistoryRequest(tableFromQuery));
-              }
-            }, 500); // Small delay to ensure WebSocket processing completes first
-          }
-        }
-      });
-      
-      // Add new placeholder orders to the list
-      const finalOrdersList = [...updatedOrdersList, ...newOrdersToCreate as any];
-      
-      // Update Redux store with the modified orders
-      dispatch(refreshOrderHistorySilent(finalOrdersList));
+      })
       
     } catch (error) {
       console.error('Error handling updated_orders:', error);
