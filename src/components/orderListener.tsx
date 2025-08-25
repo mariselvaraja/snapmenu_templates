@@ -242,6 +242,14 @@ const OrderListener: React.FC = () => {
           }
 
           updatedOrdersList[existingOrderIndex] = updatedOrder;
+          
+          // If order is being voided, refresh from API to get complete void data
+          if (newStatus === 'void') {
+            console.log(`🔄 Order ${diningId} voided - refreshing from API for complete data`);
+            setTimeout(() => {
+              dispatch(getOrderHistoryRequest(restaurant_id || ''));
+            }, 500); // Small delay to ensure WebSocket processing completes first
+          }
         } else {
           // Create placeholder order for orders that don't exist locally
           console.log(`🆕 Creating placeholder order for dining_id ${diningId} with status '${update.status}'`);
@@ -268,6 +276,14 @@ const OrderListener: React.FC = () => {
           }
           
           newOrdersToCreate.push(placeholderOrder);
+          
+          // If placeholder order is voided, refresh from API to get complete data
+          if (newStatus === 'void') {
+            console.log(`🔄 Placeholder order ${diningId} voided - refreshing from API for complete data`);
+            setTimeout(() => {
+              dispatch(getOrderHistoryRequest(restaurant_id || ''));
+            }, 500); // Small delay to ensure WebSocket processing completes first
+          }
         }
       });
       
