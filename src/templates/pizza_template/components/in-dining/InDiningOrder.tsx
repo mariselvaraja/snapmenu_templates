@@ -62,16 +62,14 @@ function InDiningOrder() {
     
     return items.filter(item => {
       const foodType = item.food_type?.toLowerCase();
+      const isVeganItem = item.is_vegan?.toLowerCase() === 'yes';
       
       if (isVegan && isVeg) {
-        // Both filters selected - show vegan OR vegetarian items
-        return foodType === 'vegan' || foodType === 'vegetarian' || foodType === 'veg';
+        return isVeganItem || foodType === 'veg' || foodType === 'vegan';
       } else if (isVegan) {
-        // Only vegan filter selected
-        return foodType === 'vegan';
+        return isVeganItem;
       } else if (isVeg) {
-        // Only vegetarian filter selected
-        return foodType === 'vegetarian' || foodType === 'veg';
+        return foodType === 'veg' || foodType === 'vegan' || isVeganItem;
       }
       
       return true;
