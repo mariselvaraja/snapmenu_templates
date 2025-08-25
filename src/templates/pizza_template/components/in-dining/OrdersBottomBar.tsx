@@ -5,7 +5,7 @@ import { ChevronRight } from 'lucide-react';
 
 
 const OrdersBottomBar: React.FC<any> = ({ onViewOrders, orders, historyLoading, historyError }) => {
-  // Filter out voided orders before calculating totals
+  // Filter out voided orders for price calculation only
   const activeOrders = orders.filter((order: any) => order.status?.toLowerCase() !== 'void');
   
   // Calculate total price across active (non-voided) orders only
@@ -13,8 +13,8 @@ const OrdersBottomBar: React.FC<any> = ({ onViewOrders, orders, historyLoading, 
     return total + (order.total || 0);
   }, 0);
 
-  // Calculate total number of items across active (non-voided) orders only
-  const totalItemLength = activeOrders.reduce((total: number, order: any) => {
+  // Calculate total number of items across ALL orders (including voided ones)
+  const totalItemLength = orders.reduce((total: number, order: any) => {
     return total + (order.items?.length || 0);
   }, 0);
 
