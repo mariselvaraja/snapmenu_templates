@@ -216,6 +216,22 @@ const OrderListener: React.FC = () => {
     };
   }, []); // Run once on mount
 
+  // Order history polling every 15 seconds
+  useEffect(() => {
+    if (!tableFromQuery) return;
+
+    // Set up interval to fetch order history every 15 seconds
+    const orderHistoryInterval = setInterval(() => {
+      console.log("🔄 Polling order history (15 seconds)");
+      dispatch(getOrderHistoryRequest(tableFromQuery));
+    }, 15000); // 15 seconds
+
+    // Clean up interval on component unmount or when tableFromQuery changes
+    return () => {
+      clearInterval(orderHistoryInterval);
+    };
+  }, [tableFromQuery, dispatch]); // Re-run when tableFromQuery or dispatch changes
+
   // This component doesn't render anything
   return null;
 };
