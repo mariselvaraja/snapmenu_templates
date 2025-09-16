@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import endpoints from '@/config/endpoints';
+import { usePaymentPopup } from '../../../common/popups/usePaymentPopup';
+import endpoints from '../../../common/config/endpoints';
 
 const usePaymentManagement = () => {
   const [showVerifyingPaymentPopup, setShowVerifyingPaymentPopup] = useState(false);
@@ -7,7 +8,9 @@ const usePaymentManagement = () => {
   const [showPaymentFailedProcessingPopup, setShowPaymentFailedProcessingPopup] = useState(false);
   const [showPaymentSuccessPopup, setShowPaymentSuccessPopup] = useState(false);
   
-  // Payment management
+  // Payment window management
+  const { openPopup, closePopup } = usePaymentPopup();
+  const popupRef = useRef<Window | null>(null);
   const paymentRef = useRef<any>(null);
   const isPaymentInProgress = useRef(false);
 
@@ -15,20 +18,99 @@ const usePaymentManagement = () => {
   const [paymentStatusLoading, setPaymentStatusLoading] = useState(false);
   const [paymentStatusError, setPaymentStatusError] = useState(null);
   
-  // Function to navigate to payment link
-  const navigateToPayment = (paymentLink: string) => {
+  // Function to open payment popup with payment link
+  const openPaymentPopup = (paymentLink: string) => {
     if (!paymentLink) {
       console.error("No payment link provided");
       return;
     }
 
-    console.log("Navigating to payment link:", paymentLink);
+    // Prevent opening multiple popups
+    if (popupRef.current && !popupRef.current.closed) {
+      console.log("Payment popup already open, ignoring request");
+      return popupRef.current;
+    }
+
+    console.log("Opening payment popup with link:", paymentLink);
     
-    // Reset payment reference before navigation
+    // Reset payment reference before opening new popup
     paymentRef.current = null;
     
-    // Navigate to the payment link in the current window
-    window.location.href = paymentLink;
+    // Open the popup using the usePaymentPopup hook
+    const popup = openPopup(paymentLink, 'PaymentWindow', 800, 600);
+    
+    if (!popup) {
+      console.error("Failed to open popup - popup blocker might be active, falling back to window.location.href");
+      // If popup failed to open, fallback to window.location.href
+      console.log("Navigating to payment link in current window:", paymentLink);
+      window.location.href = paymentLink;
+      return null;
+    }
+    
+    // Store the popup reference
+    popupRef.current = popup;
+    
+    console.log("Popup opened successfully, starting monitoring");
+    
+    // Enhanced popup monitoring with multiple approaches
+    let checkInterval: NodeJS.Timeout;
+    let timeoutId: NodeJS.Timeout;
+    
+    // Method 1: Regular interval checking
+    checkInterval = setInterval(() => {
+      try {
+        if (popup && popup.closed) {
+          console.log("Popup detected as closed via interval check");
+          clearInterval(checkInterval);
+          clearTimeout(timeoutId);
+          
+          if (paymentRef.current) {
+            // Payment completed - cleanup
+            console.log("Payment completed, cleaning up");
+            popupRef.current = null;
+            paymentRef.current = null;
+            isPaymentInProgress.current = false;
+          } else {
+            // Payment window manually closed without completion
+            console.log("Payment window manually closed - showing failed popup");
+            popupRef.current = null;
+            paymentRef.current = null;
+            isPaymentInProgress.current = false;
+            
+            // Show failed popup when payment popup is manually closed
+            setTimeout(() => {
+              setShowVerifyingPaymentPopup(false);
+              setShowPaymentFailedPopup(true);
+            }, 100);
+          }
+        }
+      } catch (error) {
+        console.error("Error checking popup status:", error);
+      }
+    }, 500); // Check every 500ms for better responsiveness
+    
+    // Method 2: Timeout fallback (in case interval fails)
+    timeoutId = setTimeout(() => {
+      try {
+        if (popup && popup.closed && !paymentRef.current) {
+          console.log("Popup timeout - assuming manual close");
+          clearInterval(checkInterval);
+          
+          popupRef.current = null;
+          paymentRef.current = null;
+          isPaymentInProgress.current = false;
+          
+          setTimeout(() => {
+            setShowVerifyingPaymentPopup(false);
+            setShowPaymentFailedPopup(true);
+          }, 100);
+        }
+      } catch (error) {
+        console.error("Error in timeout check:", error);
+      }
+    }, 30000); // 30 second timeout
+    
+    return popup;
   };
 
     // Payment status tracking function
@@ -78,6 +160,7 @@ const usePaymentManagement = () => {
         paymentRef.current = { responseMessage, transactionReferenceId, responseCode, amount, paymentType: "ipos" };
         console.log("IPOS PAYMENT", responseCode)
         // Handle iPos payment response
+        closePopup();
         setShowVerifyingPaymentPopup(false);
         isPaymentInProgress.current = false;
         
@@ -94,7 +177,8 @@ const usePaymentManagement = () => {
         const { payment_status } = event.data.payload;
         paymentRef.current = { payment_status, paymentType: "clover" };
         
-        // Handle Clover payment response
+        // Handle iPos payment response
+        closePopup();
         setShowVerifyingPaymentPopup(false);
         isPaymentInProgress.current = false;
         
@@ -119,6 +203,7 @@ const usePaymentManagement = () => {
         if(paymentStatus?.status)
         {
         // Handle Square payment response
+        closePopup();
         setShowVerifyingPaymentPopup(false);
         setShowPaymentSuccessPopup(true);
         isPaymentInProgress.current = false;
@@ -138,6 +223,7 @@ const usePaymentManagement = () => {
         paymentRef.current = { transaction_id, paymentType: "status_check" };
         
         // Handle the transaction ID
+        closePopup();
         setShowVerifyingPaymentPopup(false);
         isPaymentInProgress.current = false;
         setShowPaymentSuccessPopup(true);
@@ -149,8 +235,16 @@ const usePaymentManagement = () => {
     return () => {
       window.removeEventListener('message', handleMessage, false);
     };
-  }, []);
+  }, [closePopup]);
 
+  // Cleanup popup monitoring when component unmounts
+  useEffect(() => {
+    return () => {
+      if (popupRef.current && !popupRef.current.closed) {
+        popupRef.current.close();
+      }
+    };
+  }, []);
 
   // Function to reset all popup states
   const resetAllPopupStates = () => {
@@ -159,16 +253,30 @@ const usePaymentManagement = () => {
     setShowPaymentFailedProcessingPopup(false);
     setShowPaymentSuccessPopup(false);
     paymentRef.current = null;
+    
+    // Close any open popup
+    if (popupRef.current && !popupRef.current.closed) {
+      popupRef.current.close();
+    }
+    popupRef.current = null;
   };
 
   // Handle payment initiation
   const initiatePayment = (paymentLink: string) => {
     console.log("initiatePayment called with:", paymentLink);
     console.log("isPaymentInProgress.current:", isPaymentInProgress.current);
+    console.log("popupRef.current:", popupRef.current);
+    console.log("popup closed status:", popupRef.current ? popupRef.current.closed : 'no popup');
     
-    // Prevent multiple payment attempts
+    // Prevent multiple payment windows - enhanced check
     if (isPaymentInProgress.current) {
       console.log("Payment already in progress, ignoring initiate request");
+      return;
+    }
+    
+    // Check if popup is already open
+    if (popupRef.current && !popupRef.current.closed) {
+      console.log("Payment popup already open, ignoring initiate request");
       return;
     }
     
@@ -189,8 +297,19 @@ const usePaymentManagement = () => {
     setShowPaymentSuccessPopup(false);
     paymentRef.current = null;
     
-    // Navigate to payment link
-    navigateToPayment(paymentLink);
+    // Show the verifying payment status popup
+    setShowVerifyingPaymentPopup(true);
+    console.log("Set verifying popup to true");
+    
+    // Open payment popup
+    const popup = openPaymentPopup(paymentLink);
+    console.log("Payment popup opened:", popup);
+    
+    // If popup failed to open, reset the progress flag
+    if (!popup) {
+      console.log("Popup failed to open, resetting progress flag");
+      isPaymentInProgress.current = false;
+    }
   };
 
   // Handle payment success
@@ -235,10 +354,12 @@ const usePaymentManagement = () => {
     handlePaymentRetry,
     resetAllPopupStates,
     
-    // Payment navigation
-    navigateToPayment,
+    // Popup management
+    openPaymentPopup,
+    closePopup,
     
     // References
+    popupRef,
     paymentRef
   };
 };
