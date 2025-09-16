@@ -673,7 +673,7 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
               </button>
               
               {/* Make Payment Button */}
-              {/* <button 
+               <button 
                 onClick={handlePayment}
                 disabled={isLoading}
                 className="py-3 bg-red-500 text-white rounded-lg flex items-center justify-center font-medium hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -686,7 +686,7 @@ const BillComponent: React.FC<BillComponentProps> = ({ onClose, order }) => {
                 ) : (
                   'Make Payment'
                 )}
-              </button> */}
+              </button> 
             </div>
           </div>
         )}
