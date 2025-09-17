@@ -98,8 +98,8 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
     // Call the parent callback
     onSelectLocation(location);
     
-    // Navigate to home page after location selection
-    navigate('/');
+    // Navigate to franchise-specific home page after location selection
+    navigate(`/${location.id}`);
   };
 
   return (

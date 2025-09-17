@@ -1,13 +1,17 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Trash2, ShoppingBag, Pencil } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import ModifierModal from './ModifierModal';
 import RenderSpice from '@/components/renderSpicelevel';
 
 export default function CartDrawer() {
   const { state: { items, drawerOpen }, toggleDrawer, removeItem, updateItemQuantity, addItem } = useCart();
+  const params = useParams();
+  
+  // Get franchise ID from params or sessionStorage
+  const franchiseId = params.franchiseId || sessionStorage.getItem('franchise_id');
 
   // Calculate cart totals
   const subtotal = items.reduce((total: number, item: { 
@@ -293,14 +297,14 @@ export default function CartDrawer() {
                
                 <div className="space-y-2">
                   <Link
-                    to="/cart"
+                    to={franchiseId ? `/${franchiseId}/cart` : "/cart"}
                     onClick={closeDrawer}
                     className="block w-full bg-white border border-red-500 text-red-500 py-2 rounded-full font-semibold text-center hover:bg-red-50 transition-colors"
                   >
                     View Cart
                   </Link>
                   <Link
-                    to="/checkout"
+                    to={franchiseId ? `/${franchiseId}/checkout` : "/checkout"}
                     onClick={closeDrawer}
                     className={`block w-full bg-red-500 text-white py-2 rounded-full font-semibold text-center hover:bg-red-600 transition-colors ${
                       items.length === 0 ? 'opacity-70 pointer-events-none' : ''

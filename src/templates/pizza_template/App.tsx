@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, useLocation } from 'react-router-dom';
+import { Routes, useLocation, useParams } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import CartDrawer from './components/CartDrawer';
@@ -13,8 +13,21 @@ import { SearchInitializer } from '../../components';
 // Layout component that conditionally renders the Navbar
 const Layout = () => {
   const location = useLocation();
+  const params = useParams();
+  
+  // Check for in-dining routes (these don't have franchise ID)
   const isInDiningOrderPage = location.pathname === '/placeindiningorder';
   const isInDiningOrderPageWithTable = location.pathname.startsWith('/placeindiningorder/');
+  
+  // Extract franchise ID from params if available
+  const franchiseId = params.franchiseId;
+  
+  // Store franchise ID in sessionStorage for use throughout the app
+  React.useEffect(() => {
+    if (franchiseId) {
+      sessionStorage.setItem('franchise_id', franchiseId);
+    }
+  }, [franchiseId]);
 
   return (
     <div className="min-h-screen flex flex-col">

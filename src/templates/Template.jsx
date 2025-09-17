@@ -1,5 +1,6 @@
 import React, { useState, useEffect, createContext, useContext } from 'react';
 import { Provider, useSelector, useDispatch } from 'react-redux';
+import { useLocation } from 'react-router-dom';
 import _ from 'lodash';
 import PizzaApp from './pizza_template/App';
 import CasualDiningApp from './casual_dining_template/App';
@@ -27,7 +28,7 @@ export const useTemplate = () => {
  * TemplateContent component that checks API responses before rendering
  * This is wrapped by the Template component which provides the Redux store
  */
-const TemplateContent = () => {
+const TemplateContent = ({ franchiseId }) => {
   const [theme, setTheme] = useState('light');
   const [showLocationSelector, setShowLocationSelector] = useState(false);
   const [templateConfig, setTemplateConfig] = useState({
@@ -41,6 +42,8 @@ const TemplateContent = () => {
   });
 
   const searchParams = new URLSearchParams(window.location.search);
+  const location = useLocation();
+  
   // Get Redux dispatch function
   const dispatch = useDispatch();
   
@@ -76,14 +79,59 @@ const TemplateContent = () => {
     // You can add additional logic here if needed
   };
 
-  let parent_id = searchParams.get("restaurant");
-  let franchise_id = searchParams.get("franchise");
-  let table_number = searchParams.get("table");
-
   const isPlaceInDiningOrderRoute = window.location.pathname.includes('placeindiningorder');
   const isPaymentRoute = window.location.pathname.includes('payment');
-  // Auto-select restaurant if there's only one in the list
+
+  // Extract parameters based on route type
+  let parent_id, franchise_id, table_number;
+  
+  if (isPlaceInDiningOrderRoute) {
+    // Extract from path parameters for placeindiningorder route
+    // URL format: /placeindiningorder/:restaurantId/:franchiseId/:tableId
+    const pathParts = location.pathname.split('/');
+    const placeOrderIndex = pathParts.findIndex(part => part === 'placeindiningorder');
+    
+    if (placeOrderIndex !== -1 && pathParts.length > placeOrderIndex + 3) {
+      parent_id = pathParts[placeOrderIndex + 1]; // restaurantId
+      franchise_id = pathParts[placeOrderIndex + 2]; // franchiseId  
+      table_number = pathParts[placeOrderIndex + 3]; // tableId
+      
+      // Debug logging
+      console.log('Template.jsx - Extracted path parameters:');
+      console.log('parent_id (restaurantId):', parent_id);
+      console.log('franchise_id:', franchise_id);
+      console.log('table_number (tableId):', table_number);
+    }
+  } else {
+    // Extract from query parameters for other routes
+    parent_id = searchParams.get("restaurant");
+    franchise_id = searchParams.get("franchise");
+    table_number = searchParams.get("table");
+  }
+  // Auto-select restaurant if there's only one in the list or if franchiseId is provided in URL
   useEffect(() => {
+    // Check if franchiseId is provided in the URL path (new franchise-based routes)
+    const pathParts = location.pathname.split('/');
+    const urlFranchiseId = pathParts[1]; // First part after domain should be franchise ID
+    
+    // If franchiseId is provided in the URL path or as prop, automatically select that franchise
+    const targetFranchiseId = urlFranchiseId || franchiseId;
+    
+    if (targetFranchiseId && restaurantState.info) {
+      const selectedFranchise = restaurantState.info.find(restaurant => restaurant.restaurant_id === targetFranchiseId);
+      if (selectedFranchise) {
+        sessionStorage.setItem("restaurant_id", selectedFranchise.restaurant_parent_id);
+        sessionStorage.setItem("franchise_id", selectedFranchise.restaurant_id);
+        sessionStorage.setItem('customer_care_number', selectedFranchise.customer_care_number);
+        
+        setLocationSelected(true);
+        // Fetch required data
+        dispatch(fetchTpnConfigRequest());
+        dispatch(fetchSiteContentRequest());
+        dispatch(fetchMenuRequest('website'));
+        return;
+      }
+    }
 
     if (restaurantState.info && restaurantState.info.length === 1) {
       // Automatically select the only restaurant
@@ -152,7 +200,7 @@ const TemplateContent = () => {
           setLocationSelected(true);
         }
     }
-  }, [restaurantState.info, dispatch]);
+  }, [restaurantState.info, dispatch, franchiseId]);
 
   // Check if current URL includes placeindiningorder
   
@@ -194,7 +242,8 @@ const TemplateContent = () => {
 
    // Get template_id from restaurant data or use default
 
-  const restaurantApiError = restaurantState.error || !restaurantState.info;
+  // Only show TemplateNotFound if there's an actual API error, not just missing data
+  const restaurantApiError = restaurantState.error && restaurantState.error !== null;
   
   // If still loading, show a loading indicator with spinner
   if (isLoading) {
@@ -210,18 +259,22 @@ const TemplateContent = () => {
     );
   }
   
-  // If restaurant API returned an error or empty data, show TemplateNotFound
+  // If restaurant API returned an actual error, show TemplateNotFound
   if (restaurantApiError) {
-    
     return <TemplateNotFound />;
   }
 
-  const getTemlateId = () => {
+  const getTemplateId = () => {
     const franchise = restaurantState.info;
     const selectedFranchiseId = sessionStorage.getItem("franchise_id");
     const franchiseInfo = _.find(franchise, (franchise) => franchise.restaurant_id == selectedFranchiseId);
     
-    return _.get(franchiseInfo, 'template_id', 'casual_dining');
+    // For in-dining routes, ensure we get the correct template
+    if (isPlaceInDiningOrderRoute && franchiseInfo) {
+      return _.get(franchiseInfo, 'template_id', 'pizza');
+    }
+    
+    return _.get(franchiseInfo, 'template_id', 'pizza');
   }
   
   // If other required data is not loaded, show TemplateNotFound
@@ -234,7 +287,7 @@ const TemplateContent = () => {
   // }
 
   // For testing purposes, you can change this value to "culinary_journey" to see the culinary journey template
-  const template_id = getTemlateId(); // Options: "pizza", "casual_dining", "eatflow", "culinary_journey"
+  const template_id = getTemplateId(); // Options: "pizza", "casual_dining", "eatflow", "culinary_journey"
   // 
   // In production, this would come from the API: 
   console.log("restaurantState", restaurantState)
@@ -281,10 +334,10 @@ const TemplateContent = () => {
  * Template component that provides template-specific functionality
  * and integrates with the Redux store and application components
  */
-const Template = ({ store }) => {
+const Template = ({ store, franchiseId }) => {
   return (
     <Provider store={store}>
-      <TemplateContent />
+      <TemplateContent franchiseId={franchiseId} />
     </Provider>
   );
 };

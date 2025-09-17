@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import  { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import { ArrowLeft, Check } from 'lucide-react';
 import { LuVegan } from 'react-icons/lu';
 import { RootState, AppDispatch } from '../../../../common/store';
@@ -29,6 +29,7 @@ import DrinksMenuItem from './DrinksMenuItem';
 import EmptyState from './EmptyState';
 import HeroBanner from './HeroBanner';
 import InDiningCards from './InDiningCards';
+import PaymentStatusHandler from '../PaymentStatusHandler';
 
 function InDiningOrder() {
   const [orderPlaced, setOrderPlaced] = useState<boolean>(false);
@@ -103,8 +104,9 @@ function InDiningOrder() {
     return Array.from(categoryMap.values()).sort((a, b) => a.name.localeCompare(b.name));
   };
   
-  // Get table number from URL
+  // Get table number from URL path parameters
   const location = useLocation();
+  const params = useParams<{ restaurantId: string; franchiseId: string; tableId: string }>();
   const dispatch = useDispatch<AppDispatch>();
   const tableStatus = useSelector((state:any)=>state.tableStatus?.tables);
 
@@ -122,8 +124,9 @@ function InDiningOrder() {
   // Use heroData.banners if available, otherwise use empty array
   const banners = heroData?.banners?.length > 0 ? heroData.banners : [];
   const table_name = sessionStorage.getItem('Tablename');
-  const searchParams = new URLSearchParams(location.search);
-  const tableFromQuery:any = searchParams.get('table');
+  
+  // Extract table ID from path parameters instead of query parameters
+  const tableFromQuery:any = params.tableId;
 
 
   const orderHistoryState = useSelector((state: RootState) => state.orderHistory);
@@ -471,12 +474,24 @@ function InDiningOrder() {
   if (showOrders) {
     return (
       <InDiningOrders 
-        onClose={() => {
+        onClose={(autoSelectFood?: boolean) => {
           setShowOrders(false);
           // If we just placed an order, reset the cart
           if (orderNumber) {
             resetOrder();
             setOrderNumber(''); // Clear order number
+          }
+          
+          // Check if auto-select food menu is requested
+          if (autoSelectFood && foodItems.length > 0) {
+            // Auto-select food menu
+            dispatch(setCurrentMenuType('food'));
+            setShowCategories(true);
+            dispatch(setShowMenuItems(false));
+            setSelectedCategory('All');
+            setSelectedSubcategory('All');
+            setSearchQuery('');
+            return;
           }
           
           // When coming back from orders, check if a menu type was previously selected
@@ -936,12 +951,54 @@ function InDiningOrder() {
       {orders.length > 0 &&
         <OrdersBottomBar
           onViewOrders={() => setShowOrders(true)}
-          onPlaceOrder={handlePlaceOrder}
           orders={orders}
           historyLoading={historyLoading}
           historyError={historyError}
         />}
       
+      {/* Payment Status Handler - handles all payment status popups */}
+      <PaymentStatusHandler 
+        onInDiningTryAgain={() => {
+          // When Try Again is clicked in in-dining context:
+          // 1. Show orders page
+          // 2. Then continue to first menu selection
+          setShowOrders(true);
+          
+          // After showing orders, automatically continue to first menu
+          setTimeout(() => {
+            setShowOrders(false);
+            // Show the first available menu (food or drinks)
+            if (foodItems.length > 0) {
+              dispatch(setCurrentMenuType('food'));
+              setShowCategories(true);
+              dispatch(setShowMenuItems(false));
+            } else if (drinksItems.length > 0) {
+              dispatch(setCurrentMenuType('drinks'));
+              setShowCategories(true);
+              dispatch(setShowMenuItems(false));
+            }
+          }, 2000); // Show orders for 2 seconds then continue
+        }}
+        onInDiningContinue={() => {
+          // When Continue is clicked after successful payment in in-dining context:
+          // Auto-select food menu directly
+          if (foodItems.length > 0) {
+            dispatch(setCurrentMenuType('food'));
+            setShowCategories(true);
+            dispatch(setShowMenuItems(false));
+            setSelectedCategory('All');
+            setSelectedSubcategory('All');
+            setSearchQuery('');
+          } else if (drinksItems.length > 0) {
+            dispatch(setCurrentMenuType('drinks'));
+            setShowCategories(true);
+            dispatch(setShowMenuItems(false));
+            setSelectedCategory('All');
+            setSelectedSubcategory('All');
+            setSearchQuery('');
+          }
+        }}
+      />
     </div>
   );
 }

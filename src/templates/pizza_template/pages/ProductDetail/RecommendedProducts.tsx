@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Heart } from 'lucide-react';
 import { MenuItem } from '../../../../common/redux';
@@ -17,6 +17,7 @@ const RecommendedProducts: React.FC<any> = ({
     showPrice 
 }) => {
     const navigate = useNavigate();
+    const { franchiseId } = useParams<{ franchiseId?: string }>();
 
     const getRecommendedItems = (): MenuItem[] => {
         // Extract best combo SKU IDs from the product
@@ -101,7 +102,7 @@ const RecommendedProducts: React.FC<any> = ({
                     <div 
                         key={item.id} 
                         className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer"
-                        onClick={() => navigate(`/product/${item.id}`)}
+                        onClick={() => navigate(franchiseId ? `/${franchiseId}/product/${item.id}` : `/product/${item.id}`)}
                     >
                         <div className="flex items-center p-2">
                             {item.image ? (
@@ -135,7 +136,7 @@ const RecommendedProducts: React.FC<any> = ({
                         <div 
                             key={item.id} 
                             className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer flex-shrink-0 w-32"
-                            onClick={() => navigate(`/product/${item.id}`)}
+                            onClick={() => navigate(franchiseId ? `/${franchiseId}/product/${item.id}` : `/product/${item.id}`)}
                         >
                             <div className="p-2">
                                 {item.image ? (

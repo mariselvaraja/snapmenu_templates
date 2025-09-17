@@ -1,10 +1,11 @@
 import { useEffect, useState, useRef } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, ShoppingCart, Search, Utensils, Pizza, Phone } from 'lucide-react';
+import { Link, useLocation, useParams } from 'react-router-dom';
+import { Menu, X, ShoppingCart, Search, Utensils, Pizza, Phone, MapPin } from 'lucide-react';
 import { useAppSelector, useAppDispatch } from '../../../redux';
 import { openSearchModal, closeSearchModal } from '../../../redux/slices/searchSlice';
 import { useCart } from '../context/CartContext';
 import { SearchModal } from '../../../components/search';
+import { LocationSelector } from '../../../components';
 import { usePayment } from '@/hooks';
 import OrderTypePopup from './OrderTypePopup';
 
@@ -15,13 +16,28 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isOrderPopupOpen, setIsOrderPopupOpen] = useState(false);
   const [isOrderDropdownOpen, setIsOrderDropdownOpen] = useState(false);
+  const [isLocationSelectorOpen, setIsLocationSelectorOpen] = useState(false);
   const [customerCareNumber, setCustomerCareNumber] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { rawApiResponse } = useAppSelector(state => state.siteContent);
+  const restaurantState = useAppSelector(state => state.restaurant);
+  const params = useParams();
 
   const [isCtbiriyani, setIsCtbiriyani] = useState(false);
 
   const {isPaymentAvilable} = usePayment();
+  
+  // Get franchise ID from params or sessionStorage
+  const franchiseId = params.franchiseId || sessionStorage.getItem('franchise_id');
+  
+  // Check if there are multiple franchises available
+  const hasMultipleFranchises = restaurantState.info && Array.isArray(restaurantState.info) && restaurantState.info.length > 1;
+  
+  // Handle location selection
+  const handleLocationSelect = (location: any) => {
+    setIsLocationSelectorOpen(false);
+    // The LocationSelector component will handle the navigation
+  };
 
 
   useEffect(() => {
@@ -82,7 +98,7 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-24">
           <div className="flex items-center">
-            <Link to="/" className="flex items-center">
+            <Link to={franchiseId ? `/${franchiseId}` : "/"} className="flex items-center">
               <div className="flex items-center">
                 {brand?.logo?.icon ? (
                   <img src={brand.logo.icon} alt={brand.logo.text || 'Restaurant'} className="h-8 w-auto" />
@@ -113,7 +129,7 @@ export default function Navbar() {
               {navigationLinks.filter((link: any) => link && link.isEnabled).map((link: any, index: number) => (
                 <Link
                   key={index}
-                  to={link.path}
+                  to={franchiseId ? `/${franchiseId}${link.path}` : link.path}
                   className="hover:text-red-500 transition-colors"
                 >
                   {link.label}
@@ -126,6 +142,17 @@ export default function Navbar() {
               >
                 <Search className="h-6 w-6" />
               </button>
+              
+              {/* Location selector button - only show if multiple franchises */}
+              {hasMultipleFranchises && (
+                <button
+                  onClick={() => setIsLocationSelectorOpen(true)}
+                  className="hover:text-red-500 transition-colors"
+                  title="Change Location"
+                >
+                  <MapPin className="h-6 w-6" />
+                </button>
+              )}
               
         {  isCtbiriyani && <div className="relative" ref={dropdownRef}>
              <button
@@ -142,7 +169,7 @@ export default function Navbar() {
                  onMouseLeave={() => setIsOrderDropdownOpen(false)}
                >
                  <Link
-                   to="/menu"
+                   to={franchiseId ? `/${franchiseId}/menu` : "/menu"}
                    className="block px-4 py-2 text-white hover:bg-red-500 hover:text-white transition-colors"
                    onClick={() => setIsOrderDropdownOpen(false)}
                  >
@@ -203,7 +230,7 @@ export default function Navbar() {
             {navigationLinks.filter((link: any) => link && link.isEnabled).map((link: any, index: number) => (
               <Link
                 key={index}
-                to={link.path}
+                to={franchiseId ? `/${franchiseId}${link.path}` : link.path}
                 className="block px-3 py-2 hover:text-red-500"
                 onClick={() => setIsOpen(false)}
               >
@@ -232,6 +259,21 @@ export default function Navbar() {
               >
                 <Search className="h-6 w-6" />
               </button>
+              
+              {/* Location selector button for mobile - only show if multiple franchises */}
+              {hasMultipleFranchises && (
+                <button
+                  onClick={() => {
+                    setIsOpen(false);
+                    setIsLocationSelectorOpen(true);
+                  }}
+                  className="p-2"
+                  title="Change Location"
+                >
+                  <MapPin className="h-6 w-6" />
+                </button>
+              )}
+              
             { isPaymentAvilable && <button
                 onClick={() => toggleDrawer()}
                 className="relative p-2"
@@ -259,6 +301,24 @@ export default function Navbar() {
         deliveryRedirectUrl="https://ctbiryani.square.site/"
         customerCareNumber={customerCareNumber}
       />
+
+      {/* Location Selector Modal */}
+      {isLocationSelectorOpen && (
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-50">
+          <div className="relative">
+            <LocationSelector 
+              onSelectLocation={handleLocationSelect}
+            />
+            {/* Close button overlay */}
+            <button
+              onClick={() => setIsLocationSelectorOpen(false)}
+              className="absolute top-4 right-4 z-10 bg-white rounded-full p-2 shadow-lg hover:bg-gray-100 transition-colors"
+            >
+              <X className="h-6 w-6 text-gray-600" />
+            </button>
+          </div>
+        </div>
+      )}
     </nav>
   );
 }

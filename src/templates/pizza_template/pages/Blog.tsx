@@ -1,6 +1,6 @@
  import { motion } from 'framer-motion';
 import { Calendar, User, ArrowRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { useAppSelector } from '../../../common/redux';
 import { useEffect } from 'react';
 
@@ -17,6 +17,10 @@ interface BlogPost {
 
 export default function Blog() {
   const { rawApiResponse } = useAppSelector(state => state.siteContent);
+  const params = useParams();
+  
+  // Get franchise ID from params or sessionStorage
+  const franchiseId = params.franchiseId || sessionStorage.getItem('franchise_id');
   
   // Scroll to top when component mounts
   useEffect(() => {
@@ -203,7 +207,7 @@ export default function Blog() {
                   <h3 className="text-xl font-semibold mb-2">{post.title}</h3>
                   <p className="text-gray-600 mb-4">{post.excerpt}</p>
                   <Link
-                    to={`/blog/${post.id}`}
+                    to={franchiseId ? `/${franchiseId}/blog/${post.id}` : `/blog/${post.id}`}
                     className="inline-flex items-center text-red-500 hover:text-red-600 transition-colors"
                   >
                     Read More <ArrowRight className="h-4 w-4 ml-2" />

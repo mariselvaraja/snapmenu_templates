@@ -269,56 +269,19 @@ const usePaymentManagement = () => {
     popupRef.current = null;
   };
 
-  // Handle payment initiation - try popup first, fallback to href
+  // Handle payment initiation - use href navigation directly
   const initiatePayment = (paymentLink: string) => {
     console.log("initiatePayment called with:", paymentLink);
-    console.log("isPaymentInProgress.current:", isPaymentInProgress.current);
-    console.log("popupRef.current:", popupRef.current);
-    console.log("popup closed status:", popupRef.current ? popupRef.current.closed : 'no popup');
-    
-    // Prevent multiple payment windows - enhanced check
-    if (isPaymentInProgress.current) {
-      console.log("Payment already in progress, ignoring initiate request");
-      return;
-    }
-    
-    // Check if popup is already open
-    if (popupRef.current && !popupRef.current.closed) {
-      console.log("Payment popup already open, ignoring initiate request");
-      return;
-    }
     
     if (!paymentLink) {
       console.log("No payment link provided");
       return;
     }
     
-    console.log("Starting payment process...");
+    console.log("Navigating to payment link via href:", paymentLink);
     
-    // Set payment in progress FIRST to prevent multiple calls
-    isPaymentInProgress.current = true;
-    
-    // Reset popup states
-    setShowVerifyingPaymentPopup(false);
-    setShowPaymentFailedPopup(false);
-    setShowPaymentFailedProcessingPopup(false);
-    setShowPaymentSuccessPopup(false);
-    paymentRef.current = null;
-    
-    // Show the verifying payment status popup
-    setShowVerifyingPaymentPopup(true);
-    console.log("Set verifying popup to true");
-    
-    // Try to open payment popup (will fallback to href if popup fails)
-    const popup = openPaymentPopup(paymentLink);
-    console.log("Payment popup opened:", popup);
-    
-    // If popup failed to open (returned null), reset the progress flag
-    if (!popup) {
-      console.log("Popup failed to open, href fallback was used, resetting progress flag");
-      isPaymentInProgress.current = false;
-      setShowVerifyingPaymentPopup(false);
-    }
+    // Navigate directly to payment link using href
+    window.location.href = paymentLink;
   };
 
   // Handle payment success

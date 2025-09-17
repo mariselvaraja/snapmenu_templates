@@ -53,8 +53,8 @@ const getDomainFromUrl = () => {
   }
   // return "uat"
   // return "spanish"
-  return "pizza"
-  //  return "mayajas"; 
+  // return "pizza"
+   return "mayajas"; 
   // return 'annapurna'
 }; 
 

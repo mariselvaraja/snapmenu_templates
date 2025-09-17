@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { ArrowRight, ShoppingCart, Award, Play, Heart, Phone } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
 import { 
   FaWineGlass, FaUtensils, FaClock, FaCoffee, FaGlassMartini, 
@@ -55,6 +55,7 @@ export default function Home() {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const params = useParams();
   const { items: menuItems, loading: menuLoading } = useAppSelector(state => state.menu);
   const { addItemWithToast } = useCartWithToast();
   const [isCtbiriyani, setIsCtbiriyani] = useState(false);
@@ -62,6 +63,9 @@ export default function Home() {
   const {isPaymentAvilable} = usePayment();
   const { rawApiResponse } = useAppSelector(state => state.siteContent);
   const { data: comboData, loading: comboLoading, error: comboError } = useAppSelector(state => state.combo);
+  
+  // Get franchise ID from params or sessionStorage
+  const franchiseId = params.franchiseId || sessionStorage.getItem('franchise_id');
   
   // Get site content from Redux state
   const siteContent = rawApiResponse ? 
@@ -256,7 +260,7 @@ export default function Home() {
             </p>
             <div className="flex gap-4 justify-center md:justify-start">
               <Link
-                to="/menu"
+                to={franchiseId ? `/${franchiseId}/menu` : "/menu"}
                 className="inline-flex items-center bg-red-500 text-white px-8 py-3 rounded-full text-lg font-semibold hover:bg-red-600 transition-colors"
               >
                 View Menu <ArrowRight className="ml-2 h-5 w-5" />
@@ -279,7 +283,7 @@ export default function Home() {
                        onMouseLeave={() => setIsOrderDropdownOpen(false)}
                      >
                        <Link
-                         to="/menu"
+                         to={franchiseId ? `/${franchiseId}/menu` : "/menu"}
                          className="block px-4 py-2 text-white hover:bg-red-500 hover:text-white transition-colors"
                          onClick={() => setIsOrderDropdownOpen(false)}
                        >
@@ -426,7 +430,7 @@ export default function Home() {
                       id: menuItem.id,
                       content: (
                         <div className="bg-white rounded-lg overflow-hidden shadow-lg mx-2">
-                          <Link to={`/product/${menuItem.id}`}>
+                          <Link to={franchiseId ? `/${franchiseId}/product/${menuItem.id}` : `/product/${menuItem.id}`}>
                             {menuItem.image ? (
                               <img
                                 src={menuItem.image}

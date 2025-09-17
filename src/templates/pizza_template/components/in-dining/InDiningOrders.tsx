@@ -60,7 +60,7 @@ interface OrderItem {
 }
 
 interface InDiningOrdersProps {
-  onClose: () => void;
+  onClose: (autoSelectFood?: boolean) => void;
   newOrderNumber?: string;
 }
 
@@ -293,9 +293,9 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
 
   // Function to handle continue button click
   const handleContinue = () => {
-    // Simply close the orders modal to return to the in-dining order component
-    // The parent InDiningOrder component will handle showing the main ordering interface
-    onClose();
+    // Close the orders modal and auto-select food menu
+    // The parent InDiningOrder component will handle showing the food menu
+    onClose(true); // Pass true to auto-select food menu
   };
 
   useEffect(() => {

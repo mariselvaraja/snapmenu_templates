@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Check, Truck, Store, CreditCard } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '../../../common/redux';
 import { clearCart as clearReduxCart } from '../../../common/redux/slices/cartSlice';
 import { useCart } from '../context/CartContext';
@@ -80,6 +80,11 @@ export default function Checkout() {
   const { state: { items: cartItems }, clearCart } = useCart();
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const params = useParams();
+  
+  // Get franchise ID from params or sessionStorage
+  const franchiseId = params.franchiseId || sessionStorage.getItem('franchise_id');
+  
   const [activeTab, setActiveTab] = useState<OrderType>('pickup');
   const [paymentTab, setPaymentTab] = useState<'pay_now' | 'pay_later'>('pay_now');
   const [orderMethod, setOrderMethod] = useState<'takeout' | 'pay_online'>('pay_online');
@@ -325,7 +330,7 @@ export default function Checkout() {
           // For other cases, clear cart and redirect to menu
           clearCart();
           dispatch(clearReduxCart());
-          navigate('/menu');
+          navigate(franchiseId ? `/${franchiseId}/menu` : '/menu');
         }
         return;
       }
@@ -366,7 +371,7 @@ export default function Checkout() {
               
               <div className="flex flex-col sm:flex-row justify-center gap-4">  
                 <Link
-                  to="/"
+                  to={franchiseId ? `/${franchiseId}` : "/"}
                   className="bg-gray-200 text-gray-800 px-8 py-3 rounded-full font-semibold hover:bg-gray-300 transition-colors"
                 >
                   Return to Home
@@ -419,7 +424,7 @@ export default function Checkout() {
             <p className="text-xl text-gray-600 mb-8">Thank you for your order.</p>
             
             <Link
-              to="/"
+              to={franchiseId ? `/${franchiseId}` : "/"}
               className="bg-red-500 text-white px-8 py-3 rounded-full font-semibold hover:bg-red-600 transition-colors"
             >
               Return to Home
@@ -440,7 +445,7 @@ export default function Checkout() {
           className="mb-8"
         >
           <Link
-            to="/cart"
+            to={franchiseId ? `/${franchiseId}/cart` : "/cart"}
             className="inline-flex items-center text-red-500 hover:text-red-600 transition-colors mb-4"
           >
             <ArrowLeft className="h-4 w-4 mr-2" /> Back to Cart
@@ -834,7 +839,7 @@ export default function Checkout() {
         onContinue={() => handlePaymentSuccess(() => {
           clearCart();
           dispatch(clearReduxCart());
-          navigate('/menu');
+          navigate(franchiseId ? `/${franchiseId}/menu` : '/menu');
         })}
       />
 
@@ -880,7 +885,7 @@ export default function Checkout() {
                 setShowTakeoutSuccessPopup(false);
                 clearCart();
                 dispatch(clearReduxCart());
-                navigate('/menu');
+                navigate(franchiseId ? `/${franchiseId}/menu` : '/menu');
               }}
               className="bg-red-500 text-white px-8 py-3 rounded-full font-semibold hover:bg-red-600 transition-colors"
             >

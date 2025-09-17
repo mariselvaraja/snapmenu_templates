@@ -1,11 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
 import { ShoppingCart, Plus, Minus, ChevronRight } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useAppDispatch, useAppSelector, fetchMenuRequest, MenuItem } from '../../../common/redux';
 import { fetchComboRequest } from '../../../redux/slices/comboSlice';
 import { useCart, CartItem, generateSkuId, createCartItem, normalizeModifiers } from '../context/CartContext';
 import { useCartWithToast } from '../hooks/useCartWithToast';
 import ModifierModal from '../components/ModifierModal';
+import PaymentStatusHandler from '../components/PaymentStatusHandler';
 import _ from 'lodash';
 import { LuVegan } from 'react-icons/lu';
 import { IoLeafOutline } from 'react-icons/io5';
@@ -35,6 +36,7 @@ export default function Menu() {
     const [selectedMenuItem, setSelectedMenuItem] = useState<MenuItem | null>(null);
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const navigate = useNavigate();
+    const { franchiseId } = useParams<{ franchiseId?: string }>();
     const dispatch = useAppDispatch();
     const { addItemWithToast } = useCartWithToast();
 
@@ -63,6 +65,7 @@ export default function Menu() {
         // Fetch combo data on mount
         dispatch(fetchComboRequest());
     }, [dispatch]);
+
     
     // Extract subcategories from 'mains' category
     const subCategories: SubCategoryType[] = items
@@ -427,9 +430,9 @@ export default function Menu() {
                         >
                             <div className="relative cursor-pointer" onClick={() => {
                                 if (item.category === 'combo') {
-                                    navigate(`/combo/${item.pk_id}`);
+                                    navigate(franchiseId ? `/${franchiseId}/combo/${item.pk_id}` : `/combo/${item.pk_id}`);
                                 } else {
-                                    navigate(`/product/${item.id.toString()}`);
+                                    navigate(franchiseId ? `/${franchiseId}/product/${item.id.toString()}` : `/product/${item.id.toString()}`);
                                 }
                             }}>
                                 {item.image ? (
@@ -484,9 +487,9 @@ export default function Menu() {
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 if (item.category === 'combo') {
-                                                    navigate(`/combo/${item.pk_id}`);
+                                                    navigate(franchiseId ? `/${franchiseId}/combo/${item.pk_id}` : `/combo/${item.pk_id}`);
                                                 } else {
-                                                    navigate(`/product/${item.id.toString()}`);
+                                                    navigate(franchiseId ? `/${franchiseId}/product/${item.id.toString()}` : `/product/${item.id.toString()}`);
                                                 }
                                             }}
                                         >
@@ -508,9 +511,9 @@ export default function Menu() {
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         if (item.category === 'combo') {
-                                            navigate(`/combo/${item.pk_id}`);
+                                            navigate(franchiseId ? `/${franchiseId}/combo/${item.pk_id}` : `/combo/${item.pk_id}`);
                                         } else {
-                                            navigate(`/product/${item.id.toString()}`);
+                                            navigate(franchiseId ? `/${franchiseId}/product/${item.id.toString()}` : `/product/${item.id.toString()}`);
                                         }
                                     }}
                                 >
@@ -588,6 +591,9 @@ export default function Menu() {
                         ))}
                 </div>
             </div>
+
+            {/* Payment Status Handler - handles all payment status popups */}
+            <PaymentStatusHandler />
         </div>
     );
 }

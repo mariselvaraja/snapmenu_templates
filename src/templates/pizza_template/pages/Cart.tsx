@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Pencil } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useAppSelector } from '../../../common/redux';
 import { useCart } from '../context/CartContext';
 import ModifierModal from '../components/ModifierModal';
@@ -10,6 +10,10 @@ import RenderSpice from '@/components/renderSpicelevel';
 export default function Cart() {
   const { state: { items: cartItems }, removeItem, updateItemQuantity, addItem } = useCart();
   const navigate = useNavigate();
+  const params = useParams();
+  
+  // Get franchise ID from params or sessionStorage
+  const franchiseId = params.franchiseId || sessionStorage.getItem('franchise_id');
   
   // State for modifier modal
   const [isModifierModalOpen, setIsModifierModalOpen] = useState(false);
@@ -141,7 +145,7 @@ export default function Cart() {
           className="mb-8"
         >
           <Link
-            to="/menu"
+            to={franchiseId ? `/${franchiseId}/menu` : "/menu"}
             className="inline-flex items-center text-red-500 hover:text-red-600 transition-colors mb-4"
           >
             <ArrowLeft className="h-4 w-4 mr-2" /> Continue Shopping
@@ -342,7 +346,7 @@ export default function Cart() {
                   </div>
                 </div>
                 <button 
-                  onClick={() => navigate('/checkout')}
+                  onClick={() => navigate(franchiseId ? `/${franchiseId}/checkout` : '/checkout')}
                   disabled={cartItems.length === 0}
                   className={`w-full bg-red-500 text-white py-3 rounded-full font-semibold hover:bg-red-600 transition-colors mt-6 ${
                     cartItems.length === 0 ? 'opacity-70 cursor-not-allowed' : ''
@@ -368,7 +372,7 @@ export default function Cart() {
               Looks like you haven't added any items to your cart yet.
             </p>
             <Link
-              to="/menu"
+              to={franchiseId ? `/${franchiseId}/menu` : "/menu"}
               className="bg-red-500 text-white px-8 py-3 rounded-full font-semibold hover:bg-red-600 transition-colors"
             >
               Browse Menu

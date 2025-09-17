@@ -35,6 +35,7 @@ const PizzaTemplateRoutes = [
   <Route key="order" path={commonRoutePaths.order} element={<Order />} />,
   <Route key="in-dining-order" path={commonRoutePaths.inDiningOrder} element={<InDiningOrder />} />,
   <Route key="in-dining-order-with-table" path={commonRoutePaths.inDiningOrderWithTable} element={<InDiningOrder />} />,
+  <Route key="in-dining-order-with-params" path={commonRoutePaths.inDiningOrderWithParams} element={<InDiningOrder />} />,
   <Route key="events" path={commonRoutePaths.events} element={<Events />} />,
   <Route key="gallery" path={commonRoutePaths.gallery} element={<Gallery />} />,
   <Route key="blog" path={commonRoutePaths.blog} element={<Blog />} />,

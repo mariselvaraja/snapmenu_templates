@@ -18,7 +18,7 @@ import {
 import { usePayment } from '@/hooks';
 
 export default function ProductDetail() {
-    const { productId } = useParams<{ productId: string }>();
+    const { productId, franchiseId } = useParams<{ productId: string; franchiseId?: string }>();
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
     const { addItemWithToast } = useCartWithToast();
@@ -359,7 +359,7 @@ export default function ProductDetail() {
         <div className="py-4 sm:py-6 lg:py-10">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <button 
-                    onClick={() => navigate('/menu')}
+                    onClick={() => navigate(franchiseId ? `/${franchiseId}/menu` : '/menu')}
                     className="inline-flex items-center mb-4 sm:mb-6 lg:mb-8 bg-gray-100 text-gray-800 px-3 py-2 sm:px-4 sm:py-2 rounded-full hover:bg-gray-200 transition-colors text-sm sm:text-base"
                 >
                     <ArrowLeft className="h-4 w-4 mr-2" />
