@@ -54,7 +54,8 @@ const getDomainFromUrl = () => {
   // return "uat"
   // return "spanish"
   // return "pizza"
-   return "mayajas"; 
+  //  return "mayajas"; 
+  return "onlychaat";
   // return 'annapurna'
 }; 
 

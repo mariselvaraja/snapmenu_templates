@@ -41,16 +41,17 @@ const PaymentStatusHandler: React.FC<PaymentStatusHandlerProps> = ({
       setShowPaymentFailedPopup(true);
       onPaymentStatusDetermined?.('failed');
     }
-    
-    // Handle transactionId parameter for Square payment status check
-    if (transactionId) {
+    else if (transactionId) {
       checkSquarePaymentStatus(transactionId);
     }
-    
-    // Handle payment_status parameter for Clover payment status check
-    if (paymentStatus) {
+    else if (paymentStatus) {
       checkCloverPaymentStatus(paymentStatus);
     }
+    // Handle transactionId parameter for Square payment status check
+   
+    
+    // Handle payment_status parameter for Clover payment status check
+   
   }, [location.search]);
 
   // Function to remove query parameters from URL
