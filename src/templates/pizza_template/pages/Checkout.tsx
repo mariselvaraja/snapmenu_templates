@@ -7,6 +7,11 @@ import { clearCart as clearReduxCart } from '../../../common/redux/slices/cartSl
 import { useCart } from '../context/CartContext';
 import { cartService } from '../../../services';
 import usePaymentManagement from '../hooks/usePaymentManagement';
+import VerifyingPaymentPopup from '../components/VerifyingPaymentPopup';
+import PaymentSuccessPopup from '../components/PaymentSuccessPopup';
+import PaymentFailedPopup from '../components/PaymentFailedPopup';
+import PaymentFailedProcessingPopup from '../components/PaymentFailedProcessingPopup';
+import OrderMessagePopup from '../components/OrderMessagePopup';
 
 interface FormData {
   name: string;
@@ -81,7 +86,14 @@ export default function Checkout() {
 
   // Use the new payment management hook
   const {
-    initiatePayment
+    showVerifyingPaymentPopup,
+    showPaymentFailedPopup,
+    showPaymentFailedProcessingPopup,
+    showPaymentSuccessPopup,
+    initiatePayment,
+    handlePaymentSuccess,
+    handlePaymentRetry,
+    resetAllPopupStates
   } = usePaymentManagement();
 
   const tpnState = useAppSelector((state) => state?.tpn?.rawApiResponse);
@@ -809,6 +821,44 @@ export default function Checkout() {
         </div>
       </div>
 
+
+      {/* Payment Popup Components */}
+      <VerifyingPaymentPopup
+        isOpen={showVerifyingPaymentPopup}
+        onClose={() => resetAllPopupStates()}
+      />
+
+      <PaymentSuccessPopup
+        isOpen={showPaymentSuccessPopup}
+        onClose={() => resetAllPopupStates()}
+        onContinue={() => handlePaymentSuccess(() => {
+          clearCart();
+          dispatch(clearReduxCart());
+          navigate('/menu');
+        })}
+      />
+
+      {/* <PaymentFailedPopup
+        isOpen={showPaymentFailedPopup}
+        onClose={() => resetAllPopupStates()}
+        onTryAgain={() => handlePaymentRetry(() => {
+          // Retry the payment with the same payment link
+          if (orderResponse?.payment_link) {
+            initiatePayment(orderResponse.payment_link);
+          }
+        })}
+      /> */}
+
+      <PaymentFailedProcessingPopup
+        isOpen={showPaymentFailedProcessingPopup}
+        onClose={() => resetAllPopupStates()}
+        onTryAgain={() => handlePaymentRetry(() => {
+          // Retry the payment with the same payment link
+          if (orderResponse?.payment_link) {
+            initiatePayment(orderResponse.payment_link);
+          }
+        })}
+      />
 
       {/* Takeout Success Popup */}
       {showTakeoutSuccessPopup && (

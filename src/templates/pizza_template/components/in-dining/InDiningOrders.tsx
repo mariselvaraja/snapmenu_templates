@@ -10,6 +10,10 @@ import { getOrderHistoryRequest } from '../../../../common/redux/slices/orderHis
 import { clearCart } from '../../../../common/redux/slices/inDiningCartSlice';
 import { resetPaymentState } from '../../../../common/redux/slices/paymentSlice';
 import usePaymentManagement from '../../hooks/usePaymentManagement';
+import VerifyingPaymentPopup from '../VerifyingPaymentPopup';
+import PaymentSuccessPopup from '../PaymentSuccessPopup';
+import PaymentFailedPopup from '../PaymentFailedPopup';
+import PaymentFailedProcessingPopup from '../PaymentFailedProcessingPopup';
 import { useToast } from '../../context/ToastContext';
 import { formatCurrency } from '../../utils';
 import RenderSpice from '@/components/renderSpicelevel';
@@ -69,7 +73,14 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
 
   // Global payment management hook for handling payments when bill is closed
   const {
-    initiatePayment
+    showVerifyingPaymentPopup,
+    showPaymentFailedPopup,
+    showPaymentFailedProcessingPopup,
+    showPaymentSuccessPopup,
+    initiatePayment,
+    handlePaymentSuccess,
+    handlePaymentRetry,
+    resetAllPopupStates
   } = usePaymentManagement();
 
   // Monitor payment responses globally
@@ -628,6 +639,86 @@ const InDiningOrders: React.FC<InDiningOrdersProps> = ({ onClose, newOrderNumber
         />
       )}
 
+      {/* Global Payment Popup Components - Show even when bill is closed */}
+      <VerifyingPaymentPopup
+        isOpen={showVerifyingPaymentPopup}
+        onClose={() => {
+          resetAllPopupStates();
+          dispatch(resetPaymentState())
+          // No need to refresh orders - WebSocket service handles updates
+          console.log('✅ VerifyingPayment popup closed - WebSocket will handle order updates');
+        }}
+      />
+
+      <PaymentSuccessPopup
+        isOpen={showPaymentSuccessPopup}
+        onClose={() => {
+          resetAllPopupStates();
+          // Clear payment state
+          dispatch(resetPaymentState());
+          // Clear the cart when payment success popup is closed
+          dispatch(clearCart());
+          // No need to refresh orders - WebSocket service handles updates
+          console.log('✅ PaymentSuccess popup closed - WebSocket will handle order updates');
+        }}
+        onContinue={() => handlePaymentSuccess(() => {
+          showToast('Payment completed successfully!', 'success');
+          // Clear payment state
+          dispatch(resetPaymentState());
+          // Clear the cart when payment is successful
+          dispatch(clearCart());
+          // No need to refresh orders - WebSocket service handles updates
+          console.log('✅ PaymentSuccess continue - WebSocket will handle order updates');
+        })}
+      />
+
+      {/* <PaymentFailedPopup
+        isOpen={showPaymentFailedPopup}
+        onClose={() => {
+          resetAllPopupStates();
+          // No need to refresh orders - WebSocket service handles updates
+          console.log('✅ PaymentFailed popup closed - WebSocket will handle order updates');
+        }}
+        onTryAgain={() => handlePaymentRetry(() => {
+          // Retry the payment with the same payment link
+          if (paymentState.paymentResponse?.paymentLink || 
+              paymentState.paymentResponse?.payment_link || 
+              paymentState.paymentResponse?.paymentUrl) {
+            const paymentLink = paymentState.paymentResponse?.paymentLink || 
+                               paymentState.paymentResponse?.payment_link || 
+                               paymentState.paymentResponse?.paymentUrl;
+            initiatePayment(paymentLink);
+          } else {
+            showToast('No payment link available for retry', 'error');
+          }
+        })}
+      /> */}
+
+      <PaymentFailedProcessingPopup
+        isOpen={showPaymentFailedProcessingPopup}
+        onClose={() => {
+          resetAllPopupStates();
+          // Clear payment state
+          dispatch(resetPaymentState());
+          // No need to refresh orders - WebSocket service handles updates
+          console.log('✅ PaymentFailedProcessing popup closed - WebSocket will handle order updates');
+        }}
+        onTryAgain={() => handlePaymentRetry(() => {
+          // Clear payment state before retry
+          dispatch(resetPaymentState());
+          // Retry the payment with the same payment link
+          if (paymentState.paymentResponse?.paymentLink || 
+              paymentState.paymentResponse?.payment_link || 
+              paymentState.paymentResponse?.paymentUrl) {
+            const paymentLink = paymentState.paymentResponse?.paymentLink || 
+                               paymentState.paymentResponse?.payment_link || 
+                               paymentState.paymentResponse?.paymentUrl;
+            initiatePayment(paymentLink);
+          } else {
+            showToast('No payment link available for retry', 'error');
+          }
+        })}
+      />
     </div>
   );
 };
