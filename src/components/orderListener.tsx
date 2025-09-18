@@ -242,7 +242,7 @@ const OrderListener: React.FC = () => {
     const orderHistoryInterval = setInterval(() => {
       console.log("🔄 Polling order history (15 seconds)");
       dispatch(getOrderHistoryRequest(tableNumber));
-    }, 15000); // 15 seconds
+    }, 7000); // 15 seconds
 
     // Clean up interval on component unmount or when tableNumber changes
     return () => {
