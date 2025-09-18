@@ -46,27 +46,18 @@ const OrderListener: React.FC = () => {
   // Get WebSocket URL from endpoints configuration
   const websocketUrl = endpoints.webSocket.getNewOrdersV2+"?restaurant_id="+restaurant_id;
   
-  // Extract table number from URL (same logic as InDiningOrders component)
+  // Extract table ID from URL path parameter
   useEffect(() => {
-    // Extract table number from URL query parameter or path parameter
-    // Examples: 
-    // - Query parameter: /placeindiningorder?table=12
-    // - Path parameter: /placeindiningorder/12
+    // Extract table ID from URL path parameter
+    // Example URL: /placeindiningorder/1c45eee9-e002-4b07-9968-4280f7904ba7/162aac7c-b57a-4e2b-b3c0-da930add7e97/e5b9767f-f2ed-402d-88f7-f1eea50c6fb4
+    // The table ID is the last path segment
     
-    // First check for query parameter
-    const searchParams = new URLSearchParams(location.search);
-    const tableFromQuery = searchParams.get('table');
+    const pathSegments = location.pathname.split('/').filter(segment => segment.length > 0);
+    const tableId = pathSegments[pathSegments.length - 1];
     
-    // Then check for path parameter
-    const pathSegments = location.pathname.split('/');
-    const lastSegment = pathSegments[pathSegments.length - 1];
-    const tableFromPath = !isNaN(Number(lastSegment)) ? lastSegment : null;
-    
-    // Use table from query parameter first, then fall back to path parameter
-    if (tableFromQuery && !isNaN(Number(tableFromQuery))) {
-      setTableNumber(tableFromQuery);
-    } else if (tableFromPath) {
-      setTableNumber(tableFromPath);
+    // Set table ID if it exists and is not empty
+    if (tableId && tableId.length > 0) {
+      setTableNumber(tableId);
     } else {
       setTableNumber(null);
     }
