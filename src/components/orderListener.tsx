@@ -1,5 +1,6 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useLocation } from 'react-router-dom';
 import { refreshOrderHistorySilent, getOrderHistoryRequest } from '../common/redux/slices/orderHistorySlice';
 import { clearCart } from '../common/redux/slices/inDiningCartSlice';
 import { endpoints } from '../common/config/endpoints';
@@ -39,11 +40,37 @@ const OrderListener: React.FC = () => {
   const dispatch = useDispatch();
   const currentOrders = useSelector((state: RootState) => state.orderHistory.orders || []);
   const restaurant_id = sessionStorage.getItem('franchise_id');
+  const location = useLocation();
+  const [tableNumber, setTableNumber] = useState<string | null>(null);
   
   // Get WebSocket URL from endpoints configuration
   const websocketUrl = endpoints.webSocket.getNewOrdersV2+"?restaurant_id="+restaurant_id;
-  const searchParams = new URLSearchParams(location.search);
-  const tableFromQuery = searchParams.get('table');
+  
+  // Extract table number from URL (same logic as InDiningOrders component)
+  useEffect(() => {
+    // Extract table number from URL query parameter or path parameter
+    // Examples: 
+    // - Query parameter: /placeindiningorder?table=12
+    // - Path parameter: /placeindiningorder/12
+    
+    // First check for query parameter
+    const searchParams = new URLSearchParams(location.search);
+    const tableFromQuery = searchParams.get('table');
+    
+    // Then check for path parameter
+    const pathSegments = location.pathname.split('/');
+    const lastSegment = pathSegments[pathSegments.length - 1];
+    const tableFromPath = !isNaN(Number(lastSegment)) ? lastSegment : null;
+    
+    // Use table from query parameter first, then fall back to path parameter
+    if (tableFromQuery && !isNaN(Number(tableFromQuery))) {
+      setTableNumber(tableFromQuery);
+    } else if (tableFromPath) {
+      setTableNumber(tableFromPath);
+    } else {
+      setTableNumber(null);
+    }
+  }, [location]);
   
 
   // Function to connect to WebSocket
@@ -111,8 +138,8 @@ const OrderListener: React.FC = () => {
     try {
       console.log(`🆕 Processing ${newOrders.length} new orders`);
       
-      if (tableFromQuery) {
-        dispatch(getOrderHistoryRequest(tableFromQuery));
+      if (tableNumber) {
+        dispatch(getOrderHistoryRequest(tableNumber));
       }
       
     } catch (error) {
@@ -143,8 +170,8 @@ const OrderListener: React.FC = () => {
       // Track which orders were updated and which need to be created
       const updatedOrdersList = [...currentOrders];
       const newOrdersToCreate: ExtendedOrder[] = [];
-      if (tableFromQuery) {
-        dispatch(getOrderHistoryRequest(tableFromQuery));
+      if (tableNumber) {
+        dispatch(getOrderHistoryRequest(tableNumber));
       }
       updatedOrders.forEach(update => {
         // Handle payment status updates - special case
@@ -171,8 +198,8 @@ const OrderListener: React.FC = () => {
       // Clear the in-dining cart
       dispatch(clearCart());
       // Refresh order history from API
-      if (tableFromQuery) {
-        dispatch(getOrderHistoryRequest(tableFromQuery));
+      if (tableNumber) {
+        dispatch(getOrderHistoryRequest(tableNumber));
       }
       return;
     }
@@ -218,19 +245,19 @@ const OrderListener: React.FC = () => {
 
   // Order history polling every 15 seconds
   useEffect(() => {
-    if (!tableFromQuery) return;
+    if (!tableNumber) return;
 
     // Set up interval to fetch order history every 15 seconds
     const orderHistoryInterval = setInterval(() => {
       console.log("🔄 Polling order history (15 seconds)");
-      dispatch(getOrderHistoryRequest(tableFromQuery));
+      dispatch(getOrderHistoryRequest(tableNumber));
     }, 15000); // 15 seconds
 
-    // Clean up interval on component unmount or when tableFromQuery changes
+    // Clean up interval on component unmount or when tableNumber changes
     return () => {
       clearInterval(orderHistoryInterval);
     };
-  }, [tableFromQuery, dispatch]); // Re-run when tableFromQuery or dispatch changes
+  }, [tableNumber, dispatch]); // Re-run when tableNumber or dispatch changes
 
   // This component doesn't render anything
   return null;
