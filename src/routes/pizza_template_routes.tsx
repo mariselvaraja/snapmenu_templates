@@ -20,6 +20,7 @@ import ComboDetail from '../templates/pizza_template/pages/ComboDetail';
 import Checkout from '../templates/pizza_template/pages/Checkout';
 import PartyOrders from '../templates/pizza_template/pages/PartyOrders';
 import { InDiningOrder } from '../templates/pizza_template/components/in-dining';
+import PlaceInDiningOrderRedirect from '../components/PlaceInDiningOrderRedirect';
 /**
  * Define routes for the pizza template
  * These routes are used in the pizza_template/App.tsx file
@@ -33,7 +34,7 @@ const PizzaTemplateRoutes = [
   <Route key="our-story" path={commonRoutePaths.ourStory} element={<About />} />,
   <Route key="contact" path={commonRoutePaths.contact} element={<Contact />} />,
   <Route key="order" path={commonRoutePaths.order} element={<Order />} />,
-  <Route key="in-dining-order" path={commonRoutePaths.inDiningOrder} element={<InDiningOrder />} />,
+  <Route key="in-dining-order" path={commonRoutePaths.inDiningOrder} element={<PlaceInDiningOrderRedirect />} />,
   <Route key="in-dining-order-with-table" path={commonRoutePaths.inDiningOrderWithTable} element={<InDiningOrder />} />,
   <Route key="in-dining-order-with-params" path={commonRoutePaths.inDiningOrderWithParams} element={<InDiningOrder />} />,
   <Route key="events" path={commonRoutePaths.events} element={<Events />} />,

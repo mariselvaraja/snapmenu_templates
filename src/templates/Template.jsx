@@ -1,6 +1,6 @@
 import React, { useState, useEffect, createContext, useContext } from 'react';
 import { Provider, useSelector, useDispatch } from 'react-redux';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import _ from 'lodash';
 import PizzaApp from './pizza_template/App';
 import CasualDiningApp from './casual_dining_template/App';
@@ -43,6 +43,30 @@ const TemplateContent = ({ franchiseId }) => {
 
   const searchParams = new URLSearchParams(window.location.search);
   const location = useLocation();
+  const navigate = useNavigate();
+  
+  // Handle redirect from query parameters to path parameters for placeindiningorder route
+  useEffect(() => {
+    if (location.pathname === '/placeindiningorder' && location.search) {
+      const searchParams = new URLSearchParams(location.search);
+      const restaurant = searchParams.get('restaurant');
+      const franchise = searchParams.get('franchise');
+      const table = searchParams.get('table');
+
+      // If all required parameters are present, redirect to path parameter format
+      if (restaurant && franchise && table) {
+        const newPath = `/placeindiningorder/${restaurant}/${franchise}/${table}`;
+        console.log('Template.jsx - Redirecting from query params to path params:', {
+          from: `${location.pathname}${location.search}`,
+          to: newPath
+        });
+        
+        // Replace the current history entry to avoid back button issues
+        navigate(newPath, { replace: true });
+        return; // Exit early to prevent further processing
+      }
+    }
+  }, [location, navigate]);
   
   // Get Redux dispatch function
   const dispatch = useDispatch();
@@ -160,11 +184,17 @@ const TemplateContent = ({ franchiseId }) => {
         sessionStorage.setItem("franchise_id", singleRestaurant.restaurant_id);
         sessionStorage.setItem('customer_care_number', singleRestaurant.customer_care_number)
         
-      setLocationSelected(true);
-      // Fetch required data
-      dispatch(fetchTpnConfigRequest());
-      dispatch(fetchSiteContentRequest());
-      dispatch(fetchMenuRequest('website'));
+        // If we're on the root path without franchise ID, redirect to franchise-specific path
+        if (location.pathname === '/' || location.pathname === '') {
+          window.location.replace(`/${singleRestaurant.restaurant_id}`);
+          return;
+        }
+        
+        setLocationSelected(true);
+        // Fetch required data
+        dispatch(fetchTpnConfigRequest());
+        dispatch(fetchSiteContentRequest());
+        dispatch(fetchMenuRequest('website'));
       }
 
       if(isPaymentRoute)
@@ -200,7 +230,7 @@ const TemplateContent = ({ franchiseId }) => {
           setLocationSelected(true);
         }
     }
-  }, [restaurantState.info, dispatch, franchiseId]);
+  }, [restaurantState.info, dispatch, franchiseId, location.pathname]);
 
   // Check if current URL includes placeindiningorder
   
@@ -209,6 +239,11 @@ const TemplateContent = ({ franchiseId }) => {
   useEffect(() => {
     // Only proceed when the site is fully loaded
     if (!isLoading) {
+      // Check if there's only one franchise - if so, don't show location selector
+      if (restaurantState.info && restaurantState.info.length === 1) {
+        return; // Don't show location selector for single franchise
+      }
+      
       // Check if location is already selected in localStorage
       const savedLocation = localStorage.getItem('selectedLocation');
       if (savedLocation) {
@@ -222,14 +257,19 @@ const TemplateContent = ({ franchiseId }) => {
         return () => clearTimeout(timer);
       }
     }
-  }, [isLoading, isPlaceInDiningOrderRoute, isPaymentRoute]); // Re-run when loading state changes or route changes
+  }, [isLoading, isPlaceInDiningOrderRoute, isPaymentRoute, restaurantState.info]); // Re-run when loading state changes or route changes
 
-  // Make sure the location selector is always shown if no location is selected
+  // Make sure the location selector is always shown if no location is selected (but not for single franchise)
   useEffect(() => {
+    // Don't show location selector if there's only one franchise
+    if (restaurantState.info && restaurantState.info.length === 1) {
+      return;
+    }
+    
     if (!locationSelected && !isLoading && !showLocationSelector && !isPlaceInDiningOrderRoute && !isPaymentRoute) {
       setShowLocationSelector(true);
     }
-  }, [locationSelected, isLoading, showLocationSelector, isPlaceInDiningOrderRoute, isPaymentRoute]);
+  }, [locationSelected, isLoading, showLocationSelector, isPlaceInDiningOrderRoute, isPaymentRoute, restaurantState.info]);
 
   // Template context value
   const templateContextValue = {
@@ -309,22 +349,37 @@ const TemplateContent = ({ franchiseId }) => {
     }
   };
 
+  // Check if we should show LocationSelector - don't show for single franchise
+  const shouldShowLocationSelector = !locationSelected && 
+    !isPlaceInDiningOrderRoute && 
+    !isPaymentRoute && 
+    restaurantState.info && 
+    restaurantState.info.length > 1; // Only show for multiple franchises
+
   return (
     <TemplateContext.Provider value={templateContextValue}>
       {/* Conditionally render either the template or the location selector screen */}
       {locationSelected ? (
         renderTemplate()
+      ) : shouldShowLocationSelector ? (
+        <div className="min-h-screen bg-white">
+          <LocationSelector 
+            isOpen={true}
+            onClose={() => setShowLocationSelector(false)}
+            onSelectLocation={handleSelectLocation}
+            showCloseButton={false}
+          />
+        </div>
       ) : (
-        !isPlaceInDiningOrderRoute && !isPaymentRoute && (
-          <div className="min-h-screen bg-white">
-            <LocationSelector 
-              isOpen={true}
-              onClose={() => setShowLocationSelector(false)}
-              onSelectLocation={handleSelectLocation}
-              showCloseButton={false}
-            />
+        // Show loading or nothing for single franchise while processing
+        <div className="fixed inset-0 flex items-center justify-center bg-white bg-opacity-80 z-50">
+          <div className="text-center">
+            <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" role="status">
+              <span className="!absolute !-m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]">Loading...</span>
+            </div>
+            <p className="mt-2 text-gray-700 font-medium">Loading your website...</p>
           </div>
-        )
+        </div>
       )}
     </TemplateContext.Provider>
   );
