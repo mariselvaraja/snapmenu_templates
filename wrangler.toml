@@ -1,0 +1,8 @@
+name = "indining-snapmenuai-uat"
+pages_build_output_dir = "./dist"
+compatibility_date = "2025-09-03"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+CLOUDFLARE_ACCOUNT_ID = "7fcdf3bbdc39cb8d69441436855d93f0" # replace with your own.
+
