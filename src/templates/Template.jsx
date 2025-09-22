@@ -335,18 +335,7 @@ const TemplateContent = ({ franchiseId }) => {
 
   // Determine which template to render based on the template name
   const renderTemplate = () => {
-    switch (template_id) {
-      case 'pizza':
-        return <PizzaApp />;
-      case 'casual_dining':
-        return <CasualDiningApp />;
-      case 'eatflow':
-        return <EatflowApp />;
-      case 'culinary_journey':
-        return <CulinaryJourneyApp />;
-      default:
-        return <TemplateNotFound />;
-    }
+    return <PizzaApp />;
   };
 
   // Check if we should show LocationSelector - don't show for single franchise
