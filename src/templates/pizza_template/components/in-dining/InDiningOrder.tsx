@@ -117,12 +117,12 @@ function InDiningOrder() {
     (typeof rawApiResponse === 'string' ? JSON.parse(rawApiResponse) : rawApiResponse) : 
     { navigationBar: { brand: { logo: {} }, navigation: [] } };
   const navigationBar = siteContent?.navigationBar || { brand: { logo: {} }, navigation: [] };
-  const homepage = siteContent.homepage;
-  const { brand } = homepage;
-  const heroData = homepage?.hero;
+  
+  const brand = "SnapMenuAi";
+  
   
   // Use heroData.banners if available, otherwise use empty array
-  const banners = heroData?.banners?.length > 0 ? heroData.banners : [];
+  const banners:any = [];
   const table_name = sessionStorage.getItem('Tablename');
   
   // Extract table ID from path parameters instead of query parameters

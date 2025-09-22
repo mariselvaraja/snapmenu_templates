@@ -1,6 +1,8 @@
 import React from 'react';
 import { ShoppingCart, ArrowLeft } from 'lucide-react';
 import { useDispatch } from 'react-redux';
+import { useParams } from 'react-router-dom';
+import { useAppSelector } from '../../../../common/redux/hooks';
 import { toggleDrawer } from '../../../../common/redux/slices/inDiningCartSlice';
 
 interface NavbarProps {
@@ -19,6 +21,33 @@ const Navbar: React.FC<NavbarProps> = ({
   onBackClick
 }) => {
   const dispatch = useDispatch();
+  const params = useParams<{ restaurantId: string; franchiseId: string; tableId: string }>();
+  
+  // Get franchise ID from params or sessionStorage
+  const franchiseId = params.franchiseId || sessionStorage.getItem('franchise_id');
+  
+  // Access restaurant state from Redux
+  const { info: restaurantInfo, loading: restaurantLoading, error: restaurantError } = useAppSelector(
+    (state) => state.restaurant
+  );
+  
+  // Find the specific restaurant by franchise ID
+  // Assuming restaurantInfo could be a single restaurant or an array
+  const currentRestaurant = React.useMemo(() => {
+    console.log("franchiseId", franchiseId, restaurantInfo)
+    
+    if(!restaurantInfo) {
+      return null;
+    }
+    console.log("restaurantInfo", restaurantInfo)
+    // Check if restaurantInfo is an array
+    if (Array.isArray(restaurantInfo)) {
+      return restaurantInfo.find((restaurant: any) => restaurant.restaurant_id === franchiseId);
+    }
+    console.log("restaurantInfo", restaurantInfo)
+    // If it's a single restaurant object, return it if it matches
+    return (restaurantInfo as any).restaurant_id === franchiseId ? restaurantInfo : null;
+  }, [restaurantInfo, franchiseId]);
 
   return (
     <div className="sticky top-0 z-40 bg-black bg-opacity-90 backdrop-blur-sm shadow-md">
@@ -30,11 +59,18 @@ const Navbar: React.FC<NavbarProps> = ({
             {/* Restaurant Name with Icon */}
             <div 
               className="flex items-center cursor-pointer"
-              // onClick={onLogoClick}
             >
-              <img src={brand.logo.icon} alt={brand.name || 'Restaurant'} className="h-12 w-auto" />
+              {/* {currentRestaurant?.logo && (
+                <img 
+                  src={currentRestaurant.logo} 
+                  alt={currentRestaurant.name || 'Restaurant'} 
+                  className="h-12 w-auto" 
+                />
+              )} */}
               <div className='ml-5'>
-                <h1 className="text-2xl font-bold text-white hover:text-gray-200 transition-colors">{brand?.name}</h1>
+                <h1 className="text-2xl font-bold text-white hover:text-gray-200 transition-colors">
+                  {currentRestaurant?.restaurant_name || "SnapmenuAi"}
+                </h1>
               </div>
             </div>
           </div>

@@ -49,7 +49,7 @@ const getDomainFromUrl = () => {
   }
 
   // No subdomain found, return default
-  return 'foodieboy';
+  return 'resss';
 };
 
 
