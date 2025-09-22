@@ -33,31 +33,26 @@ const getDomainFromUrl = () => {
   const url = window.location.href;
   const { hostname } = new URL(url);
 
-  if(url.includes('ctbiryani'))
-  {
-    return 'ctbiryani'
+  if (url.includes('ctbiryani')) {
+    return 'ctbiryani';
   }
-  else
-  {
-    const domainParts = hostname.split('.');
-    if (domainParts.length > 2) {
-      if(domainParts.indexOf('www') == -1)
-      {
-        return domainParts.slice(0, -2).join('.');
-      }
-      else
-      {
-        return domainParts[1]
-      }
-    }
+
+  const domainParts = hostname.split('.');
+
+  // Remove 'www' if present
+  const filteredParts = domainParts.filter(part => part !== 'www');
+
+  if (filteredParts.length > 2) {
+    // The last subdomain is the one before the main domain
+    // e.g., ["dining", "subdomain", "example", "com"] -> "subdomain"
+    return filteredParts[filteredParts.length - 3];
   }
-  // return "uat"
-  // return "spanish"
-  // return "pizza"
-  //  return "mayajas"; 
-  return "foodieboy";
-  // return 'annapurna'
-}; 
+
+  // No subdomain found, return default
+  return 'foodieboy';
+};
+
+
 
 // Endpoint configuration object
 export const endpoints = {
