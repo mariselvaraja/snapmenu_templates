@@ -178,6 +178,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 import { AppDispatch, RootState } from '../../../../common/store';
 import { addItem, toggleDrawer, setTableId } from '../../../../common/redux/slices/inDiningCartSlice';
+import { usePayment } from '../../../../hooks';
 import InDiningDrinksModifierModal from './InDiningDrinksModifierModal';
 import { formatCurrency } from '../../utils';
 import { TbTriangleFilled } from 'react-icons/tb';
@@ -204,6 +205,9 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
   const [selectedMenuItem, setSelectedMenuItem] = useState<any>(null);
   const dispatch = useDispatch<AppDispatch>();
   const cartItems = useSelector((state: RootState) => state.inDiningCart.items);
+  
+  // Use payment hook for payment availability check (same logic as regular menu)
+  const { isPaymentAvilable } = usePayment();
   
   // Get table number from URL
   const location = useLocation();
@@ -533,6 +537,8 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
                   <div className="px-6 py-2 rounded-full bg-gray-200 text-gray-600 font-medium">
                     Out of Stock
                   </div>
+                ) : !isPaymentAvilable ? (
+                  <div></div>
                 ) : (
                   <button
                     onClick={handleAddToOrder}
@@ -639,27 +645,45 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
               <div className="flex-1 bg-gray-200 text-gray-600 py-3 rounded-full font-medium text-center">
                 Out of Stock
               </div>
+            ) : !isPaymentAvilable ? (
+              // When payment is not available, only show View Orders button (if available)
+              onViewOrders ? (
+                <button
+                  onClick={() => {
+                    onViewOrders();
+                    onClose();
+                  }}
+                  className="flex-1 bg-gray-100 text-gray-800 py-3 rounded-full hover:bg-gray-200 transition-colors font-medium flex items-center justify-center gap-2"
+                >
+                  <ClipboardList className="h-4 w-4" />
+                  View Orders
+                </button>
+              ) : (
+                <div className="flex-1"></div>
+              )
             ) : (
-              <button
-                onClick={handleAddToOrder}
-                className="flex-1 bg-red-500 text-white py-3 rounded-full hover:bg-red-600 transition-colors font-medium"
-              >
-                {needsCustomization() ? 'Customize & Add' : 'Add to Order'}
-              </button>
-            )}
-            
-            {/* View Orders Button */}
-            {onViewOrders && (
-              <button
-                onClick={() => {
-                  onViewOrders();
-                  onClose();
-                }}
-                className="flex-1 bg-gray-100 text-gray-800 py-3 rounded-full hover:bg-gray-200 transition-colors font-medium flex items-center justify-center gap-2"
-              >
-                <ClipboardList className="h-4 w-4" />
-                View Orders
-              </button>
+              <>
+                <button
+                  onClick={handleAddToOrder}
+                  className="flex-1 bg-red-500 text-white py-3 rounded-full hover:bg-red-600 transition-colors font-medium"
+                >
+                  {needsCustomization() ? 'Customize & Add' : 'Add to Order'}
+                </button>
+                
+                {/* View Orders Button */}
+                {onViewOrders && (
+                  <button
+                    onClick={() => {
+                      onViewOrders();
+                      onClose();
+                    }}
+                    className="flex-1 bg-gray-100 text-gray-800 py-3 rounded-full hover:bg-gray-200 transition-colors font-medium flex items-center justify-center gap-2"
+                  >
+                    <ClipboardList className="h-4 w-4" />
+                    View Orders
+                  </button>
+                )}
+              </>
             )}
           </div>
         </div>

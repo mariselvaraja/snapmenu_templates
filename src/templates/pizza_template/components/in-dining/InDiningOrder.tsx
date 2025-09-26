@@ -12,6 +12,7 @@ import { setShowMenuItems, setMenuItems, setCurrentMenuType } from '../../../../
 import { fetchTableStatusRequest } from '../../../../common/redux/slices/tableStatusSlice';
 import { getOrderHistoryRequest } from '../../../../common/redux/slices/orderHistorySlice';
 import { useAppSelector } from '../../../../redux';
+import { usePayment } from '../../../../hooks';
 import SearchBarComponent from '../SearchBarComponent';
 import OrderListener from '../../../../components/orderListener';
 import InDiningProductDetails from './InDiningProductDetails';
@@ -141,6 +142,9 @@ function InDiningOrder() {
   const loading = useSelector((state: RootState) => state.menu.loading);
   const showMenuItems = useSelector((state: RootState) => state.menu.showMenuItems);
   const currentMenuType = useSelector((state: RootState) => state.menu.currentMenuType);
+  
+  // Use payment hook for payment availability check (same logic as regular menu)
+  const { isPaymentAvilable } = usePayment();
   
   // Determine whether to show cards or directly show menu
   const shouldShowCards = foodItems.length > 0 && drinksItems.length > 0;
@@ -624,6 +628,7 @@ function InDiningOrder() {
                           item={item}
                           onProductClick={handleProductClick}
                           onAddClick={openDrinksModifierPopup}
+                          isTpnAvailable={isPaymentAvilable}
                         />
                       );
                     } else {
@@ -633,6 +638,7 @@ function InDiningOrder() {
                           item={item}
                           onProductClick={handleProductClick}
                           onAddClick={openModifiersPopup}
+                          isTpnAvailable={isPaymentAvilable}
                         />
                       );
                     }
@@ -820,6 +826,7 @@ function InDiningOrder() {
                           item={item}
                           onProductClick={handleProductClick}
                           onAddClick={openModifiersPopup}
+                          isTpnAvailable={isPaymentAvilable}
                         />
                       ));
                     }
@@ -831,6 +838,7 @@ function InDiningOrder() {
                         item={item}
                         onProductClick={handleProductClick}
                         onAddClick={openModifiersPopup}
+                        isTpnAvailable={isPaymentAvilable}
                       />
                     ));
                   })()
@@ -880,6 +888,7 @@ function InDiningOrder() {
                           item={item}
                           onProductClick={handleProductClick}
                           onAddClick={openDrinksModifierPopup}
+                          isTpnAvailable={isPaymentAvilable}
                         />
                       ));
                     }
@@ -891,6 +900,7 @@ function InDiningOrder() {
                         item={item}
                         onProductClick={handleProductClick}
                         onAddClick={openDrinksModifierPopup}
+                        isTpnAvailable={isPaymentAvilable}
                       />
                     ));
                   })()
