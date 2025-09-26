@@ -646,21 +646,13 @@ const InDiningProductDetails: React.FC<InDiningProductDetailsProps> = ({
                 Out of Stock
               </div>
             ) : !isPaymentAvilable ? (
-              // When payment is not available, only show View Orders button (if available)
-              onViewOrders ? (
-                <button
-                  onClick={() => {
-                    onViewOrders();
-                    onClose();
-                  }}
-                  className="flex-1 bg-gray-100 text-gray-800 py-3 rounded-full hover:bg-gray-200 transition-colors font-medium flex items-center justify-center gap-2"
-                >
-                  <ClipboardList className="h-4 w-4" />
-                  View Orders
-                </button>
-              ) : (
-                <div className="flex-1"></div>
-              )
+              // When payment is not available (not TPN), show Add to Order button instead of View Orders
+              <button
+                onClick={handleAddToOrder}
+                className="flex-1 bg-red-500 text-white py-3 rounded-full hover:bg-red-600 transition-colors font-medium"
+              >
+                {needsCustomization() ? 'Customize & Add' : 'Add to Cart'}
+              </button>
             ) : (
               <>
                 <button
