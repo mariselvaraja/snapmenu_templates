@@ -1,4 +1,4 @@
-name = "snapmenu-templates"
+name = "indining-snapmenuai-uat"
 pages_build_output_dir = "./dist"
 compatibility_date = "2025-09-03"
 compatibility_flags = ["nodejs_compat"]
