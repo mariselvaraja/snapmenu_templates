@@ -6,9 +6,10 @@ interface DrinksMenuItemProps {
   item: any;
   onProductClick: (product: any) => void;
   onAddClick: (product: any) => void;
+  isTpnAvailable: boolean;
 }
 
-const DrinksMenuItem: React.FC<DrinksMenuItemProps> = ({ item, onProductClick, onAddClick }) => {
+const DrinksMenuItem: React.FC<DrinksMenuItemProps> = ({ item, onProductClick, onAddClick, isTpnAvailable }) => {
   const handleAddToCart = () => {
     onAddClick(item);
   };
@@ -62,6 +63,8 @@ const DrinksMenuItem: React.FC<DrinksMenuItemProps> = ({ item, onProductClick, o
       <div className="flex items-center add-button-area">
         {(item?.out_of_stock == "true" || item?.inventory_status === false) ? (
           <div className="text-sm text-gray-500">Out of Stock</div>
+        ) : !isTpnAvailable ? (
+          <div></div>
         ) : (
           <button 
             onClick={handleAddToCart}
