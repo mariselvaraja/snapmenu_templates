@@ -9,6 +9,7 @@ import inDiningOrderReducer from './slices/inDiningOrderSlice';
 import tableAvailabilityReducer from './slices/tableAvailabilitySlice';
 import makeReservationReducer from './slices/makeReservationSlice';
 import tableStatusReducer from './slices/tableStatusSlice';
+import festivalMenuReducer from './slices/festivalMenuSlice';
 import orderHistoryReducer from './slices/orderHistorySlice';
 import paymentReducer from './slices/paymentSlice';
 import tpnReducer from '../../redux/slices/tpnSlice';
@@ -25,6 +26,7 @@ const rootReducer = combineReducers({
   tableAvailability: tableAvailabilityReducer,
   makeReservation: makeReservationReducer,
   tableStatus: tableStatusReducer,
+  festivalMenu: festivalMenuReducer,
   orderHistory: orderHistoryReducer,
   payment: paymentReducer,
   tpn: tpnReducer,

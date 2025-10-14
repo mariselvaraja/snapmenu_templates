@@ -28,6 +28,8 @@ export const commonRoutePaths = {
   inDiningOrder: '/placeindiningorder',
   inDiningOrderWithTable: '/placeindiningorder/:table',
   inDiningOrderWithParams: '/placeindiningorder/:restaurantId/:franchiseId/:tableId',
+  quickMenu: '/quicklMenu',
+  quickMenuWithParams: '/quickMenu/:restaurantId/:franchiseId',
   events: '/:franchiseId/events',
   gallery: '/:franchiseId/gallery',
   blog: '/:franchiseId/blog',

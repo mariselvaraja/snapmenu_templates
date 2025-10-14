@@ -159,7 +159,7 @@ export const cartService = {
         phone: orderData.customerInfo.phone,
         email: orderData.customerInfo.email,
         special_requests: orderData.customerInfo.address || "",
-        order_type: "web",
+        order_type: "quick_menu",
         delivery_type: orderData.delivery_type,
         pay_now : orderData.pay_now
       };

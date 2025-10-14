@@ -49,7 +49,7 @@ const getDomainFromUrl = () => {
   }
 
   // No subdomain found, return default
-  return 'dineinroyal';
+  return 'qmenu';
 };
 
 

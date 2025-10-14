@@ -15,9 +15,11 @@ const Layout = () => {
   const location = useLocation();
   const params = useParams();
   
-  // Check for in-dining routes (these don't have franchise ID)
+  // Check for in-dining and ouick menu routes (these don't have franchise ID)
   const isInDiningOrderPage = location.pathname === '/placeindiningorder';
   const isInDiningOrderPageWithTable = location.pathname.startsWith('/placeindiningorder/');
+  const isFestivalMenuPage = location.pathname === '/quickMenu';
+  const isFestivalMenuPageWithParams = location.pathname.startsWith('/quickMenu/');
   
   // Extract franchise ID from params if available
   const franchiseId = params.franchiseId;
@@ -33,14 +35,14 @@ const Layout = () => {
     <div className="min-h-screen flex flex-col">
       <SearchInitializer />
       <TitleUpdater />
-      {!isInDiningOrderPage && !isInDiningOrderPageWithTable && <Navbar />}
-      {!isInDiningOrderPage && !isInDiningOrderPageWithTable && <CartDrawer />}
-      <main className={`flex-grow ${!isInDiningOrderPage && !isInDiningOrderPageWithTable ? 'pt-20' : ''}`}>
+      {!isInDiningOrderPage && !isInDiningOrderPageWithTable && !isFestivalMenuPage && !isFestivalMenuPageWithParams && <Navbar />}
+      {!isInDiningOrderPage && !isInDiningOrderPageWithTable && !isFestivalMenuPage && !isFestivalMenuPageWithParams && <CartDrawer />}
+      <main className={`flex-grow ${!isInDiningOrderPage && !isInDiningOrderPageWithTable && !isFestivalMenuPage && !isFestivalMenuPageWithParams ? 'pt-20' : ''}`}>
         <Routes>
           {PizzaTemplateRoutes}
         </Routes>
       </main>
-      {!isInDiningOrderPage && !isInDiningOrderPageWithTable && <Footer />}
+      {!isInDiningOrderPage && !isInDiningOrderPageWithTable && !isFestivalMenuPage && !isFestivalMenuPageWithParams && <Footer />}
     </div>
   );
 };
