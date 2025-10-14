@@ -66,6 +66,26 @@ const TemplateContent = ({ franchiseId }) => {
         return; // Exit early to prevent further processing
       }
     }
+    
+    // Handle redirect from query parameters to path parameters for festivalMenu route
+    if (location.pathname === '/quickMenu' && location.search) {
+      const searchParams = new URLSearchParams(location.search);
+      const restaurant = searchParams.get('restaurant');
+      const franchise = searchParams.get('franchise');
+
+      // If all required parameters are present, redirect to path parameter format
+      if (restaurant && franchise) {
+        const newPath = `/quickMenu/${restaurant}/${franchise}`;
+        console.log('Template.jsx - Redirecting festivalMenu from query params to path params:', {
+          from: `${location.pathname}${location.search}`,
+          to: newPath
+        });
+        
+        // Replace the current history entry to avoid back button issues
+        navigate(newPath, { replace: true });
+        return; // Exit early to prevent further processing
+      }
+    }
   }, [location, navigate]);
   
   // Get Redux dispatch function
@@ -104,6 +124,7 @@ const TemplateContent = ({ franchiseId }) => {
   };
 
   const isPlaceInDiningOrderRoute = window.location.pathname.includes('placeindiningorder');
+  const isFestivalMenuRoute = window.location.pathname.includes('quickMenu');
   const isPaymentRoute = window.location.pathname.includes('payment');
 
   // Extract parameters based on route type
@@ -125,6 +146,21 @@ const TemplateContent = ({ franchiseId }) => {
       console.log('parent_id (restaurantId):', parent_id);
       console.log('franchise_id:', franchise_id);
       console.log('table_number (tableId):', table_number);
+    }
+  } else if (isFestivalMenuRoute) {
+    // Extract from path parameters for festivalMenu route
+    // URL format: /festivalMenu/:restaurantId/:franchiseId
+    const pathParts = location.pathname.split('/');
+    const festivalMenuIndex = pathParts.findIndex(part => part === 'quickMenu');
+    
+    if (festivalMenuIndex !== -1 && pathParts.length > festivalMenuIndex + 2) {
+      parent_id = pathParts[festivalMenuIndex + 1]; // restaurantId
+      franchise_id = pathParts[festivalMenuIndex + 2]; // franchiseId
+      
+      // Debug logging
+      console.log('Template.jsx - Extracted festivalMenu path parameters:');
+      console.log('parent_id (restaurantId):', parent_id);
+      console.log('franchise_id:', franchise_id);
     }
   } else {
     // Extract from query parameters for other routes
@@ -178,6 +214,21 @@ const TemplateContent = ({ franchiseId }) => {
       dispatch(fetchSiteContentRequest());
       dispatch(fetchMenuRequest());
       }
+      else if(isFestivalMenuRoute)
+      {
+        sessionStorage.removeItem("restaurant_id");
+        sessionStorage.removeItem("franchise_id");
+        sessionStorage.removeItem('customer_care_number')
+        
+        sessionStorage.setItem("restaurant_id", parent_id);
+        sessionStorage.setItem("franchise_id", franchise_id);
+              
+      setLocationSelected(true);
+      // Fetch required data - Don't pass 'website' type, same as placeindiningorder
+      dispatch(fetchTpnConfigRequest());
+      dispatch(fetchSiteContentRequest());
+      dispatch(fetchMenuRequest());
+      }
       else
       {
         sessionStorage.setItem("restaurant_id", singleRestaurant.restaurant_parent_id);
@@ -225,15 +276,28 @@ const TemplateContent = ({ franchiseId }) => {
           
         }
 
+        if(isFestivalMenuRoute)
+        {
+          sessionStorage.removeItem("restaurant_id");
+          sessionStorage.removeItem("franchise_id");
+          sessionStorage.removeItem('customer_care_number')
+          
+          sessionStorage.setItem("restaurant_id", parent_id);
+          sessionStorage.setItem("franchise_id", franchise_id);
+                
+      setLocationSelected(true);
+      // Fetch required data - Don't pass 'website' type, same as placeindiningorder
+      dispatch(fetchTpnConfigRequest());
+      dispatch(fetchSiteContentRequest());
+      dispatch(fetchMenuRequest());
+        }
+
         if(isPaymentRoute)
         {
           setLocationSelected(true);
         }
     }
   }, [restaurantState.info, dispatch, franchiseId, location.pathname]);
-
-  // Check if current URL includes placeindiningorder
-  
 
   // Check if a location has been selected and show location selector when the website finishes loading
   useEffect(() => {
@@ -249,15 +313,15 @@ const TemplateContent = ({ franchiseId }) => {
       if (savedLocation) {
         // If a location is already saved, set locationSelected to true
         // setLocationSelected(true);
-      } else if (!isPlaceInDiningOrderRoute && !isPaymentRoute) {
-        // If no location is selected and we're not on the placeindiningorder or payment route, show the selector after a short delay
+      } else if (!isPlaceInDiningOrderRoute && !isFestivalMenuRoute && !isPaymentRoute) {
+        // If no location is selected and we're not on the placeindiningorder, festivalMenu, or payment route, show the selector after a short delay
         const timer = setTimeout(() => {
           setShowLocationSelector(true);
         }, 500);
         return () => clearTimeout(timer);
       }
     }
-  }, [isLoading, isPlaceInDiningOrderRoute, isPaymentRoute, restaurantState.info]); // Re-run when loading state changes or route changes
+  }, [isLoading, isPlaceInDiningOrderRoute, isFestivalMenuRoute, isPaymentRoute, restaurantState.info]); // Re-run when loading state changes or route changes
 
   // Make sure the location selector is always shown if no location is selected (but not for single franchise)
   useEffect(() => {
@@ -266,10 +330,10 @@ const TemplateContent = ({ franchiseId }) => {
       return;
     }
     
-    if (!locationSelected && !isLoading && !showLocationSelector && !isPlaceInDiningOrderRoute && !isPaymentRoute) {
+    if (!locationSelected && !isLoading && !showLocationSelector && !isPlaceInDiningOrderRoute && !isFestivalMenuRoute && !isPaymentRoute) {
       setShowLocationSelector(true);
     }
-  }, [locationSelected, isLoading, showLocationSelector, isPlaceInDiningOrderRoute, isPaymentRoute, restaurantState.info]);
+  }, [locationSelected, isLoading, showLocationSelector, isPlaceInDiningOrderRoute, isFestivalMenuRoute, isPaymentRoute, restaurantState.info]);
 
   // Template context value
   const templateContextValue = {
@@ -341,6 +405,7 @@ const TemplateContent = ({ franchiseId }) => {
   // Check if we should show LocationSelector - don't show for single franchise
   const shouldShowLocationSelector = !locationSelected && 
     !isPlaceInDiningOrderRoute && 
+    !isFestivalMenuRoute && 
     !isPaymentRoute && 
     restaurantState.info && 
     restaurantState.info.length > 1; // Only show for multiple franchises

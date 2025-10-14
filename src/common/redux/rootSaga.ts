@@ -7,6 +7,7 @@ import { inDiningOrderSaga } from './sagas/inDiningOrderSaga';
 import { tableAvailabilitySaga } from './sagas/tableAvailabilitySaga';
 import { makeReservationSaga } from './sagas/makeReservationSaga';
 import { tableStatusSaga } from './sagas/tableStatusSaga';
+import { watchFestivalMenuSaga } from './sagas/festivalMenuSaga';
 import { orderHistorySaga } from './sagas/orderHistorySaga';
 import { watchPaymentSagas } from './sagas/paymentSaga';
 import { tpnSaga } from '../../redux/sagas/tpnSaga';
@@ -22,6 +23,7 @@ export function* rootSaga(): Generator<any, void, any> {
     fork(tableAvailabilitySaga),
     fork(makeReservationSaga),
     fork(tableStatusSaga),
+    fork(watchFestivalMenuSaga),
     fork(orderHistorySaga),
     fork(watchPaymentSagas),
     fork(tpnSaga),
