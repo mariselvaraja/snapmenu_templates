@@ -686,9 +686,16 @@ function FestivalMenu() {
         </div>
       )}
       
-      {/* Show empty state if both menus are empty */}
-      {!loading && !showMenuItems && foodItems.length === 0 && drinksItems.length === 0 && (
-        <EmptyState isMenuEmpty={true} />
+      {/* Show loading indicator or empty state */}
+      {!showMenuItems && !showCategories && foodItems.length === 0 && drinksItems.length === 0 && (
+        loading ? (
+          <div className="flex flex-col items-center justify-center min-h-[60vh] p-4">
+            <div className="animate-spin rounded-full h-16 w-16 border-4 border-red-500 border-t-transparent mb-4"></div>
+            <p className="text-gray-600 text-lg">Loading menu...</p>
+          </div>
+        ) : (
+          <EmptyState isMenuEmpty={true} />
+        )
       )}
       
       {/* Menu Items - Directly show without filters */}
