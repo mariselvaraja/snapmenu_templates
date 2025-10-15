@@ -46,7 +46,7 @@ function AdminRoute({ children }) {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <LoadingSpinner />
+        <LoadingSpinner/>
       </div>
     );
   }
